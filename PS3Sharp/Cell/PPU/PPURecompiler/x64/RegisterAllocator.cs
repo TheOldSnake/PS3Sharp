@@ -52,7 +52,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
         //  rbp,  // Spill Array pointer
            rsi,
            rdi,
-        //  r8,   // Page table pointer 
+        //  r8,   // Guest memory base pointer 
            r9,
            r10,
            r11,
@@ -75,7 +75,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             rax,
             rcx,
             rdx,
-           // r8, // Page Table pointer 
+           // r8, // Guest memory base pointer 
             r9,
             r10,
             r11,
