@@ -81,12 +81,6 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             r11,
         ];
 
-
-        /* private static readonly AssemblerRegister64[] RegisterPool64 = {   
-            rax,
-            rcx,
-         };*/
-
         private static List<AssemblerRegister64> CurrentRegisterPool = new();
         private static bool _canAllocate => CurrentRegisterPool.Count > 0;
         private static int _spillIndex = 0;
