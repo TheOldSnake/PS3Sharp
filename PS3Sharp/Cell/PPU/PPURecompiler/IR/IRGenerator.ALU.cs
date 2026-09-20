@@ -657,7 +657,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             Value a = ctx.GetGPR(ra);
             Value b = ctx.GetGPR(rb);
-            Value result = CheckedIDiv(ctx, a, b);
+            Value result = CheckedIDivD(ctx, a, b);
 
             ctx.SetGPR(rt, result);
 
@@ -673,7 +673,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             Value a = ctx.GetGPR(ra);
             Value b = ctx.GetGPR(rb);
-            Value result = CheckedDiv(ctx, a, b);
+            Value result = CheckedDivD(ctx, a, b);
 
             ctx.SetGPR(rt, result);
 
@@ -689,17 +689,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             Value a = ctx.GetGPR(ra);
             Value b = ctx.GetGPR(rb);
+            Value result = CheckedIDivW(ctx, a, b);
 
-            Value a32 = Truncate(ctx, a, Value.ValueType.I32);
-            Value b32 = Truncate(ctx, b, Value.ValueType.I32);
-
-            Value result32 = CheckedIDiv(ctx, a32, b32);
-            Value result64 = ZeroExtend(ctx, result32, Value.ValueType.I64);
-
-            ctx.SetGPR(rt, result64);
+            ctx.SetGPR(rt, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result64, ctx.Zero, PPU.CRNumber.CR0);
+                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
             }
         }
 
@@ -710,17 +705,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             Value a = ctx.GetGPR(ra);
             Value b = ctx.GetGPR(rb);
+            Value result = CheckedDivW(ctx, a, b);
 
-            Value a32 = Truncate(ctx, a, Value.ValueType.I32);
-            Value b32 = Truncate(ctx, b, Value.ValueType.I32);
-
-            Value result32 = CheckedDiv(ctx, a32, b32);
-            Value result64 = ZeroExtend(ctx, result32, Value.ValueType.I64);
-
-            ctx.SetGPR(rt, result64);
+            ctx.SetGPR(rt, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result64, ctx.Zero, PPU.CRNumber.CR0);
+                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
             }
         }
 

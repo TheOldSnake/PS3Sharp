@@ -42,10 +42,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             MulHD,  // Unsigned 64x64 - takes high 64 of result
             MulHW,  // Unsigned 32x32 - takes high 32 of result
 
-            IDiv,
-            Div,
-            CheckedIDiv,
-            CheckedDiv,
+
+            // Checked divide instructions handle special cases
+            CheckedIDivD,   // Signed 64/64 
+            CheckedDivD,    // Unsigned 64/64 
+            CheckedIDivW,   // Signed 32/32 
+            CheckedDivW,    // Unsigned 32/32 
 
             And,
             Or,
@@ -620,40 +622,46 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             return result;
         }
 
-        public static Value CheckedIDiv(IRContext ctx, Value a, Value b) {
-            // CheckedIDiv is an IR operation whose semantics guarantee 
+        public static Value CheckedIDivD(IRContext ctx, Value a, Value b) {
+            // CheckedIDivD is an IR operation whose semantics guarantee 
             // that the invalid PPC division cases produce zero.
 
             EnsureSameType(a, b);
             Value result = ctx.CreateValue(a.Type);
-            IRInstruction instruction = IRInstruction.Create(Op.CheckedIDiv, result, a, b);
+            IRInstruction instruction = IRInstruction.Create(Op.CheckedIDivD, result, a, b);
             ctx.AddInstruction(instruction);
             return result;
         }
 
-        public static Value CheckedDiv(IRContext ctx, Value a, Value b) {
-            // CheckedDiv is an IR operation whose semantics guarantee 
+        public static Value CheckedDivD(IRContext ctx, Value a, Value b) {
+            // CheckedDivD is an IR operation whose semantics guarantee 
             // that the invalid PPC division cases produce zero.
 
             EnsureSameType(a, b);
             Value result = ctx.CreateValue(a.Type);
-            IRInstruction instruction = IRInstruction.Create(Op.CheckedDiv, result, a, b);
+            IRInstruction instruction = IRInstruction.Create(Op.CheckedDivD, result, a, b);
             ctx.AddInstruction(instruction);
             return result;
         }
 
-        public static Value IDiv(IRContext ctx, Value a, Value b) {
+        public static Value CheckedIDivW(IRContext ctx, Value a, Value b) {
+            // CheckedIDivW is an IR operation whose semantics guarantee 
+            // that the invalid PPC division cases produce zero.
+
             EnsureSameType(a, b);
             Value result = ctx.CreateValue(a.Type);
-            IRInstruction instruction = IRInstruction.Create(Op.IDiv, result, a, b);
+            IRInstruction instruction = IRInstruction.Create(Op.CheckedIDivW, result, a, b);
             ctx.AddInstruction(instruction);
             return result;
         }
 
-        public static Value Div(IRContext ctx, Value a, Value b) {
+        public static Value CheckedDivW(IRContext ctx, Value a, Value b) {
+            // CheckedDivW is an IR operation whose semantics guarantee 
+            // that the invalid PPC division cases produce zero.
+
             EnsureSameType(a, b);
             Value result = ctx.CreateValue(a.Type);
-            IRInstruction instruction = IRInstruction.Create(Op.Div, result, a, b);
+            IRInstruction instruction = IRInstruction.Create(Op.CheckedDivW, result, a, b);
             ctx.AddInstruction(instruction);
             return result;
         }
