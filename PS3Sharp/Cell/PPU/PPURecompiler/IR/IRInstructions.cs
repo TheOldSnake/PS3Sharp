@@ -34,8 +34,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             Add,
             Sub,
-            IMul,
-            Mul,
+
+            IMulLD, // Signed 64x64 - takes low 64 of result
+            IMulHD, // Signed 64x64 - takes high 64 of result
+            IMulLW, // Signed 32x32 - takes low 32 of result
+            IMulHW, // Signed 32x32 - takes high 32 of result
+            MulHD,  // Unsigned 64x64 - takes high 64 of result
+            MulHW,  // Unsigned 32x32 - takes high 32 of result
+
             IDiv,
             Div,
             CheckedIDiv,
@@ -566,18 +572,50 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             return result;
         }
 
-        public static Value IMul(IRContext ctx, Value a, Value b) {
+        public static Value IMulLD(IRContext ctx, Value a, Value b) {
             EnsureSameType(a, b);
             Value result = ctx.CreateValue(a.Type);
-            IRInstruction instruction = IRInstruction.Create(Op.IMul, result, a, b);
+            IRInstruction instruction = IRInstruction.Create(Op.IMulLD, result, a, b);
             ctx.AddInstruction(instruction);
             return result;
         }
 
-        public static Value Mul(IRContext ctx, Value a, Value b) {
+        public static Value IMulHD(IRContext ctx, Value a, Value b) {
             EnsureSameType(a, b);
             Value result = ctx.CreateValue(a.Type);
-            IRInstruction instruction = IRInstruction.Create(Op.Mul, result, a, b);
+            IRInstruction instruction = IRInstruction.Create(Op.IMulHD, result, a, b);
+            ctx.AddInstruction(instruction);
+            return result;
+        }
+
+        public static Value IMulLW(IRContext ctx, Value a, Value b) {
+            EnsureSameType(a, b);
+            Value result = ctx.CreateValue(a.Type);
+            IRInstruction instruction = IRInstruction.Create(Op.IMulLW, result, a, b);
+            ctx.AddInstruction(instruction);
+            return result;
+        }
+
+        public static Value IMulHW(IRContext ctx, Value a, Value b) {
+            EnsureSameType(a, b);
+            Value result = ctx.CreateValue(a.Type);
+            IRInstruction instruction = IRInstruction.Create(Op.IMulHW, result, a, b);
+            ctx.AddInstruction(instruction);
+            return result;
+        }
+
+        public static Value MulHD(IRContext ctx, Value a, Value b) {
+            EnsureSameType(a, b);
+            Value result = ctx.CreateValue(a.Type);
+            IRInstruction instruction = IRInstruction.Create(Op.MulHD, result, a, b);
+            ctx.AddInstruction(instruction);
+            return result;
+        }
+
+        public static Value MulHW(IRContext ctx, Value a, Value b) {
+            EnsureSameType(a, b);
+            Value result = ctx.CreateValue(a.Type);
+            IRInstruction instruction = IRInstruction.Create(Op.MulHW, result, a, b);
             ctx.AddInstruction(instruction);
             return result;
         }

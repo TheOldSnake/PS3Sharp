@@ -541,7 +541,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             Value a = ctx.GetGPR(ra);
             Value b = Constant(ctx, (ulong)instruction.SI_64);
-            Value result = IMul(ctx, a, b);
+            Value result = IMulLD(ctx, a, b);
 
             ctx.SetGPR(rt, result);
             // No special registers affected
@@ -555,14 +555,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             Value a = ctx.GetGPR(ra);
             Value b = ctx.GetGPR(rb);
-
-            Value a32 = Truncate(ctx, a, Value.ValueType.I32);
-            Value b32 = Truncate(ctx, b, Value.ValueType.I32);
-
-            Value a64 = SignExtend(ctx, a32, Value.ValueType.I64);
-            Value b64 = SignExtend(ctx, b32, Value.ValueType.I64);
-
-            Value result = IMul(ctx, a64, b64);
+            Value result = IMulLW(ctx, a, b);
 
             ctx.SetGPR(rt, result);
 
@@ -579,16 +572,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             Value a = ctx.GetGPR(ra);
             Value b = ctx.GetGPR(rb);
-
-            Value a32 = Truncate(ctx, a, Value.ValueType.I32);
-            Value b32 = Truncate(ctx, b, Value.ValueType.I32);
-
-            Value a64 = SignExtend(ctx, a32, Value.ValueType.I64);
-            Value b64 = SignExtend(ctx, b32, Value.ValueType.I64);
-
-            Value value = IMul(ctx, a64, b64);
-            Value shiftAmount = Constant(ctx, 32);
-            Value result = ShiftRight(ctx, value, shiftAmount);
+            Value result = IMulHW(ctx, a, b);
 
             ctx.SetGPR(rt, result);
 
@@ -605,16 +589,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             Value a = ctx.GetGPR(ra);
             Value b = ctx.GetGPR(rb);
-
-            Value a32 = Truncate(ctx, a, Value.ValueType.I32);
-            Value b32 = Truncate(ctx, b, Value.ValueType.I32);
-
-            Value a64 = ZeroExtend(ctx, a32, Value.ValueType.I64);
-            Value b64 = ZeroExtend(ctx, b32, Value.ValueType.I64);
-
-            Value value = Mul(ctx, a64, b64);
-            Value shiftAmount = Constant(ctx, 32);
-            Value result = ShiftRight(ctx, value, shiftAmount);
+            Value result = MulHW(ctx, a, b);
 
             ctx.SetGPR(rt, result);
 
@@ -631,7 +606,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             Value a = ctx.GetGPR(ra);
             Value b = ctx.GetGPR(rb);
-            Value result = IMul(ctx, a, b);
+            Value result = IMulLD(ctx, a, b);
 
             ctx.SetGPR(rt, result);
 
@@ -648,14 +623,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             Value a = ctx.GetGPR(ra);
             Value b = ctx.GetGPR(rb);
-
-            Value a128 = SignExtend(ctx, a, Value.ValueType.I128);
-            Value b128 = SignExtend(ctx, b, Value.ValueType.I128);
-
-            Value value = IMul(ctx, a128, b128);
-            Value shiftAmount = Constant(ctx, 64);
-            Value shiftedValue = ShiftRight(ctx, value, shiftAmount);
-            Value result = Truncate(ctx, shiftedValue, Value.ValueType.I64);
+            Value result = IMulHD(ctx, a, b);
 
             ctx.SetGPR(rt, result);
 
@@ -672,14 +640,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             Value a = ctx.GetGPR(ra);
             Value b = ctx.GetGPR(rb);
-
-            Value a128 = ZeroExtend(ctx, a, Value.ValueType.I128);
-            Value b128 = ZeroExtend(ctx, b, Value.ValueType.I128);
-
-            Value value = Mul(ctx, a128, b128);
-            Value shiftAmount = Constant(ctx, 64);
-            Value shiftedValue = ShiftRight(ctx, value, shiftAmount);
-            Value result = Truncate(ctx, shiftedValue, Value.ValueType.I64);
+            Value result = MulHD(ctx, a, b);
 
             ctx.SetGPR(rt, result);
 
