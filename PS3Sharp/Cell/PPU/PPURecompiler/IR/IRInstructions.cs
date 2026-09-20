@@ -251,10 +251,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             return value;
         }
 
-        public static void GPRStore(IRContext ctx, Value src, ulong gprNumber) {
+        public static void GPRStore(IRContext ctx, Value src, ulong gprNumber, int index = -1) {
             EnsureSameType(src.Type, Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(Op.GPRStore, src, gprNumber);
-            ctx.AddInstruction(instruction);
+            ctx.AddInstruction(instruction, index);
         }
 
         public static Value FPRLoad(IRContext ctx, ulong fprNumber) {
@@ -264,10 +264,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             return value;
         }
 
-        public static void FPRStore(IRContext ctx, Value src, ulong fprNumber) {
+        public static void FPRStore(IRContext ctx, Value src, ulong fprNumber, int index = -1) {
             EnsureSameType(src.Type, Value.ValueType.F64);
             IRInstruction instruction = IRInstruction.Create(Op.FPRStore, src, fprNumber);
-            ctx.AddInstruction(instruction);
+            ctx.AddInstruction(instruction, index);
         }
 
 
@@ -278,10 +278,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             return value;
         }
 
-        public static void CRStore(IRContext ctx, Value src) {
+        public static void CRStore(IRContext ctx, Value src, int index = -1) {
             EnsureSameType(src.Type, Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(Op.CRStore, src, 0);
-            ctx.AddInstruction(instruction);
+            ctx.AddInstruction(instruction, index);
         }
 
         public static Value CTRLoad(IRContext ctx) {
@@ -291,10 +291,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             return value;
         }
 
-        public static void CTRStore(IRContext ctx, Value src) {
+        public static void CTRStore(IRContext ctx, Value src, int index = -1) {
             EnsureSameType(src.Type, Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(Op.CTRStore, src, 0);
-            ctx.AddInstruction(instruction);
+            ctx.AddInstruction(instruction, index);
         }
 
         public static Value LRLoad(IRContext ctx) {
@@ -304,10 +304,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             return value;
         }
 
-        public static void LRStore(IRContext ctx, Value src) {
+        public static void LRStore(IRContext ctx, Value src, int index = -1) {
             EnsureSameType(src.Type, Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(Op.LRStore, src, 0);
-            ctx.AddInstruction(instruction);
+            ctx.AddInstruction(instruction, index);
         }
 
         public static Value XERLoad(IRContext ctx) {
@@ -317,10 +317,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             return value;
         }
 
-        public static void XERStore(IRContext ctx, Value src) {
+        public static void XERStore(IRContext ctx, Value src, int index = -1) {
             EnsureSameType(src.Type, Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(Op.XERStore, src, 0);
-            ctx.AddInstruction(instruction);
+            ctx.AddInstruction(instruction, index);
         }
 
         public static Value VRSaveLoad(IRContext ctx) {
@@ -330,10 +330,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             return value;
         }
 
-        public static void VRSaveStore(IRContext ctx, Value src) {
+        public static void VRSaveStore(IRContext ctx, Value src, int index = -1) {
             EnsureSameType(src.Type, Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(Op.VRSaveStore, src, 0);
-            ctx.AddInstruction(instruction);
+            ctx.AddInstruction(instruction, index);
         }
 
         public static void PCStore(IRContext ctx, Value src) {

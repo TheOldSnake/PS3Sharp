@@ -66,8 +66,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
                 return new Value(NextValueId++, type);
             }
 
-            public void AddInstruction(IRInstruction instruction) {
-                Instructions.Add(instruction);
+            public void AddInstruction(IRInstruction instruction, int index = -1) {
+                if (index == -1) {
+                    Instructions.Add(instruction);
+                } else {
+                    Instructions.Insert(index, instruction);
+                }
             }
 
             public Value GetGPR(uint index) {
@@ -239,42 +243,67 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
                 return ReadBit(this, GetCR(), position);
             }
 
-            public void TerminateBlock() {
-                // Writeback GPRs that were modified
-                for(uint i = 0; i < CurrentGPR.Length; i++) {
+            public int GetLastUseIndex(Value value) {
+                for (int i = Instructions.Count - 1; i >= 0; i--) {
+                    if (Instructions[i].Op != IRInstructions.Op.GPRStore) {
+                        Value[] operands = [Instructions[i].Destination, Instructions[i].Operand1, Instructions[i].Operand2, Instructions[i].Operand3];
+
+                        foreach (Value operand in operands) {
+                            if (operand.IsValid && operand == value) {
+                                return i;
+                            }
+                        }
+                    }
+                }
+
+                throw new Exception($"Can't find last write for value: {value}");
+            }
+
+            public void WritebackGPRs() {
+                // Insert writeback after last instruction that writes to the value
+                for (uint i = 0; i < CurrentGPR.Length; i++) {
                     if (CurrentGPR[i].IsValid) {
-                        GPRStore(this, CurrentGPR[i], i);
+                        int lastWrite = GetLastUseIndex(CurrentGPR[i]);
+                        GPRStore(this, CurrentGPR[i], i, lastWrite + 1);
                     }
                 }
+            }
 
-                // Writeback FPRs that were modified
-                for (uint i = 0; i < CurrentFPR.Length; i++) {
-                    if (CurrentFPR[i].IsValid) {
-                        FPRStore(this, CurrentFPR[i], i);
-                    }
-                }
+            public void WritebackSpecialRegister() {
+                // Insert writeback after last instruction that writes to the value
+                int lastWrite;
 
-                // Writeback sepcial registers
                 if (CurrentCR.IsValid) {
-                    CRStore(this, CurrentCR);
+                    lastWrite = GetLastUseIndex(CurrentCR);
+                    CRStore(this, CurrentCR, lastWrite + 1);
                 }
 
                 if (CurrentCTR.IsValid) {
-                    CTRStore(this, CurrentCTR);
+                    lastWrite = GetLastUseIndex(CurrentCTR);
+                    CTRStore(this, CurrentCTR, lastWrite + 1);
                 }
 
                 if (CurrentLR.IsValid) {
-                    LRStore(this, CurrentLR);
+                    lastWrite = GetLastUseIndex(CurrentLR);
+                    LRStore(this, CurrentLR, lastWrite + 1);
                 }
 
                 if (CurrentXER.IsValid) {
-                    XERStore(this, CurrentXER);
+                    lastWrite = GetLastUseIndex(CurrentXER);
+                    XERStore(this, CurrentXER, lastWrite + 1);
                 }
 
                 if (CurrentVRSave.IsValid) {
-                    VRSaveStore(this, CurrentVRSave);
+                    lastWrite = GetLastUseIndex(CurrentVRSave);
+                    VRSaveStore(this, CurrentVRSave, lastWrite + 1);
                 }
+            }
 
+            public void TerminateBlock() {
+                WritebackGPRs();
+                // TODO: FPRs
+
+                WritebackSpecialRegister();
                 PCStore(this, ExitPC);
                 Return(this);
             }
