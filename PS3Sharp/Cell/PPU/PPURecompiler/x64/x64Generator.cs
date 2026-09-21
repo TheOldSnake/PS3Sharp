@@ -13,6 +13,7 @@ using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator;
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
     public static unsafe partial class x64Generator {
         private static int _currentStackOffset = 0;                                // Current stack offset in bytes
+        private static List<AssemblerRegister64> _staticBorrowPool = new();        // List of all borrowable registers for this block
         private static Stack<AssemblerRegister64> _borrowedRegisters = new();      // Currently borrowed registers by the current instruction operands/handler
         private static List<AssemblerRegister64> _reservedRegisters = new();       // Currently reserved registers by the current instruction permenant registers mapping
         private static List<AssemblerRegister64> _inUseVolatileRegisters = new();  // Currently active volatile registers (across the block)
@@ -144,6 +145,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             Reset();
 
             _registerMap = RegisterAllocator.AllocateHostRegisters(block.IRCode, block.Constants);
+            _staticBorrowPool = RegisterAllocator.CreateRegisterPool(block.IRCode);
             _knownConstants = block.Constants;
 
             Assembler asm = new Assembler(64);
@@ -170,6 +172,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             _currentStackOffset = 0;
             _borrowedRegisters.Clear();
             _inUseVolatileRegisters.Clear();
+            _staticBorrowPool.Clear();
         }
 
         private static int Padding16(int offset) {
@@ -179,8 +182,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
 
         private static AssemblerRegister64 BorrowRegister(Assembler asm) {
-            for (int i = 0; i < StaticRegisterPool64.Length; i++) {
-                AssemblerRegister64 reg = StaticRegisterPool64[i];
+            for (int i = 0; i < _staticBorrowPool.Count; i++) {
+                AssemblerRegister64 reg = _staticBorrowPool[i];
 
                 // Borrow a register that was not borrowed before and is not reserved by the current instruction
                 if (!_borrowedRegisters.Contains(reg) && !_reservedRegisters.Contains(reg)) {

@@ -1,9 +1,6 @@
 ﻿using Iced.Intel;
 using static Iced.Intel.AssemblerRegisters;
-
-using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRInstructions;
-using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
     public static class RegisterAllocator {
@@ -98,15 +95,49 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
         public static void ResetAllocatorState() {
             _spillIndex = 0;
             CurrentRegisterPool.Clear();
+        }
 
-            for (int i = 0; i < StaticRegisterPool64.Length; i++) {
-                CurrentRegisterPool.Add(StaticRegisterPool64[i]);
+        private static bool RequiresReservedRaxRdx(IRInstruction instruction) {
+            bool isSpecialMulDiv =
+                instruction.Op == IR.IRInstructions.Op.IMulHD       ||
+                instruction.Op == IR.IRInstructions.Op.MulHD        ||
+                instruction.Op == IR.IRInstructions.Op.CheckedIDivD ||
+                instruction.Op == IR.IRInstructions.Op.CheckedDivD  ||
+                instruction.Op == IR.IRInstructions.Op.CheckedIDivW ||
+                instruction.Op == IR.IRInstructions.Op.CheckedDivW;
+
+            return isSpecialMulDiv;
+        }
+
+        public static List<AssemblerRegister64> CreateRegisterPool(List<IRInstruction> code) {
+            // RAX and RDX are endabled by default
+            // but if the block needs any special multiply / divide instructions,
+            // we reserve them by removing them from the pool
+
+            List<AssemblerRegister64> regs = new List<AssemblerRegister64>(StaticRegisterPool64);
+
+            bool shouldReserve = false;
+
+            for (int i = 0; i < code.Count; i++) {
+                if (RequiresReservedRaxRdx(code[i])) {
+                    shouldReserve = true; 
+                    break;
+                }
             }
+
+            if (shouldReserve) {
+                regs.Remove(rax);
+                regs.Remove(rdx);
+            }
+
+            return regs;
         }
 
         public static Dictionary<Value, Location> AllocateHostRegisters(List<IRInstruction> code, Dictionary<Value, ulong> knownConstants) {
             // Reset
+            
             ResetAllocatorState();
+            CurrentRegisterPool = CreateRegisterPool(code);
 
             List<Liveness> livenessList = BuildLivenessDictionary(code, knownConstants);
             Dictionary<Value, Location> allocatedRegs = new();
