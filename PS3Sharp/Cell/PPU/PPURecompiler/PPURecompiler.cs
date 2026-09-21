@@ -25,6 +25,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
         private const int MEM_RELEASE = 0x00008000;
         private const int VirtualAllocSize = 4 * 1024;    // 4 kb
 
+        private static readonly List<nuint> AllocatedPages = [];   // TODO: Dispose and free.
+
         public struct X64Block {
             public delegate* unmanaged[Stdcall]<void> Code;
             public int IsSyscallExit;
@@ -122,6 +124,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
             CurrentPageStartAddress = memory;
             CurrentPageEndAddress = (nuint)(memory + alignedSize);
             NextBlockAddress = CurrentPageStartAddress;
+            AllocatedPages.Add(CurrentPageStartAddress);
         }
 
         public static void FreeExecutableMemory(void* memory, int size) {
