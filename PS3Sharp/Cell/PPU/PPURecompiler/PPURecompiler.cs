@@ -1,13 +1,12 @@
-﻿using PS3Sharp.Cell.PPU.PPUInterpreter;
-using PS3Sharp.Cell.PPU.PPURecompiler.IR;
+﻿using PS3Sharp.Cell.PPU.PPURecompiler.IR;
 using PS3Sharp.Cell.PPU.PPURecompiler.x64;
 using PS3Sharp.Syscall;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
-using static PS3Sharp.Cell.PPU.PPURecompiler.PPURecompiler;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler {
-    public static unsafe class PPURecompiler {
+    public unsafe class PPURecompiler : IDisposable {
         //Import needed kernel functions
         [DllImport("kernel32.dll")]
         private static extern void* VirtualAlloc(void* addr, int size, int type, int protect);
@@ -25,7 +24,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
         private const int MEM_RELEASE = 0x00008000;
         private const int VirtualAllocSize = 4 * 1024;    // 4 kb
 
-        private static readonly List<(nuint Address, ulong Size)> AllocatedPages = [];   // TODO: Dispose and free.
+        private readonly List<(nuint Address, ulong Size)> AllocatedPages = [];
 
         public struct X64Block {
             public delegate* unmanaged[Stdcall]<void> Code;
@@ -35,13 +34,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
         private const int Bits = 16;
         private const int Size = 1 << Bits;
         private const uint Mask = Size - 1;
-        private static X64Block*[] _blocks = new X64Block*[Size];
+        private X64Block*[] _blocks = new X64Block*[Size];
 
-        private static nuint NextBlockAddress;
-        private static nuint CurrentPageStartAddress;
-        private static nuint CurrentPageEndAddress;
+        private nuint NextBlockAddress;
+        private nuint CurrentPageStartAddress;
+        private nuint CurrentPageEndAddress;
+        private bool disposedValue;
 
-        private static X64Block* GetBlock(uint virtualAddress) {
+        private X64Block* GetBlock(uint virtualAddress) {
             uint index = virtualAddress >> 2;
 
             uint l1 = index >> Bits;
@@ -52,7 +52,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
             return page == null ? null : & page[l2];
         }
 
-        private static X64Block* GetOrCreateBlock(uint virtualAddress) {
+        private X64Block* GetOrCreateBlock(uint virtualAddress) {
             uint index = virtualAddress >> 2;
 
             uint l1 = index >> Bits;
@@ -70,7 +70,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
         }
 
 
-        public static void RunPPU(PPU ppu) {
+        public void RunPPU(PPU ppu) {
 
             X64Block* block = GetOrCreateBlock(ppu.State->PC);
 
@@ -89,7 +89,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
             //throw new Exception($"Done, exit pc = 0x{ppu.State->PC:X8}");
         }
 
-        private static void CompilePPCBlock(PPU ppu, X64Block* nativeBlock) {
+        private void CompilePPCBlock(PPU ppu, X64Block* nativeBlock) {
             // Generate IR
             IRBlock block = IRGenerator.GenerateIRBlock(ppu.State->PC, ppu);
             nativeBlock->IsSyscallExit = block.IsSyscallExit;
@@ -117,7 +117,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
             NextBlockAddress = (nuint)AlignPow2(NextBlockAddress, 16);
         }
 
-        public static void AllocateExecutableMemory(int size) {
+        private void AllocateExecutableMemory(int size) {
             ulong alignedSize = AlignPow2((ulong)size, VirtualAllocSize);
             nuint memory = (nuint)VirtualAlloc(null, (int)alignedSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 
@@ -127,16 +127,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
             AllocatedPages.Add((CurrentPageStartAddress, alignedSize));
         }
 
-        public static void FreeExecutableMemory(void* memory, int size) {
-            VirtualFree(memory, size, MEM_RELEASE);
-        }
-
-        private static bool HasEnoughMemory(int size) {
+        private bool HasEnoughMemory(int size) {
             ulong aligned = AlignPow2(NextBlockAddress + (nuint)size, 16);
             return aligned < CurrentPageEndAddress;
         }
 
-        private static ulong AlignPow2(ulong value, ulong alignment) {
+        private ulong AlignPow2(ulong value, ulong alignment) {
             bool isPowerOf2 = alignment != 0 && (alignment & (alignment - 1)) == 0;
             
             if (!isPowerOf2) {
@@ -144,6 +140,48 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
             }
             
             return (value + alignment - 1) & ~(alignment - 1);
+        }
+
+        protected virtual void Dispose(bool disposing) {
+            if (!disposedValue) {
+                if (disposing) {
+                    // TODO: dispose managed state (managed objects)
+                }
+
+                // free unmanaged resources (unmanaged objects) and override finalizer
+                // set large fields to null
+
+                // Free executable pages
+                foreach (var allocation in AllocatedPages) {
+                    bool ok = VirtualFree((void*)allocation.Address, (int)allocation.Size, MEM_RELEASE);
+
+                    if (!ok) {
+                        throw new Win32Exception();
+                    }
+                }
+
+                // Free block structs
+                foreach (var block in _blocks) {
+                    if (block != null) {
+                        NativeMemory.Free(block);
+                    }
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~PPURecompiler()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose() {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

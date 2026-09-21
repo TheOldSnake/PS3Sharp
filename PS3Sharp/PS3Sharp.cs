@@ -115,10 +115,12 @@ namespace PS3Sharp {
             PPU ppu_main = new PPU("main_thread", (uint)pc, main_thread_id, MemoryManager.DEFAULT_STACK_SIZE);
             ppu_main.WriteReg<ulong>(2, toc);
 
+            PPURecompiler ppu_recompiler = new PPURecompiler();
+
             while (true) {
                 try {
                     //PPUInterpreter.Step(ppu_main);
-                    PPURecompiler.RunPPU(ppu_main);
+                    ppu_recompiler.RunPPU(ppu_main);
                 } catch (Exception e) {
 
                     Console.WriteLine($"Exception: {e.Message}");
