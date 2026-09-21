@@ -121,6 +121,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
             ulong alignedSize = AlignPow2((ulong)size, VirtualAllocSize);
             nuint memory = (nuint)VirtualAlloc(null, (int)alignedSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 
+            if (memory == 0) {
+                throw new Win32Exception();
+            }
+
             CurrentPageStartAddress = memory;
             CurrentPageEndAddress = (nuint)(memory + alignedSize);
             NextBlockAddress = CurrentPageStartAddress;
