@@ -330,6 +330,9 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             Label zero = asm.CreateLabel();
             Label done = asm.CreateLabel();
 
+            // Zero the top 64-bit
+            asm.xor(rdx, rdx);
+
             if (op2Const) {
                 // if denominator is constant we can check at compile time
                 if (_knownConstants[op2] == 0) {
@@ -390,6 +393,9 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 asm.xor(dest, dest);
                 return;
             }
+
+            // Zero the top 64-bit
+            asm.xor(rdx, rdx);
 
             // Move numerator and denominator to rax and rdx
             if (op1Const) {
@@ -455,6 +461,9 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             Label zero = asm.CreateLabel();
             Label done = asm.CreateLabel();
 
+            // Zero the top 64-bit
+            asm.xor(rdx, rdx);
+
             if (op2Const) {
                 // if denominator is constant we can check at compile time
                 if (_knownConstants[op2] == 0) {
@@ -515,6 +524,9 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 asm.xor(dest_64, dest_64);
                 return;
             }
+
+            // Zero the top 64-bit
+            asm.xor(rdx, rdx);
 
             // Move numerator and denominator to eax and edx
             if (op1Const) {
