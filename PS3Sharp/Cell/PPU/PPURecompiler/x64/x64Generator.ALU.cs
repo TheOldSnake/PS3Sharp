@@ -1052,12 +1052,6 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             Value operand = instruction.Operand1;
 
             AssemblerRegister64 destinationReg = _registerMap[instruction.Destination].GetRegister();
-            AssemblerRegister64 operandReg = _registerMap[instruction.Operand1].GetRegister();
-
-            // using a constant would be weird, a possible IR bug
-            if (_knownConstants.ContainsKey(instruction.Operand1)) {
-                throw new Exception($"Unexpected Zero exten with constant operand");
-            }
 
             uint mask;
 
@@ -1071,8 +1065,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 default: throw new Exception($"Unsupported truncate to {destination.Type}");
             }
 
-            asm.mov(destinationReg, operandReg);
-            asm.and(destinationReg, (int)mask);
+            if (_knownConstants.TryGetValue(instruction.Operand1, out ulong value)) {
+                asm.mov(destinationReg, value & mask);
+
+            } else {
+                AssemblerRegister64 operandReg = _registerMap[instruction.Operand1].GetRegister();
+                asm.mov(destinationReg, operandReg);
+                asm.and(destinationReg, (int)mask);
+            }
         }
     }
 }
