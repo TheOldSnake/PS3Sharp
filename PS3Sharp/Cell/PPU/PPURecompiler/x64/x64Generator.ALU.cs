@@ -566,17 +566,16 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             AssemblerRegister64 dest = destination.GetRegister();
 
-            // that would be weird, possible bug
-            if (op1Const && !op2Const) {
-                throw new Exception($"Shifting a constant by a variable");
+            if (op1Const) {
+                asm.mov(dest, _knownConstants[op1]);
+            } else {
+                asm.mov(dest, _registerMap[op1].GetRegister());
             }
-
-            asm.mov(dest, _registerMap[op1].GetRegister());
 
             if (op2Const) {
                 asm.shl(dest, (byte)_knownConstants[op2]);
             } else {
-                asm.shl(dest, Reg64ToReg8(_registerMap[op2].GetRegister()));
+                asm.shlx(dest, dest, _registerMap[op2].GetRegister()); // BMI2 extension
             }
         }
 
@@ -590,12 +589,11 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             AssemblerRegister64 dest = destination.GetRegister();
 
-            // that would be weird, possible bug
-            if (op1Const && !op2Const) {
-                throw new Exception($"Shifting a constant by a variable");
+            if (op1Const) {
+                asm.mov(dest, _knownConstants[op1]);
+            } else {
+                asm.mov(dest, _registerMap[op1].GetRegister());
             }
-
-            asm.mov(dest, _registerMap[op1].GetRegister());
 
             if (op2Const) {
                 if (arithmetic) {
@@ -606,10 +604,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             } else {
                 if (arithmetic) {
-                    asm.sar(dest, Reg64ToReg8(_registerMap[op2].GetRegister()));
+                    asm.sarx(dest, dest, _registerMap[op2].GetRegister());  // BMI2 extension
 
                 } else {
-                    asm.shr(dest, Reg64ToReg8(_registerMap[op2].GetRegister()));
+                    asm.shrx(dest, dest, _registerMap[op2].GetRegister());  // BMI2 extension
                 }
             }
         }
@@ -624,17 +622,18 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             AssemblerRegister64 dest = destination.GetRegister();
 
-            // that would be weird, possible bug
-            if (op1Const && !op2Const) {
-                throw new Exception($"Shifting a constant by a variable");
+            if (op1Const) {
+                asm.mov(dest, _knownConstants[op1]);
+            } else {
+                asm.mov(dest, _registerMap[op1].GetRegister());
             }
-
-            asm.mov(dest, _registerMap[op1].GetRegister());
 
             if (op2Const) {
                 asm.rol(dest, (byte)_knownConstants[op2]);
             } else {
+                // we need to use CL
                 asm.rol(dest, Reg64ToReg8(_registerMap[op2].GetRegister()));
+                throw new Exception($"todo: rol");
             }
         }
 
@@ -648,20 +647,20 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             AssemblerRegister64 dest = destination.GetRegister();
 
-            // that would be weird, possible bug
-            if (op1Const && !op2Const) {
-                throw new Exception($"Shifting a constant by a variable");
+            if (op1Const) {
+                asm.mov(dest, _knownConstants[op1]);
+            } else {
+                asm.mov(dest, _registerMap[op1].GetRegister());
             }
-
-            asm.mov(dest, _registerMap[op1].GetRegister());
 
             if (op2Const) {
                 asm.ror(dest, (byte)_knownConstants[op2]);
             } else {
+                // we need to use CL
                 asm.ror(dest, Reg64ToReg8(_registerMap[op2].GetRegister()));
+                throw new Exception($"todo: ror");
             }
         }
-
 
         private static void SetEq(Assembler asm, IRInstruction instruction) {
             Location destination = _registerMap[instruction.Destination];
