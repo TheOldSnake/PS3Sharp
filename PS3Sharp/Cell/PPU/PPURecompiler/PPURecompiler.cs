@@ -157,7 +157,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
 
                 // Free executable pages
                 foreach (var allocation in AllocatedPages) {
-                    bool ok = VirtualFree((void*)allocation.Address, (int)allocation.Size, MEM_RELEASE);
+                    bool ok = VirtualFree((void*)allocation.Address, 0, MEM_RELEASE);
 
                     if (!ok) {
                         throw new Win32Exception();

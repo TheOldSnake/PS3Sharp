@@ -138,16 +138,7 @@ namespace PS3Sharp.Memory_Manager {
         }
 
         private static void FreeVirtualMemory(uint virtualAddress, uint size) {
-            if (GuestMemoryBase != null) {
-
-                nint address = (nint)((byte*)GuestMemoryBase + (nint)virtualAddress);
-                int ok = VirtualFree(address, size, MEM_RELEASE);
-
-                if (ok == 0) {
-                    int error = Marshal.GetLastWin32Error();
-                    throw new Exception($"[MemoryManager] Could not release guest memory, error: 0x{error:X8}");
-                }
-            }
+            DecommitMemory(virtualAddress, size);
         }
 
         private static void FreeVirtualMemory() {
