@@ -1,6 +1,8 @@
 ﻿using Iced.Intel;
+using System.Runtime.Intrinsics.Arm;
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRInstructions;
 using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator;
+using static Iced.Intel.AssemblerRegisters;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
     public static unsafe partial class x64Generator {
@@ -103,6 +105,455 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 asm.mov(dest, _registerMap[op1].GetRegister());
                 asm.not(dest);
             }
+        }
+
+        private static void IMulLD(Assembler asm, IRInstruction instruction) {
+            // Signed 64 × 64 → Low 64-bit
+
+            Location destination = _registerMap[instruction.Destination];
+            Value op1 = instruction.Operand1;
+            Value op2 = instruction.Operand2;
+
+            bool op1Const = _knownConstants.ContainsKey(op1);
+            bool op2Const = _knownConstants.ContainsKey(op2);
+
+            AssemblerRegister64 dest = destination.GetRegister();
+
+            if (op1Const) {
+                asm.mov(dest, _knownConstants[op1]);
+                AssemblerRegister64 op2Reg = _registerMap[op2].GetRegister();
+                asm.imul(dest, op2Reg);
+
+            } else if (op2Const) {
+                asm.mov(dest, _knownConstants[op2]);
+                AssemblerRegister64 op1Reg = _registerMap[op1].GetRegister();
+                asm.imul(dest, op1Reg);
+
+            } else {
+                AssemblerRegister64 op1Reg = _registerMap[op1].GetRegister();
+                AssemblerRegister64 op2Reg = _registerMap[op2].GetRegister();
+                asm.mov(dest, op1Reg);
+                asm.imul(dest, op2Reg);
+            }
+        }
+
+        private static void IMulHD(Assembler asm, IRInstruction instruction) {
+            // Signed 64 × 64 → High 64-bit
+
+            // Note: the existence of this opcode means that RAX and RDX are guaranteed to be free by the allocator
+
+            Location destination = _registerMap[instruction.Destination];
+            Value op1 = instruction.Operand1;
+            Value op2 = instruction.Operand2;
+
+            bool op1Const = _knownConstants.ContainsKey(op1);
+            bool op2Const = _knownConstants.ContainsKey(op2);
+
+            AssemblerRegister64 dest = destination.GetRegister();
+
+            // Use imul(reg) form
+
+            if (op1Const) {
+                asm.mov(rax, _knownConstants[op1]);
+                asm.imul(_registerMap[op2].GetRegister());
+
+            } else if (op2Const) {
+                asm.mov(rax, _knownConstants[op2]);
+                asm.imul(_registerMap[op1].GetRegister());
+
+            } else {
+                asm.mov(rax, _registerMap[op1].GetRegister());
+                asm.imul(_registerMap[op2].GetRegister());
+            }
+
+            // rdx contains high 64-bits
+            asm.mov(dest, rdx);
+        }
+
+        private static void MulHD(Assembler asm, IRInstruction instruction) {
+            // Unsigned 64 × 64 → High 64-bit
+
+            // Note: the existence of this opcode means that RAX and RDX are guaranteed to be free by the allocator
+
+            Location destination = _registerMap[instruction.Destination];
+            Value op1 = instruction.Operand1;
+            Value op2 = instruction.Operand2;
+
+            bool op1Const = _knownConstants.ContainsKey(op1);
+            bool op2Const = _knownConstants.ContainsKey(op2);
+
+            AssemblerRegister64 dest = destination.GetRegister();
+
+            // Use mul(reg) form
+
+            if (op1Const) {
+                asm.mov(rax, _knownConstants[op1]);
+                asm.mul(_registerMap[op2].GetRegister());
+
+            } else if (op2Const) {
+                asm.mov(rax, _knownConstants[op2]);
+                asm.mul(_registerMap[op1].GetRegister());
+
+            } else {
+                asm.mov(rax, _registerMap[op1].GetRegister());
+                asm.mul(_registerMap[op2].GetRegister());
+            }
+
+            // rdx contains high 64-bits
+            asm.mov(dest, rdx);
+        }
+
+        private static void IMulLW(Assembler asm, IRInstruction instruction) {
+            // Signed 32 × 32 → Full 64-bit
+
+            Location destination = _registerMap[instruction.Destination];
+            Value op1 = instruction.Operand1;
+            Value op2 = instruction.Operand2;
+
+            bool op1Const = _knownConstants.ContainsKey(op1);
+            bool op2Const = _knownConstants.ContainsKey(op2);
+
+            AssemblerRegister64 dest = destination.GetRegister();
+            AssemblerRegister64 temp = BorrowRegister(asm);
+
+            if (op1Const) {
+                long signExtended = (long)(int)_knownConstants[op1];
+                asm.mov(dest, signExtended);
+
+            } else {
+                AssemblerRegister64 op1Reg = _registerMap[op1].GetRegister();
+                asm.movsxd(dest, Reg64ToReg32(op1Reg));
+            }
+
+            if (op2Const) {
+                long signExtended = (long)(int)_knownConstants[op2];
+                asm.mov(temp, signExtended);
+
+            } else {
+                AssemblerRegister64 op2Reg = _registerMap[op2].GetRegister();
+                asm.movsxd(temp, Reg64ToReg32(op2Reg));
+            }
+
+            // No shift needed
+            asm.imul(dest, temp);
+
+            ReturnBorrowedRegister(asm, temp);
+        }
+
+        private static void IMulHW(Assembler asm, IRInstruction instruction) {
+            // Signed 32 × 32 → High 32-bit, Sign-Extended
+
+            Location destination = _registerMap[instruction.Destination];
+            Value op1 = instruction.Operand1;
+            Value op2 = instruction.Operand2;
+
+            bool op1Const = _knownConstants.ContainsKey(op1);
+            bool op2Const = _knownConstants.ContainsKey(op2);
+
+            AssemblerRegister64 dest = destination.GetRegister();
+            AssemblerRegister64 temp = BorrowRegister(asm);
+
+            if (op1Const) {
+                long signExtended = (long)(int)_knownConstants[op1];
+                asm.mov(dest, signExtended);
+
+            } else {
+                AssemblerRegister64 op1Reg = _registerMap[op1].GetRegister();
+                asm.movsxd(dest, Reg64ToReg32(op1Reg));
+            }
+
+            if (op2Const) {
+                long signExtended = (long)(int)_knownConstants[op2];
+                asm.mov(temp, signExtended);
+
+            } else {
+                AssemblerRegister64 op2Reg = _registerMap[op2].GetRegister();
+                asm.movsxd(temp, Reg64ToReg32(op2Reg));
+            }
+
+            asm.imul(dest, temp);
+            asm.sar(dest, 32);   // arithmetic shift
+
+            ReturnBorrowedRegister(asm, temp);
+        }
+
+        private static void MulHW(Assembler asm, IRInstruction instruction) {
+            // Unsigned 32 × 32 → High 32-bit, Zero-Extended
+
+            Location destination = _registerMap[instruction.Destination];
+            Value op1 = instruction.Operand1;
+            Value op2 = instruction.Operand2;
+
+            bool op1Const = _knownConstants.ContainsKey(op1);
+            bool op2Const = _knownConstants.ContainsKey(op2);
+
+            AssemblerRegister64 dest = destination.GetRegister();
+            AssemblerRegister64 temp = BorrowRegister(asm);
+
+            if (op1Const) {
+                uint zeroExtended = (uint)_knownConstants[op1];
+                asm.mov(dest, zeroExtended);
+
+            } else {
+                AssemblerRegister64 op1Reg = _registerMap[op1].GetRegister();
+                asm.mov(Reg64ToReg32(dest), Reg64ToReg32(op1Reg)); // automatic zero extend
+            }
+
+            if (op2Const) {
+                long signExtended = (long)(int)_knownConstants[op2];
+                asm.mov(temp, signExtended);
+
+            } else {
+                AssemblerRegister64 op2Reg = _registerMap[op2].GetRegister();
+                asm.mov(Reg64ToReg32(temp), Reg64ToReg32(op2Reg)); // automatic zero extend
+            }
+
+            asm.imul(dest, temp);
+            asm.shr(dest, 32);   // logical shift
+
+            ReturnBorrowedRegister(asm, temp);
+        }
+
+        private static void CheckedDivD(Assembler asm, IRInstruction instruction) {
+            // Unsigned 64/64, result -> 0 If denominator is zero
+
+            // Note: the existence of this opcode means that RAX and RDX are guaranteed to be free by the allocator
+
+            Location destination = _registerMap[instruction.Destination];
+            Value op1 = instruction.Operand1;
+            Value op2 = instruction.Operand2;
+
+            bool op1Const = _knownConstants.ContainsKey(op1);
+            bool op2Const = _knownConstants.ContainsKey(op2);
+
+            AssemblerRegister64 dest = destination.GetRegister();
+            Label zero = asm.CreateLabel();
+            Label done = asm.CreateLabel();
+
+            if (op2Const) {
+                // if denominator is constant we can check at compile time
+                if (_knownConstants[op2] == 0) {
+                    asm.mov(dest, 0);
+
+                } else {
+                    asm.mov(rax, _registerMap[op1].GetRegister());
+                    asm.mov(rdx, _knownConstants[op2]);
+                    asm.div(rdx);
+                    asm.mov(dest, rax); 
+                }
+
+                return;
+
+            } else if (op1Const) {
+                asm.mov(rax, _knownConstants[op1]);
+
+            } else {
+                asm.mov(rax, _registerMap[op1].GetRegister());
+            }
+
+            // runtime check is required
+            AssemblerRegister64 op2_reg = _registerMap[op2].GetRegister();
+
+            asm.test(op2_reg, op2_reg);
+            asm.jz(zero);
+
+            asm.div(op2_reg);
+            asm.mov(dest, rax);
+            asm.jmp(done);
+
+            asm.Label(ref zero);
+            asm.mov(dest, 0);
+
+            asm.Label(ref done);
+        }
+
+        private static void CheckedIDivD(Assembler asm, IRInstruction instruction) {
+            // Signed 64/64, result -> 0 If denominator is zero || (numerator is 0x8000_0000_0000_0000 && denominator is -1)
+
+            // Note: the existence of this opcode means that RAX and RDX are guaranteed to be free by the allocator
+
+            // TODO: Find a better way to do this
+
+            Location destination = _registerMap[instruction.Destination];
+            Value op1 = instruction.Operand1;
+            Value op2 = instruction.Operand2;
+
+            bool op1Const = _knownConstants.ContainsKey(op1);
+            bool op2Const = _knownConstants.ContainsKey(op2);
+
+            AssemblerRegister64 dest = destination.GetRegister();
+            Label div = asm.CreateLabel();
+            Label zero = asm.CreateLabel();
+            Label done = asm.CreateLabel();
+
+            if (op2Const && _knownConstants[op2] == 0) {
+                asm.xor(dest, dest);
+                return;
+            }
+
+            // Move numerator and denominator to rax and rdx
+            if (op1Const) {
+                asm.mov(rax, _knownConstants[op1]);
+            } else {
+                asm.mov(rax, _registerMap[op1].GetRegister());
+            }
+
+            if (op2Const) {
+                asm.mov(rdx, _knownConstants[op2]);
+            } else {
+                asm.mov(rdx, _registerMap[op2].GetRegister());
+            }
+
+            // Borrow 2 registers for comparisons
+            AssemblerRegister64 temp1 = BorrowRegister(asm);
+            AssemblerRegister64 temp2 = BorrowRegister(asm);
+
+            // Emit runtime check 
+            // denominator == 0 ?
+            asm.test(rdx, rdx); 
+            asm.jz(zero);
+
+            // rax == 0x8000_0000_0000_0000 ?
+            asm.mov(temp1, 0x8000_0000_0000_0000);
+            asm.cmp(rax, temp1);
+            asm.jnz(div);
+
+            // rdx == -1 ?
+            asm.mov(temp2, -1);
+            asm.cmp(rdx, temp1);
+            asm.jnz(div);
+            asm.jmp(zero);
+
+            asm.Label(ref div);
+            asm.idiv(rdx);
+            asm.mov(dest, rax);
+            asm.jmp(done);
+
+            asm.Label(ref zero);
+            asm.xor(dest, dest);
+
+            asm.Label(ref done);
+            ReturnBorrowedRegister(asm, temp2);
+            ReturnBorrowedRegister(asm, temp1);
+        }
+
+        private static void CheckedDivW(Assembler asm, IRInstruction instruction) {
+            // Unsigned 32/32, result -> 0 If denominator is zero
+
+            // Note: the existence of this opcode means that RAX and RDX are guaranteed to be free by the allocator
+
+            Location destination = _registerMap[instruction.Destination];
+            Value op1 = instruction.Operand1;
+            Value op2 = instruction.Operand2;
+
+            bool op1Const = _knownConstants.ContainsKey(op1);
+            bool op2Const = _knownConstants.ContainsKey(op2);
+
+            AssemblerRegister64 dest_64 = destination.GetRegister();
+            AssemblerRegister32 dest_32 = Reg64ToReg32(dest_64);
+
+            Label zero = asm.CreateLabel();
+            Label done = asm.CreateLabel();
+
+            if (op2Const) {
+                // if denominator is constant we can check at compile time
+                if (_knownConstants[op2] == 0) {
+                    asm.xor(dest_64, dest_64);
+
+                } else {
+                    asm.mov(eax, Reg64ToReg32(_registerMap[op1].GetRegister()));
+                    asm.mov(edx, (uint)_knownConstants[op2]);
+                    asm.div(edx);
+                    asm.mov(dest_32, eax);
+                }
+
+                return;
+
+            } else if (op1Const) {
+                asm.mov(eax, (uint)_knownConstants[op1]);
+
+            } else {
+                asm.mov(eax, Reg64ToReg32(_registerMap[op1].GetRegister()));
+            }
+
+            // runtime check is required
+            AssemblerRegister32 op2_32 = Reg64ToReg32(_registerMap[op2].GetRegister());
+
+            asm.test(op2_32, op2_32);
+            asm.jz(zero);
+
+            asm.div(op2_32);
+            asm.mov(dest_32, eax);
+            asm.jmp(done);
+
+            asm.Label(ref zero);
+            asm.xor(dest_64, dest_64);
+
+            asm.Label(ref done);
+        }
+
+        private static void CheckedIDivW(Assembler asm, IRInstruction instruction) {
+            // Signed 32/32, result -> 0 If denominator is zero || (numerator is 0x8000_0000 && denominator is -1)
+
+            // Note: the existence of this opcode means that RAX and RDX are guaranteed to be free by the allocator
+
+            Location destination = _registerMap[instruction.Destination];
+            Value op1 = instruction.Operand1;
+            Value op2 = instruction.Operand2;
+
+            bool op1Const = _knownConstants.ContainsKey(op1);
+            bool op2Const = _knownConstants.ContainsKey(op2);
+
+            AssemblerRegister64 dest_64 = destination.GetRegister();
+            AssemblerRegister32 dest_32 = Reg64ToReg32(dest_64);
+
+            Label div = asm.CreateLabel();
+            Label zero = asm.CreateLabel();
+            Label done = asm.CreateLabel();
+
+            if (op2Const && ((uint)_knownConstants[op2]) == 0) {
+                asm.xor(dest_64, dest_64);
+                return;
+            }
+
+            // Move numerator and denominator to eax and edx
+            if (op1Const) {
+                asm.mov(eax, (uint)_knownConstants[op1]);
+            } else {
+                asm.mov(eax, Reg64ToReg32(_registerMap[op1].GetRegister()));
+            }
+
+            if (op2Const) {
+                asm.mov(edx, (uint)_knownConstants[op2]);
+            } else {
+                asm.mov(edx, Reg64ToReg32(_registerMap[op2].GetRegister()));
+            }
+
+            // Emit runtime check 
+            // edx == 0 ?
+            asm.test(edx, edx);
+            asm.jz(zero);
+
+            // eax == 0x8000_0000 ?
+            asm.cmp(eax, 0x8000_0000);
+            asm.jnz(div);
+
+            // edx == -1 ?
+            asm.cmp(edx, -1);
+            asm.jnz(div);
+
+            asm.jmp(zero);
+
+            asm.Label(ref div);
+
+            asm.idiv(edx);
+            asm.mov(dest_32, eax); // zero extend
+            asm.jmp(done);
+
+            asm.Label(ref zero);
+            asm.xor(dest_64, dest_64);
+
+            asm.Label(ref done);
         }
 
         private static void ShiftLeft(Assembler asm, IRInstruction instruction) {

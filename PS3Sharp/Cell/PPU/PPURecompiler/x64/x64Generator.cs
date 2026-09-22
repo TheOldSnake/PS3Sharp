@@ -572,6 +572,47 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                     Sub(asm, instruction);
                     break;
 
+
+                case IR.IRInstructions.Op.IMulLD:
+                    IMulLD(asm, instruction);
+                    break;
+
+                case IR.IRInstructions.Op.IMulHD:
+                    IMulHD(asm, instruction);
+                    break;
+
+                case IR.IRInstructions.Op.MulHD:
+                    MulHD(asm, instruction);
+                    break;
+
+                case IR.IRInstructions.Op.IMulLW:
+                    IMulLW(asm, instruction);
+                    break;
+
+                case IR.IRInstructions.Op.IMulHW:
+                    IMulHW(asm, instruction);
+                    break;
+
+                case IR.IRInstructions.Op.MulHW:
+                    MulHW(asm, instruction);
+                    break;
+
+                case IR.IRInstructions.Op.CheckedDivD:
+                    CheckedDivD(asm, instruction);
+                    break;
+
+                case IR.IRInstructions.Op.CheckedIDivD:
+                    CheckedIDivD(asm, instruction);
+                    break;
+
+                case IR.IRInstructions.Op.CheckedDivW:
+                    CheckedDivW(asm, instruction);
+                    break;
+
+                case IR.IRInstructions.Op.CheckedIDivW:
+                    CheckedIDivW(asm, instruction);
+                    break;
+
                 case IR.IRInstructions.Op.ShiftLeft:
                     ShiftLeft(asm, instruction);
                     break;
