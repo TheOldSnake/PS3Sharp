@@ -1075,7 +1075,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 uint mask;
 
                 switch (destination.Type) {
-                    case Value.ValueType.I64: return;
+                    case Value.ValueType.I64: 
+                        return;
 
                     case Value.ValueType.I32: 
                         mask = uint.MaxValue;
