@@ -134,12 +134,56 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
                     result = constants[op1] + constants[op2];
                     break;
 
+                case IRInstructions.Op.Sub:
+                    result = constants[op1] - constants[op2];
+                    break;
+
                 case IRInstructions.Op.And:
                     result = constants[op1] & constants[op2];
                     break;
 
                 case IRInstructions.Op.Or:
                     result = constants[op1] | constants[op2];
+                    break;
+
+                case IRInstructions.Op.SetEq:
+                    result = constants[op1] == constants[op2] ? 1U : 0U;
+                    break;
+
+                case IRInstructions.Op.SetNotEq:
+                    result = constants[op1] != constants[op2] ? 1U : 0U;
+                    break;
+
+                case IRInstructions.Op.SetLessThanEqSigned:
+                    result = (long)constants[op1] <= (long)constants[op2] ? 1U : 0U;
+                    break;
+
+                case IRInstructions.Op.SetLessThanEqUnsigned:
+                    result = constants[op1] <= constants[op2] ? 1U : 0U;
+                    break;
+
+                case IRInstructions.Op.SetLessThanSigned:
+                    result = (long)constants[op1] < (long)constants[op2] ? 1U : 0U;
+                    break;
+
+                case IRInstructions.Op.SetLessThanUnsigned:
+                    result = constants[op1] < constants[op2] ? 1U : 0U;
+                    break;
+
+                case IRInstructions.Op.SetGreaterThanEqSigned:
+                    result = (long)constants[op1] >= (long)constants[op2] ? 1U : 0U;
+                    break;
+
+                case IRInstructions.Op.SetGreaterThanEqUnsigned:
+                    result = constants[op1] >= constants[op2] ? 1U : 0U;
+                    break;
+
+                case IRInstructions.Op.SetGreaterThanSigned:
+                    result = (long)constants[op1] > (long)constants[op2] ? 1U : 0U;
+                    break;
+
+                case IRInstructions.Op.SetGreaterThanUnsigned:
+                    result = constants[op1] > constants[op2] ? 1U : 0U;
                     break;
 
                 case IRInstructions.Op.RotateLeft:
