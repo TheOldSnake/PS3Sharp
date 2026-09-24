@@ -407,9 +407,6 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 asm.mov(rax, _registerMap[op1].GetRegister());
             }
 
-            // Sign extend rax into rdx:rax
-            asm.cqo();
-
             // Move denominator to dest
             if (op2Const) {
                 asm.mov(dest, _knownConstants[op2]);
@@ -417,8 +414,6 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 asm.mov(dest, _registerMap[op2].GetRegister());
             }
 
-            // Borrow a register to hold 0x8000_0000_0000_0000
-            AssemblerRegister64 temp = BorrowRegister(asm);
             AssemblerRegister64 denominator = dest;
 
             // Emit runtime check 
@@ -426,9 +421,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.test(denominator, denominator); 
             asm.jz(zero);
 
+            // use rdx to hold 0x8000_0000_0000_0000 temporarily for the check
             // numerator == 0x8000_0000_0000_0000 ?
-            asm.mov(temp, 0x8000_0000_0000_0000);
-            asm.cmp(rax, temp);
+            asm.mov(rdx, 0x8000_0000_0000_0000);
+            asm.cmp(rax, rdx);
             asm.jnz(div);
 
             // denominator == -1 ?
@@ -437,6 +433,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.jmp(zero);
 
             asm.Label(ref div);
+
+            asm.cqo();              // Sign extend rax into rdx:rax for the division
             asm.idiv(denominator);  // divide
             asm.mov(dest, rax);     // mov result
             asm.jmp(done);
@@ -445,7 +443,6 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.xor(dest, dest);
 
             asm.Label(ref done);
-            ReturnBorrowedRegister(asm, temp);
         }
 
         private static void CheckedDivW(Assembler asm, IRInstruction instruction) {
@@ -541,9 +538,6 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 asm.mov(eax, Reg64ToReg32(_registerMap[op1].GetRegister()));
             }
 
-            // Sign extend eax into edx:eax
-            asm.cdq();
-
             // use dest to hold denominator 
             if (op2Const) {
                 asm.mov(dest_32, (uint)_knownConstants[op2]);
@@ -570,6 +564,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             asm.Label(ref div);
 
+            asm.cdq();             // Sign extend eax into edx:eax for the division
             asm.idiv(denominator); // divide
             asm.mov(dest_32, eax); // mov result and zero extend
             asm.jmp(done);
