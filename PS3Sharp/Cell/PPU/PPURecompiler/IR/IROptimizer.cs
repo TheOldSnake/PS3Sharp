@@ -232,7 +232,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
                 bool op3Const = knownConstants.ContainsKey(op3);
 
 
-                if (op1Const && op2Const) {
+                if (operandsCount == 2 && op1Const && op2Const) {
                     // this should not happen here, the constant folding phase should have eliminated this
                     throw new Exception($"[IR Optimizer] Unexpected instruction with 2 constant operands");
                 }
