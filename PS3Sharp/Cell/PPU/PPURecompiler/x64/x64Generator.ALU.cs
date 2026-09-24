@@ -330,42 +330,45 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             Label zero = asm.CreateLabel();
             Label done = asm.CreateLabel();
 
-            // Zero the top 64-bit
+            // Special case that we can check at compile time
+            if (op2Const && _knownConstants[op2] == 0) {
+                asm.xor(dest, dest);
+                return;
+            }
+
+            // Actual division required 
+
+            // Zero the numerator top 64-bit
             asm.xor(rdx, rdx);
 
-            if (op2Const) {
-                // if denominator is constant we can check at compile time
-                if (_knownConstants[op2] == 0) {
-                    asm.mov(dest, 0);
-
-                } else {
-                    asm.mov(rax, _registerMap[op1].GetRegister());
-                    asm.mov(rdx, _knownConstants[op2]);
-                    asm.div(rdx);
-                    asm.mov(dest, rax); 
-                }
-
-                return;
-
-            } else if (op1Const) {
+            // Mov numerator to rax
+            if (op1Const) {
                 asm.mov(rax, _knownConstants[op1]);
-
             } else {
                 asm.mov(rax, _registerMap[op1].GetRegister());
             }
 
-            // runtime check is required
-            AssemblerRegister64 op2_reg = _registerMap[op2].GetRegister();
+            // if op2 is constant no runtime check is needed
+            if (op2Const) {
+                asm.mov(dest, _knownConstants[op2]);        // use dest to hold denominator
+                asm.div(dest);                              // divide
+                asm.mov(dest, rax);                         // mov result and zero extend
+                return;
+            }
 
-            asm.test(op2_reg, op2_reg);
+            // Othwewise a runtime check is required
+            AssemblerRegister64 denominator = _registerMap[op2].GetRegister();
+
+            // denominator == 0 ?
+            asm.test(denominator, denominator);
             asm.jz(zero);
 
-            asm.div(op2_reg);
-            asm.mov(dest, rax);
+            asm.div(denominator);       // divide
+            asm.mov(dest, rax);         // mov result and zero extend
             asm.jmp(done);
 
             asm.Label(ref zero);
-            asm.mov(dest, 0);
+            asm.xor(dest, dest);
 
             asm.Label(ref done);
         }
@@ -389,58 +392,60 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             Label zero = asm.CreateLabel();
             Label done = asm.CreateLabel();
 
+            // Special case that we can check at compile time
             if (op2Const && _knownConstants[op2] == 0) {
                 asm.xor(dest, dest);
                 return;
             }
 
-            // Zero the top 64-bit
-            asm.xor(rdx, rdx);
+            // Actual division required 
 
-            // Move numerator and denominator to rax and rdx
+            // Move numerator to rax
             if (op1Const) {
                 asm.mov(rax, _knownConstants[op1]);
             } else {
                 asm.mov(rax, _registerMap[op1].GetRegister());
             }
 
+            // Sign extend rax into rdx:rax
+            asm.cqo();
+
+            // Move denominator to dest
             if (op2Const) {
-                asm.mov(rdx, _knownConstants[op2]);
+                asm.mov(dest, _knownConstants[op2]);
             } else {
-                asm.mov(rdx, _registerMap[op2].GetRegister());
+                asm.mov(dest, _registerMap[op2].GetRegister());
             }
 
-            // Borrow 2 registers for comparisons
-            AssemblerRegister64 temp1 = BorrowRegister(asm);
-            AssemblerRegister64 temp2 = BorrowRegister(asm);
+            // Borrow a register to hold 0x8000_0000_0000_0000
+            AssemblerRegister64 temp = BorrowRegister(asm);
+            AssemblerRegister64 denominator = dest;
 
             // Emit runtime check 
             // denominator == 0 ?
-            asm.test(rdx, rdx); 
+            asm.test(denominator, denominator); 
             asm.jz(zero);
 
-            // rax == 0x8000_0000_0000_0000 ?
-            asm.mov(temp1, 0x8000_0000_0000_0000);
-            asm.cmp(rax, temp1);
+            // numerator == 0x8000_0000_0000_0000 ?
+            asm.mov(temp, 0x8000_0000_0000_0000);
+            asm.cmp(rax, temp);
             asm.jnz(div);
 
-            // rdx == -1 ?
-            asm.mov(temp2, -1);
-            asm.cmp(rdx, temp1);
+            // denominator == -1 ?
+            asm.cmp(denominator, -1);
             asm.jnz(div);
             asm.jmp(zero);
 
             asm.Label(ref div);
-            asm.idiv(rdx);
-            asm.mov(dest, rax);
+            asm.idiv(denominator);  // divide
+            asm.mov(dest, rax);     // mov result
             asm.jmp(done);
 
             asm.Label(ref zero);
             asm.xor(dest, dest);
 
             asm.Label(ref done);
-            ReturnBorrowedRegister(asm, temp2);
-            ReturnBorrowedRegister(asm, temp1);
+            ReturnBorrowedRegister(asm, temp);
         }
 
         private static void CheckedDivW(Assembler asm, IRInstruction instruction) {
@@ -461,38 +466,41 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             Label zero = asm.CreateLabel();
             Label done = asm.CreateLabel();
 
-            // Zero the top 64-bit
+            // Special case that we can check at compile time
+            if (op2Const && _knownConstants[op2] == 0) {
+                asm.xor(dest_64, dest_64);
+                return;
+            }
+
+            // Actual division required 
+
+            // Zero the top 64-bit of numerator
             asm.xor(rdx, rdx);
 
-            if (op2Const) {
-                // if denominator is constant we can check at compile time
-                if (_knownConstants[op2] == 0) {
-                    asm.xor(dest_64, dest_64);
-
-                } else {
-                    asm.mov(eax, Reg64ToReg32(_registerMap[op1].GetRegister()));
-                    asm.mov(edx, (uint)_knownConstants[op2]);
-                    asm.div(edx);
-                    asm.mov(dest_32, eax);
-                }
-
-                return;
-
-            } else if (op1Const) {
+            // Move numerator to eax
+            if (op1Const) {
                 asm.mov(eax, (uint)_knownConstants[op1]);
-
             } else {
                 asm.mov(eax, Reg64ToReg32(_registerMap[op1].GetRegister()));
             }
 
-            // runtime check is required
-            AssemblerRegister32 op2_32 = Reg64ToReg32(_registerMap[op2].GetRegister());
+            // if op2 is constant no runtime check is needed
+            if (op2Const) {
+                asm.mov(dest_32, (uint)_knownConstants[op2]);   // use dest to hold denominator
+                asm.div(dest_32);                               // divide
+                asm.mov(dest_32, eax);                          // mov result and zero extend
+                return;
+            }
 
-            asm.test(op2_32, op2_32);
+            // Othwewise a runtime check is required
+            AssemblerRegister32 denominator = Reg64ToReg32(_registerMap[op2].GetRegister());
+
+            // denominator == 0 ?
+            asm.test(denominator, denominator);
             asm.jz(zero);
 
-            asm.div(op2_32);
-            asm.mov(dest_32, eax);
+            asm.div(denominator);       // divide
+            asm.mov(dest_32, eax);      // mov result and zero extend
             asm.jmp(done);
 
             asm.Label(ref zero);
@@ -516,50 +524,54 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             AssemblerRegister64 dest_64 = destination.GetRegister();
             AssemblerRegister32 dest_32 = Reg64ToReg32(dest_64);
 
-            Label div = asm.CreateLabel();
-            Label zero = asm.CreateLabel();
-            Label done = asm.CreateLabel();
-
+            // Special case that we can check at compile time
             if (op2Const && ((uint)_knownConstants[op2]) == 0) {
                 asm.xor(dest_64, dest_64);
                 return;
             }
 
-            // Zero the top 64-bit
-            asm.xor(rdx, rdx);
+            Label div = asm.CreateLabel();
+            Label zero = asm.CreateLabel();
+            Label done = asm.CreateLabel();
 
-            // Move numerator and denominator to eax and edx
+            // Move numerator to eax
             if (op1Const) {
                 asm.mov(eax, (uint)_knownConstants[op1]);
             } else {
                 asm.mov(eax, Reg64ToReg32(_registerMap[op1].GetRegister()));
             }
 
+            // Sign extend eax into edx:eax
+            asm.cdq();
+
+            // use dest to hold denominator 
             if (op2Const) {
-                asm.mov(edx, (uint)_knownConstants[op2]);
+                asm.mov(dest_32, (uint)_knownConstants[op2]);
             } else {
-                asm.mov(edx, Reg64ToReg32(_registerMap[op2].GetRegister()));
+                asm.mov(dest_32, Reg64ToReg32(_registerMap[op2].GetRegister()));
             }
 
+            AssemblerRegister32 denominator = dest_32;
+
             // Emit runtime check 
-            // edx == 0 ?
-            asm.test(edx, edx);
+            // denominator == 0 ?
+            asm.test(denominator, denominator);
             asm.jz(zero);
 
-            // eax == 0x8000_0000 ?
+            // numerator == 0x8000_0000 ?
             asm.cmp(eax, 0x8000_0000);
             asm.jnz(div);
 
-            // edx == -1 ?
-            asm.cmp(edx, -1);
+            // denominator == -1 ?
+            asm.cmp(denominator, -1);
             asm.jnz(div);
 
             asm.jmp(zero);
 
             asm.Label(ref div);
 
-            asm.idiv(edx);
-            asm.mov(dest_32, eax); // zero extend
+            asm.idiv(denominator); // divide
+            asm.mov(dest_32, eax); // mov result and zero extend
             asm.jmp(done);
 
             asm.Label(ref zero);
