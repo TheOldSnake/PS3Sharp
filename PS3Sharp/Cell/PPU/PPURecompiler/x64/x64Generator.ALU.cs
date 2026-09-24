@@ -1071,25 +1071,50 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             AssemblerRegister64 destinationReg = _registerMap[instruction.Destination].GetRegister();
 
-            uint mask;
-
-            switch (destination.Type) {
-                case Value.ValueType.I64: return;
-
-                case Value.ValueType.I32: mask = uint.MaxValue; break;
-                case Value.ValueType.I16: mask = ushort.MaxValue; break;
-                case Value.ValueType.I8: mask = byte.MaxValue; break;
-
-                default: throw new Exception($"Unsupported truncate to {destination.Type}");
-            }
-
             if (_knownConstants.TryGetValue(instruction.Operand1, out ulong value)) {
+                uint mask;
+
+                switch (destination.Type) {
+                    case Value.ValueType.I64: return;
+
+                    case Value.ValueType.I32: 
+                        mask = uint.MaxValue;
+                        break;
+
+                    case Value.ValueType.I16: 
+                        mask = ushort.MaxValue; 
+                        break;
+
+                    case Value.ValueType.I8: 
+                        mask = byte.MaxValue; 
+                        break;
+
+                    default: throw new Exception($"Unsupported truncate to {destination.Type}");
+                }
+
                 asm.mov(destinationReg, value & mask);
 
             } else {
-                AssemblerRegister64 operandReg = _registerMap[instruction.Operand1].GetRegister();
-                asm.mov(destinationReg, operandReg);
-                asm.and(destinationReg, (int)mask);
+                AssemblerRegister64 operandReg = _registerMap[operand].GetRegister();
+
+                switch (destination.Type) {
+                    case Value.ValueType.I64:
+                        return;
+
+                    case Value.ValueType.I32:
+                        asm.mov(Reg64ToReg32(destinationReg), Reg64ToReg32(operandReg));
+                        break;
+
+                    case Value.ValueType.I16:
+                        asm.movzx(destinationReg, Reg64ToReg16(operandReg));
+                        break;
+
+                    case Value.ValueType.I8:
+                        asm.movzx(destinationReg, Reg64ToReg8(operandReg));
+                        break;
+
+                    default: throw new Exception($"Unsupported zero extend to {destination.Type}");
+                }
             }
         }
     }
