@@ -153,9 +153,11 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             void* state = ppuThread.State;
             int stackSlots = GetRequiredStackSlots();
             List<AssemblerRegister64> allocatedNonVolatileRegisters = GetNonVolatileMappedRegisters();
+           
             bool hasCalls = HasCalls(block.IRCode);
+            bool hasMemoryOp = HasMemoryOp(block.IRCode);
 
-            EmitBlockEntry(asm, stackSlots, state, allocatedNonVolatileRegisters);
+            EmitBlockEntry(asm, stackSlots, state, allocatedNonVolatileRegisters, hasMemoryOp);
 
             for (int i = 0; i < block.IRCode.Count; i++) {
                 IRToX64(asm, block.IRCode[i]);
@@ -215,7 +217,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             _currentStackOffset -= 8;
         }
 
-        private static void EmitBlockEntry(Assembler asm, int spillSlotCount, void* ppuState, List<AssemblerRegister64> nonVolatileRegs) {
+        private static void EmitBlockEntry(Assembler asm, int spillSlotCount, void* ppuState, List<AssemblerRegister64> nonVolatileRegs, bool hasMemoryOp) {
             int spillBytes = spillSlotCount * 8;
 
             // Stack bytes to push 
@@ -239,8 +241,11 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 asm.mov(rbp, rsp);              // RBP Points at array[0]
             }
 
-            asm.mov(rbx, (UIntPtr)ppuState);        
-            asm.mov(RegisterAllocator.MemoryBaseRegister, (UIntPtr)MemoryManager.GetGuestMemoryBase());
+            asm.mov(rbx, (UIntPtr)ppuState);
+
+            if (hasMemoryOp) {
+                asm.mov(RegisterAllocator.MemoryBaseRegister, (UIntPtr)MemoryManager.GetGuestMemoryBase());
+            }
 
             // Current offset includes the 8 bytes for the return address
             _currentStackOffset = 8 + pushedBytes + spillBytes;
@@ -292,12 +297,46 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             return false;
         }
 
+        private static bool HasMemoryOp(List<IRInstruction> instructions) {
+            for (int i = 0; i < instructions.Count; i++) {
+                if (IsMemoryOp(instructions[i])) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private static bool RequiresCall(IRInstruction instruction) {
             bool requresCall = 
                 instruction.Op == IR.IRInstructions.Op.Syscall || 
                 instruction.Op == IR.IRInstructions.Op.InterpreterFallback;
 
             return requresCall;
+        }
+
+        private static bool IsMemoryOp(IRInstruction instruction) {
+            bool isMemOp =
+                instruction.Op == IR.IRInstructions.Op.Load8 ||
+                instruction.Op == IR.IRInstructions.Op.Load16 ||
+                instruction.Op == IR.IRInstructions.Op.Load16Rev ||
+                instruction.Op == IR.IRInstructions.Op.Load32 ||
+                instruction.Op == IR.IRInstructions.Op.Load32Rev ||
+                instruction.Op == IR.IRInstructions.Op.Load32Rx ||
+                instruction.Op == IR.IRInstructions.Op.Load64 ||
+                instruction.Op == IR.IRInstructions.Op.Load64Rx ||
+                instruction.Op == IR.IRInstructions.Op.Load128 ||
+                instruction.Op == IR.IRInstructions.Op.Store8 ||
+                instruction.Op == IR.IRInstructions.Op.Store16 ||
+                instruction.Op == IR.IRInstructions.Op.Store16Rev ||
+                instruction.Op == IR.IRInstructions.Op.Store32 ||
+                instruction.Op == IR.IRInstructions.Op.Store32Rev ||
+                instruction.Op == IR.IRInstructions.Op.Store32CX ||
+                instruction.Op == IR.IRInstructions.Op.Store64 ||
+                instruction.Op == IR.IRInstructions.Op.Store64CX ||
+                instruction.Op == IR.IRInstructions.Op.Store128;
+
+            return isMemOp;
         }
 
         private static List<AssemblerRegister64> GetNonVolatileMappedRegisters() {
