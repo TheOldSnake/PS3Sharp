@@ -82,7 +82,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
         }
 
         public static IRBlock GenerateIRBlock(uint address) {
-            Console.WriteLine($"Generating IR - address = 0x{address:X8}");
+            // Console.WriteLine($"Generating IR - address = 0x{address:X8}");
             IRContext irContext = new IRContext(address);
 
             PPUInstruction instruction;
