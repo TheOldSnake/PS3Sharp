@@ -47,12 +47,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
            rax,
            rcx,
            rdx,
-        //  rbx, 
-        //  rsp,  
-        //  rbp,  
+           rbx, 
+           rsp,  
+           rbp,  
            rsi,
            rdi,
-        //  r8,   
+           r8,   
            r9,
            r10,
            r11,
@@ -118,12 +118,22 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
         }
 
         public static List<AssemblerRegister64> CreateRegisterPool(List<IRInstruction> code) {
-            // RAX and RDX are endabled by default
-            // but if the block needs any special multiply / divide instructions,
-            // we reserve them by removing them from the pool
 
+            // Initial list of all registers
             List<AssemblerRegister64> regs = new List<AssemblerRegister64>(StaticRegisterPool64);
 
+            // Remove registers that are reserved from the pool
+            regs.Remove(PPUStatePointer);
+            regs.Remove(StackPointer);
+            regs.Remove(SpillArrayPointer);
+
+            if (HasMemoryOp(code)) {
+                regs.Remove(MemoryBasePointer);
+            }
+
+            // RAX and RDX are enabled by default
+            // but if the block needs any special multiply / divide instructions,
+            // we reserve them by removing them from the pool
             bool shouldReserve = false;
 
             for (int i = 0; i < code.Count; i++) {
