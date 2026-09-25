@@ -213,7 +213,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 }
 
                 // Check if the register needs to be saved
-                if (!location.IsSpilled && StaticNonVolatileRegisterPool64.Contains(location.GetRegister())) {
+                if (!location.IsSpilled && IsVolatile(location.GetRegister())) {
 
                     // Ensure that we did not save already
                     if (!regs.Contains(location.GetRegister())) {
@@ -320,7 +320,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             AssemblerRegister64 reg = location.GetRegister();
 
-            if (StaticVolatileRegisterPool64.Contains(reg)) {
+            if (IsVolatile(reg)) {
 
                 if (!_inUseVolatileRegisters.Contains(reg)) {
                     _inUseVolatileRegisters.Add(reg);

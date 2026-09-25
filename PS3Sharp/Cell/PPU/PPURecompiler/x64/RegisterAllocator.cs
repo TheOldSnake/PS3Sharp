@@ -62,7 +62,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
            r15,
         ];
 
-        public static readonly AssemblerRegister64[] StaticNonVolatileRegisterPool64 = [
+        private static readonly AssemblerRegister64[] StaticNonVolatileRegisterPool64 = [
             rbx,
             rbp,
             rsi,
@@ -73,7 +73,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             r15,
         ];
 
-        public static readonly AssemblerRegister64[] StaticVolatileRegisterPool64 = [
+        private static readonly AssemblerRegister64[] StaticVolatileRegisterPool64 = [
             rax,
             rcx,
             rdx,
@@ -82,6 +82,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             r10,
             r11,
         ];
+
+        public static ReadOnlySpan<AssemblerRegister64> AllRegisters => StaticRegisterPool64;
+        public static ReadOnlySpan<AssemblerRegister64> AllNonVolatileRegisters => StaticNonVolatileRegisterPool64;
+        public static ReadOnlySpan<AssemblerRegister64> AllVolatileRegisters => StaticVolatileRegisterPool64;
 
         public static bool IsVolatile(AssemblerRegister64 reg) => StaticVolatileRegisterPool64.Contains(reg);
         public static bool IsNonVolatile(AssemblerRegister64 reg) => StaticNonVolatileRegisterPool64.Contains(reg);
