@@ -316,30 +316,6 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             return requresCall;
         }
 
-        private static bool IsMemoryOp(IRInstruction instruction) {
-            bool isMemOp =
-                instruction.Op == IR.IRInstructions.Op.Load8 ||
-                instruction.Op == IR.IRInstructions.Op.Load16 ||
-                instruction.Op == IR.IRInstructions.Op.Load16Rev ||
-                instruction.Op == IR.IRInstructions.Op.Load32 ||
-                instruction.Op == IR.IRInstructions.Op.Load32Rev ||
-                instruction.Op == IR.IRInstructions.Op.Load32Rx ||
-                instruction.Op == IR.IRInstructions.Op.Load64 ||
-                instruction.Op == IR.IRInstructions.Op.Load64Rx ||
-                instruction.Op == IR.IRInstructions.Op.Load128 ||
-                instruction.Op == IR.IRInstructions.Op.Store8 ||
-                instruction.Op == IR.IRInstructions.Op.Store16 ||
-                instruction.Op == IR.IRInstructions.Op.Store16Rev ||
-                instruction.Op == IR.IRInstructions.Op.Store32 ||
-                instruction.Op == IR.IRInstructions.Op.Store32Rev ||
-                instruction.Op == IR.IRInstructions.Op.Store32CX ||
-                instruction.Op == IR.IRInstructions.Op.Store64 ||
-                instruction.Op == IR.IRInstructions.Op.Store64CX ||
-                instruction.Op == IR.IRInstructions.Op.Store128;
-
-            return isMemOp;
-        }
-
         private static List<AssemblerRegister64> GetNonVolatileMappedRegisters() {
             List<AssemblerRegister64> regs = new();
 

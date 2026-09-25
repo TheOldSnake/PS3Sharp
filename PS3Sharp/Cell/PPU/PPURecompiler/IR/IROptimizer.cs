@@ -5,68 +5,6 @@ using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRInstructions;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
     public static class IROptimizer {
-        public static bool IsRegularStore(IRInstruction instruction) {
-            bool isStore = 
-                instruction.Op == IRInstructions.Op.Store8      ||
-                instruction.Op == IRInstructions.Op.Store16     ||
-                instruction.Op == IRInstructions.Op.Store16Rev  ||
-                instruction.Op == IRInstructions.Op.Store32     ||
-                instruction.Op == IRInstructions.Op.Store32Rev  ||
-                instruction.Op == IRInstructions.Op.Store32CX   ||
-                instruction.Op == IRInstructions.Op.Store64     ||
-                instruction.Op == IRInstructions.Op.Store64CX   || 
-                instruction.Op == IRInstructions.Op.Store128;
-
-            return isStore;
-        }
-
-        public static bool IsSpecialRegisterStore(IRInstruction instruction) {
-            bool isStore =
-                instruction.Op == IRInstructions.Op.GPRStore    ||
-                instruction.Op == IRInstructions.Op.FPRStore    ||
-                instruction.Op == IRInstructions.Op.CRStore     ||
-                instruction.Op == IRInstructions.Op.CTRStore    ||
-                instruction.Op == IRInstructions.Op.XERStore    ||
-                instruction.Op == IRInstructions.Op.LRStore     ||
-                instruction.Op == IRInstructions.Op.VRSaveStore ||
-                instruction.Op == IRInstructions.Op.PCStore;
-
-
-            return isStore;
-        }
-
-        public static bool IsSpecialRegisterLoad(IRInstruction instruction) {
-            bool isStore =
-                instruction.Op == IRInstructions.Op.GPRLoad ||
-                instruction.Op == IRInstructions.Op.FPRLoad ||
-                instruction.Op == IRInstructions.Op.CRLoad  ||
-                instruction.Op == IRInstructions.Op.CTRLoad ||
-                instruction.Op == IRInstructions.Op.XERLoad ||
-                instruction.Op == IRInstructions.Op.LRLoad  ||
-                instruction.Op == IRInstructions.Op.VRSaveLoad;
-
-
-            return isStore;
-        }
-
-        public static int GetNumberOfValidOperands(IRInstruction instruction) {
-            int operands = 0;
-
-            if (instruction.Operand1.IsValid) {
-                operands++;
-            }
-
-            if (instruction.Operand2.IsValid) {
-                operands++;
-            }
-
-            if (instruction.Operand3.IsValid) {
-                operands++;
-            }
-
-            return operands;
-        }
-
         public static Dictionary<Value, ulong> ConstantFold(IRContext ctx) {
             Dictionary<Value, ulong> constants = new Dictionary<Value, ulong>();
             List<IRInstruction> code = ctx.GetIRCode();

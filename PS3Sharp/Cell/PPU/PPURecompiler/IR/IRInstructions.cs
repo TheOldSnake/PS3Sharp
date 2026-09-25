@@ -5,245 +5,8 @@ using System.Text;
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
-    public static class IRInstructions {
-        public enum Op {
-            GPRLoad,
-            GPRStore,
-
-            FPRLoad,
-            FPRStore,
-
-            CRLoad,
-            CRStore,
-
-            CTRLoad,
-            CTRStore,
-
-            LRLoad,
-            LRStore,
-
-            XERLoad,
-            XERStore,
-
-            VRSaveLoad,
-            VRSaveStore,
-
-            PCStore,
-
-            Constant,
-
-            Add,
-            Sub,
-
-            IMulLD, // Signed 64x64 - takes low 64 of result
-            IMulHD, // Signed 64x64 - takes high 64 of result
-            IMulLW, // Signed 32x32 - takes low 32 of result
-            IMulHW, // Signed 32x32 - takes high 32 of result
-            MulHD,  // Unsigned 64x64 - takes high 64 of result
-            MulHW,  // Unsigned 32x32 - takes high 32 of result
-
-
-            // Checked divide instructions handle special cases
-            CheckedIDivD,   // Signed 64/64 
-            CheckedDivD,    // Unsigned 64/64 
-            CheckedIDivW,   // Signed 32/32 
-            CheckedDivW,    // Unsigned 32/32 
-
-            And,
-            Or,
-            Xor,
-            Nor,
-            Not,
-
-            ShiftLeft,
-            ShiftRight,
-            ShiftRightArithmetic,
-            RotateLeft,
-            RotateRight,
-
-            SetEq,
-            SetNotEq,
-            SetLessThanUnsigned,
-            SetLessThanEqUnsigned,
-            SetGreaterThanUnsigned,
-            SetGreaterThanEqUnsigned,
-            SetLessThanSigned,
-            SetLessThanEqSigned,
-            SetGreaterThanSigned,
-            SetGreaterThanEqSigned,
-
-            SignExtend,
-            ZeroExtend,
-            Truncate,
-
-            Select,
-
-            Load8,
-            Load16,
-            Load16Rev,
-            Load32,
-            Load32Rev,
-            Load32Rx,
-            Load64,
-            Load64Rx,
-            Load128,
-
-            Store8,
-            Store16,
-            Store16Rev,
-            Store32,
-            Store32Rev,
-            Store32CX,
-            Store64,
-            Store64CX,
-            Store128,
-
-            CNTLZ,  
-
-            Compare,
-
-            //Internal control flow inside IR, these are not for PPC branches
-            Branch,         
-            BranchConditional,
-
-            Syscall,
-            Phi,
-            InterpreterFallback,
-            Ret,
-        }
-
-        public struct IRInstruction {
-            public Op Op;
-
-            public ulong Immediate1;
-            public ulong Immediate2;
-            public ulong Immediate3;
-
-            public Value Operand1;
-            public Value Operand2;
-            public Value Operand3;
-            public Value Destination;
-
-            public static IRInstruction Create(Op op, Value destination, Value a = default, Value b = default, Value c = default, ulong constant1 = 0, ulong constant2 = 0, ulong constant3 = 0) {
-                return new IRInstruction {
-                    Op = op,
-                    Destination = destination,
-                    Operand1 = a,
-                    Operand2 = b,
-                    Operand3 = c,
-                    Immediate1 = constant1,
-                    Immediate2 = constant2,
-                    Immediate3 = constant3,
-                };
-            }
-
-            public static IRInstruction Create(Op op, Value destination, ulong constant1 = 0, ulong constant2 = 0, ulong constant3 = 0) {
-                return new IRInstruction {
-                    Op = op,
-                    Destination = destination,
-                    Immediate1 = constant1,
-                    Immediate2 = constant2,
-                    Immediate3 = constant3,
-                };
-            }
-        }
-
-        public readonly struct Value : IEquatable<Value> {
-            public enum ValueType {
-                None,
-                I8,
-                I16,
-                I32,
-                I64,
-                I128,
-                F32,
-                F64,
-                Vector128,
-            }
-
-            public readonly int Id = -1;
-            public readonly ValueType Type;
-
-            public bool IsValid => Id > 0;
-
-            public static Value Invalid => new Value(-1, ValueType.None);
-
-            public Value(int id, ValueType type) {
-                Id = id;
-                Type = type;
-            }
-
-            public static int GetValueSize(ValueType type) {
-                switch (type) {
-                    case ValueType.None: 
-                        return 0;
-
-                    case ValueType.I8:
-                        return 1;
-
-                    case ValueType.I16:
-                        return 2;
-                            
-                    case ValueType.I32: 
-                    case ValueType.F32: 
-                        return 4;
-
-                    case ValueType.I64: 
-                    case ValueType.F64: 
-                        return 8;
-
-                    case ValueType.I128: 
-                    case ValueType.Vector128: 
-                        return 16;
-
-                    default:
-                        return -1;
-                }
-            }
-
-            public static int GetBitCount(ValueType type) {
-                switch (type) {
-                    case ValueType.None: 
-                        return 0;
-
-                    case ValueType.I8:
-                        return 8;
-
-                    case ValueType.I16:
-                        return 16;
-
-                    case ValueType.I32: 
-                    case ValueType.F32: 
-                        return 32;
-
-                    case ValueType.I64: 
-                    case ValueType.F64: 
-                        return 64;
-
-                    case ValueType.I128: 
-                    case ValueType.Vector128: 
-                        return 128;
-
-                    default:
-                        return -1;
-                }
-            }
-            
-            public bool Equals(Value other) => Id == other.Id && Type == other.Type;
-            public override bool Equals(object? obj) => obj is Value other && Equals(other);
-            public override int GetHashCode() => Id;
-            public override string ToString() => $"v{Id}";
-
-
-            public static bool operator ==(Value left, Value right) {
-                return left.Equals(right);
-            }
-
-            public static bool operator !=(Value left, Value right) {
-                return !(left == right);
-            }
-        }
-
+    public static partial class IRInstructions {
+        // Helpers
         public static Value GPRLoad(IRContext ctx, ulong gprNumber) {
             Value value = ctx.CreateValue(Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(Op.GPRLoad, value, gprNumber);
@@ -823,5 +586,93 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             IRInstruction instruction = IRInstruction.Create(Op.Ret, default, 0);
             ctx.AddInstruction(instruction);
         }
+
+        public static bool IsRegularStore(IRInstruction instruction) {
+            bool isStore =
+                instruction.Op == IRInstructions.Op.Store8 ||
+                instruction.Op == IRInstructions.Op.Store16 ||
+                instruction.Op == IRInstructions.Op.Store16Rev ||
+                instruction.Op == IRInstructions.Op.Store32 ||
+                instruction.Op == IRInstructions.Op.Store32Rev ||
+                instruction.Op == IRInstructions.Op.Store32CX ||
+                instruction.Op == IRInstructions.Op.Store64 ||
+                instruction.Op == IRInstructions.Op.Store64CX ||
+                instruction.Op == IRInstructions.Op.Store128;
+
+            return isStore;
+        }
+
+        public static bool IsSpecialRegisterStore(IRInstruction instruction) {
+            bool isStore =
+                instruction.Op == IRInstructions.Op.GPRStore ||
+                instruction.Op == IRInstructions.Op.FPRStore ||
+                instruction.Op == IRInstructions.Op.CRStore ||
+                instruction.Op == IRInstructions.Op.CTRStore ||
+                instruction.Op == IRInstructions.Op.XERStore ||
+                instruction.Op == IRInstructions.Op.LRStore ||
+                instruction.Op == IRInstructions.Op.VRSaveStore ||
+                instruction.Op == IRInstructions.Op.PCStore;
+
+
+            return isStore;
+        }
+
+        public static bool IsSpecialRegisterLoad(IRInstruction instruction) {
+            bool isStore =
+                instruction.Op == IRInstructions.Op.GPRLoad ||
+                instruction.Op == IRInstructions.Op.FPRLoad ||
+                instruction.Op == IRInstructions.Op.CRLoad ||
+                instruction.Op == IRInstructions.Op.CTRLoad ||
+                instruction.Op == IRInstructions.Op.XERLoad ||
+                instruction.Op == IRInstructions.Op.LRLoad ||
+                instruction.Op == IRInstructions.Op.VRSaveLoad;
+
+
+            return isStore;
+        }
+
+
+        public static bool IsMemoryOp(IRInstruction instruction) {
+            bool isMemOp =
+                instruction.Op == IR.IRInstructions.Op.Load8 ||
+                instruction.Op == IR.IRInstructions.Op.Load16 ||
+                instruction.Op == IR.IRInstructions.Op.Load16Rev ||
+                instruction.Op == IR.IRInstructions.Op.Load32 ||
+                instruction.Op == IR.IRInstructions.Op.Load32Rev ||
+                instruction.Op == IR.IRInstructions.Op.Load32Rx ||
+                instruction.Op == IR.IRInstructions.Op.Load64 ||
+                instruction.Op == IR.IRInstructions.Op.Load64Rx ||
+                instruction.Op == IR.IRInstructions.Op.Load128 ||
+                instruction.Op == IR.IRInstructions.Op.Store8 ||
+                instruction.Op == IR.IRInstructions.Op.Store16 ||
+                instruction.Op == IR.IRInstructions.Op.Store16Rev ||
+                instruction.Op == IR.IRInstructions.Op.Store32 ||
+                instruction.Op == IR.IRInstructions.Op.Store32Rev ||
+                instruction.Op == IR.IRInstructions.Op.Store32CX ||
+                instruction.Op == IR.IRInstructions.Op.Store64 ||
+                instruction.Op == IR.IRInstructions.Op.Store64CX ||
+                instruction.Op == IR.IRInstructions.Op.Store128;
+
+            return isMemOp;
+        }
+
+        public static int GetNumberOfValidOperands(IRInstruction instruction) {
+            int operands = 0;
+
+            if (instruction.Operand1.IsValid) {
+                operands++;
+            }
+
+            if (instruction.Operand2.IsValid) {
+                operands++;
+            }
+
+            if (instruction.Operand3.IsValid) {
+                operands++;
+            }
+
+            return operands;
+        }
+
     }
 }
