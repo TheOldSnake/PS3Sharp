@@ -66,8 +66,6 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             EmitBlockExit(asm, allocatedNonVolatileRegisters, stackSlots, hasMemoryOp);
 
-            PrintNativeCode(asm);
-
             return AssembleBlock(asm);
         }
 

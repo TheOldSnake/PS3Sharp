@@ -82,10 +82,6 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
         }
 
         public static IRBlock GenerateIRBlock(uint address) {
-            //if (IsGenerated(address)) {
-            //    return null;
-            //}
-
             Console.WriteLine($"Generating IR - address = 0x{address:X8}");
             IRContext irContext = new IRContext(address);
 
@@ -107,13 +103,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
                 }
             }
 
-            //PrintIR(irContext);
-
             Dictionary<Value, ulong> constants = IROptimizer.ConstantFold(irContext);
             IROptimizer.CopyPropagation(irContext, constants);
-
-            Console.WriteLine("Final IR:");
-            PrintIR(irContext, constants);
 
             uint endAddress = irContext.CurrentPC - 4;
             int isSyscallExit = IsSyscall(instruction) ? 1 : 0;

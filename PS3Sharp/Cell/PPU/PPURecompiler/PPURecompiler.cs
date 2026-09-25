@@ -69,18 +69,22 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
             return &page[l2];
         }
 
-
+        public static ulong NumberOfCompiledBlocks = 0;
+        public static ulong NumberOfExecutedBlocks = 0;
+        public static ulong TotalAllocatedPages = 0;
         public void RunPPU(PPU ppu) {
 
             X64Block* block = GetOrCreateBlock(ppu.State->PC);
 
             if (block->Code == null) {
                 CompilePPCBlock(ppu, block);
+                NumberOfCompiledBlocks++;
             }
 
-             Console.WriteLine($"Executing block 0x{ppu.State->PC:X8}");
+            // Console.WriteLine($"Executing block 0x{ppu.State->PC:X8}");
 
             block->Code();
+            NumberOfExecutedBlocks++;
 
             if (block->IsSyscallExit == 1) {
                 SyscallHandler.HandleSyscall(ppu, 0);
@@ -91,7 +95,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
 
         private void CompilePPCBlock(PPU ppu, X64Block* nativeBlock) {
             // Generate IR
-            IRBlock block = IRGenerator.GenerateIRBlock(ppu.State->PC, ppu);
+            IRBlock block = IRGenerator.GenerateIRBlock(ppu.State->PC);
             nativeBlock->IsSyscallExit = block.IsSyscallExit;
 
             // Generate x64
@@ -129,6 +133,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
             CurrentPageEndAddress = (nuint)(memory + alignedSize);
             NextBlockAddress = CurrentPageStartAddress;
             AllocatedPages.Add((CurrentPageStartAddress, alignedSize));
+            TotalAllocatedPages++;
         }
 
         private bool HasEnoughMemory(int size) {
