@@ -23,8 +23,6 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             }
         }
 
-        public static Dictionary<uint, IRBlock> GeneratedBlocks = new();
-
         public static bool IsBranch(PPUInstruction instruction) {
             Op op = instruction.Op;
 
@@ -83,17 +81,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             return And(ctx, shiftedSource, ctx.One);
         }
 
-        public static bool IsGenerated(uint address) {
-            foreach (var block in GeneratedBlocks) { 
-                if(address >= block.Value.VirtualAddressStart && address <= block.Value.VirtualAddressEnd) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public static IRBlock GenerateIRBlock(uint address, PPU ppuThread) {
+        public static IRBlock GenerateIRBlock(uint address) {
             //if (IsGenerated(address)) {
             //    return null;
             //}
