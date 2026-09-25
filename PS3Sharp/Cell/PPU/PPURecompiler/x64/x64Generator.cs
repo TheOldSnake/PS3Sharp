@@ -164,7 +164,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 IRToX64(asm, block.IRCode[i]);
             }
 
-            EmitBlockExit(asm, allocatedNonVolatileRegisters, stackSlots);
+            EmitBlockExit(asm, allocatedNonVolatileRegisters, stackSlots, hasMemoryOp);
 
             PrintNativeCode(asm);
 
@@ -224,42 +224,47 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             // Stack bytes to push 
             int pushedBytes = 8 * (2 + nonVolatileRegs.Count);
 
-            // Padding needed so RSP is 16-byte aligned
-            // This padding includes pushes and subtracts 
-            // int padding = (16 - ((currentOffset + extraBytes) & 15)) & 15;
+            if (IsNonVolatile(PPUStatePointer)) {
+                asm.push(PPUStatePointer);
+            }
 
-            // No need to preserve R8
+            if (IsNonVolatile(SpillArrayPointer)) {
+                asm.push(SpillArrayPointer);
+            }
 
-            asm.push(rbx);
-            asm.push(rbp);
+            if (hasMemoryOp) {
+
+                if (IsNonVolatile(MemoryBasePointer)) {
+                    asm.push(MemoryBasePointer);
+                }
+
+                UIntPtr addr = (UIntPtr)MemoryManager.GetGuestMemoryBase();
+                asm.mov(MemoryBasePointer, addr);
+            }
 
             foreach (var reg in nonVolatileRegs) {
                 asm.push(reg);
             }
 
             if (spillBytes > 0) {
-                asm.sub(rsp, spillBytes);       // Allocate array for spill slots
-                asm.mov(rbp, rsp);              // RBP Points at array[0]
+                asm.sub(StackPointer, spillBytes);                     // Allocate array for spill slots
+                asm.mov(SpillArrayPointer, StackPointer);              // SpillArrayPointer Points at array[0]
             }
 
-            asm.mov(rbx, (UIntPtr)ppuState);
-
-            if (hasMemoryOp) {
-                asm.mov(RegisterAllocator.MemoryBaseRegister, (UIntPtr)MemoryManager.GetGuestMemoryBase());
-            }
+            asm.mov(PPUStatePointer, (UIntPtr)ppuState);
 
             // Current offset includes the 8 bytes for the return address
             _currentStackOffset = 8 + pushedBytes + spillBytes;
         }
 
-        private static void EmitBlockExit(Assembler asm, List<AssemblerRegister64> nonVolatileRegs, int spillSlotCount) {
+        private static void EmitBlockExit(Assembler asm, List<AssemblerRegister64> nonVolatileRegs, int spillSlotCount, bool hasMemoryOp) {
             // Reverse everything
 
             // Deallocate spill slots
             int spillBytes = spillSlotCount * 8;
 
             if (spillBytes > 0) {
-                asm.add(rsp, spillBytes);
+                asm.add(StackPointer, spillBytes);
             }
 
             // Pop pushed registers in reverse order
@@ -267,10 +272,19 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 asm.pop(nonVolatileRegs[i]);
             }
 
-            asm.pop(rbp);
-            asm.pop(rbx);
+            if (hasMemoryOp) {
+                if (IsNonVolatile(MemoryBasePointer)) {
+                    asm.pop(MemoryBasePointer);
+                }
+            }
 
-            // R8 is volatile
+            if (IsNonVolatile(SpillArrayPointer)) {
+                asm.pop(SpillArrayPointer);
+            }
+
+            if (IsNonVolatile(PPUStatePointer)) {
+                asm.pop(PPUStatePointer);
+            }
 
             asm.ret();
         }

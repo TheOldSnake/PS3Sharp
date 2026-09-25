@@ -39,11 +39,11 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             // PC is 32-bit
             if (_knownConstants.TryGetValue(src, out ulong value)) {
-                asm.mov(__dword_ptr[rbx + offset], (uint)value);
+                asm.mov(__dword_ptr[PPUStatePointer + offset], (uint)value);
             } else {
                 Location dest = _registerMap[instruction.Destination];
                 AssemblerRegister64 reg = dest.GetRegister();
-                asm.mov(__dword_ptr[rbx + offset], Reg64ToReg32(reg));
+                asm.mov(__dword_ptr[PPUStatePointer + offset], Reg64ToReg32(reg));
             }
         }
 
@@ -54,7 +54,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             AssemblerRegister64 reg = dest.GetRegister();
 
             // LR is 32-bit
-            asm.mov(reg, __dword_ptr[rbx + offset]);
+            asm.mov(reg, __dword_ptr[PPUStatePointer + offset]);
         }
 
         private static void LRStore(Assembler asm, IRInstruction instruction) {
@@ -63,12 +63,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             // LR is 32-bit
             if (_knownConstants.TryGetValue(src, out ulong value)) {
-                asm.mov(__dword_ptr[rbx + offset], (uint)value);
+                asm.mov(__dword_ptr[PPUStatePointer + offset], (uint)value);
 
             } else {
                 Location dest = _registerMap[instruction.Destination];
                 AssemblerRegister64 reg = dest.GetRegister();
-                asm.mov(__dword_ptr[rbx + offset], Reg64ToReg32(reg));
+                asm.mov(__dword_ptr[PPUStatePointer + offset], Reg64ToReg32(reg));
             }
         }
 
@@ -79,7 +79,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             AssemblerRegister64 reg = dest.GetRegister();
 
             // CR is 32-bit
-            asm.mov(reg, __dword_ptr[rbx + offset]);
+            asm.mov(reg, __dword_ptr[PPUStatePointer + offset]);
         }
 
         private static void CRStore(Assembler asm, IRInstruction instruction) {
@@ -88,12 +88,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             // CR is 32-bit
             if (_knownConstants.TryGetValue(src, out ulong value)) {
-                asm.mov(__dword_ptr[rbx + offset], (uint)value);
+                asm.mov(__dword_ptr[PPUStatePointer + offset], (uint)value);
 
             } else {
                 Location dest = _registerMap[instruction.Destination];
                 AssemblerRegister64 reg = dest.GetRegister();
-                asm.mov(__dword_ptr[rbx + offset], Reg64ToReg32(reg));
+                asm.mov(__dword_ptr[PPUStatePointer + offset], Reg64ToReg32(reg));
             }
         }
 
@@ -104,7 +104,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             AssemblerRegister64 reg = dest.GetRegister();
 
             // CTR is 64-bit
-            asm.mov(reg, __qword_ptr[rbx + offset]);
+            asm.mov(reg, __qword_ptr[PPUStatePointer + offset]);
         }
 
         private static void CTRStore(Assembler asm, IRInstruction instruction) {
@@ -113,11 +113,11 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             // CTR is 64-bit
             if (_knownConstants.TryGetValue(src, out ulong value)) {
-                MemoryWriteImm64(asm, __qword_ptr[rbx + offset], value, isBE: false);
+                MemoryWriteImm64(asm, __qword_ptr[PPUStatePointer + offset], value, isBE: false);
             } else {
                 Location dest = _registerMap[instruction.Destination];
                 AssemblerRegister64 reg = dest.GetRegister();
-                asm.mov(__dword_ptr[rbx + offset], reg);
+                asm.mov(__dword_ptr[PPUStatePointer + offset], reg);
             }
         }
 
@@ -128,7 +128,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             AssemblerRegister64 reg = dest.GetRegister();
 
             // XER is 64-bit
-            asm.mov(reg, __qword_ptr[rbx + offset]);
+            asm.mov(reg, __qword_ptr[PPUStatePointer + offset]);
         }
 
         private static void XERStore(Assembler asm, IRInstruction instruction) {
@@ -137,11 +137,11 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             // XER is 64-bit
             if (_knownConstants.TryGetValue(src, out ulong value)) {
-                MemoryWriteImm64(asm, __qword_ptr[rbx + offset], value, isBE: false);
+                MemoryWriteImm64(asm, __qword_ptr[PPUStatePointer + offset], value, isBE: false);
             } else {
                 Location dest = _registerMap[instruction.Destination];
                 AssemblerRegister64 reg = dest.GetRegister();
-                asm.mov(__dword_ptr[rbx + offset], reg);
+                asm.mov(__dword_ptr[PPUStatePointer + offset], reg);
             }
         }
 
@@ -152,7 +152,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             // Destination is always a register
             Location dest = _registerMap[instruction.Destination];
             AssemblerRegister64 reg = dest.GetRegister();
-            asm.mov(reg, __qword_ptr[rbx + gprOffset]);
+            asm.mov(reg, __qword_ptr[PPUStatePointer + gprOffset]);
         }
 
         private static void GPRStore(Assembler asm, IRInstruction instruction) {
@@ -162,11 +162,11 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             Value src = instruction.Destination;
 
             if (_knownConstants.TryGetValue(src, out ulong value)) {
-                MemoryWriteImm64(asm, __qword_ptr[rbx + gprOffset], value, isBE: false);
+                MemoryWriteImm64(asm, __qword_ptr[PPUStatePointer + gprOffset], value, isBE: false);
 
             } else {
                 AssemblerRegister64 reg = _registerMap[src].GetRegister();
-                asm.mov(__qword_ptr[rbx + gprOffset], reg);
+                asm.mov(__qword_ptr[PPUStatePointer + gprOffset], reg);
             }
         }
 
@@ -183,10 +183,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
         public static AssemblerMemoryOperand GetPointerImmOffset<T>(uint offset) where T: unmanaged {
             int size = sizeof(T);
             return size switch {
-                1 => __byte_ptr[MemoryBaseRegister + offset],
-                2 => __word_ptr[MemoryBaseRegister + offset],
-                4 => __dword_ptr[MemoryBaseRegister + offset],
-                8 => __qword_ptr[MemoryBaseRegister + offset],
+                1 => __byte_ptr[MemoryBasePointer + offset],
+                2 => __word_ptr[MemoryBasePointer + offset],
+                4 => __dword_ptr[MemoryBasePointer + offset],
+                8 => __qword_ptr[MemoryBasePointer + offset],
                 _ => throw new Exception($"[x64 Generator] Invalid pointer size = {size}"),
             };
         }
@@ -194,10 +194,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
         public static AssemblerMemoryOperand GetPointerRegOffset<T>(AssemblerRegister64 offset) where T: unmanaged {
             int size = sizeof(T);
             return size switch {
-                1 => __byte_ptr[MemoryBaseRegister + offset],
-                2 => __word_ptr[MemoryBaseRegister + offset],
-                4 => __dword_ptr[MemoryBaseRegister + offset],
-                8 => __qword_ptr[MemoryBaseRegister + offset],
+                1 => __byte_ptr[MemoryBasePointer + offset],
+                2 => __word_ptr[MemoryBasePointer + offset],
+                4 => __dword_ptr[MemoryBasePointer + offset],
+                8 => __qword_ptr[MemoryBasePointer + offset],
                 _ => throw new Exception($"[x64 Generator] Invalid pointer size = {size}"),
             };
         }

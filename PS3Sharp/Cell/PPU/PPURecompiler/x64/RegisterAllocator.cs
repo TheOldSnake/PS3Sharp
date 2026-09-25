@@ -38,18 +38,21 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        public static AssemblerRegister64 MemoryBaseRegister => r8;
+        public static AssemblerRegister64 PPUStatePointer => rbx;
+        public static AssemblerRegister64 StackPointer => rsp;
+        public static AssemblerRegister64 SpillArrayPointer => rbp;
+        public static AssemblerRegister64 MemoryBasePointer => r8;
 
         public static readonly AssemblerRegister64[] StaticRegisterPool64 = [   
            rax,
            rcx,
            rdx,
-        //  rbx,  // PPU State pointer
-        //  rsp,  // Current Stack pointer
-        //  rbp,  // Spill Array pointer
+        //  rbx, 
+        //  rsp,  
+        //  rbp,  
            rsi,
            rdi,
-        //  r8,   // Guest memory base pointer 
+        //  r8,   
            r9,
            r10,
            r11,
@@ -60,6 +63,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
         ];
 
         public static readonly AssemblerRegister64[] StaticNonVolatileRegisterPool64 = [
+            rbx,
+            rbp,
             rsi,
             rdi,
             r12,
@@ -72,11 +77,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             rax,
             rcx,
             rdx,
-           // r8, // Guest memory base pointer 
+            r8,
             r9,
             r10,
             r11,
         ];
+
+        public static bool IsVolatile(AssemblerRegister64 reg) => StaticVolatileRegisterPool64.Contains(reg);
+        public static bool IsNonVolatile(AssemblerRegister64 reg) => StaticNonVolatileRegisterPool64.Contains(reg);
 
         private static List<AssemblerRegister64> CurrentRegisterPool = new();
         private static bool _canAllocate => CurrentRegisterPool.Count > 0;
