@@ -43,7 +43,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
         public static AssemblerRegister64 SpillArrayPointer => rbp;
         public static AssemblerRegister64 MemoryBasePointer => r8;
 
-        public static readonly AssemblerRegister64[] StaticRegisterPool64 = [   
+        private static readonly AssemblerRegister64[] StaticRegisterPool64 = [   
            rax,
            rcx,
            rdx,
