@@ -269,6 +269,16 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
                 }
             }
 
+            public void WritebackFPRs() {
+                // Insert writeback after last instruction that writes to the value
+                for (uint i = 0; i < CurrentFPR.Length; i++) {
+                    if (CurrentFPR[i].IsValid) {
+                        int lastWrite = GetLastUseIndex(CurrentFPR[i]);
+                        FPRStore(this, CurrentFPR[i], i, lastWrite + 1);
+                    }
+                }
+            }
+
             public void WritebackSpecialRegister() {
                 // Insert writeback after last instruction that writes to the value
                 int lastWrite;
@@ -301,8 +311,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             public void TerminateBlock() {
                 WritebackGPRs();
-                // TODO: FPRs
-
+                WritebackFPRs();
                 WritebackSpecialRegister();
                 PCStore(this, ExitPC);
                 Return(this);
