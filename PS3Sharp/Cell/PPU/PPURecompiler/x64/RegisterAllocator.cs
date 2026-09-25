@@ -166,18 +166,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             AssignHostRegs(allocatedRegs, livenessList);
 
-            //Console.WriteLine($"Mapped Registers:");
-
-            foreach (var item in allocatedRegs) {
-                int id = item.Key.Id;
-                Location l = item.Value;
-
-                Console.WriteLine($"v{id}: {(l.IsSpilled ? $"SpillSlot({l.SpillSlot})" : $"{l.GetRegister().Value}")}");
-            }
-
             return allocatedRegs;
         }
-
 
         private static void AssignHostRegs(Dictionary<Value, Location> locations, List<Liveness> intervals) {
 
@@ -304,5 +294,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             livenessList.Add(liveness);
         }
 
+        private static void PrintRegisterMapping(Dictionary<Value, Location> allocatedRegs) {
+            Console.WriteLine($"Mapped Registers:");
+            foreach (var item in allocatedRegs) {
+                int id = item.Key.Id;
+                Location l = item.Value;
+
+                Console.WriteLine($"v{id}: {(l.IsSpilled ? $"SpillSlot({l.SpillSlot})" : $"{l.GetRegister().Value}")}");
+            }
+        }
     }
 }
