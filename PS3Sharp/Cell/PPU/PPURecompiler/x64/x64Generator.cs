@@ -27,11 +27,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 case Register.RAX: return eax;
                 case Register.RCX: return ecx;
                 case Register.RDX: return edx;
+                case Register.RBX: return ebx;
                 case Register.RSI: return esi;
                 case Register.RDI: return edi;
-
-               // case Register.R8: 
-
+                case Register.RBP: return ebp;
+                case Register.RSP: return esp;
+                case Register.R8: return r8d;
                 case Register.R9: return r9d;
                 case Register.R10: return r10d;
                 case Register.R11: return r11d;
@@ -54,9 +55,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 case Register.RDI: return dil;
                 case Register.RBP: return bpl;
                 case Register.RSP: return spl;
-
-                // case Register.R8: 
-
+                case Register.R8: return r8b;
                 case Register.R9: return r9b;
                 case Register.R10: return r10b;
                 case Register.R11: return r11b;
@@ -79,9 +78,6 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 case Register.RDI: return di;
                 case Register.RBP: return bp;
                 case Register.RSP: return sp;
-
-                // case Register.R8: 
-
                 case Register.R8: return r8w;
                 case Register.R9: return r9w;
                 case Register.R10: return r10w;
@@ -102,11 +98,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 case Register.EAX: return rax;
                 case Register.ECX: return rcx;
                 case Register.EDX: return rdx;
+                case Register.EBX: return rbx;
                 case Register.ESI: return rsi;
                 case Register.EDI: return rdi;
-
-                // case Register.R8D: 
-
+                case Register.EBP: return rbp;
+                case Register.ESP: return rsp;
+                case Register.R8D: return r8;
                 case Register.R9D: return r9;
                 case Register.R10D: return r10;
                 case Register.R11D: return r11;
@@ -114,10 +111,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 case Register.R13D: return r13;
                 case Register.R14D: return r14;
                 case Register.R15D: return r15;
+
                 default: throw new ArgumentOutOfRangeException(nameof(reg), reg, null);
             }
         }
-
 
         private static void PrintNativeCode(Assembler asm) {
             var stream = new MemoryStream();
