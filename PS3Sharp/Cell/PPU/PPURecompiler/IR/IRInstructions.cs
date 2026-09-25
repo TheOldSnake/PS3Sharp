@@ -656,6 +656,34 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             return isMemOp;
         }
 
+        public static bool HasCalls(List<IRInstruction> instructions) {
+            for (int i = 0; i < instructions.Count; i++) {
+                if (RequiresCall(instructions[i])) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool HasMemoryOp(List<IRInstruction> instructions) {
+            for (int i = 0; i < instructions.Count; i++) {
+                if (IsMemoryOp(instructions[i])) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool RequiresCall(IRInstruction instruction) {
+            bool requresCall =
+                instruction.Op == IR.IRInstructions.Op.Syscall ||
+                instruction.Op == IR.IRInstructions.Op.InterpreterFallback;
+
+            return requresCall;
+        }
+
         public static int GetNumberOfValidOperands(IRInstruction instruction) {
             int operands = 0;
 

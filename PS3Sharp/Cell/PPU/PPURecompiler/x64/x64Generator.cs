@@ -302,34 +302,6 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             return lastIndex + 1;
         }
 
-        private static bool HasCalls(List<IRInstruction> instructions) {
-            for (int i = 0; i < instructions.Count; i++) {
-                if (RequiresCall(instructions[i])) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private static bool HasMemoryOp(List<IRInstruction> instructions) {
-            for (int i = 0; i < instructions.Count; i++) {
-                if (IsMemoryOp(instructions[i])) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private static bool RequiresCall(IRInstruction instruction) {
-            bool requresCall = 
-                instruction.Op == IR.IRInstructions.Op.Syscall || 
-                instruction.Op == IR.IRInstructions.Op.InterpreterFallback;
-
-            return requresCall;
-        }
-
         private static List<AssemblerRegister64> GetNonVolatileMappedRegisters() {
             List<AssemblerRegister64> regs = new();
 
