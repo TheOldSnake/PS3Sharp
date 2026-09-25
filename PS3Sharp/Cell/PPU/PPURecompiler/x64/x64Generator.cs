@@ -138,7 +138,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
         private static Span<byte> AssembleBlock(Assembler asm) {
             var stream = new MemoryStream();
             var result = asm.Assemble(new StreamCodeWriter(stream), 0);
-            return stream.GetBuffer().AsSpan();
+            var buffer = stream.GetBuffer();
+            return buffer.AsSpan().Slice(0, (int)stream.Position);
         } 
 
         public static Span<byte> GenerateNativeCode(IRBlock block, PPU ppuThread) {
