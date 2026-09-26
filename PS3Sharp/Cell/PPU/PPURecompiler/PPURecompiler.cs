@@ -35,7 +35,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
         private const int Size = 1 << Bits;
         private const uint Mask = Size - 1;
         private X64Block*[] _blocks = new X64Block*[Size];
-		private x64Generator _x64Generator = new x64Generator();
+		private X64Generator _x64Generator = new X64Generator();
 
 		private nuint NextBlockAddress;
         private nuint CurrentPageStartAddress;
