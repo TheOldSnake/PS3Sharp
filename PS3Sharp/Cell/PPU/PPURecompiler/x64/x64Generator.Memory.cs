@@ -6,8 +6,8 @@ using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRInstructions;
 using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
-    public static unsafe partial class x64Generator {
-        private static void MemoryWriteImm64(Assembler asm, AssemblerMemoryOperand addr, ulong value, bool isBE) {
+    public unsafe partial class x64Generator {
+        private void MemoryWriteImm64(Assembler asm, AssemblerMemoryOperand addr, ulong value, bool isBE) {
             if (isBE) {
                 if (value != 0) {
                     BorrowAndWrite();
@@ -33,7 +33,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static void PCStore(Assembler asm, IRInstruction instruction) {
+        private void PCStore(Assembler asm, IRInstruction instruction) {
             Value src = instruction.Destination;
             int offset = GetPCOffset();
 
@@ -47,7 +47,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static void LRLoad(Assembler asm, IRInstruction instruction) {
+        private void LRLoad(Assembler asm, IRInstruction instruction) {
             // Destination is always a register
             Location dest = _registerMap[instruction.Destination];
             int offset = GetLROffset();
@@ -57,7 +57,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.mov(reg, __dword_ptr[PPUStatePointer + offset]);
         }
 
-        private static void LRStore(Assembler asm, IRInstruction instruction) {
+        private void LRStore(Assembler asm, IRInstruction instruction) {
             Value src = instruction.Destination;
             int offset = GetLROffset();
 
@@ -72,7 +72,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static void CRLoad(Assembler asm, IRInstruction instruction) {
+        private void CRLoad(Assembler asm, IRInstruction instruction) {
             // Destination is always a register
             Location dest = _registerMap[instruction.Destination];
             int offset = GetCROffset();
@@ -82,7 +82,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.mov(reg, __dword_ptr[PPUStatePointer + offset]);
         }
 
-        private static void CRStore(Assembler asm, IRInstruction instruction) {
+        private void CRStore(Assembler asm, IRInstruction instruction) {
             Value src = instruction.Destination;
             int offset = GetCROffset();
 
@@ -97,7 +97,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static void CTRLoad(Assembler asm, IRInstruction instruction) {
+        private void CTRLoad(Assembler asm, IRInstruction instruction) {
             // Destination is always a register
             Location dest = _registerMap[instruction.Destination];
             int offset = GetCTROffset();
@@ -107,7 +107,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.mov(reg, __qword_ptr[PPUStatePointer + offset]);
         }
 
-        private static void CTRStore(Assembler asm, IRInstruction instruction) {
+        private void CTRStore(Assembler asm, IRInstruction instruction) {
             Value src = instruction.Destination;
             int offset = GetCTROffset();
 
@@ -121,7 +121,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static void XERLoad(Assembler asm, IRInstruction instruction) {
+        private void XERLoad(Assembler asm, IRInstruction instruction) {
             // Destination is always a register
             Location dest = _registerMap[instruction.Destination];
             int offset = GetXEROffset();
@@ -131,7 +131,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.mov(reg, __qword_ptr[PPUStatePointer + offset]);
         }
 
-        private static void XERStore(Assembler asm, IRInstruction instruction) {
+        private void XERStore(Assembler asm, IRInstruction instruction) {
             Value src = instruction.Destination;
             int offset = GetXEROffset();
 
@@ -145,7 +145,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static void GPRLoad(Assembler asm, IRInstruction instruction) {
+        private void GPRLoad(Assembler asm, IRInstruction instruction) {
             int gpr = (int)instruction.Immediate1;
             int gprOffset = GetGPROffset(gpr);
 
@@ -155,7 +155,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.mov(reg, __qword_ptr[PPUStatePointer + gprOffset]);
         }
 
-        private static void GPRStore(Assembler asm, IRInstruction instruction) {
+        private void GPRStore(Assembler asm, IRInstruction instruction) {
             int gpr = (int)instruction.Immediate1;
             int gprOffset = GetGPROffset(gpr);
 
@@ -170,7 +170,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        public static AssemblerMemoryOperand GetPointer<T>(Value memoryAddress) where T: unmanaged {
+        public AssemblerMemoryOperand GetPointer<T>(Value memoryAddress) where T: unmanaged {
             if (_knownConstants.TryGetValue(memoryAddress, out ulong virtualAddress)) {
                 return GetPointerImmOffset<T>((uint)virtualAddress);
 
@@ -180,7 +180,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        public static AssemblerMemoryOperand GetPointerImmOffset<T>(uint offset) where T: unmanaged {
+        public AssemblerMemoryOperand GetPointerImmOffset<T>(uint offset) where T: unmanaged {
             int size = sizeof(T);
             return size switch {
                 1 => __byte_ptr[MemoryBasePointer + offset],
@@ -191,7 +191,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             };
         }
 
-        public static AssemblerMemoryOperand GetPointerRegOffset<T>(AssemblerRegister64 offset) where T: unmanaged {
+        public AssemblerMemoryOperand GetPointerRegOffset<T>(AssemblerRegister64 offset) where T: unmanaged {
             int size = sizeof(T);
             return size switch {
                 1 => __byte_ptr[MemoryBasePointer + offset],
@@ -202,7 +202,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             };
         }
 
-        private static void Store64(Assembler asm, IRInstruction instruction) {
+        private void Store64(Assembler asm, IRInstruction instruction) {
             Value memoryAddress = instruction.Destination;
             Value src = instruction.Operand1;
 
@@ -222,7 +222,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static void Load64(Assembler asm, IRInstruction instruction) {
+        private void Load64(Assembler asm, IRInstruction instruction) {
             Value memoryAddress = instruction.Operand1;
             AssemblerMemoryOperand src = GetPointer<ulong>(memoryAddress);
 
@@ -231,7 +231,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.movbe(_registerMap[instruction.Destination].GetRegister(), src);
         }
 
-        private static void Store32(Assembler asm, IRInstruction instruction) {
+        private void Store32(Assembler asm, IRInstruction instruction) {
             Value memoryAddress = instruction.Destination;
             Value src = instruction.Operand1;
 
@@ -251,7 +251,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static void Load32(Assembler asm, IRInstruction instruction) {
+        private void Load32(Assembler asm, IRInstruction instruction) {
             Value memoryAddress = instruction.Operand1;
             AssemblerMemoryOperand src = GetPointer<uint>(memoryAddress);
 
@@ -265,7 +265,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.movbe(dest32, src);
         }
 
-        private static void Store16(Assembler asm, IRInstruction instruction) {
+        private void Store16(Assembler asm, IRInstruction instruction) {
             Value memoryAddress = instruction.Destination;
             Value src = instruction.Operand1;
 
@@ -285,7 +285,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static void Load16(Assembler asm, IRInstruction instruction) {
+        private void Load16(Assembler asm, IRInstruction instruction) {
             Value memoryAddress = instruction.Operand1;
             AssemblerMemoryOperand src = GetPointer<ushort>(memoryAddress);
 
@@ -300,7 +300,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.movzx(dest64, dest16);
         }
 
-        private static void Store8(Assembler asm, IRInstruction instruction) {
+        private void Store8(Assembler asm, IRInstruction instruction) {
             Value memoryAddress = instruction.Destination;
             Value src = instruction.Operand1;
 
@@ -317,7 +317,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static void Load8(Assembler asm, IRInstruction instruction) {
+        private void Load8(Assembler asm, IRInstruction instruction) {
             Value memoryAddress = instruction.Operand1;
             AssemblerMemoryOperand src = GetPointer<byte>(memoryAddress);
 
@@ -327,7 +327,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
         }
     }
 
-    //public static void ComputeAddress(Assembler asm, AssemblerRegister64 addressReg, Value memoryAddress) {
+    //public void ComputeAddress(Assembler asm, AssemblerRegister64 addressReg, Value memoryAddress) {
     //    if (_knownConstants.TryGetValue(memoryAddress, out ulong virtualAddress)) {
     //        TranslateAddress(asm, addressReg, (uint)virtualAddress);
     //    } else {
@@ -337,7 +337,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
     //}
 
 
-    //public static void TranslateAddress(Assembler asm, AssemblerRegister64 destination, uint address) {
+    //public void TranslateAddress(Assembler asm, AssemblerRegister64 destination, uint address) {
     //    UIntPtr pageTable = (UIntPtr)MemoryManager.GetPageTable();
     //    uint page = address >> (int)Fastmem.PAGE_SHIFT;
     //    uint offset = address & (int)Fastmem.PAGE_MASK;
@@ -348,7 +348,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
     //    asm.add(destination, (int)offset);
     //}
 
-    //public static void TranslateAddress(Assembler asm, AssemblerRegister64 destination, AssemblerRegister64 address) {
+    //public void TranslateAddress(Assembler asm, AssemblerRegister64 destination, AssemblerRegister64 address) {
     //    // Save the original register as it's mapped to a guest register
     //    asm.push(address);
 

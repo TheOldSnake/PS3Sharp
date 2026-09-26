@@ -2,8 +2,8 @@
 using static Iced.Intel.AssemblerRegisters;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
-    public static partial class x64Generator {
-        private static AssemblerRegister32 Reg64ToReg32(AssemblerRegister64 reg) {
+    public partial class x64Generator {
+        private AssemblerRegister32 Reg64ToReg32(AssemblerRegister64 reg) {
             switch (reg.Value) {
                 case Register.RAX: return eax;
                 case Register.RCX: return ecx;
@@ -26,7 +26,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static AssemblerRegister8 Reg64ToReg8(AssemblerRegister64 reg) {
+        private AssemblerRegister8 Reg64ToReg8(AssemblerRegister64 reg) {
             switch (reg.Value) {
                 case Register.RAX: return al;
                 case Register.RCX: return cl;
@@ -49,7 +49,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static AssemblerRegister16 Reg64ToReg16(AssemblerRegister64 reg) {
+        private AssemblerRegister16 Reg64ToReg16(AssemblerRegister64 reg) {
             switch (reg.Value) {
                 case Register.RAX: return ax;
                 case Register.RCX: return cx;
@@ -74,7 +74,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
 
 
-        private static AssemblerRegister64 Reg32ToReg64(AssemblerRegister32 reg) {
+        private AssemblerRegister64 Reg32ToReg64(AssemblerRegister32 reg) {
             switch (reg.Value) {
                 case Register.EAX: return rax;
                 case Register.ECX: return rcx;

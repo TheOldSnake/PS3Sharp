@@ -35,8 +35,9 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
         private const int Size = 1 << Bits;
         private const uint Mask = Size - 1;
         private X64Block*[] _blocks = new X64Block*[Size];
+		private x64Generator _x64Generator = new x64Generator();
 
-        private nuint NextBlockAddress;
+		private nuint NextBlockAddress;
         private nuint CurrentPageStartAddress;
         private nuint CurrentPageEndAddress;
         private bool disposedValue;
@@ -99,7 +100,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
             nativeBlock->IsSyscallExit = block.IsSyscallExit;
 
             // Generate x64
-            Span<byte> nativeCode = x64Generator.GenerateNativeCode(block, ppu);
+            Span<byte> nativeCode = _x64Generator.GenerateNativeCode(block, ppu);
 
             if (!HasEnoughMemory(nativeCode.Length)) {
                 // Allocate executable memory

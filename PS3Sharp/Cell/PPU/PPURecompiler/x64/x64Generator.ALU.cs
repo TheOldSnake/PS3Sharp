@@ -5,18 +5,18 @@ using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator;
 using static Iced.Intel.AssemblerRegisters;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
-    public static unsafe partial class x64Generator {
-        private static void Add(Assembler asm, AssemblerRegister64 destReg, AssemblerRegister64 srcReg, ulong imm) {
+    public partial class x64Generator {
+        private void Add(Assembler asm, AssemblerRegister64 destReg, AssemblerRegister64 srcReg, ulong imm) {
             asm.mov(destReg, imm);
             asm.add(destReg, srcReg);
         }
 
-        private static void Add(Assembler asm, AssemblerRegister64 destReg, AssemblerRegister64 src1Reg, AssemblerRegister64 src2Reg) {
+        private void Add(Assembler asm, AssemblerRegister64 destReg, AssemblerRegister64 src1Reg, AssemblerRegister64 src2Reg) {
             asm.mov(destReg, src1Reg);
             asm.add(destReg, src2Reg);
         }
 
-        private static void CommutativeOp(Assembler asm, IRInstruction instruction) {
+        private void CommutativeOp(Assembler asm, IRInstruction instruction) {
             Location destination = _registerMap[instruction.Destination];
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -62,7 +62,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static void Sub(Assembler asm, IRInstruction instruction) {
+        private void Sub(Assembler asm, IRInstruction instruction) {
             Location destination = _registerMap[instruction.Destination];
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -91,7 +91,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static void Not(Assembler asm, IRInstruction instruction) {
+        private void Not(Assembler asm, IRInstruction instruction) {
             Location destination = _registerMap[instruction.Destination];
             Value op1 = instruction.Operand1;
             bool op1Const = _knownConstants.ContainsKey(op1);
@@ -107,7 +107,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static void IMulLD(Assembler asm, IRInstruction instruction) {
+        private void IMulLD(Assembler asm, IRInstruction instruction) {
             // Signed 64 × 64 → Low 64-bit
 
             Location destination = _registerMap[instruction.Destination];
@@ -137,7 +137,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static void IMulHD(Assembler asm, IRInstruction instruction) {
+        private void IMulHD(Assembler asm, IRInstruction instruction) {
             // Signed 64 × 64 → High 64-bit
 
             // Note: the existence of this opcode means that RAX and RDX are guaranteed to be free by the allocator
@@ -170,7 +170,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.mov(dest, rdx);
         }
 
-        private static void MulHD(Assembler asm, IRInstruction instruction) {
+        private void MulHD(Assembler asm, IRInstruction instruction) {
             // Unsigned 64 × 64 → High 64-bit
 
             // Note: the existence of this opcode means that RAX and RDX are guaranteed to be free by the allocator
@@ -203,7 +203,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.mov(dest, rdx);
         }
 
-        private static void IMulLW(Assembler asm, IRInstruction instruction) {
+        private void IMulLW(Assembler asm, IRInstruction instruction) {
             // Signed 32 × 32 → Full 64-bit
 
             Location destination = _registerMap[instruction.Destination];
@@ -240,7 +240,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             ReturnBorrowedRegister(asm, temp);
         }
 
-        private static void IMulHW(Assembler asm, IRInstruction instruction) {
+        private void IMulHW(Assembler asm, IRInstruction instruction) {
             // Signed 32 × 32 → High 32-bit, Sign-Extended
 
             Location destination = _registerMap[instruction.Destination];
@@ -277,7 +277,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             ReturnBorrowedRegister(asm, temp);
         }
 
-        private static void MulHW(Assembler asm, IRInstruction instruction) {
+        private void MulHW(Assembler asm, IRInstruction instruction) {
             // Unsigned 32 × 32 → High 32-bit, Zero-Extended
 
             Location destination = _registerMap[instruction.Destination];
@@ -314,7 +314,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             ReturnBorrowedRegister(asm, temp);
         }
 
-        private static void CheckedDivD(Assembler asm, IRInstruction instruction) {
+        private void CheckedDivD(Assembler asm, IRInstruction instruction) {
             // Unsigned 64/64, result -> 0 If denominator is zero
 
             // Note: the existence of this opcode means that RAX and RDX are guaranteed to be free by the allocator
@@ -373,7 +373,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.Label(ref done);
         }
 
-        private static void CheckedIDivD(Assembler asm, IRInstruction instruction) {
+        private void CheckedIDivD(Assembler asm, IRInstruction instruction) {
             // Signed 64/64, result -> 0 If denominator is zero || (numerator is 0x8000_0000_0000_0000 && denominator is -1)
 
             // Note: the existence of this opcode means that RAX and RDX are guaranteed to be free by the allocator
@@ -445,7 +445,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.Label(ref done);
         }
 
-        private static void CheckedDivW(Assembler asm, IRInstruction instruction) {
+        private void CheckedDivW(Assembler asm, IRInstruction instruction) {
             // Unsigned 32/32, result -> 0 If denominator is zero
 
             // Note: the existence of this opcode means that RAX and RDX are guaranteed to be free by the allocator
@@ -506,7 +506,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.Label(ref done);
         }
 
-        private static void CheckedIDivW(Assembler asm, IRInstruction instruction) {
+        private void CheckedIDivW(Assembler asm, IRInstruction instruction) {
             // Signed 32/32, result -> 0 If denominator is zero || (numerator is 0x8000_0000 && denominator is -1)
 
             // Note: the existence of this opcode means that RAX and RDX are guaranteed to be free by the allocator
@@ -575,7 +575,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.Label(ref done);
         }
 
-        private static void ShiftLeft(Assembler asm, IRInstruction instruction) {
+        private void ShiftLeft(Assembler asm, IRInstruction instruction) {
             Location destination = _registerMap[instruction.Destination];
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -598,7 +598,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static void ShiftRight(Assembler asm, IRInstruction instruction, bool arithmetic) {
+        private void ShiftRight(Assembler asm, IRInstruction instruction, bool arithmetic) {
             Location destination = _registerMap[instruction.Destination];
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -631,7 +631,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static void RotateLeft(Assembler asm, IRInstruction instruction) {
+        private void RotateLeft(Assembler asm, IRInstruction instruction) {
             Location destination = _registerMap[instruction.Destination];
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -656,7 +656,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static void RotateRight(Assembler asm, IRInstruction instruction) {
+        private void RotateRight(Assembler asm, IRInstruction instruction) {
             Location destination = _registerMap[instruction.Destination];
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -681,7 +681,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private static void SetEq(Assembler asm, IRInstruction instruction) {
+        private void SetEq(Assembler asm, IRInstruction instruction) {
             Location destination = _registerMap[instruction.Destination];
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -711,7 +711,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.movzx(dest, Reg64ToReg8(dest));
         }
 
-        private static void SetNotEq(Assembler asm, IRInstruction instruction) {
+        private void SetNotEq(Assembler asm, IRInstruction instruction) {
             Location destination = _registerMap[instruction.Destination];
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -741,7 +741,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.movzx(dest, Reg64ToReg8(dest));
         }
 
-        private static void SetLessThan(Assembler asm, IRInstruction instruction, bool signed) {
+        private void SetLessThan(Assembler asm, IRInstruction instruction, bool signed) {
             Location destination = _registerMap[instruction.Destination];
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -776,7 +776,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.movzx(dest, Reg64ToReg8(dest));
         }
 
-        private static void SetGreaterThan(Assembler asm, IRInstruction instruction, bool signed) {
+        private void SetGreaterThan(Assembler asm, IRInstruction instruction, bool signed) {
             Location destination = _registerMap[instruction.Destination];
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -811,7 +811,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.movzx(dest, Reg64ToReg8(dest));
         }
 
-        private static void SetLessThanEq(Assembler asm, IRInstruction instruction, bool signed) {
+        private void SetLessThanEq(Assembler asm, IRInstruction instruction, bool signed) {
             Location destination = _registerMap[instruction.Destination];
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -846,7 +846,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.movzx(dest, Reg64ToReg8(dest));
         }
 
-        private static void SetGreaterThanEq(Assembler asm, IRInstruction instruction, bool signed) {
+        private void SetGreaterThanEq(Assembler asm, IRInstruction instruction, bool signed) {
             Location destination = _registerMap[instruction.Destination];
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -881,7 +881,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.movzx(dest, Reg64ToReg8(dest));
         }
 
-        private static void Select(Assembler asm, IRInstruction instruction) {
+        private void Select(Assembler asm, IRInstruction instruction) {
             Label done = asm.CreateLabel();
 
             Location destination = _registerMap[instruction.Destination];
@@ -923,7 +923,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.Label(ref done);
         }
 
-        public static void ZeroExtend(Assembler asm, IRInstruction instruction) {
+        public void ZeroExtend(Assembler asm, IRInstruction instruction) {
             Value destination = instruction.Destination;
             Value operand = instruction.Operand1;
 
@@ -952,7 +952,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        public static void ZeroExtendTo64(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand) {
+        public void ZeroExtendTo64(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand) {
             switch (operandType) {
                 case Value.ValueType.I8:
                     asm.movzx(dest, Reg64ToReg8(operand));
@@ -970,7 +970,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        public static void ZeroExtendTo32(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand) {
+        public void ZeroExtendTo32(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand) {
             switch (operandType) {
                 case Value.ValueType.I8:
                     asm.movzx(Reg64ToReg32(dest), Reg64ToReg8(operand));
@@ -984,7 +984,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        public static void ZeroExtendTo16(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand) {
+        public void ZeroExtendTo16(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand) {
             switch (operandType) {
                 case Value.ValueType.I8:
                     asm.movzx(Reg64ToReg16(dest), Reg64ToReg8(operand));
@@ -994,7 +994,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        public static void SignExtend(Assembler asm, IRInstruction instruction) {
+        public void SignExtend(Assembler asm, IRInstruction instruction) {
             Value destination = instruction.Destination;
             Value operand = instruction.Operand1;
 
@@ -1023,7 +1023,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        public static void SignExtendTo64(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand) {
+        public void SignExtendTo64(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand) {
             switch (operandType) {
                 case Value.ValueType.I8:
                     asm.movsx(dest, Reg64ToReg8(operand));
@@ -1041,7 +1041,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        public static void SignExtendTo32(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand) {
+        public void SignExtendTo32(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand) {
             switch (operandType) {
                 case Value.ValueType.I8:
                     asm.movsx(Reg64ToReg32(dest), Reg64ToReg8(operand));
@@ -1055,7 +1055,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        public static void SignExtendTo16(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand) {
+        public void SignExtendTo16(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand) {
             switch (operandType) {
                 case Value.ValueType.I8:
                     asm.movsx(Reg64ToReg16(dest), Reg64ToReg8(operand));
@@ -1065,7 +1065,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        public static void Truncate(Assembler asm, IRInstruction instruction) {
+        public void Truncate(Assembler asm, IRInstruction instruction) {
             Value destination = instruction.Destination;
             Value operand = instruction.Operand1;
 
