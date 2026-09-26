@@ -5,7 +5,7 @@ using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator;
 using static Iced.Intel.AssemblerRegisters;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
-    public partial class x64Generator {
+    public partial class X64Generator {
         private void Add(Assembler asm, AssemblerRegister64 destReg, AssemblerRegister64 srcReg, ulong imm) {
             asm.mov(destReg, imm);
             asm.add(destReg, srcReg);

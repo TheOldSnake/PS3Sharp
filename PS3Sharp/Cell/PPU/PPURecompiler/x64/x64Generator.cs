@@ -9,7 +9,7 @@ using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRInstructions;
 using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
-    public unsafe partial class x64Generator {
+    public unsafe partial class X64Generator {
         private int _currentStackOffset = 0;                                // Current stack offset in bytes
         private List<AssemblerRegister64> _staticBorrowPool = new();        // List of all borrowable registers for this block
         private Stack<AssemblerRegister64> _borrowedRegisters = new();      // Currently borrowed registers by the current instruction operands/handler
@@ -75,12 +75,6 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             _inUseVolatileRegisters.Clear();
             _staticBorrowPool.Clear();
         }
-
-        private int Padding16(int offset) {
-            // Returns the padding needed to be 16-byte aligned
-            return (16 - (offset & 15)) & 15;
-        }
-
 
         private AssemblerRegister64 BorrowRegister(Assembler asm) {
             for (int i = 0; i < _staticBorrowPool.Count; i++) {
