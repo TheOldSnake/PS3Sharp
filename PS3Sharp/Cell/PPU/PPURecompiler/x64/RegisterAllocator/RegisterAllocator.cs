@@ -130,7 +130,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             ResetAllocatorState();
             CurrentRegisterPool = CreateRegisterPool(code);
 
-            List<Liveness> livenessList = BuildLivenessDictionary(code, knownConstants);
+            List<Liveness> livenessList = BuildLivenessList(code, knownConstants);
             Dictionary<Value, Location> allocatedRegs = new();
 
             AssignHostRegs(allocatedRegs, livenessList);
@@ -222,7 +222,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             currentActiveIntervals.Add(location);
         }
 
-        private List<Liveness> BuildLivenessDictionary(List<IRInstruction> code, Dictionary<Value, ulong> knownConstants) {
+        private List<Liveness> BuildLivenessList(List<IRInstruction> code, Dictionary<Value, ulong> knownConstants) {
             List<Liveness> livenessList = new();
 
             for (int i = 0; i < code.Count; i++) {
