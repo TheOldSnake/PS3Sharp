@@ -2,99 +2,67 @@
 using static Iced.Intel.AssemblerRegisters;
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRInstructions;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
-    public static class RegisterAllocator {
-        public class Liveness {
-            public Value Value;
-            public int FirstUse;
-            public int LastUse;
-        }
+namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
+    public static partial class RegisterAllocator {
 
-        public class Location {
-            public Liveness Liveness { get; }
-            private AssemblerRegister64? Register { get; set; }
-            public int SpillSlot { get; set; } = -1;
+        // Register pools
+		private static readonly AssemblerRegister64[] StaticRegisterPool64 = [
+		   rax,
+		   rcx,
+		   rdx,
+		   rbx,
+		   rsp,
+		   rbp,
+		   rsi,
+		   rdi,
+		   r8,
+		   r9,
+		   r10,
+		   r11,
+		   r12,
+		   r13,
+		   r14,
+		   r15,
+		];
 
-            public bool IsSpilled => SpillSlot >= 0;
-            public Value Value => Liveness.Value;
-            public Location(Liveness liveness) {
-                Liveness = liveness;
-            }
+		private static readonly AssemblerRegister64[] StaticNonVolatileRegisterPool64 = [
+			rbx,
+			rbp,
+			rsi,
+			rdi,
+			r12,
+			r13,
+			r14,
+			r15,
+		];
 
-            public AssemblerRegister64 GetRegister() {
-                if (Register != null) {
-                    return Register.Value;
-                } else {
-                    throw new Exception("No register was assigned");
-                }
-            }
+		private static readonly AssemblerRegister64[] StaticVolatileRegisterPool64 = [
+			rax,
+			rcx,
+			rdx,
+			r8,
+			r9,
+			r10,
+			r11,
+		];
 
-            public void AssignRegister(AssemblerRegister64 register) { 
-                Register = register;
-            }
-
-            public void UnassignRegister() {
-                Register = null;
-            }
-        }
-
-        public static AssemblerRegister64 PPUStatePointer => rbx;
+		public static AssemblerRegister64 PPUStatePointer => rbx;
         public static AssemblerRegister64 StackPointer => rsp;
         public static AssemblerRegister64 SpillArrayPointer => rbp;
         public static AssemblerRegister64 MemoryBasePointer => r8;
-
-        private static readonly AssemblerRegister64[] StaticRegisterPool64 = [   
-           rax,
-           rcx,
-           rdx,
-           rbx, 
-           rsp,  
-           rbp,  
-           rsi,
-           rdi,
-           r8,   
-           r9,
-           r10,
-           r11,
-           r12,
-           r13,
-           r14,
-           r15,
-        ];
-
-        private static readonly AssemblerRegister64[] StaticNonVolatileRegisterPool64 = [
-            rbx,
-            rbp,
-            rsi,
-            rdi,
-            r12,
-            r13,
-            r14,
-            r15,
-        ];
-
-        private static readonly AssemblerRegister64[] StaticVolatileRegisterPool64 = [
-            rax,
-            rcx,
-            rdx,
-            r8,
-            r9,
-            r10,
-            r11,
-        ];
 
         public static ReadOnlySpan<AssemblerRegister64> AllRegisters => StaticRegisterPool64;
         public static ReadOnlySpan<AssemblerRegister64> AllNonVolatileRegisters => StaticNonVolatileRegisterPool64;
         public static ReadOnlySpan<AssemblerRegister64> AllVolatileRegisters => StaticVolatileRegisterPool64;
 
-        public static bool IsVolatile(AssemblerRegister64 reg) => StaticVolatileRegisterPool64.Contains(reg);
-        public static bool IsNonVolatile(AssemblerRegister64 reg) => StaticNonVolatileRegisterPool64.Contains(reg);
-
         private static List<AssemblerRegister64> CurrentRegisterPool = new();
         private static bool _canAllocate => CurrentRegisterPool.Count > 0;
         private static int _spillIndex = 0;
 
-        private static AssemblerRegister64 RequestRegister64() {
+		public static bool IsVolatile(AssemblerRegister64 reg) => StaticVolatileRegisterPool64.Contains(reg);
+		public static bool IsNonVolatile(AssemblerRegister64 reg) => StaticNonVolatileRegisterPool64.Contains(reg);
+
+		private static AssemblerRegister64 RequestRegister64() {
             AssemblerRegister64 reg = CurrentRegisterPool[0];
             CurrentRegisterPool.Remove(reg);
             return reg;

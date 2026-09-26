@@ -1,7 +1,7 @@
 ﻿using Iced.Intel;
 using System.Runtime.Intrinsics.Arm;
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRInstructions;
-using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator;
+using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAllocator;
 using static Iced.Intel.AssemblerRegisters;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
