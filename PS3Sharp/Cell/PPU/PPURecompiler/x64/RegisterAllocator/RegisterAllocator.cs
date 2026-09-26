@@ -1,6 +1,7 @@
 ﻿using Iced.Intel;
 using static Iced.Intel.AssemblerRegisters;
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
+using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAllocator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
     public partial class RegisterAllocator {
@@ -138,64 +139,87 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
         }
 
         private void AssignHostRegs(Dictionary<Value, Location> locations, List<Liveness> intervals) {
-
             // Values that currently occupy host registers.
-            List<Location> active = new();
+            List<Location> currentActiveIntervals = new();
 
-            foreach (Liveness current in intervals) {
+            foreach (Liveness currentInterval in intervals) {
 
                 // Remove intervals whose lifetime has ended
-                for (int i = active.Count - 1; i >= 0; i--) {
-                    Location location = active[i];
+                RemoveExpiredIntervals(currentActiveIntervals, currentInterval);
 
-                    if (location.Liveness.LastUse < current.FirstUse) {
-                        active.RemoveAt(i);
-                        FreeRegister64(location.GetRegister());
-                    }
-                }
-
-                // Try to allocate a free register
-                if (_canAllocate) {
-                    Location location = new(current);
-                    location.AssignRegister(RequestRegister64());
-
-                    locations[current.Value] = location;
-                    active.Add(location);
-
+                // Try to allocate a free register from the pool
+                if (TryAllocateRegisterFromPool(locations, currentActiveIntervals, currentInterval)) {
                     continue;
                 }
 
                 // If failed, find the active interval that lives the longest.
-                Location victim = active.OrderByDescending(x => x.Liveness.LastUse).First();
+                Location victim = currentActiveIntervals.OrderByDescending(x => x.Liveness.LastUse).First();
 
+                // We give the register to the value that lives the longest 
                 // If the current value dies earlier than the victim, just spill the current value.
-                if (current.LastUse < victim.Liveness.LastUse) {
-                    Location location = new(current);
-                    location.SpillSlot = _spillIndex++;
-
-                    locations[current.Value] = location;
+                if (currentInterval.LastUse < victim.Liveness.LastUse) {
+                    Spill(locations, currentInterval);
 
                 } else {
                     // if the current value lives longer
-                    // Evict the victim and give its register to current.
-
-                    AssemblerRegister64 victimRegister = victim.GetRegister();
-
-                    // Spill victim
-                    victim.SpillSlot = _spillIndex++;
-                    victim.UnassignRegister();
-
-                    // Give its register to current
-                    Location location = new(current);
-                    location.AssignRegister(victimRegister);
-
-                    locations[current.Value] = location;
-
-                    // Replace victim with current in active set
-                    active.Remove(victim);
-                    active.Add(location);
+                    // Evict the victim and give its register to the current value
+                    EvictAndSpill(locations, currentActiveIntervals, currentInterval, victim);
                 }
             }
+        }
+
+        private void RemoveExpiredIntervals(List<Location> active, Liveness currentInterval) {
+            // Remove intervals whose lifetime has ended
+            for (int i = active.Count - 1; i >= 0; i--) {
+                Location location = active[i];
+
+                if (location.Liveness.LastUse < currentInterval.FirstUse) {
+                    active.RemoveAt(i);
+                    AssemblerRegister64 reg = location.GetRegister();
+                    FreeRegister64(reg);
+                }
+            }
+        }
+
+        private bool TryAllocateRegisterFromPool(Dictionary<Value, Location> locations, List<Location> currentActiveIntervals, Liveness currentInterval) {
+            if (!_canAllocate) {
+                return false;
+            }
+
+            Location location = new(currentInterval);
+            AssemblerRegister64 reg = RequestRegister64();
+            location.AssignRegister(reg);
+
+            locations[currentInterval.Value] = location;
+            currentActiveIntervals.Add(location);
+
+            return true;
+        }
+
+        private void Spill(Dictionary<Value, Location> locations, Liveness current) {
+            Location location = new(current) {
+                SpillSlot = _spillIndex++
+            };
+
+            locations[current.Value] = location;
+        }
+
+        private void EvictAndSpill(Dictionary<Value, Location> locations, List<Location> currentActiveIntervals, Liveness currentInterval, Location victim) {
+            AssemblerRegister64 victimRegister = victim.GetRegister();
+
+            // Spill victim
+            victim.SpillSlot = _spillIndex++;
+            victim.UnassignRegister();
+
+            // Give its register to current
+            Location location = new(currentInterval);
+            location.AssignRegister(victimRegister);
+
+            locations[currentInterval.Value] = location;
+
+            // Replace victim with current in active set
+            currentActiveIntervals.Remove(victim);
+            currentActiveIntervals.Add(location);
         }
 
         private List<Liveness> BuildLivenessDictionary(List<IRInstruction> code, Dictionary<Value, ulong> knownConstants) {
@@ -225,10 +249,11 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             if (livenessList.Any(x => x.Value == value)) {
                 return;
             }
-            
-            Liveness liveness = new();
-            liveness.Value = value;
-            liveness.FirstUse = currentIndex;
+
+            Liveness liveness = new() {
+                Value = value,
+                FirstUse = currentIndex
+            };
 
             // Find last use, backwards search
 

@@ -78,7 +78,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             _currentStackOffset = 0;
             _borrowedRegisters.Clear();
             _inUseVolatileRegisters.Clear();
-            _borrowPool.Clear();
+            _borrowPool = null;
             _registerMap = null;
             _knownConstants = null;
         }
