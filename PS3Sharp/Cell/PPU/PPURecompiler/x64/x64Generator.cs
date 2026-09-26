@@ -9,16 +9,17 @@ using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
     public unsafe partial class X64Generator {
-        private int _currentStackOffset = 0;                                // Current stack offset in bytes
-        private List<AssemblerRegister64> _staticBorrowPool = new();        // List of all borrowable registers for this block
-        private Stack<AssemblerRegister64> _borrowedRegisters = new();      // Currently borrowed registers by the current instruction operands/handler
-        private List<AssemblerRegister64> _reservedRegisters = new();       // Currently reserved registers by the current instruction permenant registers mapping
-        private List<AssemblerRegister64> _inUseVolatileRegisters = new();  // Currently active volatile registers (across the block)
+        private RegisterAllocator.RegisterAllocator _registerAllocator = new();
+
+        private List<AssemblerRegister64> _borrowPool { get; set; }                  // List of all borrowable registers for this block, based on the allocator
+        private readonly List<AssemblerRegister64> _inUseVolatileRegisters = new();  // Currently active volatile registers (across the block)
+        private readonly Stack<AssemblerRegister64> _borrowedRegisters = new();      // Currently borrowed registers by the current instruction operands/handler
+        private readonly List<AssemblerRegister64> _reservedRegisters = new();       // Currently reserved registers by the current instruction permenant registers mapping
 
         private Dictionary<Value, Location> _registerMap;              // Current register mapping
         private Dictionary<Value, ulong> _knownConstants;              // Current constants dictionary
 
-        private RegisterAllocator.RegisterAllocator _registerAllocator = new();
+        private int _currentStackOffset = 0;                           // Current stack offset in bytes
 
         private void PrintNativeCode(Assembler asm) {
             var stream = new MemoryStream();
@@ -43,13 +44,16 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             return buffer.AsSpan().Slice(0, (int)stream.Position);
         } 
 
-        public Span<byte> GenerateNativeCode(IRBlock block, PPU ppuThread) {
-            Reset();
-
+        private void SetupState(IRBlock block) {
             _registerMap = _registerAllocator.AllocateHostRegisters(block.IRCode, block.Constants);
-            _staticBorrowPool = _registerAllocator.CreateRegisterPool(block.IRCode);
+            _borrowPool = _registerAllocator.CreateRegisterPool(block.IRCode);
             _knownConstants = block.Constants;
-            
+        }
+
+        public Span<byte> GenerateNativeCode(IRBlock block, PPU ppuThread) {
+            ResetState();
+            SetupState(block);
+
             Assembler asm = new Assembler(64);
             
             void* state = ppuThread.State;
@@ -70,18 +74,18 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             return AssembleBlock(asm);
         }
 
-        private void Reset() {
+        private void ResetState() {
             _currentStackOffset = 0;
             _borrowedRegisters.Clear();
             _inUseVolatileRegisters.Clear();
-            _staticBorrowPool.Clear();
+            _borrowPool.Clear();
             _registerMap = null;
             _knownConstants = null;
         }
 
         private AssemblerRegister64 BorrowRegister(Assembler asm) {
-            for (int i = 0; i < _staticBorrowPool.Count; i++) {
-                AssemblerRegister64 reg = _staticBorrowPool[i];
+            for (int i = 0; i < _borrowPool.Count; i++) {
+                AssemblerRegister64 reg = _borrowPool[i];
 
                 // Borrow a register that was not borrowed before and is not reserved by the current instruction
                 if (!_borrowedRegisters.Contains(reg) && !_reservedRegisters.Contains(reg)) {
