@@ -2,7 +2,7 @@
 using PS3Sharp.Memory_Manager;
 using System.Buffers.Binary;
 using static Iced.Intel.AssemblerRegisters;
-using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRInstructions;
+using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAllocator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {

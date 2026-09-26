@@ -1,7 +1,5 @@
-﻿using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRInstructions;
-
-namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
-    public static partial class IRGenerator {
+﻿namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
+    public partial class IRGenerator {
         public class IRBlock {
             public uint VirtualAddressStart;
             public uint VirtualAddressEnd;      // address of last ppc instruction

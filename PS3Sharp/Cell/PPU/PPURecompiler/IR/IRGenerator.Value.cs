@@ -1,5 +1,5 @@
 ﻿namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
-    public static partial class IRInstructions {
+    public partial class IRGenerator {
         public readonly struct Value : IEquatable<Value> {
             public enum ValueType {
                 None,

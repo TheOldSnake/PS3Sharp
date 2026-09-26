@@ -1,258 +1,204 @@
 ﻿using PS3Sharp.Memory_Manager;
-using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRInstructions;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
-    public static partial class IRGenerator {
+    public partial class IRGenerator {
+        private IRContext _irContext;
+        private readonly IROptimizer _irOptimizer = new();
 
-        public static bool IsBranch(PPUInstruction instruction) {
-            Op op = instruction.Op;
-
-            if (op == Op.G13) {
-                G13 g13 = instruction.G13;
-                return g13 == G13.BCCTR || g13 == G13.BCLR;
-
-            } else {
-                return op == Op.Branch || op == Op.BC;
-            }
-        }
-
-        public static bool IsSyscall(PPUInstruction instruction) {
-            Op op = instruction.Op;
-            return op == Op.SC;
-        }
-
-        public static void EnsureSameType(Value a, Value b) {
-            if (a.Type != b.Type) {
-                throw new InvalidOperationException($"[IR] Type check failed: {a.Type} - {b.Type}");
-            }
-        }
-
-        public static void EnsureSameType(Value.ValueType typeA, Value.ValueType typeB) {
-            if (typeA != typeB) {
-                throw new InvalidOperationException($"[IR] Type check failed: {typeA} - {typeB}");
-            }
-        }
-
-        public static Value CkdAdd(IRContext ctx, Value a, Value b, out Value carry) { // Add with carry helper
-            Value result = Add(ctx, a, b);
-            carry = SetLessThanUnsigned(ctx, result, a); // carry = result < a;
-            return result;
-        }
-
-        public static Value WriteBit(IRContext ctx, Value destination, int bitNumber, Value flag) {
-            // Clear bit                                                               
-            Value mask = Constant(ctx, ~(1u << bitNumber));
-            destination = And(ctx, destination, mask);
-
-            // Set bit to flag
-            Value shiftCount = Constant(ctx, (ulong)bitNumber);
-            Value shiftedFlag = ShiftLeft(ctx, flag, shiftCount);
-            return Or(ctx, destination, shiftedFlag);
-        }
-
-        public static Value ReadBit(IRContext ctx, Value source, int bitNumber) {
-            Value shiftCount = Constant(ctx, (ulong)bitNumber);
-            Value shiftedSource = ShiftRight(ctx, source, shiftCount);
-            Value mask = Constant(ctx, 1);
-            return And(ctx, shiftedSource, mask);
-        }
-
-        public static Value ReadBit(IRContext ctx, Value source, Value bitNumber) {
-            Value shiftedSource = ShiftRight(ctx, source, bitNumber);
-            return And(ctx, shiftedSource, ctx.One);
-        }
-
-        public static IRBlock GenerateIRBlock(uint address) {
+        public IRBlock GenerateIRBlock(uint address) {
             // Console.WriteLine($"Generating IR - address = 0x{address:X8}");
-            IRContext irContext = new IRContext(address);
+
+            // Create new context
+            _irContext = new IRContext(this);   // todo: remove this dependency
+            _irContext.Initialize(address);
 
             PPUInstruction instruction;
             while (true) {
                  instruction = new PPUInstruction {
-                    Raw = MemoryManager.ReadPPUInstruction(irContext.CurrentPC)
+                    Raw = MemoryManager.ReadPPUInstruction(_irContext.CurrentPC)
                 };
 
-                irContext.CurrentPC += 4;
+                _irContext.CurrentPC += 4;
 
                 if (instruction.Raw != PPUInterpreter.PPUInterpreter.NOP) {
-                    GenerateIR(irContext, instruction);
+                    GenerateIR(instruction);
                 }
 
                 if (IsBranch(instruction) || IsSyscall(instruction)) {
-                    irContext.TerminateBlock();
+                    _irContext.TerminateBlock();
                     break;
                 }
             }
 
-            Dictionary<Value, ulong> constants = IROptimizer.ConstantFold(irContext);
-            IROptimizer.CopyPropagation(irContext, constants);
+            Dictionary<Value, ulong> constants = _irOptimizer.ConstantFold(_irContext);
+            _irOptimizer.CopyPropagation(_irContext, constants);
 
-            uint endAddress = irContext.CurrentPC - 4;
+            uint endAddress = _irContext.CurrentPC - 4;
             int isSyscallExit = IsSyscall(instruction) ? 1 : 0;
 
-            IRBlock block = new(address, endAddress, irContext.GetIRCode(), constants, isSyscallExit);
+            IRBlock block = new(address, endAddress, _irContext.GetIRCode(), constants, isSyscallExit);
             return block;
         }
 
-        private static void GenerateIR(IRContext irContext, PPUInstruction instruction) {
+        private void GenerateIR(PPUInstruction instruction) {
             // PPC -> IR Decoder 
             switch (instruction.Op) {
                 
                 case Op.CMPI:
-                    CMPI(irContext, instruction);
+                    CMPI(instruction);
                     break;
 
                 case Op.CMPLI:
-                    CMPLI(irContext, instruction);
+                    CMPLI(instruction);
                     break;
 
                 case Op.BC:
-                    BC(irContext, instruction);
+                    BC(instruction);
                     break;
 
                 case Op.Branch:
-                    Branch(irContext, instruction);
+                    Branch(instruction);
                     break;
 
                 case Op.SC:
-                    Syscall(irContext, instruction);
+                    Syscall(instruction);
                     break;
 
                 case Op.ADDI:
-                    ADDI(irContext, instruction);
+                    ADDI(instruction);
                     break;
 
                 case Op.ADDIS:
-                    ADDIS(irContext, instruction);
+                    ADDIS(instruction);
                     break;
 
                 case Op.ADDIC:
                 case Op.ADDIC_Record:
-                    ADDIC(irContext, instruction);
+                    ADDIC(instruction);
                     break;
 
                 case Op.SUBFIC:
-                    SUBFIC(irContext, instruction);
+                    SUBFIC(instruction);
                     break;
 
                 case Op.ANDI:
-                    ANDI(irContext, instruction);
+                    ANDI(instruction);
                     break;
 
                 case Op.ANDIS:
-                    ANDIS(irContext, instruction);
+                    ANDIS(instruction);
                     break;
 
                 case Op.ORI:
-                    ORI(irContext, instruction);
+                    ORI(instruction);
                     break;
 
                 case Op.ORIS:
-                    ORIS(irContext, instruction);
+                    ORIS(instruction);
                     break;
 
                 case Op.XORI:
-                    XORI(irContext, instruction);
+                    XORI(instruction);
                     break;
 
                 case Op.XORIS:
-                    XORIS(irContext, instruction);
+                    XORIS(instruction);
                     break;
 
                 case Op.MULLI:
-                    MULLI(irContext, instruction);
+                    MULLI(instruction);
                     break;
 
                 case Op.RotateLeft:
-                    IRRotateLeft(irContext, instruction);
+                    IRRotateLeft(instruction);
                     break;
 
                 case Op.G13:
-                    IR_G13(irContext, instruction);
+                    IR_G13(instruction);
                     break;
 
                 case Op.RLWIMI: 
-                    RLWIMI(irContext, instruction);
+                    RLWIMI(instruction);
                     break;
 
                 case Op.RLWINM: 
-                    RLWINM(irContext, instruction);
+                    RLWINM(instruction);
                     break;
 
                 case Op.RLWNM:
-                    RLWNM(irContext, instruction);
+                    RLWNM(instruction);
                     break;
 
                 case Op.G1F:
-                    IR_G1F(irContext, instruction);
+                    IR_G1F(instruction);
                     break;
 
                 case Op.LWZ:
-                    LWZ(irContext, instruction);
+                    LWZ(instruction);
                     break;
 
                 case Op.LWZU:
-                    LWZU(irContext, instruction);
+                    LWZU(instruction);
                     break;
 
                 case Op.LBZ:
-                    LBZ(irContext, instruction);
+                    LBZ(instruction);
                     break;
 
                 case Op.LBZU:
-                    LBZU(irContext, instruction);
+                    LBZU(instruction);
                     break;
 
                 case Op.STW:
-                    STW(irContext, instruction);
+                    STW(instruction);
                     break;
 
                 case Op.STWU:
-                    STWU(irContext, instruction);
+                    STWU(instruction);
                     break;
 
                 case Op.STB:
-                    STB(irContext, instruction);
+                    STB(instruction);
                     break;
 
                 case Op.STBU:
-                    STBU(irContext, instruction);
+                    STBU(instruction);
                     break;
 
                 case Op.LHZ: 
-                    LHZ(irContext, instruction);
+                    LHZ(instruction);
                     break;
 
                 case Op.LHZU: 
-                    LHZU(irContext, instruction);
+                    LHZU(instruction);
                     break;
 
                 case Op.LHA: 
-                    LHA(irContext, instruction);
+                    LHA(instruction);
                     break;
 
                 case Op.LHAU: 
-                    LHAU(irContext, instruction);
+                    LHAU(instruction);
                     break;
 
                 case Op.STH: 
-                    STH(irContext, instruction);
+                    STH(instruction);
                     break;
 
                 case Op.STHU: 
-                    STHU(irContext, instruction);
+                    STHU(instruction);
                     break;
 
                 case Op.LMW: 
-                    LMW(irContext, instruction);
+                    LMW(instruction);
                     break;
 
                 case Op.LD: 
-                    LD(irContext, instruction); 
+                    LD(instruction); 
                     break;
 
                 case Op.STD: 
-                    STD(irContext, instruction);
+                    STD(instruction);
                     break;
 
     
@@ -267,12 +213,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
                 case Op.STFDU: 
 
                 default:
-                    InterpreterFallback(irContext, instruction);
+                    InterpreterFallback(instruction);
                     break;
             }
         }
 
-        private static void IR_G1F(IRContext irContext, PPUInstruction instruction) {
+        private void IR_G1F(PPUInstruction instruction) {
             switch (instruction.G1F) {
 
                 case G1F.Sync:
@@ -280,378 +226,378 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
                     break;
 
                 case G1F.CMP:
-                    CMP(irContext, instruction);
+                    CMP(instruction);
                     break;
 
                 case G1F.CMPL:
-                    CMPL(irContext, instruction);
+                    CMPL(instruction);
                     break;
 
                 case G1F.MFSPR:
-                    MFSPR(irContext, instruction);
+                    MFSPR(instruction);
                     break;
 
                 case G1F.MTSPR:
-                    MTSPR(irContext, instruction);
+                    MTSPR(instruction);
                     break;
 
                 case G1F.MFCR:
-                    MFCR(irContext, instruction);
+                    MFCR(instruction);
                     break;
 
                 case G1F.MTCRF:
-                    MTCRF(irContext, instruction);
+                    MTCRF(instruction);
                     break;
 
                 case G1F.MFTB:
-                    MFTB(irContext, instruction);
+                    MFTB(instruction);
                     break;
 
                 case G1F.ADDE:
-                    ADDE(irContext, instruction);
+                    ADDE(instruction);
                     break;
 
                 case G1F.ADD:
-                    ADD(irContext, instruction);
+                    ADD(instruction);
                     break;
 
                 case G1F.ADDC:
-                    ADDC(irContext, instruction);
+                    ADDC(instruction);
                     break;
 
                 case G1F.ADDZE:
-                    ADDZE(irContext, instruction);
+                    ADDZE(instruction);
                     break;
 
                 case G1F.ADDME:
-                    ADDME(irContext, instruction);
+                    ADDME(instruction);
                     break;
 
                 case G1F.SUBF:
-                    SUBF(irContext, instruction);
+                    SUBF(instruction);
                     break;
 
                 case G1F.SUBFC:
-                    SUBFC(irContext, instruction);
+                    SUBFC(instruction);
                     break;
 
                 case G1F.SUBFE:
-                    SUBFE(irContext, instruction);
+                    SUBFE(instruction);
                     break;
 
                 case G1F.SUBFZE:
-                    SUBFZE(irContext, instruction);
+                    SUBFZE(instruction);
                     break;
 
                 case G1F.SUBFME:
-                    SUBFME(irContext, instruction);
+                    SUBFME(instruction);
                     break;
 
                 case G1F.AND:
-                    AND(irContext, instruction);
+                    AND(instruction);
                     break;
 
                 case G1F.ANDC:
-                    ANDC(irContext, instruction);
+                    ANDC(instruction);
                     break;
 
                 case G1F.OR:
-                    OR(irContext, instruction);
+                    OR(instruction);
                     break;
 
                 case G1F.ORC:
-                    ORC(irContext, instruction);
+                    ORC(instruction);
                     break;
 
                 case G1F.XOR:
-                    XOR(irContext, instruction);
+                    XOR(instruction);
                     break;
 
                 case G1F.NAND:
-                    NAND(irContext, instruction);
+                    NAND(instruction);
                     break;
 
                 case G1F.NOR:
-                    NOR(irContext, instruction);
+                    NOR(instruction);
                     break;
 
                 case G1F.EQV:
-                    EQV(irContext, instruction);
+                    EQV(instruction);
                     break;
 
                 case G1F.NEG:
-                    NEG(irContext, instruction);
+                    NEG(instruction);
                     break;
 
                 case G1F.MULLW:
-                    MULLW(irContext, instruction);
+                    MULLW(instruction);
                     break;
 
                 case G1F.MULHW:
-                    MULHW(irContext, instruction);
+                    MULHW(instruction);
                     break;
 
                 case G1F.MULHWU:
-                    MULHWU(irContext, instruction);
+                    MULHWU(instruction);
                     break;
 
                 case G1F.MULLD:
-                    MULLD(irContext, instruction);
+                    MULLD(instruction);
                     break;
 
                 case G1F.MULHD:
-                    MULHD(irContext, instruction);
+                    MULHD(instruction);
                     break;
 
                 case G1F.MULHDU:
-                    MULHDU(irContext, instruction);
+                    MULHDU(instruction);
                     break;
 
                 case G1F.DIVD:
-                    DIVD(irContext, instruction);
+                    DIVD(instruction);
                     break;
 
                 case G1F.DIVDU:
-                    DIVDU(irContext, instruction);
+                    DIVDU(instruction);
                     break;
 
                 case G1F.DIVW:
-                    DIVW(irContext, instruction);
+                    DIVW(instruction);
                     break;
 
                 case G1F.DIVWU:
-                    DIVWU(irContext, instruction);
+                    DIVWU(instruction);
                     break;
 
                 case G1F.SLD:
-                    SLD(irContext, instruction);
+                    SLD(instruction);
                     break;
 
                 case G1F.SRD:
-                    SRD(irContext, instruction);
+                    SRD(instruction);
                     break;
 
                 case G1F.SLW:
-                    SLW(irContext, instruction);
+                    SLW(instruction);
                     break;
 
                 case G1F.SRW:
-                    SRW(irContext, instruction);
+                    SRW(instruction);
                     break;
 
                 case G1F.SRAD:
-                    SRAD(irContext, instruction);
+                    SRAD(instruction);
                     break;
 
                 case G1F.SRADI:
-                    SRADI(irContext, instruction);
+                    SRADI(instruction);
                     break;
 
                 case G1F.SRAW:
-                    SRAW(irContext, instruction);
+                    SRAW(instruction);
                     break;
 
                 case G1F.SRAWI:
-                    SRAWI(irContext, instruction);
+                    SRAWI(instruction);
                     break;
 
                 case G1F.EXTSB:
-                    EXTSB(irContext, instruction);
+                    EXTSB(instruction);
                     break;
 
                 case G1F.EXTSH:
-                    EXTSH(irContext, instruction);
+                    EXTSH(instruction);
                     break;
 
                 case G1F.EXTSW:
-                    EXTSW(irContext, instruction);
+                    EXTSW(instruction);
                     break;
 
                 case G1F.CNTLZD:
-                    CNTLZD(irContext, instruction);
+                    CNTLZD(instruction);
                     break;
 
                 case G1F.CNTLZW:
-                    CNTLZW(irContext, instruction);
+                    CNTLZW(instruction);
                     break;
 
                 case G1F.STBX:
-                    STBX(irContext, instruction);
+                    STBX(instruction);
                     break;
 
                 case G1F.STBUX:
-                    STBUX(irContext, instruction);
+                    STBUX(instruction);
                     break;
 
                 case G1F.STHX:
-                    STHX(irContext, instruction);
+                    STHX(instruction);
                     break;
 
                 case G1F.STHUX:
-                    STHUX(irContext, instruction);
+                    STHUX(instruction);
                     break;
 
                 case G1F.STHBRX:
-                    STHBRX(irContext, instruction);
+                    STHBRX(instruction);
                     break;
 
                 case G1F.STWX:
-                    STWX(irContext, instruction);
+                    STWX(instruction);
                     break;
 
                 case G1F.STWUX:
-                    STWUX(irContext, instruction);
+                    STWUX(instruction);
                     break;
 
                 case G1F.STWBRX:
-                    STWBRX(irContext, instruction);
+                    STWBRX(instruction);
                     break;
 
                 case G1F.STWCX:
-                    STWCX(irContext, instruction);
+                    STWCX(instruction);
                     break;
 
                 case G1F.STDX:
-                    STDX(irContext, instruction);
+                    STDX(instruction);
                     break;
 
                 case G1F.STDUX:
-                    STDUX(irContext, instruction);
+                    STDUX(instruction);
                     break;
 
                 case G1F.STDCX:
-                    STDCX(irContext, instruction);
+                    STDCX(instruction);
                     break;
 
                 case G1F.LBZX:
-                    LBZX(irContext, instruction);
+                    LBZX(instruction);
                     break;
 
                 case G1F.LBZUX:
-                    LBZUX(irContext, instruction);
+                    LBZUX(instruction);
                     break;
 
                 case G1F.LHZX:
-                    LHZX(irContext, instruction);
+                    LHZX(instruction);
                     break;
 
                 case G1F.LHZUX:
-                    LHZUX(irContext, instruction);
+                    LHZUX(instruction);
                     break;
 
                 case G1F.LHBRX:
-                    LHBRX(irContext, instruction);
+                    LHBRX(instruction);
                     break;
 
                 case G1F.LHAX:
-                    LHAX(irContext, instruction);
+                    LHAX(instruction);
                     break;
 
                 case G1F.LHAUX:
-                    LHAUX(irContext, instruction);
+                    LHAUX(instruction);
                     break;
 
                 case G1F.LWZX:
-                    LWZX(irContext, instruction);
+                    LWZX(instruction);
                     break;
 
                 case G1F.LWZUX:
-                    LWZUX(irContext, instruction);
+                    LWZUX(instruction);
                     break;
 
                 case G1F.LWBRX:
-                    LWBRX(irContext, instruction);
+                    LWBRX(instruction);
                     break;
 
                 case G1F.LWAX:
-                    LWAX(irContext, instruction);
+                    LWAX(instruction);
                     break;
 
                 case G1F.LWAUX:
-                    LWAUX(irContext, instruction);
+                    LWAUX(instruction);
                     break;
 
                 case G1F.LWARX:
-                    LWARX(irContext, instruction);
+                    LWARX(instruction);
                     break;
 
                 case G1F.LDX:
-                    LDX(irContext, instruction);
+                    LDX(instruction);
                     break;
 
                 case G1F.LDUX:
-                    LDUX(irContext, instruction);
+                    LDUX(instruction);
                     break;
 
                 case G1F.LDARX:
-                    LDARX(irContext, instruction);
+                    LDARX(instruction);
                     break;
 
                 default:
-                    InterpreterFallback(irContext, instruction);
+                    InterpreterFallback(instruction);
                     break;
             }
         }
 
-        private static void IR_G13(IRContext irContext, PPUInstruction instruction) {
+        private void IR_G13(PPUInstruction instruction) {
             switch (instruction.G13) {
                 case G13.ISYNC:
                     // Nop
                     break;
 
                 case G13.MCRF:
-                    MCRF(irContext, instruction);
+                    MCRF(instruction);
                     break;
 
                 case G13.BCLR:
-                    BCLR(irContext, instruction);
+                    BCLR(instruction);
                     break;
 
                 case G13.BCCTR:
-                    BCCTR(irContext, instruction);
+                    BCCTR(instruction);
                     break;
 
                 case G13.CROR:
-                    CROR(irContext, instruction);
+                    CROR(instruction);
                     break;
 
                 case G13.CRORC:
-                    CRORC(irContext, instruction);
+                    CRORC(instruction);
                     break;
 
                 case G13.CRAND:
-                    CRAND(irContext, instruction);
+                    CRAND(instruction);
                     break;
 
                 case G13.CRANDC:
-                    CRANDC(irContext, instruction);
+                    CRANDC(instruction);
                     break;
 
 
                 case G13.CRXOR:
-                    CRXOR(irContext, instruction);
+                    CRXOR(instruction);
                     break;
 
                 case G13.CRNAND:
-                    CRNAND(irContext, instruction);
+                    CRNAND(instruction);
                     break;
 
                 case G13.CRNOR:
-                    CRNOR(irContext, instruction);
+                    CRNOR(instruction);
                     break;
 
                 case G13.CREQV:
-                    CREQV(irContext, instruction);
+                    CREQV(instruction);
                     break;
 
                 default:
-                    InterpreterFallback(irContext, instruction);
+                    InterpreterFallback(instruction);
                     break;
             }
         }
 
 
-        private static void IRRotateLeft(IRContext irContext, PPUInstruction instruction) {
+        private void IRRotateLeft(PPUInstruction instruction) {
             // Rotate instructions
 
             // bits 27 - 30 in BE
@@ -660,30 +606,30 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             switch (field) {
                 case 0:
                 case 1:
-                    RLDICL(irContext, instruction);
+                    RLDICL(instruction);
                     break;
 
                 case 2:
                 case 3:
-                    RLDICR(irContext, instruction);
+                    RLDICR(instruction);
                     break;
 
                 case 4:
                 case 5:
-                    RLDIC(irContext, instruction);
+                    RLDIC(instruction);
                     break;
 
                 case 6:
                 case 7:
-                    RLDIMI(irContext, instruction);
+                    RLDIMI(instruction);
                     break;
 
                 case 8:
-                    RLDCL(irContext, instruction);
+                    RLDCL(instruction);
                     break;
 
                 case 9:
-                    RLDCR(irContext, instruction);
+                    RLDCR(instruction);
                     break;
 
                 default:
@@ -691,8 +637,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             }
         }
 
-        private static void PrintIR(IRContext irContext, Dictionary<Value, ulong> constants = null) {
-            List<IRInstruction> code = irContext.GetIRCode();
+        private void PrintIR(Dictionary<Value, ulong> constants = null) {
+            List<IRInstruction> code = _irContext.GetIRCode();
 
             //if (constants != null) {
             //    Console.WriteLine($"Constants dictionary:");
@@ -739,41 +685,41 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
                     }
                 }
 
-                if (instruction.Op == IRInstructions.Op.Ret) {
-                    Console.WriteLine($"{instruction.Op}");
+                if (instruction.Opcode == IRInstruction.Op.Ret) {
+                    Console.WriteLine($"{instruction.Opcode}");
                     continue;
                 }
 
-                if (instruction.Op == IRInstructions.Op.InterpreterFallback) {
-                    Console.WriteLine($"{instruction.Op}: {constant1}");
+                if (instruction.Opcode == IRInstruction.Op.InterpreterFallback) {
+                    Console.WriteLine($"{instruction.Opcode}: {constant1}");
                     continue;
                 }
 
-                if (instruction.Op == IRInstructions.Op.Constant) {
-                    string initial = instruction.Destination.Id < irContext.InitialValueCount ? " # Initial Const" : string.Empty;
-                    Console.WriteLine($"{instruction.Op} {destination}, {constant1} {initial}");
+                if (instruction.Opcode == IRInstruction.Op.Constant) {
+                    string initial = instruction.Destination.Id < _irContext.InitialValueCount ? " # Initial Const" : string.Empty;
+                    Console.WriteLine($"{instruction.Opcode} {destination}, {constant1} {initial}");
                     continue;
                 }
 
-                if (instruction.Op == IRInstructions.Op.GPRLoad) {
-                    Console.WriteLine($"{instruction.Op} {destination}, {constant1}");
+                if (instruction.Opcode == IRInstruction.Op.GPRLoad) {
+                    Console.WriteLine($"{instruction.Opcode} {destination}, {constant1}");
                     continue;
                 }
 
-                if (instruction.Op == IRInstructions.Op.GPRStore) {
-                    Console.WriteLine($"{instruction.Op} {destination}, {constant1}");
+                if (instruction.Opcode == IRInstruction.Op.GPRStore) {
+                    Console.WriteLine($"{instruction.Opcode} {destination}, {constant1}");
                     continue;
                 }
 
-                if (instruction.Op == IRInstructions.Op.PCStore || 
-                    instruction.Op == IRInstructions.Op.LRLoad || 
-                    instruction.Op == IRInstructions.Op.LRStore) {
-                    Console.WriteLine($"{instruction.Op} {destination}");
+                if (instruction.Opcode == IRInstruction.Op.PCStore || 
+                    instruction.Opcode == IRInstruction.Op.LRLoad || 
+                    instruction.Opcode == IRInstruction.Op.LRStore) {
+                    Console.WriteLine($"{instruction.Opcode} {destination}");
                     continue;
                 }
 
 
-                Console.WriteLine($"{instruction.Op} {dest}, {operand1}, {operand2}");
+                Console.WriteLine($"{instruction.Opcode} {dest}, {operand1}, {operand2}");
             }
 
             Console.WriteLine($"---------------------------------------------");

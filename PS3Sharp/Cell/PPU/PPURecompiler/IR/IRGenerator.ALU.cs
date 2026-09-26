@@ -1,720 +1,719 @@
 ﻿using static PS3Sharp.Cell.PPU.PPURotationMasks;
-using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRInstructions;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
-    public static partial class IRGenerator {
+    public partial class IRGenerator {
         // Add instructions
 
-        public static void ADDI(IRContext ctx, PPUInstruction instruction) {
+        public void ADDI(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
-            Value a = ra == 0 ? ctx.Zero : ctx.GetGPR(ra);
-            Value b = Constant(ctx, (ulong)instruction.SI_64);
+            Value a = ra == 0 ? _irContext.Zero : _irContext.GetGPR(ra);
+            Value b = Constant((ulong)instruction.SI_64);
 
-            Value result = Add(ctx, a, b);
-            ctx.SetGPR(rt, result);
+            Value result = Add(a, b);
+            _irContext.SetGPR(rt, result);
         }
 
-        public static void ADDIS(IRContext ctx, PPUInstruction instruction) {
+        public void ADDIS(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
             long si = (int)(instruction.SI << 16); // sign extended
 
-            Value a = ra == 0 ? ctx.Zero : ctx.GetGPR(ra);
-            Value b = Constant(ctx, (ulong)si);
-            Value result = Add(ctx, a, b);
-            ctx.SetGPR(rt, result);
+            Value a = ra == 0 ? _irContext.Zero : _irContext.GetGPR(ra);
+            Value b = Constant((ulong)si);
+            Value result = Add(a, b);
+            _irContext.SetGPR(rt, result);
         }
 
-        public static void ADDIC(IRContext ctx, PPUInstruction instruction) {
+        public void ADDIC(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value b = Constant(ctx, (ulong)instruction.SI_64);
-            Value result = CkdAdd(ctx, a, b, out Value carry);
-            ctx.SetGPR(rt, result);
-            ctx.SetCA(carry);
+            Value a = _irContext.GetGPR(ra);
+            Value b = Constant((ulong)instruction.SI_64);
+            Value result = CkdAdd(a, b, out Value carry);
+            _irContext.SetGPR(rt, result);
+            _irContext.SetCA(carry);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void ADDE(IRContext ctx, PPUInstruction instruction) {
+        public void ADDE(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value b = ctx.GetGPR(rb);
-            Value ca = ctx.GetCA();
+            Value a = _irContext.GetGPR(ra);
+            Value b = _irContext.GetGPR(rb);
+            Value ca = _irContext.GetCA();
 
             // Add a + b + ca, and handle intermediate carrys
-            Value sum1 = CkdAdd(ctx, a, b, out Value carry1);
-            Value finalSum = CkdAdd(ctx, sum1, ca, out Value carry2);
-            Value finalCarry = Or(ctx, carry1, carry2);
+            Value sum1 = CkdAdd(a, b, out Value carry1);
+            Value finalSum = CkdAdd(sum1, ca, out Value carry2);
+            Value finalCarry = Or(carry1, carry2);
 
-            ctx.SetGPR(rt, finalSum);
-            ctx.SetCA(finalCarry);
+            _irContext.SetGPR(rt, finalSum);
+            _irContext.SetCA(finalCarry);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(finalSum, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(finalSum, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void ADD(IRContext ctx, PPUInstruction instruction) {
+        public void ADD(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value b = ctx.GetGPR(rb);
-            Value result = Add(ctx, a, b);
+            Value a = _irContext.GetGPR(ra);
+            Value b = _irContext.GetGPR(rb);
+            Value result = Add(a, b);
 
-            ctx.SetGPR(rt, result);
+            _irContext.SetGPR(rt, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void ADDC(IRContext ctx, PPUInstruction instruction) {
+        public void ADDC(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value b = ctx.GetGPR(rb);
-            Value result = CkdAdd(ctx, a, b, out Value carry);
+            Value a = _irContext.GetGPR(ra);
+            Value b = _irContext.GetGPR(rb);
+            Value result = CkdAdd(a, b, out Value carry);
 
-            ctx.SetGPR(rt, result);
-            ctx.SetCA(carry);
+            _irContext.SetGPR(rt, result);
+            _irContext.SetCA(carry);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void ADDZE(IRContext ctx, PPUInstruction instruction) {
+        public void ADDZE(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value ca = ctx.GetCA();
-            Value result = CkdAdd(ctx, a, ca, out Value carry);
+            Value a = _irContext.GetGPR(ra);
+            Value ca = _irContext.GetCA();
+            Value result = CkdAdd(a, ca, out Value carry);
 
-            ctx.SetGPR(rt, result);
-            ctx.SetCA(carry);
+            _irContext.SetGPR(rt, result);
+            _irContext.SetCA(carry);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void ADDME(IRContext ctx, PPUInstruction instruction) {
+        public void ADDME(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value ca = ctx.GetCA();
+            Value a = _irContext.GetGPR(ra);
+            Value ca = _irContext.GetCA();
 
             // Add a + ca - 1, and handle intermediate carrys
-            Value sum1 = CkdAdd(ctx, a, ca, out Value carry1);
-            Value finalSum = CkdAdd(ctx, sum1, ctx.MinusOne, out Value carry2);
-            Value finalCarry = Or(ctx, carry1, carry2);
+            Value sum1 = CkdAdd(a, ca, out Value carry1);
+            Value finalSum = CkdAdd(sum1, _irContext.MinusOne, out Value carry2);
+            Value finalCarry = Or(carry1, carry2);
 
-            ctx.SetGPR(rt, finalSum);
-            ctx.SetCA(finalCarry);
+            _irContext.SetGPR(rt, finalSum);
+            _irContext.SetCA(finalCarry);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(finalSum, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(finalSum, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
         // Subtract instructions
 
-        public static void SUBF(IRContext ctx, PPUInstruction instruction) {
+        public void SUBF(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value b = ctx.GetGPR(rb);
-            Value result = Sub(ctx, b, a); // b - a
+            Value a = _irContext.GetGPR(ra);
+            Value b = _irContext.GetGPR(rb);
+            Value result = Sub(b, a); // b - a
 
-            ctx.SetGPR(rt, result);
+            _irContext.SetGPR(rt, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void SUBFC(IRContext ctx, PPUInstruction instruction) {
+        public void SUBFC(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value b = ctx.GetGPR(rb);
-            Value notA = Not(ctx, a);
+            Value a = _irContext.GetGPR(ra);
+            Value b = _irContext.GetGPR(rb);
+            Value notA = Not(a);
 
             // Add ~a + b + 1, and handle intermediate carrys
-            Value sum1 = CkdAdd(ctx, notA, b, out Value carry1);
-            Value finalSum = CkdAdd(ctx, sum1, ctx.One, out Value carry2);
-            Value finalCarry = Or(ctx, carry1, carry2);
+            Value sum1 = CkdAdd(notA, b, out Value carry1);
+            Value finalSum = CkdAdd(sum1, _irContext.One, out Value carry2);
+            Value finalCarry = Or(carry1, carry2);
 
-            ctx.SetGPR(rt, finalSum);
-            ctx.SetCA(finalCarry);
+            _irContext.SetGPR(rt, finalSum);
+            _irContext.SetCA(finalCarry);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(finalSum, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(finalSum, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void SUBFIC(IRContext ctx, PPUInstruction instruction) {
+        public void SUBFIC(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value b = Constant(ctx, (ulong)instruction.SI_64);
-            Value notA = Not(ctx, a);
+            Value a = _irContext.GetGPR(ra);
+            Value b = Constant((ulong)instruction.SI_64);
+            Value notA = Not(a);
 
             // Add ~a + b + 1, and handle intermediate carrys
-            Value sum1 = CkdAdd(ctx, notA, b, out Value carry1);
-            Value finalSum = CkdAdd(ctx, sum1, ctx.One, out Value carry2);
-            Value finalCarry = Or(ctx, carry1, carry2);
+            Value sum1 = CkdAdd(notA, b, out Value carry1);
+            Value finalSum = CkdAdd(sum1, _irContext.One, out Value carry2);
+            Value finalCarry = Or(carry1, carry2);
 
-            ctx.SetGPR(rt, finalSum);
-            ctx.SetCA(finalCarry);
+            _irContext.SetGPR(rt, finalSum);
+            _irContext.SetCA(finalCarry);
         }
 
-        public static void SUBFE(IRContext ctx, PPUInstruction instruction) {
+        public void SUBFE(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value b = ctx.GetGPR(rb);
-            Value ca = ctx.GetCA();
-            Value notA = Not(ctx, a);
+            Value a = _irContext.GetGPR(ra);
+            Value b = _irContext.GetGPR(rb);
+            Value ca = _irContext.GetCA();
+            Value notA = Not(a);
 
-            Value sum1 = CkdAdd(ctx, notA, b, out Value carry1);
-            Value finalSum = CkdAdd(ctx, sum1, ca, out Value carry2);
-            Value finalCarry = Or(ctx, carry1, carry2);
+            Value sum1 = CkdAdd(notA, b, out Value carry1);
+            Value finalSum = CkdAdd(sum1, ca, out Value carry2);
+            Value finalCarry = Or(carry1, carry2);
 
-            ctx.SetGPR(rt, finalSum);
-            ctx.SetCA(finalCarry);
+            _irContext.SetGPR(rt, finalSum);
+            _irContext.SetCA(finalCarry);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(finalSum, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(finalSum, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void SUBFZE(IRContext ctx, PPUInstruction instruction) {
+        public void SUBFZE(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value ca = ctx.GetCA();
-            Value notA = Not(ctx, a);
-            Value result = CkdAdd(ctx, notA, ca, out Value carry);
+            Value a = _irContext.GetGPR(ra);
+            Value ca = _irContext.GetCA();
+            Value notA = Not(a);
+            Value result = CkdAdd(notA, ca, out Value carry);
 
-            ctx.SetGPR(rt, result);
-            ctx.SetCA(carry);
+            _irContext.SetGPR(rt, result);
+            _irContext.SetCA(carry);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void SUBFME(IRContext ctx, PPUInstruction instruction) {
+        public void SUBFME(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value ca = ctx.GetCA();
-            Value notA = Not(ctx, a);
+            Value a = _irContext.GetGPR(ra);
+            Value ca = _irContext.GetCA();
+            Value notA = Not(a);
 
-            Value sum1 = CkdAdd(ctx, notA, ca, out Value carry1);
-            Value finalSum = CkdAdd(ctx, sum1, ctx.MinusOne, out Value carry2);
-            Value finalCarry = Or(ctx, carry1, carry2);
+            Value sum1 = CkdAdd(notA, ca, out Value carry1);
+            Value finalSum = CkdAdd(sum1, _irContext.MinusOne, out Value carry2);
+            Value finalCarry = Or(carry1, carry2);
 
-            ctx.SetGPR(rt, finalSum);
-            ctx.SetCA(finalCarry);
+            _irContext.SetGPR(rt, finalSum);
+            _irContext.SetCA(finalCarry);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(finalSum, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(finalSum, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
         // General logic instructions
-        public static void ANDI(IRContext ctx, PPUInstruction instruction) {
+        public void ANDI(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
-            Value s = ctx.GetGPR(rs);
-            Value imm = Constant(ctx, (ulong)instruction.UI);
-            Value result = And(ctx, s, imm);
+            Value s = _irContext.GetGPR(rs);
+            Value imm = Constant((ulong)instruction.UI);
+            Value result = And(s, imm);
 
-            ctx.SetGPR(ra, result);
-            ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);  // Always updates CR0
+            _irContext.SetGPR(ra, result);
+            _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);  // Always updates CR0
         }
 
-        public static void ANDIS(IRContext ctx, PPUInstruction instruction) {
+        public void ANDIS(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
-            Value s = ctx.GetGPR(rs);
-            Value imm = Constant(ctx, ((ulong)instruction.UI) << 16);
-            Value result = And(ctx, s, imm);
+            Value s = _irContext.GetGPR(rs);
+            Value imm = Constant(((ulong)instruction.UI) << 16);
+            Value result = And(s, imm);
 
-            ctx.SetGPR(ra, result);
-            ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0); // Always updates CR0
+            _irContext.SetGPR(ra, result);
+            _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0); // Always updates CR0
         }
 
-        public static void ORI(IRContext ctx, PPUInstruction instruction) {
+        public void ORI(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
-            Value s = ctx.GetGPR(rs);
-            Value imm = Constant(ctx, (ulong)instruction.UI);
-            Value result = Or(ctx, s, imm);
+            Value s = _irContext.GetGPR(rs);
+            Value imm = Constant((ulong)instruction.UI);
+            Value result = Or(s, imm);
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
             // Does not affect CR0
         }
 
-        public static void ORIS(IRContext ctx, PPUInstruction instruction) {
+        public void ORIS(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
-            Value s = ctx.GetGPR(rs);
-            Value imm = Constant(ctx, ((ulong)instruction.UI) << 16);
-            Value result = Or(ctx, s, imm);
+            Value s = _irContext.GetGPR(rs);
+            Value imm = Constant(((ulong)instruction.UI) << 16);
+            Value result = Or(s, imm);
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
             // Does not affect CR0
         }
 
-        public static void XORI(IRContext ctx, PPUInstruction instruction) {
+        public void XORI(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
-            Value s = ctx.GetGPR(rs);
-            Value imm = Constant(ctx, (ulong)instruction.UI);
-            Value result = Xor(ctx, s, imm);
+            Value s = _irContext.GetGPR(rs);
+            Value imm = Constant((ulong)instruction.UI);
+            Value result = Xor(s, imm);
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
             // Does not affect CR0
         }
 
-        public static void XORIS(IRContext ctx, PPUInstruction instruction) {
+        public void XORIS(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
-            Value s = ctx.GetGPR(rs);
-            Value imm = Constant(ctx, ((ulong)instruction.UI) << 16);
-            Value result = Xor(ctx, s, imm);
+            Value s = _irContext.GetGPR(rs);
+            Value imm = Constant(((ulong)instruction.UI) << 16);
+            Value result = Xor(s, imm);
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
             // Does not affect CR0
         }
 
-        public static void AND(IRContext ctx, PPUInstruction instruction) {
+        public void AND(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
 
-            Value s = ctx.GetGPR(rs);
-            Value b = ctx.GetGPR(rb);
-            Value result = And(ctx, s, b);
+            Value s = _irContext.GetGPR(rs);
+            Value b = _irContext.GetGPR(rb);
+            Value result = And(s, b);
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void OR(IRContext ctx, PPUInstruction instruction) {
+        public void OR(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
 
-            Value s = ctx.GetGPR(rs);
-            Value b = ctx.GetGPR(rb);
-            Value result = Or(ctx, s, b);
+            Value s = _irContext.GetGPR(rs);
+            Value b = _irContext.GetGPR(rb);
+            Value result = Or(s, b);
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void XOR(IRContext ctx, PPUInstruction instruction) {
+        public void XOR(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
 
-            Value s = ctx.GetGPR(rs);
-            Value b = ctx.GetGPR(rb);
-            Value result = Xor(ctx, s, b);
+            Value s = _irContext.GetGPR(rs);
+            Value b = _irContext.GetGPR(rb);
+            Value result = Xor(s, b);
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void NAND(IRContext ctx, PPUInstruction instruction) {
+        public void NAND(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
 
-            Value s = ctx.GetGPR(rs);
-            Value b = ctx.GetGPR(rb);
-            Value result = Not(ctx, And(ctx, b, s));
+            Value s = _irContext.GetGPR(rs);
+            Value b = _irContext.GetGPR(rb);
+            Value result = Not(And(b, s));
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void NOR(IRContext ctx, PPUInstruction instruction) {
+        public void NOR(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
 
-            Value s = ctx.GetGPR(rs);
-            Value b = ctx.GetGPR(rb);
-            Value result = Not(ctx, Or(ctx, b, s));
+            Value s = _irContext.GetGPR(rs);
+            Value b = _irContext.GetGPR(rb);
+            Value result = Not(Or(b, s));
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void EQV(IRContext ctx, PPUInstruction instruction) {
+        public void EQV(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
 
-            Value s = ctx.GetGPR(rs);
-            Value b = ctx.GetGPR(rb);
-            Value result = Not(ctx, Xor(ctx, b, s));
+            Value s = _irContext.GetGPR(rs);
+            Value b = _irContext.GetGPR(rb);
+            Value result = Not(Xor(b, s));
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void ANDC(IRContext ctx, PPUInstruction instruction) {
+        public void ANDC(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
 
-            Value s = ctx.GetGPR(rs);
-            Value b = ctx.GetGPR(rb);
-            Value result = And(ctx, s, Not(ctx, b));
+            Value s = _irContext.GetGPR(rs);
+            Value b = _irContext.GetGPR(rb);
+            Value result = And(s, Not(b));
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void ORC(IRContext ctx, PPUInstruction instruction) {
+        public void ORC(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
 
-            Value s = ctx.GetGPR(rs);
-            Value b = ctx.GetGPR(rb);
-            Value result = Or(ctx, s, Not(ctx, b));
+            Value s = _irContext.GetGPR(rs);
+            Value b = _irContext.GetGPR(rb);
+            Value result = Or(s, Not(b));
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void NEG(IRContext ctx, PPUInstruction instruction) {
+        public void NEG(PPUInstruction instruction) {
             // RT = ¬(RA) + 1
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value notA = Not(ctx, a);
-            Value result = Add(ctx, notA, ctx.One);
+            Value a = _irContext.GetGPR(ra);
+            Value notA = Not(a);
+            Value result = Add(notA, _irContext.One);
 
-            ctx.SetGPR(rt, result);
+            _irContext.SetGPR(rt, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
         // Condition register bit logic opcodes
-        public static (Value ba, Value bb) GetBitsAB(IRContext ctx, PPUInstruction instruction) {
+        public (Value ba, Value bb) GetBitsAB(PPUInstruction instruction) {
             //Helper for condition register bit opcodes
             int bitA = (int)(31 - instruction.Ba);
             int bitB = (int)(31 - instruction.Bb);
 
-            Value cr = ctx.GetCR();
-            Value a = ReadBit(ctx, cr, bitA);
-            Value b = ReadBit(ctx, cr, bitB);
+            Value cr = _irContext.GetCR();
+            Value a = ReadBit(cr, bitA);
+            Value b = ReadBit(cr, bitB);
             return (a, b);
         }
 
-        public static void CROR(IRContext ctx, PPUInstruction instruction) {
+        public void CROR(PPUInstruction instruction) {
             uint bt = instruction.Bt;
-            (Value bitA, Value bitB) = GetBitsAB(ctx, instruction);
-            Value result = Or(ctx, bitA, bitB);
-            ctx.WriteCRBit(bt, result);
+            (Value bitA, Value bitB) = GetBitsAB(instruction);
+            Value result = Or(bitA, bitB);
+            _irContext.WriteCRBit(bt, result);
         }
 
-        public static void CRORC(IRContext ctx, PPUInstruction instruction) {
+        public void CRORC(PPUInstruction instruction) {
             uint bt = instruction.Bt;
-            (Value bitA, Value bitB) = GetBitsAB(ctx, instruction);
-            Value result = Or(ctx, bitA, Not(ctx, bitB));
-            ctx.WriteCRBit(bt, result);
+            (Value bitA, Value bitB) = GetBitsAB(instruction);
+            Value result = Or(bitA, Not(bitB));
+            _irContext.WriteCRBit(bt, result);
         }
 
-        public static void CRAND(IRContext ctx, PPUInstruction instruction) {
+        public void CRAND(PPUInstruction instruction) {
             uint bt = instruction.Bt;
-            (Value bitA, Value bitB) = GetBitsAB(ctx, instruction);
-            Value result = And(ctx, bitA, bitB);
-            ctx.WriteCRBit(bt, result);
+            (Value bitA, Value bitB) = GetBitsAB(instruction);
+            Value result = And(bitA, bitB);
+            _irContext.WriteCRBit(bt, result);
         }
 
-        public static void CRANDC(IRContext ctx, PPUInstruction instruction) {
+        public void CRANDC(PPUInstruction instruction) {
             uint bt = instruction.Bt;
-            (Value bitA, Value bitB) = GetBitsAB(ctx, instruction);
-            Value result = And(ctx, bitA, Not(ctx, bitB));
-            ctx.WriteCRBit(bt, result);
+            (Value bitA, Value bitB) = GetBitsAB(instruction);
+            Value result = And(bitA, Not(bitB));
+            _irContext.WriteCRBit(bt, result);
         }
 
-        public static void CRXOR(IRContext ctx, PPUInstruction instruction) {
+        public void CRXOR(PPUInstruction instruction) {
             uint bt = instruction.Bt;
-            (Value bitA, Value bitB) = GetBitsAB(ctx, instruction);
-            Value result = Xor(ctx, bitA, bitB);
-            ctx.WriteCRBit(bt, result);
+            (Value bitA, Value bitB) = GetBitsAB(instruction);
+            Value result = Xor(bitA, bitB);
+            _irContext.WriteCRBit(bt, result);
         }
 
-        public static void CRNAND(IRContext ctx, PPUInstruction instruction) {
+        public void CRNAND(PPUInstruction instruction) {
             uint bt = instruction.Bt;
-            (Value bitA, Value bitB) = GetBitsAB(ctx, instruction);
-            Value result = Not(ctx, And(ctx, bitA, bitB));
-            ctx.WriteCRBit(bt, result);
+            (Value bitA, Value bitB) = GetBitsAB(instruction);
+            Value result = Not(And(bitA, bitB));
+            _irContext.WriteCRBit(bt, result);
         }
 
-        public static void CRNOR(IRContext ctx, PPUInstruction instruction) {
+        public void CRNOR(PPUInstruction instruction) {
             uint bt = instruction.Bt;
-            (Value bitA, Value bitB) = GetBitsAB(ctx, instruction);
-            Value result = Not(ctx, Or(ctx, bitA, bitB));
-            ctx.WriteCRBit(bt, result);
+            (Value bitA, Value bitB) = GetBitsAB(instruction);
+            Value result = Not(Or(bitA, bitB));
+            _irContext.WriteCRBit(bt, result);
         }
 
-        public static void CREQV(IRContext ctx, PPUInstruction instruction) {
+        public void CREQV(PPUInstruction instruction) {
             uint bt = instruction.Bt;
-            (Value bitA, Value bitB) = GetBitsAB(ctx, instruction);
-            Value result = Not(ctx, Xor(ctx, bitA, bitB));
-            ctx.WriteCRBit(bt, result);
+            (Value bitA, Value bitB) = GetBitsAB(instruction);
+            Value result = Not(Xor(bitA, bitB));
+            _irContext.WriteCRBit(bt, result);
         }
 
         // Multiply instructions
-        public static void MULLI(IRContext ctx, PPUInstruction instruction) {
+        public void MULLI(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value b = Constant(ctx, (ulong)instruction.SI_64);
-            Value result = IMulLD(ctx, a, b);
+            Value a = _irContext.GetGPR(ra);
+            Value b = Constant((ulong)instruction.SI_64);
+            Value result = IMulLD(a, b);
 
-            ctx.SetGPR(rt, result);
+            _irContext.SetGPR(rt, result);
             // No special registers affected
         }
 
-        public static void MULLW(IRContext ctx, PPUInstruction instruction) {
+        public void MULLW(PPUInstruction instruction) {
             // Multiply word, write 64-bit result (signed)
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value b = ctx.GetGPR(rb);
-            Value result = IMulLW(ctx, a, b);
+            Value a = _irContext.GetGPR(ra);
+            Value b = _irContext.GetGPR(rb);
+            Value result = IMulLW(a, b);
 
-            ctx.SetGPR(rt, result);
+            _irContext.SetGPR(rt, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void MULHW(IRContext ctx, PPUInstruction instruction) {
+        public void MULHW(PPUInstruction instruction) {
             // Multiply word, write high 32-bit result (signed)
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value b = ctx.GetGPR(rb);
-            Value result = IMulHW(ctx, a, b);
+            Value a = _irContext.GetGPR(ra);
+            Value b = _irContext.GetGPR(rb);
+            Value result = IMulHW(a, b);
 
-            ctx.SetGPR(rt, result);
+            _irContext.SetGPR(rt, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void MULHWU(IRContext ctx, PPUInstruction instruction) {
+        public void MULHWU(PPUInstruction instruction) {
             // Multiply word, write high 32-bit (unsigned)
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value b = ctx.GetGPR(rb);
-            Value result = MulHW(ctx, a, b);
+            Value a = _irContext.GetGPR(ra);
+            Value b = _irContext.GetGPR(rb);
+            Value result = MulHW(a, b);
 
-            ctx.SetGPR(rt, result);
+            _irContext.SetGPR(rt, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void MULLD(IRContext ctx, PPUInstruction instruction) {
+        public void MULLD(PPUInstruction instruction) {
             // Multiply double word (signed)
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value b = ctx.GetGPR(rb);
-            Value result = IMulLD(ctx, a, b);
+            Value a = _irContext.GetGPR(ra);
+            Value b = _irContext.GetGPR(rb);
+            Value result = IMulLD(a, b);
 
-            ctx.SetGPR(rt, result);
+            _irContext.SetGPR(rt, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void MULHD(IRContext ctx, PPUInstruction instruction) {
+        public void MULHD(PPUInstruction instruction) {
             // Multiply double word, write high 64-bit (signed)
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value b = ctx.GetGPR(rb);
-            Value result = IMulHD(ctx, a, b);
+            Value a = _irContext.GetGPR(ra);
+            Value b = _irContext.GetGPR(rb);
+            Value result = IMulHD(a, b);
 
-            ctx.SetGPR(rt, result);
+            _irContext.SetGPR(rt, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void MULHDU(IRContext ctx, PPUInstruction instruction) {
+        public void MULHDU(PPUInstruction instruction) {
             // Multiply double word, write high 64-bit (unsigned)
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value b = ctx.GetGPR(rb);
-            Value result = MulHD(ctx, a, b);
+            Value a = _irContext.GetGPR(ra);
+            Value b = _irContext.GetGPR(rb);
+            Value result = MulHD(a, b);
 
-            ctx.SetGPR(rt, result);
+            _irContext.SetGPR(rt, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
         // Divide instructions
-        public static void DIVD(IRContext ctx, PPUInstruction instruction) {
+        public void DIVD(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value b = ctx.GetGPR(rb);
-            Value result = CheckedIDivD(ctx, a, b);
+            Value a = _irContext.GetGPR(ra);
+            Value b = _irContext.GetGPR(rb);
+            Value result = CheckedIDivD(a, b);
 
-            ctx.SetGPR(rt, result);
+            _irContext.SetGPR(rt, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void DIVDU(IRContext ctx, PPUInstruction instruction) {
+        public void DIVDU(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value b = ctx.GetGPR(rb);
-            Value result = CheckedDivD(ctx, a, b);
+            Value a = _irContext.GetGPR(ra);
+            Value b = _irContext.GetGPR(rb);
+            Value result = CheckedDivD(a, b);
 
-            ctx.SetGPR(rt, result);
+            _irContext.SetGPR(rt, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void DIVW(IRContext ctx, PPUInstruction instruction) {
+        public void DIVW(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value b = ctx.GetGPR(rb);
-            Value result = CheckedIDivW(ctx, a, b);
+            Value a = _irContext.GetGPR(ra);
+            Value b = _irContext.GetGPR(rb);
+            Value result = CheckedIDivW(a, b);
 
-            ctx.SetGPR(rt, result);
+            _irContext.SetGPR(rt, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void DIVWU(IRContext ctx, PPUInstruction instruction) {
+        public void DIVWU(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
 
-            Value a = ctx.GetGPR(ra);
-            Value b = ctx.GetGPR(rb);
-            Value result = CheckedDivW(ctx, a, b);
+            Value a = _irContext.GetGPR(ra);
+            Value b = _irContext.GetGPR(rb);
+            Value result = CheckedDivW(a, b);
 
-            ctx.SetGPR(rt, result);
+            _irContext.SetGPR(rt, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static (Value shiftAmount, Value isGreaterThanMaxShift) GetShiftAmount(IRContext ctx, Value shiftRegister, Value.ValueType destinationType) {
+        public (Value shiftAmount, Value isGreaterThanMaxShift) GetShiftAmount(Value shiftRegister, Value.ValueType destinationType) {
             if (destinationType != Value.ValueType.I64 && destinationType != Value.ValueType.I32) {
                 throw new Exception($"IR unsupported shift type: {destinationType}");
             }
@@ -727,446 +726,446 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             ulong bitCount = destinationType == Value.ValueType.I64 ? 63u : 31u;
             ulong mask = destinationType == Value.ValueType.I64 ? 0x7F : 0x3Fu;
 
-            maxShift = Constant(ctx, bitCount);
-            shiftMask = Constant(ctx, mask);
+            maxShift = Constant(bitCount);
+            shiftMask = Constant(mask);
 
-            shiftAmount = And(ctx, shiftRegister, shiftMask);
-            isGreaterThanMaxShift = SetGreaterThanUnsigned(ctx, shiftAmount, maxShift);
+            shiftAmount = And(shiftRegister, shiftMask);
+            isGreaterThanMaxShift = SetGreaterThanUnsigned(shiftAmount, maxShift);
 
             return (shiftAmount, isGreaterThanMaxShift);
         }
 
-        public static Value GetShiftedOutCA(IRContext ctx, Value value, Value shiftAmount, Value isGreaterThanMax) {
+        public Value GetShiftedOutCA(Value value, Value shiftAmount, Value isGreaterThanMax) {
             // Get the sign from the original value before extending
-            Value sign = GetSign(ctx, value);
+            Value sign = GetSign(value);
             Value value64;
 
             if (value.Type != Value.ValueType.I64) {
                 // Shifted-out bits are examined as a raw bit pattern,
                 // so widen without changing the low bits.
-                value64 = ZeroExtend(ctx, value, Value.ValueType.I64);
+                value64 = ZeroExtend(value, Value.ValueType.I64);
 
             } else {
                 value64 = value;
             }
  
             // We must not perform an invalid shift when shiftAmount > max.
-            Value safeShift = Select(ctx, isGreaterThanMax, ctx.Zero, shiftAmount);
+            Value safeShift = Select(isGreaterThanMax, _irContext.Zero, shiftAmount);
 
             // mask = (1 << safeShift) - 1
-            Value one = Constant(ctx, 1);
-            Value shiftedOne = ShiftLeft(ctx, one, safeShift);
-            Value mask = Sub(ctx, shiftedOne, one);
+            Value one = Constant(1);
+            Value shiftedOne = ShiftLeft(one, safeShift);
+            Value mask = Sub(shiftedOne, one);
 
-            Value shiftedBits = And(ctx, value64, mask);
-            Value hasOnes = SetNotEqual(ctx, shiftedBits, ctx.Zero);
+            Value shiftedBits = And(value64, mask);
+            Value hasOnes = SetNotEqual(shiftedBits, _irContext.Zero);
 
             // For shift > max, every bit is shifted out, so CA = sign.
-            Value normalCA = And(ctx, sign, hasOnes);
+            Value normalCA = And(sign, hasOnes);
             Value largeShiftCA = sign;
 
-            return Select(ctx, isGreaterThanMax, largeShiftCA, normalCA);
+            return Select(isGreaterThanMax, largeShiftCA, normalCA);
         }
 
-        public static Value GetSign(IRContext ctx, Value value) {
+        public Value GetSign(Value value) {
             // Make sure we're comparing same size
-            Value zero = Constant(ctx, 0, value.Type);
-            Value isNegative = SetLessThanSigned(ctx, value, zero);
+            Value zero = Constant(0, value.Type);
+            Value isNegative = SetLessThanSigned(value, zero);
 
             // The result however, is 64-bit
-            return Select(ctx, isNegative, ctx.One, ctx.Zero);
+            return Select(isNegative, _irContext.One, _irContext.Zero);
         }
 
         // Shift instructions
-        public static void SLD(IRContext ctx, PPUInstruction instruction) {
+        public void SLD(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
 
-            Value shiftReg = ctx.GetGPR(rb);
-            Value srcReg = ctx.GetGPR(rs);
+            Value shiftReg = _irContext.GetGPR(rb);
+            Value srcReg = _irContext.GetGPR(rs);
 
-            (Value shiftAmount, Value isGreaterThanMax) = GetShiftAmount(ctx, shiftReg, srcReg.Type);
-            Value shiftedValue64 = ShiftLeft(ctx, srcReg, shiftAmount);
-            Value result = Select(ctx, isGreaterThanMax, ctx.Zero, shiftedValue64);
+            (Value shiftAmount, Value isGreaterThanMax) = GetShiftAmount(shiftReg, srcReg.Type);
+            Value shiftedValue64 = ShiftLeft(srcReg, shiftAmount);
+            Value result = Select(isGreaterThanMax, _irContext.Zero, shiftedValue64);
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void SRD(IRContext ctx, PPUInstruction instruction) {
+        public void SRD(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
 
-            Value shiftReg = ctx.GetGPR(rb);
-            Value srcReg = ctx.GetGPR(rs);
+            Value shiftReg = _irContext.GetGPR(rb);
+            Value srcReg = _irContext.GetGPR(rs);
 
-            (Value shiftAmount, Value isGreaterThanMax) = GetShiftAmount(ctx, shiftReg, srcReg.Type);
-            Value shiftedValue64 = ShiftRight(ctx, srcReg, shiftAmount);
-            Value result = Select(ctx, isGreaterThanMax, ctx.Zero, shiftedValue64);
+            (Value shiftAmount, Value isGreaterThanMax) = GetShiftAmount(shiftReg, srcReg.Type);
+            Value shiftedValue64 = ShiftRight(srcReg, shiftAmount);
+            Value result = Select(isGreaterThanMax, _irContext.Zero, shiftedValue64);
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void SLW(IRContext ctx, PPUInstruction instruction) {
+        public void SLW(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
 
-            Value shiftAmountReg = ctx.GetGPR(rb);
-            Value srcReg32 = Truncate(ctx, ctx.GetGPR(rs), Value.ValueType.I32);
+            Value shiftAmountReg = _irContext.GetGPR(rb);
+            Value srcReg32 = Truncate(_irContext.GetGPR(rs), Value.ValueType.I32);
 
-            (Value shiftAmount, Value isGreaterThanMax) = GetShiftAmount(ctx, shiftAmountReg, srcReg32.Type);
-            Value shiftAmount32 = Truncate(ctx, shiftAmount, Value.ValueType.I32);
+            (Value shiftAmount, Value isGreaterThanMax) = GetShiftAmount(shiftAmountReg, srcReg32.Type);
+            Value shiftAmount32 = Truncate(shiftAmount, Value.ValueType.I32);
 
-            Value shiftedValue32 = ShiftLeft(ctx, srcReg32, shiftAmount32);
-            Value shiftedValue64 = ZeroExtend(ctx, shiftedValue32, Value.ValueType.I64);     
-            Value result = Select(ctx, isGreaterThanMax, ctx.Zero, shiftedValue64);
+            Value shiftedValue32 = ShiftLeft(srcReg32, shiftAmount32);
+            Value shiftedValue64 = ZeroExtend(shiftedValue32, Value.ValueType.I64);     
+            Value result = Select(isGreaterThanMax, _irContext.Zero, shiftedValue64);
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void SRW(IRContext ctx, PPUInstruction instruction) {
+        public void SRW(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
 
-            Value shiftAmountReg = ctx.GetGPR(rb);
-            Value srcReg32 = Truncate(ctx, ctx.GetGPR(rs), Value.ValueType.I32);
+            Value shiftAmountReg = _irContext.GetGPR(rb);
+            Value srcReg32 = Truncate(_irContext.GetGPR(rs), Value.ValueType.I32);
 
-            (Value shiftAmount, Value isGreaterThanMax) = GetShiftAmount(ctx, shiftAmountReg, srcReg32.Type);
-            Value shiftAmount32 = Truncate(ctx, shiftAmount, Value.ValueType.I32);
+            (Value shiftAmount, Value isGreaterThanMax) = GetShiftAmount(shiftAmountReg, srcReg32.Type);
+            Value shiftAmount32 = Truncate(shiftAmount, Value.ValueType.I32);
 
-            Value shiftedValue32 = ShiftRight(ctx, srcReg32, shiftAmount32);
-            Value shiftedValue64 = ZeroExtend(ctx, shiftedValue32, Value.ValueType.I64);     
-            Value result = Select(ctx, isGreaterThanMax, ctx.Zero, shiftedValue64);
+            Value shiftedValue32 = ShiftRight(srcReg32, shiftAmount32);
+            Value shiftedValue64 = ZeroExtend(shiftedValue32, Value.ValueType.I64);     
+            Value result = Select(isGreaterThanMax, _irContext.Zero, shiftedValue64);
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void SRAD(IRContext ctx, PPUInstruction instruction) {
+        public void SRAD(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
 
-            Value shiftReg = ctx.GetGPR(rb);
-            Value srcReg = ctx.GetGPR(rs);
+            Value shiftReg = _irContext.GetGPR(rb);
+            Value srcReg = _irContext.GetGPR(rs);
 
-            (Value shiftAmount, Value isGreaterThanMax) = GetShiftAmount(ctx, shiftReg, srcReg.Type);
-            Value shiftedValue = ShiftRightArithmetic(ctx, srcReg, shiftAmount);
-            Value sign = GetSign(ctx, srcReg);
+            (Value shiftAmount, Value isGreaterThanMax) = GetShiftAmount(shiftReg, srcReg.Type);
+            Value shiftedValue = ShiftRightArithmetic(srcReg, shiftAmount);
+            Value sign = GetSign(srcReg);
 
             // For arithmetic shift if shift > 63, fill based on sign.
-            Value fill =  Select(ctx, sign, ctx.MinusOne, ctx.Zero);
-            Value result = Select(ctx, isGreaterThanMax, fill, shiftedValue);
-            Value ca = GetShiftedOutCA(ctx, srcReg, shiftAmount, isGreaterThanMax);
+            Value fill =  Select(sign, _irContext.MinusOne, _irContext.Zero);
+            Value result = Select(isGreaterThanMax, fill, shiftedValue);
+            Value ca = GetShiftedOutCA(srcReg, shiftAmount, isGreaterThanMax);
 
-            ctx.SetGPR(ra, result);
-            ctx.SetCA(ca);
+            _irContext.SetGPR(ra, result);
+            _irContext.SetCA(ca);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void SRADI(IRContext ctx, PPUInstruction instruction) {
+        public void SRADI(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
             // SH is 6 bits
-            Value shiftAmount = Constant(ctx, (ulong)instruction.SH); 
+            Value shiftAmount = Constant((ulong)instruction.SH); 
 
-            Value srcReg = ctx.GetGPR(rs);
-            Value result = ShiftRightArithmetic(ctx, srcReg, shiftAmount);
+            Value srcReg = _irContext.GetGPR(rs);
+            Value result = ShiftRightArithmetic(srcReg, shiftAmount);
 
             Value ca;
 
             if (instruction.SH > 0) {
-                Value mask = Constant(ctx,(ulong)((1L << instruction.SH) - 1));
+                Value mask = Constant((ulong)((1L << instruction.SH) - 1));
 
-                Value shiftedBits = And(ctx, srcReg, mask);
-                Value hasOnes = SetNotEqual(ctx, shiftedBits, ctx.Zero);
-                Value sign = GetSign(ctx, srcReg);
+                Value shiftedBits = And(srcReg, mask);
+                Value hasOnes = SetNotEqual(shiftedBits, _irContext.Zero);
+                Value sign = GetSign(srcReg);
 
-                ca = And(ctx, sign, hasOnes);
+                ca = And(sign, hasOnes);
 
             } else {
-                ca = ctx.Zero;
+                ca = _irContext.Zero;
             }
 
-            ctx.SetGPR(ra, result);
-            ctx.SetCA(ca);
+            _irContext.SetGPR(ra, result);
+            _irContext.SetCA(ca);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void SRAW(IRContext ctx, PPUInstruction instruction) {
+        public void SRAW(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
 
-            Value shiftReg = ctx.GetGPR(rb);
-            Value srcReg64 = ctx.GetGPR(rs);
-            Value srcReg32 = Truncate(ctx, srcReg64, Value.ValueType.I32);
+            Value shiftReg = _irContext.GetGPR(rb);
+            Value srcReg64 = _irContext.GetGPR(rs);
+            Value srcReg32 = Truncate(srcReg64, Value.ValueType.I32);
 
-            (Value shiftAmount, Value isGreaterThanMax) = GetShiftAmount(ctx, shiftReg, srcReg32.Type);
-            Value shiftAmount32 = Truncate(ctx, shiftAmount, Value.ValueType.I32);
+            (Value shiftAmount, Value isGreaterThanMax) = GetShiftAmount(shiftReg, srcReg32.Type);
+            Value shiftAmount32 = Truncate(shiftAmount, Value.ValueType.I32);
 
-            Value shiftedValue32 = ShiftRightArithmetic(ctx, srcReg32, shiftAmount32);
-            Value shiftedValue64 = SignExtend(ctx, shiftedValue32, Value.ValueType.I64);
+            Value shiftedValue32 = ShiftRightArithmetic(srcReg32, shiftAmount32);
+            Value shiftedValue64 = SignExtend(shiftedValue32, Value.ValueType.I64);
 
-            Value sign = GetSign(ctx, srcReg32);
+            Value sign = GetSign(srcReg32);
 
             // For arithmetic shift if shift > 31, fill based on sign.
             // We use 64-bit operands here
 
-            Value fill =  Select(ctx, sign, ctx.MinusOne, ctx.Zero);
-            Value result = Select(ctx, isGreaterThanMax, fill, shiftedValue64);
-            Value ca = GetShiftedOutCA(ctx, srcReg32, shiftAmount, isGreaterThanMax);
+            Value fill =  Select(sign, _irContext.MinusOne, _irContext.Zero);
+            Value result = Select(isGreaterThanMax, fill, shiftedValue64);
+            Value ca = GetShiftedOutCA(srcReg32, shiftAmount, isGreaterThanMax);
 
-            ctx.SetGPR(ra, result);
-            ctx.SetCA(ca);
+            _irContext.SetGPR(ra, result);
+            _irContext.SetCA(ca);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void SRAWI(IRContext ctx, PPUInstruction instruction) {
+        public void SRAWI(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
             // SH is 5 bits
             int sh = instruction.SH & 0x1F;
-            Value shiftAmount = Constant(ctx, (ulong)sh, Value.ValueType.I32);
+            Value shiftAmount = Constant((ulong)sh, Value.ValueType.I32);
 
-            Value srcReg = ctx.GetGPR(rs);
-            Value srcReg32 = Truncate(ctx, srcReg, Value.ValueType.I32);
+            Value srcReg = _irContext.GetGPR(rs);
+            Value srcReg32 = Truncate(srcReg, Value.ValueType.I32);
 
-            Value result32 = ShiftRightArithmetic(ctx, srcReg32, shiftAmount);
-            Value result64 = SignExtend(ctx, result32, Value.ValueType.I64);
+            Value result32 = ShiftRightArithmetic(srcReg32, shiftAmount);
+            Value result64 = SignExtend(result32, Value.ValueType.I64);
 
             Value ca;
 
             if (instruction.SH > 0) {
-                Value sign = GetSign(ctx, srcReg32); // pass the 32-bit value
-                Value mask = Constant(ctx, (ulong)((1L << sh) - 1));
+                Value sign = GetSign(srcReg32); // pass the 32-bit value
+                Value mask = Constant((ulong)((1L << sh) - 1));
 
-                Value shiftedBits = And(ctx, srcReg, mask);
-                Value hasOnes = SetNotEqual(ctx, shiftedBits, ctx.Zero);
+                Value shiftedBits = And(srcReg, mask);
+                Value hasOnes = SetNotEqual(shiftedBits, _irContext.Zero);
 
-                ca = And(ctx, sign, hasOnes);
+                ca = And(sign, hasOnes);
 
             } else {
-                ca = ctx.Zero;
+                ca = _irContext.Zero;
             }
 
-            ctx.SetGPR(ra, result64);
-            ctx.SetCA(ca);
+            _irContext.SetGPR(ra, result64);
+            _irContext.SetCA(ca);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result64, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result64, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void RLDICL(IRContext ctx, PPUInstruction instruction) {
+        public void RLDICL(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
             int sh = instruction.SH;
             ulong mask = GetRotationMask(instruction.MB_6, 63);
 
-            Value srcReg = ctx.GetGPR(rs);
-            Value rotationAmount = Constant(ctx, (ulong)sh);
-            Value rotated = RotateLeft(ctx, srcReg, rotationAmount);
-            Value result = And(ctx, rotated, Constant(ctx, mask));
+            Value srcReg = _irContext.GetGPR(rs);
+            Value rotationAmount = Constant((ulong)sh);
+            Value rotated = RotateLeft(srcReg, rotationAmount);
+            Value result = And(rotated, Constant(mask));
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void RLDICR(IRContext ctx, PPUInstruction instruction) {
+        public void RLDICR(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
             int sh = instruction.SH;
             ulong mask = GetRotationMask(0, instruction.ME_6);
 
-            Value srcReg = ctx.GetGPR(rs);
-            Value rotationAmount = Constant(ctx, (ulong)sh);
-            Value rotated = RotateLeft(ctx, srcReg, rotationAmount);
-            Value result = And(ctx, rotated, Constant(ctx, mask));
+            Value srcReg = _irContext.GetGPR(rs);
+            Value rotationAmount = Constant((ulong)sh);
+            Value rotated = RotateLeft(srcReg, rotationAmount);
+            Value result = And(rotated, Constant(mask));
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void RLDIC(IRContext ctx, PPUInstruction instruction) {
+        public void RLDIC(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
             int sh = instruction.SH;
             ulong mask = GetRotationMask(instruction.MB_6, 63 - sh);
 
-            Value srcReg = ctx.GetGPR(rs);
-            Value rotationAmount = Constant(ctx, (ulong)sh);
-            Value rotated = RotateLeft(ctx, srcReg, rotationAmount);
-            Value result = And(ctx, rotated, Constant(ctx, mask));
+            Value srcReg = _irContext.GetGPR(rs);
+            Value rotationAmount = Constant((ulong)sh);
+            Value rotated = RotateLeft(srcReg, rotationAmount);
+            Value result = And(rotated, Constant(mask));
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void RLDIMI(IRContext ctx, PPUInstruction instruction) {
+        public void RLDIMI(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
             int sh = instruction.SH;
             ulong mask = GetRotationMask(instruction.MB_6, 63 - sh);
 
-            Value srcReg = ctx.GetGPR(rs);
-            Value raReg = ctx.GetGPR(ra);
+            Value srcReg = _irContext.GetGPR(rs);
+            Value raReg = _irContext.GetGPR(ra);
 
-            Value rotationAmount = Constant(ctx, (ulong)sh);
-            Value rotated = RotateLeft(ctx, srcReg, rotationAmount);
+            Value rotationAmount = Constant((ulong)sh);
+            Value rotated = RotateLeft(srcReg, rotationAmount);
 
             // result = (rotated & mask) | (raReg & (~mask));
 
-            Value maskedResult = And(ctx, rotated, Constant(ctx, mask));
-            Value maskedRa = And(ctx, raReg, Constant(ctx, ~mask));
-            Value result = Or(ctx, maskedResult, maskedRa);
+            Value maskedResult = And(rotated, Constant(mask));
+            Value maskedRa = And(raReg, Constant(~mask));
+            Value result = Or(maskedResult, maskedRa);
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void RLDCL(IRContext ctx, PPUInstruction instruction) {
+        public void RLDCL(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
             ulong mask = GetRotationMask(instruction.MB_6, 63);
 
-            Value rbReg = ctx.GetGPR(rb);
-            Value srcReg = ctx.GetGPR(rs);
+            Value rbReg = _irContext.GetGPR(rb);
+            Value srcReg = _irContext.GetGPR(rs);
 
-            Value rotationAmount = And(ctx, rbReg, Constant(ctx, 0x3FL)); // 6-bits
-            Value rotated = RotateLeft(ctx, srcReg, rotationAmount);
-            Value result = And(ctx, rotated, Constant(ctx, mask));
+            Value rotationAmount = And(rbReg, Constant(0x3FL)); // 6-bits
+            Value rotated = RotateLeft(srcReg, rotationAmount);
+            Value result = And(rotated, Constant(mask));
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void RLDCR(IRContext ctx, PPUInstruction instruction) {
+        public void RLDCR(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
             ulong mask = GetRotationMask(0, instruction.ME_6);
 
-            Value rbReg = ctx.GetGPR(rb);
-            Value srcReg = ctx.GetGPR(rs);
+            Value rbReg = _irContext.GetGPR(rb);
+            Value srcReg = _irContext.GetGPR(rs);
 
-            Value rotationAmount = And(ctx, rbReg, Constant(ctx, 0x3FL)); // 6-bits
-            Value rotated = RotateLeft(ctx, srcReg, rotationAmount);
-            Value result = And(ctx, rotated, Constant(ctx, mask));
+            Value rotationAmount = And(rbReg, Constant(0x3FL)); // 6-bits
+            Value rotated = RotateLeft(srcReg, rotationAmount);
+            Value result = And(rotated, Constant(mask));
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void RLWIMI(IRContext ctx, PPUInstruction instruction) {
+        public void RLWIMI(PPUInstruction instruction) {
             int n = instruction.SH & 0x1F; //Rotate 32 takes only 5 bits of SH
 
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
             ulong mask = GetRotationMask(instruction.MB_5 + 32, instruction.ME_5 + 32);
 
-            Value srcReg = ctx.GetGPR(rs);
-            Value raReg = ctx.GetGPR(ra);
+            Value srcReg = _irContext.GetGPR(rs);
+            Value raReg = _irContext.GetGPR(ra);
 
-            Value rotationAmount = Constant(ctx, n);
-            Value rotated = RotateLeft(ctx, srcReg, rotationAmount);
+            Value rotationAmount = Constant(n);
+            Value rotated = RotateLeft(srcReg, rotationAmount);
 
-            Value rotatedMasked = And(ctx, rotated, Constant(ctx, mask));
-            Value raMasked = And(ctx, raReg, Constant(ctx, ~mask));
+            Value rotatedMasked = And(rotated, Constant(mask));
+            Value raMasked = And(raReg, Constant(~mask));
 
-            Value result = Or(ctx, rotatedMasked, raMasked);
-            ctx.SetGPR(ra, result);
+            Value result = Or(rotatedMasked, raMasked);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void RLWINM(IRContext ctx, PPUInstruction instruction) {
+        public void RLWINM(PPUInstruction instruction) {
             int n = instruction.SH & 0x1F; //Rotate 32 takes only 5 bits of SH
 
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
             ulong mask = GetRotationMask(instruction.MB_5 + 32, instruction.ME_5 + 32);
 
-            Value srcReg = ctx.GetGPR(rs);
+            Value srcReg = _irContext.GetGPR(rs);
 
-            Value rotationAmount = Constant(ctx, n);
-            Value rotated = RotateLeft(ctx, srcReg, rotationAmount);
-            Value result = And(ctx, rotated, Constant(ctx, mask));
+            Value rotationAmount = Constant(n);
+            Value rotated = RotateLeft(srcReg, rotationAmount);
+            Value result = And(rotated, Constant(mask));
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public static void RLWNM(IRContext ctx, PPUInstruction instruction) {
+        public void RLWNM(PPUInstruction instruction) {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
             ulong mask = GetRotationMask(instruction.MB_5 + 32, instruction.ME_5 + 32);
 
-            Value srcReg = ctx.GetGPR(rs);
-            Value rbReg = ctx.GetGPR(rb);
+            Value srcReg = _irContext.GetGPR(rs);
+            Value rbReg = _irContext.GetGPR(rb);
 
-            Value rotationAmount = And(ctx, rbReg, Constant(ctx, 0x1F)); //Rotate 32 takes only 5 bits of SH
-            Value rotated = RotateLeft(ctx, srcReg, rotationAmount);
-            Value result = And(ctx, rotated, Constant(ctx, mask));
+            Value rotationAmount = And(rbReg, Constant(0x1F)); //Rotate 32 takes only 5 bits of SH
+            Value rotated = RotateLeft(srcReg, rotationAmount);
+            Value result = And(rotated, Constant(mask));
 
-            ctx.SetGPR(ra, result);
+            _irContext.SetGPR(ra, result);
 
             if (instruction.Rc == 1) {
-                ctx.UpdateCR(result, ctx.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
     }

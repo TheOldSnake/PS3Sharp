@@ -1,6 +1,6 @@
 ﻿using Iced.Intel;
 using static Iced.Intel.AssemblerRegisters;
-using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRInstructions;
+using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
     public partial class RegisterAllocator {
@@ -77,14 +77,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             CurrentRegisterPool.Clear();
         }
 
-        private bool RequiresReservedRaxRdx(IRInstruction instruction) {
+        private static bool RequiresReservedRaxRdx(IRInstruction instruction) {
             bool isSpecialMulDiv =
-                instruction.Op == IR.IRInstructions.Op.IMulHD       ||
-                instruction.Op == IR.IRInstructions.Op.MulHD        ||
-                instruction.Op == IR.IRInstructions.Op.CheckedIDivD ||
-                instruction.Op == IR.IRInstructions.Op.CheckedDivD  ||
-                instruction.Op == IR.IRInstructions.Op.CheckedIDivW ||
-                instruction.Op == IR.IRInstructions.Op.CheckedDivW;
+                instruction.Opcode == IRInstruction.Op.IMulHD       ||
+                instruction.Opcode == IRInstruction.Op.MulHD        ||
+                instruction.Opcode == IRInstruction.Op.CheckedIDivD ||
+                instruction.Opcode == IRInstruction.Op.CheckedDivD  ||
+                instruction.Opcode == IRInstruction.Op.CheckedIDivW ||
+                instruction.Opcode == IRInstruction.Op.CheckedDivW;
 
             return isSpecialMulDiv;
         }

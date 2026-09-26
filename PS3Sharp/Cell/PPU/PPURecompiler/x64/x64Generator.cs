@@ -2,12 +2,10 @@
 using PS3Sharp.Memory_Manager;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator;
 using static Iced.Intel.AssemblerRegisters;
 using static PS3Sharp.Cell.PPU.PPU;
-using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
-using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRInstructions;
 using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAllocator;
+using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
     public unsafe partial class X64Generator {
@@ -416,223 +414,223 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
         }
 
         private void IRToX64(Assembler asm, IRInstruction instruction) {
-            if (instruction.Op == IR.IRInstructions.Op.Ret) {
+            if (instruction.Opcode == IRInstruction.Op.Ret) {
                 return;
             }
 
             LoadOperands(asm, instruction);
           
-            switch (instruction.Op) {
-                case IR.IRInstructions.Op.PCStore:
+            switch (instruction.Opcode) {
+                case IRInstruction.Op.PCStore:
                     PCStore(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.LRLoad:
+                case IRInstruction.Op.LRLoad:
                     LRLoad(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.LRStore:
+                case IRInstruction.Op.LRStore:
                     LRStore(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.CRLoad:
+                case IRInstruction.Op.CRLoad:
                     CRLoad(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.CRStore:
+                case IRInstruction.Op.CRStore:
                     CRStore(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.CTRLoad:
+                case IRInstruction.Op.CTRLoad:
                     CTRLoad(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.CTRStore:
+                case IRInstruction.Op.CTRStore:
                     CTRStore(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.XERLoad:
+                case IRInstruction.Op.XERLoad:
                     XERLoad(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.XERStore:
+                case IRInstruction.Op.XERStore:
                     XERStore(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.GPRLoad: 
+                case IRInstruction.Op.GPRLoad: 
                     GPRLoad(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.GPRStore:
+                case IRInstruction.Op.GPRStore:
                     GPRStore(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.Add:
-                case IR.IRInstructions.Op.And:
-                case IR.IRInstructions.Op.Or:
-                case IR.IRInstructions.Op.Xor:
+                case IRInstruction.Op.Add:
+                case IRInstruction.Op.And:
+                case IRInstruction.Op.Or:
+                case IRInstruction.Op.Xor:
                     CommutativeOp(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.Not:
+                case IRInstruction.Op.Not:
                     Not(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.Sub:
+                case IRInstruction.Op.Sub:
                     Sub(asm, instruction);
                     break;
 
 
-                case IR.IRInstructions.Op.IMulLD:
+                case IRInstruction.Op.IMulLD:
                     IMulLD(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.IMulHD:
+                case IRInstruction.Op.IMulHD:
                     IMulHD(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.MulHD:
+                case IRInstruction.Op.MulHD:
                     MulHD(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.IMulLW:
+                case IRInstruction.Op.IMulLW:
                     IMulLW(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.IMulHW:
+                case IRInstruction.Op.IMulHW:
                     IMulHW(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.MulHW:
+                case IRInstruction.Op.MulHW:
                     MulHW(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.CheckedDivD:
+                case IRInstruction.Op.CheckedDivD:
                     CheckedDivD(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.CheckedIDivD:
+                case IRInstruction.Op.CheckedIDivD:
                     CheckedIDivD(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.CheckedDivW:
+                case IRInstruction.Op.CheckedDivW:
                     CheckedDivW(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.CheckedIDivW:
+                case IRInstruction.Op.CheckedIDivW:
                     CheckedIDivW(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.ShiftLeft:
+                case IRInstruction.Op.ShiftLeft:
                     ShiftLeft(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.ShiftRight:
+                case IRInstruction.Op.ShiftRight:
                     ShiftRight(asm, instruction, arithmetic: false);
                     break;
 
-                case IR.IRInstructions.Op.ShiftRightArithmetic:
+                case IRInstruction.Op.ShiftRightArithmetic:
                     ShiftRight(asm, instruction, arithmetic: true);
                     break;
 
-                case IR.IRInstructions.Op.RotateLeft:
+                case IRInstruction.Op.RotateLeft:
                     RotateLeft(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.RotateRight:
+                case IRInstruction.Op.RotateRight:
                     RotateRight(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.Load64:
+                case IRInstruction.Op.Load64:
                     Load64(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.Store64:
+                case IRInstruction.Op.Store64:
                     Store64(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.Load32:
+                case IRInstruction.Op.Load32:
                     Load32(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.Store32:
+                case IRInstruction.Op.Store32:
                     Store32(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.Load16:
+                case IRInstruction.Op.Load16:
                     Load16(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.Store16:
+                case IRInstruction.Op.Store16:
                     Store16(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.Load8:
+                case IRInstruction.Op.Load8:
                     Load8(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.Store8:
+                case IRInstruction.Op.Store8:
                     Store8(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.Select:
+                case IRInstruction.Op.Select:
                     Select(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.SetEq:
+                case IRInstruction.Op.SetEq:
                     SetEq(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.SetNotEq:
+                case IRInstruction.Op.SetNotEq:
                     SetNotEq(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.SetLessThanSigned:
+                case IRInstruction.Op.SetLessThanSigned:
                     SetLessThan(asm, instruction, signed: true);
                     break;
 
-                case IR.IRInstructions.Op.SetGreaterThanSigned:
+                case IRInstruction.Op.SetGreaterThanSigned:
                     SetGreaterThan(asm, instruction, signed: true);
                     break;
 
-                case IR.IRInstructions.Op.SetLessThanUnsigned:
+                case IRInstruction.Op.SetLessThanUnsigned:
                     SetLessThan(asm, instruction, signed: false);
                     break;
 
-                case IR.IRInstructions.Op.SetGreaterThanUnsigned:
+                case IRInstruction.Op.SetGreaterThanUnsigned:
                     SetGreaterThan(asm, instruction, signed: false);
                     break;
 
-                case IR.IRInstructions.Op.SetLessThanEqSigned:
+                case IRInstruction.Op.SetLessThanEqSigned:
                     SetLessThanEq(asm, instruction, signed: true);
                     break;
 
-                case IR.IRInstructions.Op.SetGreaterThanEqSigned:
+                case IRInstruction.Op.SetGreaterThanEqSigned:
                     SetGreaterThanEq(asm, instruction, signed: true);
                     break;
 
-                case IR.IRInstructions.Op.SetLessThanEqUnsigned:
+                case IRInstruction.Op.SetLessThanEqUnsigned:
                     SetLessThanEq(asm, instruction, signed: false);
                     break;
 
-                case IR.IRInstructions.Op.SetGreaterThanEqUnsigned:
+                case IRInstruction.Op.SetGreaterThanEqUnsigned:
                     SetGreaterThanEq(asm, instruction, signed: false);
                     break;
 
-                case IR.IRInstructions.Op.ZeroExtend:
+                case IRInstruction.Op.ZeroExtend:
                     ZeroExtend(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.SignExtend:
+                case IRInstruction.Op.SignExtend:
                     SignExtend(asm, instruction);
                     break;
 
-                case IR.IRInstructions.Op.Truncate:
+                case IRInstruction.Op.Truncate:
                     Truncate(asm, instruction);
                     break;
     
                 default:
-                    throw new Exception($"TODO: IR [{instruction.Op}] -> x64");
+                    throw new Exception($"TODO: IR [{instruction.Opcode}] -> x64");
             }
 
             FreeOperands(asm, instruction);

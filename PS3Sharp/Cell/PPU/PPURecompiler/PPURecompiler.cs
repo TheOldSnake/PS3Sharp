@@ -35,6 +35,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
         private const int Size = 1 << Bits;
         private const uint Mask = Size - 1;
         private X64Block*[] _blocks = new X64Block*[Size];
+
+		private IRGenerator _irGenerator  = new IRGenerator();
 		private X64Generator _x64Generator = new X64Generator();
 
 		private nuint NextBlockAddress;
@@ -96,7 +98,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
 
         private void CompilePPCBlock(PPU ppu, X64Block* nativeBlock) {
             // Generate IR
-            IRBlock block = IRGenerator.GenerateIRBlock(ppu.State->PC);
+			IRBlock block = _irGenerator.GenerateIRBlock(ppu.State->PC);
             nativeBlock->IsSyscallExit = block.IsSyscallExit;
 
             // Generate x64

@@ -1,15 +1,14 @@
 ﻿using static PS3Sharp.Cell.PPU.PPUInterpreter.PPUInterpreter;
-using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRInstructions;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
-    public static partial class IRGenerator {
-        public static Value GetEa(IRContext ctx, PPUInstruction instruction, MemAccessForm form, bool checkRA) {
+    public partial class IRGenerator {
+        public Value GetEa(PPUInstruction instruction, MemAccessForm form, bool checkRA) {
 
             Value baseAddress;
             if (checkRA) {
-                baseAddress = instruction.Ra != 0 ? ctx.GetGPR(instruction.Ra) : ctx.Zero;
+                baseAddress = instruction.Ra != 0 ? _irContext.GetGPR(instruction.Ra) : _irContext.Zero;
             } else {
-                baseAddress = ctx.GetGPR(instruction.Ra);
+                baseAddress = _irContext.GetGPR(instruction.Ra);
             }
 
 
@@ -18,15 +17,15 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             switch (form) {
                 case MemAccessForm.DForm:
-                    offs = Constant(ctx, (long)(short)instruction.D);           // sign extended
+                    offs = Constant((long)(short)instruction.D);           // sign extended
                     break;
 
                 case MemAccessForm.DSForm:
-                    offs = Constant(ctx, (long)(short)(instruction.DS << 2));   // sign extended
+                    offs = Constant((long)(short)(instruction.DS << 2));   // sign extended
                     break;
 
                 case MemAccessForm.XForm:
-                    offs = ctx.GetGPR(instruction.Rb);
+                    offs = _irContext.GetGPR(instruction.Rb);
                     break;
 
                 // Should be unreachable
@@ -34,355 +33,355 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
                     throw new Exception($"Unknown Form {form}");
             }
 
-            ea = Add(ctx, baseAddress, offs);
+            ea = Add(baseAddress, offs);
             return ea;
         }
 
         // Store Byte Instructions
-        public static void STB(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.DForm, true);
-            Value src = ctx.GetGPR(instruction.Rs);
-            Store8(ctx, ea, Truncate(ctx, src, Value.ValueType.I8));
+        public void STB(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.DForm, true);
+            Value src = _irContext.GetGPR(instruction.Rs);
+            Store8(ea, Truncate(src, Value.ValueType.I8));
         }
 
-        public static void STBX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, true);
-            Value src = ctx.GetGPR(instruction.Rs);
-            Store8(ctx, ea, Truncate(ctx, src, Value.ValueType.I8));
+        public void STBX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, true);
+            Value src = _irContext.GetGPR(instruction.Rs);
+            Store8(ea, Truncate(src, Value.ValueType.I8));
         }
 
-        public static void STBU(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.DForm, false);
-            Value src = ctx.GetGPR(instruction.Rs);
-            Store8(ctx, ea, Truncate(ctx, src, Value.ValueType.I8));
-            ctx.SetGPR(instruction.Ra, ea); // update
+        public void STBU(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.DForm, false);
+            Value src = _irContext.GetGPR(instruction.Rs);
+            Store8(ea, Truncate(src, Value.ValueType.I8));
+            _irContext.SetGPR(instruction.Ra, ea); // update
         }
 
-        public static void STBUX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, false);
-            Value src = ctx.GetGPR(instruction.Rs);
-            Store8(ctx, ea, Truncate(ctx, src, Value.ValueType.I8));
-            ctx.SetGPR(instruction.Ra, ea); // update
+        public void STBUX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, false);
+            Value src = _irContext.GetGPR(instruction.Rs);
+            Store8(ea, Truncate(src, Value.ValueType.I8));
+            _irContext.SetGPR(instruction.Ra, ea); // update
         }
 
         // Store Half Instructions
-        public static void STH(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.DForm, true);
-            Value src = ctx.GetGPR(instruction.Rs);
-            Store16(ctx, ea, Truncate(ctx, src, Value.ValueType.I16));
+        public void STH(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.DForm, true);
+            Value src = _irContext.GetGPR(instruction.Rs);
+            Store16(ea, Truncate(src, Value.ValueType.I16));
         }
 
-        public static void STHX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, true);
-            Value src = ctx.GetGPR(instruction.Rs);
-            Store16(ctx, ea, Truncate(ctx, src, Value.ValueType.I16));
+        public void STHX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, true);
+            Value src = _irContext.GetGPR(instruction.Rs);
+            Store16(ea, Truncate(src, Value.ValueType.I16));
         }
 
-        public static void STHU(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.DForm, false);
-            Value src = ctx.GetGPR(instruction.Rs);
-            Store16(ctx, ea, Truncate(ctx, src, Value.ValueType.I16));
-            ctx.SetGPR(instruction.Ra, ea); // update
+        public void STHU(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.DForm, false);
+            Value src = _irContext.GetGPR(instruction.Rs);
+            Store16(ea, Truncate(src, Value.ValueType.I16));
+            _irContext.SetGPR(instruction.Ra, ea); // update
         }
 
-        public static void STHUX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, false);
-            Value src = ctx.GetGPR(instruction.Rs);
-            Store16(ctx, ea, Truncate(ctx, src, Value.ValueType.I16));
-            ctx.SetGPR(instruction.Ra, ea); // update
+        public void STHUX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, false);
+            Value src = _irContext.GetGPR(instruction.Rs);
+            Store16(ea, Truncate(src, Value.ValueType.I16));
+            _irContext.SetGPR(instruction.Ra, ea); // update
         }
 
-        public static void STHBRX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, true);
-            Value src = ctx.GetGPR(instruction.Rs);
-            Store16Reversed(ctx, ea, Truncate(ctx, src, Value.ValueType.I16));
+        public void STHBRX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, true);
+            Value src = _irContext.GetGPR(instruction.Rs);
+            Store16Reversed(ea, Truncate(src, Value.ValueType.I16));
         }
 
         // Store Word Instructions
-        public static void STW(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.DForm, true);
-            Value src = ctx.GetGPR(instruction.Rs);
-            Store32(ctx, ea, Truncate(ctx, src, Value.ValueType.I32));
+        public void STW(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.DForm, true);
+            Value src = _irContext.GetGPR(instruction.Rs);
+            Store32(ea, Truncate(src, Value.ValueType.I32));
         }
 
-        public static void STWX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, true);
-            Value src = ctx.GetGPR(instruction.Rs);
-            Store32(ctx, ea, Truncate(ctx, src, Value.ValueType.I32));
+        public void STWX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, true);
+            Value src = _irContext.GetGPR(instruction.Rs);
+            Store32(ea, Truncate(src, Value.ValueType.I32));
         }
 
-        public static void STWU(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.DForm, false);
-            Value src = ctx.GetGPR(instruction.Rs);
-            Store32(ctx, ea, Truncate(ctx, src, Value.ValueType.I32));
-            ctx.SetGPR(instruction.Ra, ea); // update
+        public void STWU(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.DForm, false);
+            Value src = _irContext.GetGPR(instruction.Rs);
+            Store32(ea, Truncate(src, Value.ValueType.I32));
+            _irContext.SetGPR(instruction.Ra, ea); // update
         }
 
-        public static void STWUX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, false);
-            Value src = ctx.GetGPR(instruction.Rs);
-            Store32(ctx, ea, Truncate(ctx, src, Value.ValueType.I32));
-            ctx.SetGPR(instruction.Ra, ea); // update
+        public void STWUX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, false);
+            Value src = _irContext.GetGPR(instruction.Rs);
+            Store32(ea, Truncate(src, Value.ValueType.I32));
+            _irContext.SetGPR(instruction.Ra, ea); // update
         }
 
-        public static void STWBRX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, true);
-            Value src = ctx.GetGPR(instruction.Rs);
-            Store32Reversed(ctx, ea, Truncate(ctx, src, Value.ValueType.I32));
+        public void STWBRX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, true);
+            Value src = _irContext.GetGPR(instruction.Rs);
+            Store32Reversed(ea, Truncate(src, Value.ValueType.I32));
         }
 
-        public static void STWCX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, true);
-            Value src = ctx.GetGPR(instruction.Rs);
-            Value success = Store32Conditional(ctx, ea, Truncate(ctx, src, Value.ValueType.I32));
-            Value cr0 = Select(ctx, success, ctx.CompareResult_Eq, ctx.Zero);
-            ctx.WriteCRField(PPU.CRNumber.CR0, cr0);
+        public void STWCX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, true);
+            Value src = _irContext.GetGPR(instruction.Rs);
+            Value success = Store32Conditional(ea, Truncate(src, Value.ValueType.I32));
+            Value cr0 = Select(success, _irContext.CompareResult_Eq, _irContext.Zero);
+            _irContext.WriteCRField(PPU.CRNumber.CR0, cr0);
         }
 
         // Store Double Word Instructions
-        public static void STD(IRContext ctx, PPUInstruction instruction) {
+        public void STD(PPUInstruction instruction) {
             bool update = (instruction.Raw & 0x3) == 1;
             bool checkRa = !update;
 
-            Value ea = GetEa(ctx, instruction, MemAccessForm.DSForm, checkRa);
-            Value src = ctx.GetGPR(instruction.Rs);
-            Store64(ctx, ea, src);
+            Value ea = GetEa(instruction, MemAccessForm.DSForm, checkRa);
+            Value src = _irContext.GetGPR(instruction.Rs);
+            Store64(ea, src);
 
             if (update) {
-                ctx.SetGPR(instruction.Ra, ea);
+                _irContext.SetGPR(instruction.Ra, ea);
             }
         }
 
-        public static void STDX(IRContext ctx, PPUInstruction instruction) {
+        public void STDX(PPUInstruction instruction) {
             bool update = (instruction.Raw & 0x3) == 1;
             bool checkRa = !update;
 
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, checkRa);
-            Value src = ctx.GetGPR(instruction.Rs);
-            Store64(ctx, ea, src);
+            Value ea = GetEa(instruction, MemAccessForm.XForm, checkRa);
+            Value src = _irContext.GetGPR(instruction.Rs);
+            Store64(ea, src);
 
             if (update) {
-                ctx.SetGPR(instruction.Ra, ea);
+                _irContext.SetGPR(instruction.Ra, ea);
             }
         }
 
-        public static void STDUX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, false);
-            Value src = ctx.GetGPR(instruction.Rs);
-            Store64(ctx, ea, src);
-            ctx.SetGPR(instruction.Ra, ea);     // update
+        public void STDUX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, false);
+            Value src = _irContext.GetGPR(instruction.Rs);
+            Store64(ea, src);
+            _irContext.SetGPR(instruction.Ra, ea);     // update
         }
 
-        public static void STDCX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, true);
-            Value src = ctx.GetGPR(instruction.Rs);
-            Value success = Store64Conditional(ctx, ea, src);
-            Value cr0 = Select(ctx, success, ctx.CompareResult_Eq, ctx.Zero);
-            ctx.WriteCRField(PPU.CRNumber.CR0, cr0);
+        public void STDCX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, true);
+            Value src = _irContext.GetGPR(instruction.Rs);
+            Value success = Store64Conditional(ea, src);
+            Value cr0 = Select(success, _irContext.CompareResult_Eq, _irContext.Zero);
+            _irContext.WriteCRField(PPU.CRNumber.CR0, cr0);
         }
 
         // Load Byte Instructions
-        public static void LBZ(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.DForm, true);
-            Value value = Load8(ctx, ea);
-            ctx.SetGPR(instruction.Rt, ZeroExtend(ctx, value, Value.ValueType.I64));
+        public void LBZ(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.DForm, true);
+            Value value = Load8(ea);
+            _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
         }
 
-        public static void LBZX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, true);
-            Value value = Load8(ctx, ea);
-            ctx.SetGPR(instruction.Rt, ZeroExtend(ctx, value, Value.ValueType.I64));
+        public void LBZX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, true);
+            Value value = Load8(ea);
+            _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
         }
 
-        public static void LBZU(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.DForm, false);
-            Value value = Load8(ctx, ea);
-            ctx.SetGPR(instruction.Rt, ZeroExtend(ctx, value, Value.ValueType.I64));
-            ctx.SetGPR(instruction.Ra, ea);    // update
+        public void LBZU(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.DForm, false);
+            Value value = Load8(ea);
+            _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
+            _irContext.SetGPR(instruction.Ra, ea);    // update
         }
 
-        public static void LBZUX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, false);
-            Value value = Load8(ctx, ea);
-            ctx.SetGPR(instruction.Rt, ZeroExtend(ctx, value, Value.ValueType.I64));
-            ctx.SetGPR(instruction.Ra, ea);    // update
+        public void LBZUX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, false);
+            Value value = Load8(ea);
+            _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
+            _irContext.SetGPR(instruction.Ra, ea);    // update
         }
 
         // Load Half Instructions
-        public static void LHZ(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.DForm, true);
-            Value value = Load16(ctx, ea);
-            ctx.SetGPR(instruction.Rt, ZeroExtend(ctx, value, Value.ValueType.I64));
+        public void LHZ(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.DForm, true);
+            Value value = Load16(ea);
+            _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
         }
 
-        public static void LHZX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, true);
-            Value value = Load16(ctx, ea);
-            ctx.SetGPR(instruction.Rt, ZeroExtend(ctx, value, Value.ValueType.I64));
+        public void LHZX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, true);
+            Value value = Load16(ea);
+            _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
         }
 
-        public static void LHZU(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.DForm, false);
-            Value value = Load16(ctx, ea);
-            ctx.SetGPR(instruction.Rt, ZeroExtend(ctx, value, Value.ValueType.I64));
-            ctx.SetGPR(instruction.Ra, ea);    // update
+        public void LHZU(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.DForm, false);
+            Value value = Load16(ea);
+            _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
+            _irContext.SetGPR(instruction.Ra, ea);    // update
         }
 
-        public static void LHZUX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, false);
-            Value value = Load16(ctx, ea);
-            ctx.SetGPR(instruction.Rt, ZeroExtend(ctx, value, Value.ValueType.I64));
-            ctx.SetGPR(instruction.Ra, ea);    // update
+        public void LHZUX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, false);
+            Value value = Load16(ea);
+            _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
+            _irContext.SetGPR(instruction.Ra, ea);    // update
         }
 
-        public static void LHBRX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, true);
-            Value value = Load16Reversed(ctx, ea);
-            ctx.SetGPR(instruction.Rt, ZeroExtend(ctx, value, Value.ValueType.I64));
+        public void LHBRX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, true);
+            Value value = Load16Reversed(ea);
+            _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
         }
 
-        public static void LHA(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.DForm, true);
-            Value value = Load16(ctx, ea);
-            ctx.SetGPR(instruction.Rt, SignExtend(ctx, value, Value.ValueType.I64));    // Sign extends
+        public void LHA(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.DForm, true);
+            Value value = Load16(ea);
+            _irContext.SetGPR(instruction.Rt, SignExtend(value, Value.ValueType.I64));    // Sign extends
         }
 
-        public static void LHAX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, true);
-            Value value = Load16(ctx, ea);
-            ctx.SetGPR(instruction.Rt, SignExtend(ctx, value, Value.ValueType.I64));    // Sign extends
+        public void LHAX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, true);
+            Value value = Load16(ea);
+            _irContext.SetGPR(instruction.Rt, SignExtend(value, Value.ValueType.I64));    // Sign extends
         }
 
-        public static void LHAU(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.DForm, false);
-            Value value = Load16(ctx, ea);
-            ctx.SetGPR(instruction.Rt, SignExtend(ctx, value, Value.ValueType.I64));    // Sign extends
-            ctx.SetGPR(instruction.Ra, ea);    // update
+        public void LHAU(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.DForm, false);
+            Value value = Load16(ea);
+            _irContext.SetGPR(instruction.Rt, SignExtend(value, Value.ValueType.I64));    // Sign extends
+            _irContext.SetGPR(instruction.Ra, ea);    // update
         }
 
-        public static void LHAUX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, false);
-            Value value = Load16(ctx, ea);
-            ctx.SetGPR(instruction.Rt, SignExtend(ctx, value, Value.ValueType.I64));    // Sign extends
-            ctx.SetGPR(instruction.Ra, ea);    // update
+        public void LHAUX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, false);
+            Value value = Load16(ea);
+            _irContext.SetGPR(instruction.Rt, SignExtend(value, Value.ValueType.I64));    // Sign extends
+            _irContext.SetGPR(instruction.Ra, ea);    // update
         }
 
 
         // Load Word Instructions
-        public static void LWZ(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.DForm, true);
-            Value value = Load32(ctx, ea);
-            ctx.SetGPR(instruction.Rt, ZeroExtend(ctx, value, Value.ValueType.I64));
+        public void LWZ(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.DForm, true);
+            Value value = Load32(ea);
+            _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
         }
 
-        public static void LWZX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, true);
-            Value value = Load32(ctx, ea);
-            ctx.SetGPR(instruction.Rt, ZeroExtend(ctx, value, Value.ValueType.I64));
+        public void LWZX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, true);
+            Value value = Load32(ea);
+            _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
         }
 
-        public static void LWZU(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.DForm, false);
-            Value value = Load32(ctx, ea);
-            ctx.SetGPR(instruction.Rt, ZeroExtend(ctx, value, Value.ValueType.I64));
-            ctx.SetGPR(instruction.Ra, ea);    // update
+        public void LWZU(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.DForm, false);
+            Value value = Load32(ea);
+            _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
+            _irContext.SetGPR(instruction.Ra, ea);    // update
         }
 
-        public static void LWZUX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, false);
-            Value value = Load32(ctx, ea);
-            ctx.SetGPR(instruction.Rt, ZeroExtend(ctx, value, Value.ValueType.I64));
-            ctx.SetGPR(instruction.Ra, ea);    // update
+        public void LWZUX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, false);
+            Value value = Load32(ea);
+            _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
+            _irContext.SetGPR(instruction.Ra, ea);    // update
         }
 
-        public static void LWBRX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, true);
-            Value value = Load32Reversed(ctx, ea);
-            ctx.SetGPR(instruction.Rt, ZeroExtend(ctx, value, Value.ValueType.I64));
+        public void LWBRX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, true);
+            Value value = Load32Reversed(ea);
+            _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
         }
 
-        public static void LWARX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, true);
-            Value value = Load32AndReserve(ctx, ea);
-            ctx.SetGPR(instruction.Rt, ZeroExtend(ctx, value, Value.ValueType.I64));
+        public void LWARX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, true);
+            Value value = Load32AndReserve(ea);
+            _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
         }
 
-        public static void LWA(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.DForm, true);
-            Value value = Load32(ctx, ea);
-            ctx.SetGPR(instruction.Rt, SignExtend(ctx, value, Value.ValueType.I64));    // Sign extends
+        public void LWA(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.DForm, true);
+            Value value = Load32(ea);
+            _irContext.SetGPR(instruction.Rt, SignExtend(value, Value.ValueType.I64));    // Sign extends
         }
 
-        public static void LWAX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, true);
-            Value value = Load32(ctx, ea);
-            ctx.SetGPR(instruction.Rt, SignExtend(ctx, value, Value.ValueType.I64));    // Sign extends
+        public void LWAX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, true);
+            Value value = Load32(ea);
+            _irContext.SetGPR(instruction.Rt, SignExtend(value, Value.ValueType.I64));    // Sign extends
         }
 
-        public static void LWAUX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, false);
-            Value value = Load32(ctx, ea);
-            ctx.SetGPR(instruction.Rt, SignExtend(ctx, value, Value.ValueType.I64));    // Sign extends
-            ctx.SetGPR(instruction.Ra, ea);    // update
+        public void LWAUX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, false);
+            Value value = Load32(ea);
+            _irContext.SetGPR(instruction.Rt, SignExtend(value, Value.ValueType.I64));    // Sign extends
+            _irContext.SetGPR(instruction.Ra, ea);    // update
         }
 
-        public static void LMW(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.DForm, true);
+        public void LMW(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.DForm, true);
             uint currentRegister = instruction.Rt;
 
             while (currentRegister <= 31) {
-                Value value = Load32(ctx, ea);
-                ctx.SetGPR(currentRegister, ZeroExtend(ctx, value, Value.ValueType.I64));
-                ea = Add(ctx, ea, Constant(ctx, 4));
+                Value value = Load32(ea);
+                _irContext.SetGPR(currentRegister, ZeroExtend(value, Value.ValueType.I64));
+                ea = Add(ea, Constant(4));
                 currentRegister++;
             }
         }
 
         // Load Double Word Instructions
-        public static void LD(IRContext ctx, PPUInstruction instruction) {
+        public void LD(PPUInstruction instruction) {
             switch (instruction.Raw & 0x3) {
                 case 0:
                 case 1:
-                    LoadDoubleWord(ctx, instruction);
+                    LoadDoubleWord(instruction);
                     break;
 
                 //LoadWordAlgebraic
                 case 2:
-                    LWA(ctx, instruction);
+                    LWA(instruction);
                     break;
             }
         }
 
-        public static void LoadDoubleWord(IRContext ctx, PPUInstruction instruction) {
+        public void LoadDoubleWord(PPUInstruction instruction) {
             bool update = (instruction.Raw & 0x3) == 1;
             bool checkRa = !update;
 
-            Value ea = GetEa(ctx, instruction, MemAccessForm.DSForm, checkRa);
-            Value value = Load64(ctx, ea);
-            ctx.SetGPR(instruction.Rt, value);
+            Value ea = GetEa(instruction, MemAccessForm.DSForm, checkRa);
+            Value value = Load64(ea);
+            _irContext.SetGPR(instruction.Rt, value);
 
             if (update) {
-                ctx.SetGPR(instruction.Ra, ea);
+                _irContext.SetGPR(instruction.Ra, ea);
             }
         }
 
-        public static void LDX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, true);
-            Value value = Load64(ctx, ea);
-            ctx.SetGPR(instruction.Rt, value);
+        public void LDX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, true);
+            Value value = Load64(ea);
+            _irContext.SetGPR(instruction.Rt, value);
         }
 
-        public static void LDUX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, false);
-            Value value = Load64(ctx, ea);
-            ctx.SetGPR(instruction.Rt, value);
-            ctx.SetGPR(instruction.Ra, ea);     // update
+        public void LDUX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, false);
+            Value value = Load64(ea);
+            _irContext.SetGPR(instruction.Rt, value);
+            _irContext.SetGPR(instruction.Ra, ea);     // update
         }
 
-        public static void LDARX(IRContext ctx, PPUInstruction instruction) {
-            Value ea = GetEa(ctx, instruction, MemAccessForm.XForm, true);
-            Value value = Load64AndReserve(ctx, ea);
-            ctx.SetGPR(instruction.Rt, value);
+        public void LDARX(PPUInstruction instruction) {
+            Value ea = GetEa(instruction, MemAccessForm.XForm, true);
+            Value value = Load64AndReserve(ea);
+            _irContext.SetGPR(instruction.Rt, value);
         }
     }
 }

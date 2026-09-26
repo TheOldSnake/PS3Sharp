@@ -1,8 +1,7 @@
 ﻿using Iced.Intel;
-using System.Runtime.Intrinsics.Arm;
-using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRInstructions;
 using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAllocator;
 using static Iced.Intel.AssemblerRegisters;
+using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
     public partial class X64Generator {
@@ -40,25 +39,25 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 reg2 = _registerMap[op2].GetRegister();
             }
 
-            switch (instruction.Op) {
-                case IR.IRInstructions.Op.Add:
+            switch (instruction.Opcode) {
+                case IRInstruction.Op.Add:
                     asm.add(dest, reg2);
                     break;
 
-                case IR.IRInstructions.Op.And:
+                case IRInstruction.Op.And:
                     asm.and(dest, reg2);
                     break;
 
-                case IR.IRInstructions.Op.Or:
+                case IRInstruction.Op.Or:
                     asm.or(dest, reg2);
                     break;
 
-                case IR.IRInstructions.Op.Xor:
+                case IRInstruction.Op.Xor:
                     asm.xor(dest, reg2);
                     break;
 
                 default:
-                    throw new NotImplementedException($"Unknown CommutativeOp = {instruction.Op}");
+                    throw new NotImplementedException($"Unknown CommutativeOp = {instruction.Opcode}");
             }
         }
 
