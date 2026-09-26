@@ -1,30 +1,16 @@
 ﻿using PS3Sharp.Cell.PPU.PPURecompiler.IR;
 using PS3Sharp.Cell.PPU.PPURecompiler.x64;
+using PS3Sharp.Common;
 using PS3Sharp.Syscall;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler {
-    public unsafe class PPURecompiler : IDisposable {
-        //Import needed kernel functions
-        [DllImport("kernel32.dll")]
-        private static extern void* VirtualAlloc(void* addr, int size, int type, int protect);
-
-        [DllImport("kernel32.dll")]
-        private static extern bool VirtualProtect(void* addr, int size, int new_protect, int* old_protect);
-
-        [DllImport("kernel32.dll")]
-        private static extern bool VirtualFree(void* addr, int size, int type);
-
-        [DllImport("kernel32.dll")]
-        private static extern bool FlushInstructionCache(IntPtr hProcess, IntPtr lpBaseAddress, UIntPtr dwSize);
-        private const int PAGE_EXECUTE_READWRITE = 0x40;
-        private const int MEM_COMMIT = 0x00001000;
-        private const int MEM_RELEASE = 0x00008000;
+    public unsafe class PPURecompiler : IDisposable {     
         private const int VirtualAllocSize = 4 * 1024;    // 4 kb
 
-        private readonly List<(nuint Address, ulong Size)> AllocatedPages = [];
+        private readonly List<(nint Address, ulong Size)> AllocatedPages = [];
 
         public struct X64Block {
             public delegate* unmanaged[Stdcall]<void> Code;
@@ -39,9 +25,9 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
 		private IRGenerator _irGenerator  = new IRGenerator();
 		private X64Generator _x64Generator = new X64Generator();
 
-		private nuint NextBlockAddress;
-        private nuint CurrentPageStartAddress;
-        private nuint CurrentPageEndAddress;
+		private nint NextBlockAddress;
+        private nint CurrentPageStartAddress;
+        private nint CurrentPageEndAddress;
         private bool disposedValue;
 
         private X64Block* GetBlock(uint virtualAddress) {
@@ -120,28 +106,28 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
             nativeBlock->Code = (delegate* unmanaged[Stdcall]<void>)dest;
 
             // Advance next block address and align to 16-byte
-            NextBlockAddress += (nuint)length;
-            NextBlockAddress = (nuint)AlignPow2(NextBlockAddress, 16);
+            NextBlockAddress += length;
+            NextBlockAddress = (nint)AlignPow2((nuint)NextBlockAddress, 16);
         }
 
         private void AllocateExecutableMemory(int size) {
             ulong alignedSize = AlignPow2((ulong)size, VirtualAllocSize);
-            nuint memory = (nuint)VirtualAlloc(null, (int)alignedSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+            nuint memory = (nuint)WinAPI.VirtualAlloc(IntPtr.Zero, (nuint)alignedSize, WinAPI.MEM_COMMIT, WinAPI.PAGE_EXECUTE_READWRITE);
 
             if (memory == 0) {
                 throw new Win32Exception();
             }
 
-            CurrentPageStartAddress = memory;
-            CurrentPageEndAddress = (nuint)(memory + alignedSize);
+            CurrentPageStartAddress = (nint)memory;
+            CurrentPageEndAddress = (nint)(memory + alignedSize);
             NextBlockAddress = CurrentPageStartAddress;
             AllocatedPages.Add((CurrentPageStartAddress, alignedSize));
             TotalAllocatedPages++;
         }
 
         private bool HasEnoughMemory(int size) {
-            ulong aligned = AlignPow2(NextBlockAddress + (nuint)size, 16);
-            return aligned < CurrentPageEndAddress;
+            ulong aligned = AlignPow2((nuint)NextBlockAddress + (nuint)size, 16);
+            return aligned < (nuint)CurrentPageEndAddress;
         }
 
         private ulong AlignPow2(ulong value, ulong alignment) {
@@ -165,9 +151,9 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
 
                 // Free executable pages
                 foreach (var allocation in AllocatedPages) {
-                    bool ok = VirtualFree((void*)allocation.Address, 0, MEM_RELEASE);
+                    int ok = WinAPI.VirtualFree(allocation.Address, 0, WinAPI.MEM_RELEASE);
 
-                    if (!ok) {
+                    if (ok == 0) {
                         throw new Win32Exception();
                     }
                 }

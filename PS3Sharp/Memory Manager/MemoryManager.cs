@@ -3,6 +3,7 @@ using OpenTK.Input.Hid;
 using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -10,39 +11,9 @@ using static PS3Sharp.Memory_Manager.MemoryManager;
 
 namespace PS3Sharp.Memory_Manager {
     public static unsafe partial class MemoryManager {
-        // Imports
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern void* VirtualAlloc(
-               nint lpAddress,
-               nuint dwSize,
-               uint flAllocationType,
-               uint flProtect);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern int VirtualProtect(
-            nint lpAddress,
-            nuint dwSize,
-            uint flNewProtect,
-            out uint lpflOldProtect);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern int VirtualFree(
-            nint lpAddress,
-            nuint dwSize,
-            uint dwFreeType);
-
 
         // Constants
-        private const ulong GuestAddressSpaceSize = 0x1_0000_0000; // 32-bit - 4 GiB
-        private const uint MEM_COMMIT = 0x1000;
-        private const uint MEM_RESERVE = 0x2000;
-        private const uint MEM_DECOMMIT = 0x4000;
-        private const uint MEM_RELEASE = 0x8000;
-
-        private const uint PAGE_NOACCESS = 0x01;
-        private const uint PAGE_READWRITE = 0x04;
-
+        public const ulong VIRTUAL_MEMORY_SIZE = 0x1_0000_0000; // 32-bit - 4 GiB
         public const uint RAM_SIZE = 256 * 1024 * 1024;
         public const uint RAM_START = 0x00010000;
         public const uint RAM_END = RAM_START + RAM_SIZE;
@@ -96,11 +67,11 @@ namespace PS3Sharp.Memory_Manager {
                 throw new Exception($"[MemoryManager] Guest memory already reserved");
             }
 
-            GuestMemoryBase = VirtualAlloc(0, (nuint)GuestAddressSpaceSize, MEM_RESERVE, PAGE_NOACCESS);
+            GuestMemoryBase = (void*)WinAPI.VirtualAlloc(0, (nuint)VIRTUAL_MEMORY_SIZE, WinAPI.MEM_RESERVE, WinAPI.PAGE_NOACCESS);
 
             if (GuestMemoryBase == null) {
-                int error = Marshal.GetLastWin32Error();
-                throw new Exception($"[MemoryManager] Could not reserve guest memory space, error: 0x{error:X8}");
+                Console.WriteLine("[MemoryManager] Could not reserve guest memory space");
+                throw new Win32Exception();
             }
         }
 
@@ -110,11 +81,11 @@ namespace PS3Sharp.Memory_Manager {
             }
 
             nint address = (nint)((byte*)GuestMemoryBase + (nint)virtualAddress);
-            void* result = VirtualAlloc(address, size, MEM_COMMIT, PAGE_READWRITE);
+            void* result = (void*)WinAPI.VirtualAlloc(address, size, WinAPI.MEM_COMMIT, WinAPI.PAGE_READWRITE);
 
             if (result == null) {
-                int error = Marshal.GetLastWin32Error();
-                throw new Exception($"[MemoryManager] Could not commit guest memory, error: 0x{error:X8}");
+                Console.WriteLine($"[MemoryManager] Could not release decommit memory");
+                throw new Win32Exception();
             }
 
             NativeMemory.Clear(result, size);
@@ -127,11 +98,11 @@ namespace PS3Sharp.Memory_Manager {
             }
 
             nint address = (nint)((byte*)GuestMemoryBase + (nint)virtualAddress);
-            int ok = VirtualFree(address, size, MEM_DECOMMIT);
+            int ok = WinAPI.VirtualFree(address, size, WinAPI.MEM_DECOMMIT);
 
             if (ok == 0) {
-                int error = Marshal.GetLastWin32Error();
-                throw new Exception($"[MemoryManager] Could not release decommit memory, error: 0x{error:X8}");
+                Console.WriteLine($"[MemoryManager] Could not release decommit memory");
+                throw new Win32Exception();
             }
 
             return (void*)address;
@@ -143,7 +114,12 @@ namespace PS3Sharp.Memory_Manager {
 
         private static void FreeVirtualMemory() {
             if (GuestMemoryBase != null) {
-                VirtualFree((nint)GuestMemoryBase, 0, MEM_RELEASE);
+                int ok = WinAPI.VirtualFree((nint)GuestMemoryBase, 0, WinAPI.MEM_RELEASE);
+
+                if (ok == 0) {
+                    throw new Win32Exception();
+                }
+
                 GuestMemoryBase = null;
             }
         }
