@@ -210,12 +210,6 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             }
 
             livenessList = livenessList.OrderBy(x => x.FirstUse).ToList();
-            //Console.WriteLine($"Liveness report:");
-
-            //foreach (var l in livenessList) {
-            //    Console.WriteLine($"v{l.Value.Id} first use: {l.FirstUse} last use: {l.LastUse}");
-            //}
-
             return livenessList;
         }
 
