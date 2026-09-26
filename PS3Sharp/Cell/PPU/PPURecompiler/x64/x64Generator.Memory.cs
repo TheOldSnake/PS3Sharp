@@ -34,139 +34,150 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
         }
 
         private void PCStore(Assembler asm, IRInstruction instruction) {
+            AssemblerRegister64 state = _registerAllocator.PPUStatePointer;
             Value src = instruction.Destination;
             int offset = GetPCOffset();
 
             // PC is 32-bit
             if (_knownConstants.TryGetValue(src, out ulong value)) {
-                asm.mov(__dword_ptr[PPUStatePointer + offset], (uint)value);
+                asm.mov(__dword_ptr[state + offset], (uint)value);
             } else {
                 Location dest = _registerMap[instruction.Destination];
                 AssemblerRegister64 reg = dest.GetRegister();
-                asm.mov(__dword_ptr[PPUStatePointer + offset], Reg64ToReg32(reg));
+                asm.mov(__dword_ptr[state + offset], Reg64ToReg32(reg));
             }
         }
 
         private void LRLoad(Assembler asm, IRInstruction instruction) {
             // Destination is always a register
+            AssemblerRegister64 state = _registerAllocator.PPUStatePointer;
             Location dest = _registerMap[instruction.Destination];
             int offset = GetLROffset();
             AssemblerRegister64 reg = dest.GetRegister();
 
             // LR is 32-bit
-            asm.mov(reg, __dword_ptr[PPUStatePointer + offset]);
+            asm.mov(reg, __dword_ptr[state + offset]);
         }
 
         private void LRStore(Assembler asm, IRInstruction instruction) {
+            AssemblerRegister64 state = _registerAllocator.PPUStatePointer;
             Value src = instruction.Destination;
             int offset = GetLROffset();
 
             // LR is 32-bit
             if (_knownConstants.TryGetValue(src, out ulong value)) {
-                asm.mov(__dword_ptr[PPUStatePointer + offset], (uint)value);
+                asm.mov(__dword_ptr[state + offset], (uint)value);
 
             } else {
                 Location dest = _registerMap[instruction.Destination];
                 AssemblerRegister64 reg = dest.GetRegister();
-                asm.mov(__dword_ptr[PPUStatePointer + offset], Reg64ToReg32(reg));
+                asm.mov(__dword_ptr[state + offset], Reg64ToReg32(reg));
             }
         }
 
         private void CRLoad(Assembler asm, IRInstruction instruction) {
             // Destination is always a register
+            AssemblerRegister64 state = _registerAllocator.PPUStatePointer;
             Location dest = _registerMap[instruction.Destination];
             int offset = GetCROffset();
             AssemblerRegister64 reg = dest.GetRegister();
 
             // CR is 32-bit
-            asm.mov(reg, __dword_ptr[PPUStatePointer + offset]);
+            asm.mov(reg, __dword_ptr[state + offset]);
         }
 
         private void CRStore(Assembler asm, IRInstruction instruction) {
+            AssemblerRegister64 state = _registerAllocator.PPUStatePointer;
             Value src = instruction.Destination;
             int offset = GetCROffset();
 
             // CR is 32-bit
             if (_knownConstants.TryGetValue(src, out ulong value)) {
-                asm.mov(__dword_ptr[PPUStatePointer + offset], (uint)value);
+                asm.mov(__dword_ptr[state + offset], (uint)value);
 
             } else {
                 Location dest = _registerMap[instruction.Destination];
                 AssemblerRegister64 reg = dest.GetRegister();
-                asm.mov(__dword_ptr[PPUStatePointer + offset], Reg64ToReg32(reg));
+                asm.mov(__dword_ptr[state + offset], Reg64ToReg32(reg));
             }
         }
 
         private void CTRLoad(Assembler asm, IRInstruction instruction) {
             // Destination is always a register
+            AssemblerRegister64 state = _registerAllocator.PPUStatePointer;
             Location dest = _registerMap[instruction.Destination];
             int offset = GetCTROffset();
             AssemblerRegister64 reg = dest.GetRegister();
 
             // CTR is 64-bit
-            asm.mov(reg, __qword_ptr[PPUStatePointer + offset]);
+            asm.mov(reg, __qword_ptr[state + offset]);
         }
 
         private void CTRStore(Assembler asm, IRInstruction instruction) {
+            AssemblerRegister64 state = _registerAllocator.PPUStatePointer;
             Value src = instruction.Destination;
             int offset = GetCTROffset();
 
             // CTR is 64-bit
             if (_knownConstants.TryGetValue(src, out ulong value)) {
-                MemoryWriteImm64(asm, __qword_ptr[PPUStatePointer + offset], value, isBE: false);
+                MemoryWriteImm64(asm, __qword_ptr[state + offset], value, isBE: false);
             } else {
                 Location dest = _registerMap[instruction.Destination];
                 AssemblerRegister64 reg = dest.GetRegister();
-                asm.mov(__dword_ptr[PPUStatePointer + offset], reg);
+                asm.mov(__dword_ptr[state + offset], reg);
             }
         }
 
         private void XERLoad(Assembler asm, IRInstruction instruction) {
             // Destination is always a register
+            AssemblerRegister64 state = _registerAllocator.PPUStatePointer;
             Location dest = _registerMap[instruction.Destination];
             int offset = GetXEROffset();
             AssemblerRegister64 reg = dest.GetRegister();
 
             // XER is 64-bit
-            asm.mov(reg, __qword_ptr[PPUStatePointer + offset]);
+            asm.mov(reg, __qword_ptr[state + offset]);
         }
 
         private void XERStore(Assembler asm, IRInstruction instruction) {
+            AssemblerRegister64 state = _registerAllocator.PPUStatePointer;
             Value src = instruction.Destination;
             int offset = GetXEROffset();
 
             // XER is 64-bit
             if (_knownConstants.TryGetValue(src, out ulong value)) {
-                MemoryWriteImm64(asm, __qword_ptr[PPUStatePointer + offset], value, isBE: false);
+                MemoryWriteImm64(asm, __qword_ptr[state + offset], value, isBE: false);
             } else {
                 Location dest = _registerMap[instruction.Destination];
                 AssemblerRegister64 reg = dest.GetRegister();
-                asm.mov(__dword_ptr[PPUStatePointer + offset], reg);
+                asm.mov(__dword_ptr[state + offset], reg);
             }
         }
 
         private void GPRLoad(Assembler asm, IRInstruction instruction) {
+            AssemblerRegister64 state = _registerAllocator.PPUStatePointer;
             int gpr = (int)instruction.Immediate1;
             int gprOffset = GetGPROffset(gpr);
 
             // Destination is always a register
             Location dest = _registerMap[instruction.Destination];
             AssemblerRegister64 reg = dest.GetRegister();
-            asm.mov(reg, __qword_ptr[PPUStatePointer + gprOffset]);
+            asm.mov(reg, __qword_ptr[state + gprOffset]);
         }
 
         private void GPRStore(Assembler asm, IRInstruction instruction) {
+            AssemblerRegister64 state = _registerAllocator.PPUStatePointer;
             int gpr = (int)instruction.Immediate1;
             int gprOffset = GetGPROffset(gpr);
 
             Value src = instruction.Destination;
 
             if (_knownConstants.TryGetValue(src, out ulong value)) {
-                MemoryWriteImm64(asm, __qword_ptr[PPUStatePointer + gprOffset], value, isBE: false);
+                MemoryWriteImm64(asm, __qword_ptr[state + gprOffset], value, isBE: false);
 
             } else {
                 AssemblerRegister64 reg = _registerMap[src].GetRegister();
-                asm.mov(__qword_ptr[PPUStatePointer + gprOffset], reg);
+                asm.mov(__qword_ptr[state + gprOffset], reg);
             }
         }
 
@@ -181,23 +192,27 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
         }
 
         public AssemblerMemoryOperand GetPointerImmOffset<T>(uint offset) where T: unmanaged {
+            AssemblerRegister64 memoryBase = _registerAllocator.MemoryBasePointer;
             int size = sizeof(T);
+
             return size switch {
-                1 => __byte_ptr[MemoryBasePointer + offset],
-                2 => __word_ptr[MemoryBasePointer + offset],
-                4 => __dword_ptr[MemoryBasePointer + offset],
-                8 => __qword_ptr[MemoryBasePointer + offset],
+                1 => __byte_ptr[memoryBase + offset],
+                2 => __word_ptr[memoryBase + offset],
+                4 => __dword_ptr[memoryBase + offset],
+                8 => __qword_ptr[memoryBase + offset],
                 _ => throw new Exception($"[x64 Generator] Invalid pointer size = {size}"),
             };
         }
 
         public AssemblerMemoryOperand GetPointerRegOffset<T>(AssemblerRegister64 offset) where T: unmanaged {
+            AssemblerRegister64 memoryBase = _registerAllocator.MemoryBasePointer;
             int size = sizeof(T);
+
             return size switch {
-                1 => __byte_ptr[MemoryBasePointer + offset],
-                2 => __word_ptr[MemoryBasePointer + offset],
-                4 => __dword_ptr[MemoryBasePointer + offset],
-                8 => __qword_ptr[MemoryBasePointer + offset],
+                1 => __byte_ptr[memoryBase + offset],
+                2 => __word_ptr[memoryBase + offset],
+                4 => __dword_ptr[memoryBase + offset],
+                8 => __qword_ptr[memoryBase + offset],
                 _ => throw new Exception($"[x64 Generator] Invalid pointer size = {size}"),
             };
         }

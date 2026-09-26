@@ -3,10 +3,10 @@ using static Iced.Intel.AssemblerRegisters;
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRInstructions;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
-    public static partial class RegisterAllocator {
+    public partial class RegisterAllocator {
 
         // Register pools
-		private static readonly AssemblerRegister64[] StaticRegisterPool64 = [
+		private readonly AssemblerRegister64[] StaticRegisterPool64 = [
 		   rax,
 		   rcx,
 		   rdx,
@@ -25,7 +25,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
 		   r15,
 		];
 
-		private static readonly AssemblerRegister64[] StaticNonVolatileRegisterPool64 = [
+		private readonly AssemblerRegister64[] StaticNonVolatileRegisterPool64 = [
 			rbx,
 			rbp,
 			rsi,
@@ -36,7 +36,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
 			r15,
 		];
 
-		private static readonly AssemblerRegister64[] StaticVolatileRegisterPool64 = [
+		private readonly AssemblerRegister64[] StaticVolatileRegisterPool64 = [
 			rax,
 			rcx,
 			rdx,
@@ -46,38 +46,38 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
 			r11,
 		];
 
-		public static AssemblerRegister64 PPUStatePointer => rbx;
-        public static AssemblerRegister64 StackPointer => rsp;
-        public static AssemblerRegister64 SpillArrayPointer => rbp;
-        public static AssemblerRegister64 MemoryBasePointer => r8;
+		public AssemblerRegister64 PPUStatePointer => rbx;
+        public AssemblerRegister64 StackPointer => rsp;
+        public AssemblerRegister64 SpillArrayPointer => rbp;
+        public AssemblerRegister64 MemoryBasePointer => r8;
 
-        public static ReadOnlySpan<AssemblerRegister64> AllRegisters => StaticRegisterPool64;
-        public static ReadOnlySpan<AssemblerRegister64> AllNonVolatileRegisters => StaticNonVolatileRegisterPool64;
-        public static ReadOnlySpan<AssemblerRegister64> AllVolatileRegisters => StaticVolatileRegisterPool64;
+        public ReadOnlySpan<AssemblerRegister64> AllRegisters => StaticRegisterPool64;
+        public ReadOnlySpan<AssemblerRegister64> AllNonVolatileRegisters => StaticNonVolatileRegisterPool64;
+        public ReadOnlySpan<AssemblerRegister64> AllVolatileRegisters => StaticVolatileRegisterPool64;
 
-        private static List<AssemblerRegister64> CurrentRegisterPool = new();
-        private static bool _canAllocate => CurrentRegisterPool.Count > 0;
-        private static int _spillIndex = 0;
+        private List<AssemblerRegister64> CurrentRegisterPool = new();
+        private bool _canAllocate => CurrentRegisterPool.Count > 0;
+        private int _spillIndex = 0;
 
-		public static bool IsVolatile(AssemblerRegister64 reg) => StaticVolatileRegisterPool64.Contains(reg);
-		public static bool IsNonVolatile(AssemblerRegister64 reg) => StaticNonVolatileRegisterPool64.Contains(reg);
+		public bool IsVolatile(AssemblerRegister64 reg) => StaticVolatileRegisterPool64.Contains(reg);
+		public bool IsNonVolatile(AssemblerRegister64 reg) => StaticNonVolatileRegisterPool64.Contains(reg);
 
-		private static AssemblerRegister64 RequestRegister64() {
+		private AssemblerRegister64 RequestRegister64() {
             AssemblerRegister64 reg = CurrentRegisterPool[0];
             CurrentRegisterPool.Remove(reg);
             return reg;
         }
 
-        private static void FreeRegister64(AssemblerRegister64 reg) {
+        private void FreeRegister64(AssemblerRegister64 reg) {
             CurrentRegisterPool.Add(reg);
         }
 
-        public static void ResetAllocatorState() {
+        public void ResetAllocatorState() {
             _spillIndex = 0;
             CurrentRegisterPool.Clear();
         }
 
-        private static bool RequiresReservedRaxRdx(IRInstruction instruction) {
+        private bool RequiresReservedRaxRdx(IRInstruction instruction) {
             bool isSpecialMulDiv =
                 instruction.Op == IR.IRInstructions.Op.IMulHD       ||
                 instruction.Op == IR.IRInstructions.Op.MulHD        ||
@@ -89,7 +89,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             return isSpecialMulDiv;
         }
 
-        public static List<AssemblerRegister64> CreateRegisterPool(List<IRInstruction> code) {
+        public List<AssemblerRegister64> CreateRegisterPool(List<IRInstruction> code) {
 
             // Initial list of all registers
             List<AssemblerRegister64> regs = new List<AssemblerRegister64>(StaticRegisterPool64);
@@ -123,7 +123,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             return regs;
         }
 
-        public static Dictionary<Value, Location> AllocateHostRegisters(List<IRInstruction> code, Dictionary<Value, ulong> knownConstants) {
+        public Dictionary<Value, Location> AllocateHostRegisters(List<IRInstruction> code, Dictionary<Value, ulong> knownConstants) {
             // Reset
             
             ResetAllocatorState();
@@ -137,7 +137,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             return allocatedRegs;
         }
 
-        private static void AssignHostRegs(Dictionary<Value, Location> locations, List<Liveness> intervals) {
+        private void AssignHostRegs(Dictionary<Value, Location> locations, List<Liveness> intervals) {
 
             // Values that currently occupy host registers.
             List<Location> active = new();
@@ -198,7 +198,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             }
         }
 
-        private static List<Liveness> BuildLivenessDictionary(List<IRInstruction> code, Dictionary<Value, ulong> knownConstants) {
+        private List<Liveness> BuildLivenessDictionary(List<IRInstruction> code, Dictionary<Value, ulong> knownConstants) {
             List<Liveness> livenessList = new();
 
             for (int i = 0; i < code.Count; i++) {
@@ -213,7 +213,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             return livenessList;
         }
 
-       private static void AddLiveness(List<IRInstruction> code, Value value, int currentIndex, List<Liveness> livenessList, Dictionary<Value, ulong> knownConstants) {
+       private void AddLiveness(List<IRInstruction> code, Value value, int currentIndex, List<Liveness> livenessList, Dictionary<Value, ulong> knownConstants) {
             if (!value.IsValid) {
                 return;
             }
@@ -256,7 +256,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             livenessList.Add(liveness);
         }
 
-        private static void PrintRegisterMapping(Dictionary<Value, Location> allocatedRegs) {
+        private void PrintRegisterMapping(Dictionary<Value, Location> allocatedRegs) {
             Console.WriteLine($"Mapped Registers:");
             foreach (var item in allocatedRegs) {
                 int id = item.Key.Id;
