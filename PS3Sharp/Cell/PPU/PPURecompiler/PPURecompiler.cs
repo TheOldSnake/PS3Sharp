@@ -16,16 +16,15 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler
             public int IsSyscallExit;
         }
 
-        private const int VirtualAllocSize = 4 * 1024;    // 4 kb
+        private const int PAGE_BITS = 16;
+        private const int PAGE_SIZE = 1 << PAGE_BITS;
+        private const uint PAGE_MASK = PAGE_SIZE - 1;
+
         private readonly List<(nint Address, ulong Size)> AllocatedPages = [];
+        private readonly X64Block*[] _blocks = new X64Block*[PAGE_SIZE];
 
-        private const int Bits = 16;
-        private const int Size = 1 << Bits;
-        private const uint Mask = Size - 1;
-        private X64Block*[] _blocks = new X64Block*[Size];
-
-        private IRGenerator _irGenerator = new IRGenerator();
-        private X64Generator _x64Generator = new X64Generator();
+        private readonly IRGenerator _irGenerator = new();
+        private readonly X64Generator _x64Generator = new();
 
         private nint NextBlockAddress;
         private nint CurrentPageStartAddress;
@@ -36,34 +35,26 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler
         public static ulong NumberOfExecutedBlocks = 0;
         public static ulong TotalAllocatedPages = 0;
 
-        private X64Block* GetBlock(uint virtualAddress)
-        {
-            uint index = virtualAddress >> 2;
-
-            uint l1 = index >> Bits;
-            uint l2 = index & Mask;
-
-            var page = _blocks[l1];
-
-            return page == null ? null : &page[l2];
-        }
-
         private X64Block* GetOrCreateBlock(uint virtualAddress)
         {
             uint index = virtualAddress >> 2;
 
-            uint l1 = index >> Bits;
-            uint l2 = index & Mask;
+            // 2 Levels look up
+            uint l1 = index >> PAGE_BITS;
+            uint l2 = index & PAGE_MASK;
 
-            var page = _blocks[l1];
+            // Look up the page
+            X64Block* page = _blocks[l1];
 
+            // If not already allocated, allocate the page
             if (page == null)
             {
-                page = (X64Block*)NativeMemory.Alloc((nuint)(Size * sizeof(X64Block)));
-                NativeMemory.Clear(page, (nuint)(Size * sizeof(X64Block)));
+                page = (X64Block*)NativeMemory.Alloc((nuint)(PAGE_SIZE * sizeof(X64Block)));
+                NativeMemory.Clear(page, (nuint)(PAGE_SIZE * sizeof(X64Block)));
                 _blocks[l1] = page;
             }
 
+            // Look up into the page
             return &page[l2];
         }
 
@@ -123,7 +114,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler
 
         private void AllocateExecutableMemory(int size)
         {
-            ulong alignedSize = AlignPow2((ulong)size, VirtualAllocSize);
+            ulong alignedSize = AlignPow2((ulong)size, PAGE_SIZE);
             nuint memory = (nuint)WinAPI.VirtualAlloc(IntPtr.Zero, (nuint)alignedSize, WinAPI.MEM_COMMIT, WinAPI.PAGE_EXECUTE_READWRITE);
 
             if (memory == 0)
