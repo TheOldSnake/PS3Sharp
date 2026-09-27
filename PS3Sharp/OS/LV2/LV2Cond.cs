@@ -14,7 +14,7 @@ namespace PS3Sharp.OS.LV2
     public sealed class LV2Cond
     {
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct SysCondAttribute : IPS3Struct
         {
             public BigEndian<uint> PShared;

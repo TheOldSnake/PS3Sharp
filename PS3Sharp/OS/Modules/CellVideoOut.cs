@@ -10,7 +10,7 @@ namespace PS3Sharp.OS.Modules
 {
     public static class CellVideoOut
     {
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellVideoOutConfiguration : IPS3Struct
         {
             public byte ResolutionId;
@@ -20,7 +20,7 @@ namespace PS3Sharp.OS.Modules
             public BigEndian<uint> Pitch;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellVideoResolution : IPS3Struct
         {
             public BigEndian<ushort> Width;               /* Screen width in pixels. */
@@ -85,7 +85,7 @@ namespace PS3Sharp.OS.Modules
         public const ushort CELL_VIDEO_OUT_REFRESH_RATE_60HZ = 0x0004;
         public const ushort CELL_VIDEO_OUT_REFRESH_RATE_30HZ = 0x0008;
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellVideoDisplayMode : IPS3Struct
         {
             public byte ResolutionID;
@@ -104,7 +104,7 @@ namespace PS3Sharp.OS.Modules
         public const byte CELL_VIDEO_OUT_COLOR_SPACE_YUV = 0x02;
         public const byte CELL_VIDEO_OUT_COLOR_SPACE_XVYCC = 0x04;
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellVideoState : IPS3Struct
         {
             public byte State;
@@ -114,7 +114,7 @@ namespace PS3Sharp.OS.Modules
         }
 
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellVideoOutColorInfo
         {
             public BigEndian<ushort> RedX;
@@ -128,7 +128,7 @@ namespace PS3Sharp.OS.Modules
             public BigEndian<uint> Gamma;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellVideoOutDisplayMode
         {
             public byte ResolutionId;
@@ -149,7 +149,7 @@ namespace PS3Sharp.OS.Modules
         public const byte CELL_VIDEO_OUT_PORT_AVMULTI_SCART = 0x85;
         public const byte CELL_VIDEO_OUT_PORT_DSUB = 0x86;
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellVideoOutDeviceInfo : IPS3Struct
         {
             public byte PortType;

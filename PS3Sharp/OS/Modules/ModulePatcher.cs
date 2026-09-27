@@ -13,7 +13,7 @@ namespace PS3Sharp.OS.Modules
     public static class ModulePatcher
     {
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct PRXParam : IPS3Struct
         {
             public BigEndian<uint> size;
@@ -29,7 +29,7 @@ namespace PS3Sharp.OS.Modules
             public BigEndian<uint> pad2;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct PRXStubHeader : IPS3Struct
         {
             public byte s_size;

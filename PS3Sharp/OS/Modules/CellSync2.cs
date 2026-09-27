@@ -10,7 +10,7 @@ namespace PS3Sharp.OS.Modules
 {
     public static class CellSync2
     {
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellSync2MutexAttribute : IPS3Struct
         {
             public BigEndian<uint> sdkVersion;
@@ -21,7 +21,7 @@ namespace PS3Sharp.OS.Modules
             public InlineData.InlineArray86<byte> reserved;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellSync2SemaphoreAttribute : IPS3Struct
         {
             public BigEndian<uint> sdkVersion;

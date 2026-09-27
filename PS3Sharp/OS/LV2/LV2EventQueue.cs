@@ -16,7 +16,7 @@ namespace PS3Sharp.OS.LV2
         public const uint SYS_PPU_QUEUE = 1;
         public const uint SYS_SPU_QUEUE = 2;
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct SysEventQueueAttribute : IPS3Struct
         {
             public BigEndian<uint> Protocol;

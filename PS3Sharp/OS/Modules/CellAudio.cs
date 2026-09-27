@@ -30,7 +30,7 @@ namespace PS3Sharp.OS.Modules
 
         public const ulong EVENT_QUEUE_KEY = 0x1234A1BE1234A1BE; //?
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellAudioPortConfig : IPS3Struct
         {
             public BigEndian<uint> ReadAddress;
@@ -41,7 +41,7 @@ namespace PS3Sharp.OS.Modules
             public BigEndianGuestVoidPtr PortAddress;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellAudioPortParam : IPS3Struct
         {
             public BigEndian<ulong> NumberOfChannels;

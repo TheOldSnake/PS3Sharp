@@ -38,7 +38,7 @@ namespace PS3Sharp.OS.Modules
         public const uint CELL_PAD_CTRL_CROSS = 6 + 16;
         public const uint CELL_PAD_CTRL_SQUARE = 7 + 16;
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellPadInfo2 : IPS3Struct
         {
             public BigEndian<uint> MaxConnect;
@@ -51,7 +51,7 @@ namespace PS3Sharp.OS.Modules
             public InlineData.InlineArray7<BigEndian<uint>> DeviceType;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellPadData : IPS3Struct
         {
             public BigEndian<int> Len;

@@ -80,7 +80,7 @@ namespace PS3Sharp.PRXManager
         public static Dictionary<uint, uint> ExportedFunctions = new();
 
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public readonly struct LibraryInfo : IPS3Struct
         {
             public readonly BigEndian<ushort> Attributes;
@@ -99,7 +99,7 @@ namespace PS3Sharp.PRXManager
 
 
         // Export or import module struct
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public readonly struct PRXModuleInfo : IPS3Struct
         {
             public readonly byte Size;

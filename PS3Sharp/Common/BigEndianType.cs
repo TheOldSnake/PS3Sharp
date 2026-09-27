@@ -14,7 +14,7 @@ namespace PS3Sharp.Common
     /// Useful for creating structs identical to those used by the PS3.<br/>
     /// </remarks>
 
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [StructLayout(LayoutKind.Sequential)]
     public struct BigEndian<T> : IPS3Struct, IFormattable, ISpanFormattable where T : unmanaged
     {
         private T _raw;

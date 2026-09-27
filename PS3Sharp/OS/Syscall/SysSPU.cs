@@ -33,7 +33,7 @@ namespace PS3Sharp.OS.Syscall
         public const int SYS_SPU_SEGMENT_TYPE_INFO = 0x0004;
 
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct SysSPUSegment : IPS3Struct
         {
             public BigEndian<int> Type;            // Segment type (COPY / FILL / INFO)
@@ -46,7 +46,7 @@ namespace PS3Sharp.OS.Syscall
             public BigEndian<uint> Src;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct SysSPUImage : IPS3Struct
         {
             public BigEndian<uint> Type;
@@ -55,7 +55,7 @@ namespace PS3Sharp.OS.Syscall
             public BigEndian<uint> SegmentsCount;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct SysSPUThreadGroupAttribute : IPS3Struct
         {
             public BigEndian<uint> NameLength;
@@ -64,7 +64,7 @@ namespace PS3Sharp.OS.Syscall
             public BigEndian<uint> ContainerID; // Memory container id
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct SysSPUThreadAttribute : IPS3Struct
         {
             public BigEndian<uint> NamePtr;
@@ -72,7 +72,7 @@ namespace PS3Sharp.OS.Syscall
             public BigEndian<uint> Option;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct SysSPUThreadArgument : IPS3Struct
         {
             public BigEndian<ulong> Arg1;

@@ -10,7 +10,7 @@ namespace PS3Sharp.Cell.RSX
 {
     public sealed partial class RealitySynthesizer : IThread
     {
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellGcmConfig : IPS3Struct
         {
             public BigEndian<uint> Local_Addr;    // Pointer to RSX local memory
@@ -21,7 +21,7 @@ namespace PS3Sharp.Cell.RSX
             public BigEndian<uint> CoreFreq;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellGcmCtxData : IPS3Struct
         {
             public BigEndian<uint> Begin;       /* Start address of command buffer */
@@ -30,7 +30,7 @@ namespace PS3Sharp.Cell.RSX
             public BigEndian<uint> Callback;    /* Callback function that is called when "current" reaches "end" */
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellGcmCtrlRegister : IPS3Struct
         {
             public BigEndian<uint> Put;        /* member for accessing the PUT register */

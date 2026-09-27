@@ -11,7 +11,7 @@ namespace PS3Sharp.OS.LV2
     public sealed class LV2LWMutex
     {
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct LWMutex : IPS3Struct
         {
             public BigEndian<uint> Owner;
@@ -21,7 +21,7 @@ namespace PS3Sharp.OS.LV2
             public BigEndian<uint> SleepQueue;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct LWMutexAttrib : IPS3Struct
         {
             public BigEndian<uint> Protocol;

@@ -15,13 +15,13 @@ namespace PS3Sharp.OS.LV2
     // This is incomplete 
     public sealed class LV2LWCond
     {
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct SysLWCondAttribute : IPS3Struct
         {
             public InlineData.InlineArray8<byte> Name;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct SysLWCond : IPS3Struct
         {
             public BigEndianGuestPtr<LV2LWMutex.LWMutex> LWMutex;   // why is this needed ?

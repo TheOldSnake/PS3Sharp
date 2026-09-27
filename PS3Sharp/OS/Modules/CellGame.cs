@@ -84,7 +84,7 @@ namespace PS3Sharp.OS.Modules
             { CELL_GAME_PARAMID_SOUND_FORMAT,            "SOUND_FORMAT"   },
         };
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellGameContentSize : IPS3Struct
         {
             public BigEndian<int> HDDFreeSizeKB;

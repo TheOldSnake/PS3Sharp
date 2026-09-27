@@ -10,7 +10,7 @@ namespace PS3Sharp.SFOLoader
     {
         // Little Endian
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct SFOHeader
         {
             public uint Magic;
@@ -20,7 +20,7 @@ namespace PS3Sharp.SFOLoader
             public uint EntriesCount;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct SFOIndexEntry
         {
             public ushort KeyOffset;

@@ -10,7 +10,7 @@ namespace PS3Sharp.OS.LV2
 
         // This is what will be sent through event_queue
         // We can probably not use BigEndian here
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct SysEventData : IPS3Struct
         {
             public BigEndian<ulong> Source;
@@ -20,7 +20,7 @@ namespace PS3Sharp.OS.LV2
         }
 
         // We can probably not use BigEndian here too
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct SysEventPort : IPS3Struct
         {
             public BigEndian<ulong> Name;

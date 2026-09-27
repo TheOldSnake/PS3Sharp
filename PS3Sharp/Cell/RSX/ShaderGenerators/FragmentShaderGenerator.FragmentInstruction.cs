@@ -6,7 +6,7 @@ namespace PS3Sharp.Cell.RSX
     {
         // Based on nvfx_shader.h in PSL1GHT
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct FragmentInstruction
         {
             public uint OPDEST_Raw;

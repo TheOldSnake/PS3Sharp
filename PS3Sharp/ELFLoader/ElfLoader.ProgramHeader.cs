@@ -5,7 +5,7 @@ namespace PS3Sharp
 {
     public static unsafe partial class ElfLoader
     {
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public readonly struct ProgramHeader
         {
             //Segment types (PT_*)

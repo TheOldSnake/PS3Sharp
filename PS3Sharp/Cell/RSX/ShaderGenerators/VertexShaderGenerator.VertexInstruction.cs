@@ -7,7 +7,7 @@ namespace PS3Sharp.Cell.RSX
 
         // Based on nv40_vertprog.h in PSL1GHT
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct VertexInstruction
         {
             public uint Raw_0;
@@ -71,7 +71,7 @@ namespace PS3Sharp.Cell.RSX
             public uint Src2 => Src2_Lo | (Src2_Hi << 11);
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct VertexSrc
         {
             public uint Raw;

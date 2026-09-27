@@ -7,7 +7,7 @@ namespace PS3Sharp
     public static partial class ElfLoader
     {
         //Structs
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public readonly struct ElfHeader
         {
             //e_ident constants

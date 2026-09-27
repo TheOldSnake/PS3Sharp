@@ -12,7 +12,7 @@ namespace PS3Sharp.OS.LV2
         public const uint SYS_SYNC_RECURSIVE = 0x10;
         public const uint SYS_SYNC_NOT_RECURSIVE = 0x20;
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct SysMutexAttribute : IPS3Struct
         {
             public BigEndian<uint> protocol;  // SYS_SYNC_FIFO, SYS_SYNC_PRIORITY or SYS_SYNC_PRIORITY_INHERIT

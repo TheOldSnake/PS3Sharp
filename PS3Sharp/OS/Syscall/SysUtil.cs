@@ -20,7 +20,7 @@ namespace PS3Sharp.OS.Syscall
 
         public const uint CELL_SYSUTIL_ERROR_VALUE = 0x8002B102;
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellAudioState : IPS3Struct
         {
             public byte State;
@@ -30,7 +30,7 @@ namespace PS3Sharp.OS.Syscall
             public CellAudioOutSoundMode SoundMode;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellAudioOutSoundMode : IPS3Struct
         {
             public byte Type;

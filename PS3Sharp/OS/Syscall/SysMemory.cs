@@ -12,7 +12,7 @@ namespace PS3Sharp.OS.Syscall
     public static class SysMemory
     {
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct SysMemoryInfo : IPS3Struct
         {
             public BigEndian<uint> TotalUserMemory;

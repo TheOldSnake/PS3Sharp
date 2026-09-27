@@ -9,11 +9,12 @@ using static PS3Sharp.FileSystem.FileSystemManager;
 
 namespace PS3Sharp.OS.Syscall
 {
-    //File System Syscalls
+    // File System Syscalls
 
     public static class SysFs
     {
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        // This struct is explicitly aligned to 4 bytes
+        [StructLayout(LayoutKind.Sequential, Pack = 4)] 
         public struct CellFsStat : IPS3Struct
         {
             public BigEndian<int> Mode;          // s32
@@ -26,7 +27,7 @@ namespace PS3Sharp.OS.Syscall
             public BigEndian<ulong> BlkSize;     // u64
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential)]
         public struct CellFsDirent : IPS3Struct
         {
             public byte Type;
