@@ -5,9 +5,9 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    public static class SysTimer
+    internal static class SysTimer
     {
-        public static uint SysTimerUSleep(PPU ppu)
+        internal static uint SysTimerUSleep(PPU ppu)
         {
             ulong time_us = ppu.ReadArg<ulong>(ARG0);
             // SleepMicroseconds((long)time_us);
@@ -24,7 +24,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static uint SysTimerSleep(PPU ppu)
+        internal static uint SysTimerSleep(PPU ppu)
         {
             ulong time_s = ppu.ReadArg<ulong>(ARG0);
             //int time_ms = (int)time_s * 1000;

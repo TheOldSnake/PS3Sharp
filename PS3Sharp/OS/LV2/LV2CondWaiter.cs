@@ -1,10 +1,10 @@
 ﻿namespace PS3Sharp.OS.LV2
 {
-    public sealed class LV2CondWaiter
+    internal sealed class LV2CondWaiter
     {
-        public readonly uint WaiterTheadID;
-        public ManualResetEventSlim Event = new(false);
-        public LV2CondWaiter(uint threadID)
+        internal readonly uint WaiterTheadID;
+        internal ManualResetEventSlim Event = new(false);
+        internal LV2CondWaiter(uint threadID)
         {
             WaiterTheadID = threadID;
         }

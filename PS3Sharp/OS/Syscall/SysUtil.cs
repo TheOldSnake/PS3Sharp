@@ -10,42 +10,42 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    public static class SysUtil
+    internal static class SysUtil
     {
         // [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        // public static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
+        // internal static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
 
-        public const uint CELL_SYSUTIL_ERROR_VALUE = 0x8002B102;
+        internal const uint CELL_SYSUTIL_ERROR_VALUE = 0x8002B102;
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct CellAudioState : IPS3Struct
+        internal struct CellAudioState : IPS3Struct
         {
-            public byte State;
-            public byte Encoder;
-            public InlineData.InlineArray6<byte> Reserved;
-            public BigEndian<uint> DownMixer;
-            public CellAudioOutSoundMode SoundMode;
+            internal byte State;
+            internal byte Encoder;
+            internal InlineData.InlineArray6<byte> Reserved;
+            internal BigEndian<uint> DownMixer;
+            internal CellAudioOutSoundMode SoundMode;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct CellAudioOutSoundMode : IPS3Struct
+        internal struct CellAudioOutSoundMode : IPS3Struct
         {
-            public byte Type;
-            public byte Channel;
-            public byte Fs;
-            public byte Reserved;
-            public BigEndian<uint> Layout;
+            internal byte Type;
+            internal byte Channel;
+            internal byte Fs;
+            internal byte Reserved;
+            internal BigEndian<uint> Layout;
         }
 
-        public struct SysUtilCallback
+        internal struct SysUtilCallback
         {
-            public GuestVoidPtr AddressPtr;
-            public GuestVoidPtr UserDataPtr;
+            internal GuestVoidPtr AddressPtr;
+            internal GuestVoidPtr UserDataPtr;
         }
 
 
         // Should probably move these somewhere else
-        public enum SYSTEM_PARAM : uint
+        internal enum SYSTEM_PARAM : uint
         {
             // Integers
             CELL_SYSUTIL_SYSTEMPARAM_ID_LANG = 0x0111,
@@ -69,7 +69,7 @@ namespace PS3Sharp.OS.Syscall
             CELL_SYSUTIL_SYSTEMPARAM_ID_CURRENT_USERNAME = 0x0131,
         }
 
-        public enum SYSTEM_LANG : uint
+        internal enum SYSTEM_LANG : uint
         {
             CELL_SYSUTIL_LANG_JAPANESE = 0,
             CELL_SYSUTIL_LANG_ENGLISH_US = 1,
@@ -92,26 +92,26 @@ namespace PS3Sharp.OS.Syscall
             CELL_SYSUTIL_LANG_ENGLISH_GB = 18,
         }
 
-        public enum ENTER_BUTTON : uint
+        internal enum ENTER_BUTTON : uint
         {
             CELL_SYSUTIL_ENTER_BUTTON_ASSIGN_CIRCLE = 0,
             CELL_SYSUTIL_ENTER_BUTTON_ASSIGN_CROSS = 1,
         }
 
-        public enum DATE_FMT : uint
+        internal enum DATE_FMT : uint
         {
             CELL_SYSUTIL_DATE_FMT_YYYYMMDD = 0,
             CELL_SYSUTIL_DATE_FMT_DDMMYYYY = 1,
             CELL_SYSUTIL_DATE_FMT_MMDDYYYY = 2,
         }
 
-        public enum TIME_FMT : uint
+        internal enum TIME_FMT : uint
         {
             CELL_SYSUTIL_TIME_FMT_CLOCK12 = 0,
             CELL_SYSUTIL_TIME_FMT_CLOCK24 = 1,
         }
 
-        public enum PARENTAL_LEVEL : uint
+        internal enum PARENTAL_LEVEL : uint
         {
             CELL_SYSUTIL_GAME_PARENTAL_OFF = 0,
             CELL_SYSUTIL_GAME_PARENTAL_LEVEL01 = 1,
@@ -127,13 +127,13 @@ namespace PS3Sharp.OS.Syscall
             CELL_SYSUTIL_GAME_PARENTAL_LEVEL11 = 11,
         }
 
-        public enum PAD_RUMBLE : uint
+        internal enum PAD_RUMBLE : uint
         {
             CELL_SYSUTIL_PAD_RUMBLE_OFF = 0,
             CELL_SYSUTIL_PAD_RUMBLE_ON = 1,
         }
 
-        public enum CAMERA_PLFREQ : uint
+        internal enum CAMERA_PLFREQ : uint
         {
             CELL_SYSUTIL_CAMERA_PLFREQ_DISABLED = 0,
             CELL_SYSUTIL_CAMERA_PLFREQ_50HZ = 1,
@@ -141,14 +141,14 @@ namespace PS3Sharp.OS.Syscall
             CELL_SYSUTIL_CAMERA_PLFREQ_DEVCIE_DEPEND = 4,
         }
 
-        public enum STRING_SIZES : uint
+        internal enum STRING_SIZES : uint
         {
             CELL_SYSUTIL_SYSTEMPARAM_NICKNAME_SIZE = 0x80,
             CELL_SYSUTIL_SYSTEMPARAM_CURRENT_USERNAME_SIZE = 0x40
         }
 
 
-        public static ulong CellSysutilRegisterCallback(PPU ppu)
+        internal static ulong CellSysutilRegisterCallback(PPU ppu)
         {
             //TODO
             uint index = ppu.ReadArg<uint>(ARG0);
@@ -170,7 +170,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong CellSysutilUnregisterCallback(PPU ppu)
+        internal static ulong CellSysutilUnregisterCallback(PPU ppu)
         {
             uint index = ppu.ReadArg<uint>(ARG0);
 
@@ -186,7 +186,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong CellSysutilCheckCallback(PPU ppu)
+        internal static ulong CellSysutilCheckCallback(PPU ppu)
         {
             // i have no idea how this works
 
@@ -235,7 +235,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong CellAudioOutGetSoundAvailability(PPU ppu)
+        internal static ulong CellAudioOutGetSoundAvailability(PPU ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellAudioOutGetSoundAvailability");
@@ -243,7 +243,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong CellAudioOutConfigure(PPU ppu)
+        internal static ulong CellAudioOutConfigure(PPU ppu)
         {
             //TODO
             const ulong CELL_AUDIO_OUT_ERROR_UNSUPPORTED_AUDIO_OUT = 0x8002b245;
@@ -251,7 +251,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong CellAudioOutGetState(PPU ppu)
+        internal static ulong CellAudioOutGetState(PPU ppu)
         {
             //TODO
             const byte CELL_AUDIO_OUT_OUTPUT_STATE_ENABLED = 0;
@@ -270,7 +270,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong CellSysutilGetSystemParamInt(PPU ppu)
+        internal static ulong CellSysutilGetSystemParamInt(PPU ppu)
         {
             uint param = ppu.ReadArg<uint>(ARG0);
             uint value_ptr = ppu.ReadArg<uint>(ARG1);
@@ -326,7 +326,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong CellSysutilGetSystemParamString(PPU ppu)
+        internal static ulong CellSysutilGetSystemParamString(PPU ppu)
         {
             //TODO
 
@@ -349,28 +349,28 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong CellSaveDataUserAutoLoad(PPU ppu)
+        internal static ulong CellSaveDataUserAutoLoad(PPU ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellSaveDataUserAutoLoad");
             return CELL_OK;
         }
 
-        public static ulong CellSaveDataAutoLoad2(PPU ppu)
+        internal static ulong CellSaveDataAutoLoad2(PPU ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellSaveDataAutoLoad2");
             return CELL_OK;
         }
 
-        public static ulong CellSaveDataAutoSave2(PPU ppu)
+        internal static ulong CellSaveDataAutoSave2(PPU ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellSaveDataAutoSave2");
             return CELL_OK;
         }
 
-        public static ulong CellMsgDialogOpen2(PPU ppu)
+        internal static ulong CellMsgDialogOpen2(PPU ppu)
         {
             //TODO: Implement actual dialog
 
@@ -396,28 +396,28 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong CellMsgDialogProgressBarSetMsg(PPU ppu)
+        internal static ulong CellMsgDialogProgressBarSetMsg(PPU ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellMsgDialogProgressBarSetMsg");
             return CELL_OK;
         }
 
-        public static ulong CellMsgDialogProgressBarInc(PPU ppu)
+        internal static ulong CellMsgDialogProgressBarInc(PPU ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellMsgDialogProgressBarInc");
             return CELL_OK;
         }
 
-        public static ulong CellMsgDialogClose(PPU ppu)
+        internal static ulong CellMsgDialogClose(PPU ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellMsgDialogClose");
             return CELL_OK;
         }
 
-        public static ulong CellSaveDataEnableOverlay(PPU ppu)
+        internal static ulong CellSaveDataEnableOverlay(PPU ppu)
         {
             Console.WriteLine($"[CellSysutil] cellSaveDataEnableOverlay");
             return CELL_OK;

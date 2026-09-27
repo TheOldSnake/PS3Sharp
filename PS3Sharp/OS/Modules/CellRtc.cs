@@ -7,21 +7,21 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    public static class CellRtc
+    internal static class CellRtc
     {
 
-        public struct CellRtcDateTime : IPS3Struct
+        internal struct CellRtcDateTime : IPS3Struct
         {
-            public BigEndian<ushort> Year;
-            public BigEndian<ushort> Month;
-            public BigEndian<ushort> Day;
-            public BigEndian<ushort> Hour;
-            public BigEndian<ushort> Minute;
-            public BigEndian<ushort> Second;
-            public BigEndian<uint> Microsecond;
+            internal BigEndian<ushort> Year;
+            internal BigEndian<ushort> Month;
+            internal BigEndian<ushort> Day;
+            internal BigEndian<ushort> Hour;
+            internal BigEndian<ushort> Minute;
+            internal BigEndian<ushort> Second;
+            internal BigEndian<uint> Microsecond;
         }
 
-        public static ulong CellRtcGetCurrentTick(PPU ppu)
+        internal static ulong CellRtcGetCurrentTick(PPU ppu)
         {
             Console.WriteLine($"[CellRtc] cellRtcGetCurrentTick");
             uint ptr = ppu.ReadArg<uint>(ARG0);
@@ -30,7 +30,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong CellRtcGetCurrentClockLocalTime(PPU ppu)
+        internal static ulong CellRtcGetCurrentClockLocalTime(PPU ppu)
         {
             Console.WriteLine($"[CellRtc] cellRtcGetCurrentClockLocalTime");
             GuestPtr<CellRtcDateTime> clock_ptr = ppu.ReadArg<GuestPtr<CellRtcDateTime>>(ARG0);

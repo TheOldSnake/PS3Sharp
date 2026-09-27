@@ -4,9 +4,9 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.LV2
 {
-    public sealed class LV2EventFlag
+    internal sealed class LV2EventFlag
     {
-        public enum SysEventFlagMode : uint
+        internal enum SysEventFlagMode : uint
         {
             SYS_EVENT_FLAG_WAIT_AND = 0x01,
             SYS_EVENT_FLAG_WAIT_OR = 0x02,
@@ -17,14 +17,14 @@ namespace PS3Sharp.OS.LV2
 
         private readonly object _lock = new();
         private ulong _value;
-        public uint Handle { get; } = MemoryManager.GetHandle();
+        internal uint Handle { get; } = MemoryManager.GetHandle();
 
-        public LV2EventFlag(ulong initialValue)
+        internal LV2EventFlag(ulong initialValue)
         {
             _value = initialValue;
         }
 
-        public void Set(ulong value)
+        internal void Set(ulong value)
         {
             lock (_lock)
             {
@@ -33,7 +33,7 @@ namespace PS3Sharp.OS.LV2
             }
         }
 
-        public void Clear(ulong value)
+        internal void Clear(ulong value)
         {
             lock (_lock)
             {
@@ -42,7 +42,7 @@ namespace PS3Sharp.OS.LV2
             }
         }
 
-        public ulong Wait(SysEventFlagMode mode, ulong pattern, ulong us_timeout, out ulong resultValue)
+        internal ulong Wait(SysEventFlagMode mode, ulong pattern, ulong us_timeout, out ulong resultValue)
         {
 
             lock (_lock)

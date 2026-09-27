@@ -3,7 +3,7 @@ using static Iced.Intel.AssemblerRegisters;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
 {
-    public sealed partial class X64Generator
+    internal sealed partial class X64Generator
     {
         private AssemblerRegister32 Reg64ToReg32(AssemblerRegister64 reg)
         {

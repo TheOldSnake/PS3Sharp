@@ -11,58 +11,58 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    public static class CellAudio
+    internal static class CellAudio
     {
-        public const uint AUDIO_PORT_COUNT = 8;
-        public const uint AUDIO_MAX_BLOCK_COUNT = 32;
-        public const uint AUDIO_MAX_CHANNELS_COUNT = 8;
-        public const uint CELL_AUDIO_BLOCK_SAMPLES = 256;
+        internal const uint AUDIO_PORT_COUNT = 8;
+        internal const uint AUDIO_MAX_BLOCK_COUNT = 32;
+        internal const uint AUDIO_MAX_CHANNELS_COUNT = 8;
+        internal const uint CELL_AUDIO_BLOCK_SAMPLES = 256;
 
-        public const uint CELL_AUDIO_ERROR_ALREADY_INIT = 0x80310701;
-        public const uint CELL_AUDIO_ERROR_NOT_INIT = 0x80310703;
-        public const uint CELL_AUDIO_ERROR_PORT_FULL = 0x80310705;
-        public const uint CELL_AUDIO_ERROR_PORT_NOT_RUN = 0x80310708;
-        public const uint CELL_AUDIO_ERROR_PARAM = 0x80310704;
+        internal const uint CELL_AUDIO_ERROR_ALREADY_INIT = 0x80310701;
+        internal const uint CELL_AUDIO_ERROR_NOT_INIT = 0x80310703;
+        internal const uint CELL_AUDIO_ERROR_PORT_FULL = 0x80310705;
+        internal const uint CELL_AUDIO_ERROR_PORT_NOT_RUN = 0x80310708;
+        internal const uint CELL_AUDIO_ERROR_PARAM = 0x80310704;
 
-        public const uint CELL_AUDIO_STATUS_CLOSE = 0x1010;
-        public const uint CELL_AUDIO_STATUS_READY = 1;
-        public const uint CELL_AUDIO_STATUS_RUN = 2;
+        internal const uint CELL_AUDIO_STATUS_CLOSE = 0x1010;
+        internal const uint CELL_AUDIO_STATUS_READY = 1;
+        internal const uint CELL_AUDIO_STATUS_RUN = 2;
 
-        public const ulong EVENT_QUEUE_KEY = 0x1234A1BE1234A1BE; //?
+        internal const ulong EVENT_QUEUE_KEY = 0x1234A1BE1234A1BE; //?
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct CellAudioPortConfig : IPS3Struct
+        internal struct CellAudioPortConfig : IPS3Struct
         {
-            public BigEndian<uint> ReadAddress;
-            public BigEndian<uint> Status;
-            public BigEndian<ulong> NumberOfChannels;
-            public BigEndian<ulong> NumberOfBlocks;
-            public BigEndian<uint> PortSize;
-            public BigEndianGuestVoidPtr PortAddress;
+            internal BigEndian<uint> ReadAddress;
+            internal BigEndian<uint> Status;
+            internal BigEndian<ulong> NumberOfChannels;
+            internal BigEndian<ulong> NumberOfBlocks;
+            internal BigEndian<uint> PortSize;
+            internal BigEndianGuestVoidPtr PortAddress;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct CellAudioPortParam : IPS3Struct
+        internal struct CellAudioPortParam : IPS3Struct
         {
-            public BigEndian<ulong> NumberOfChannels;
-            public BigEndian<ulong> NumberOfBlocks;
-            public BigEndian<ulong> Attributes;
-            public BigEndian<float> Level;
+            internal BigEndian<ulong> NumberOfChannels;
+            internal BigEndian<ulong> NumberOfBlocks;
+            internal BigEndian<ulong> Attributes;
+            internal BigEndian<float> Level;
         }
 
 
-        public sealed class AudioPort
+        internal sealed class AudioPort
         { // todo
-            public uint Number;
-            public uint Status;
-            public ulong NumberOfChannels;
-            public ulong NumberOfBlocks;
-            public GuestVoidPtr BaseAddress;
-            public uint Size;
+            internal uint Number;
+            internal uint Status;
+            internal ulong NumberOfChannels;
+            internal ulong NumberOfBlocks;
+            internal GuestVoidPtr BaseAddress;
+            internal uint Size;
 
-            public uint TotalSamplesPerBlock;
-            public uint CurrentBlock;           // To keep track of where to sample from
-            public byte[] SampleBuffer;         // 16-bit samples buffer
+            internal uint TotalSamplesPerBlock;
+            internal uint CurrentBlock;           // To keep track of where to sample from
+            internal byte[] SampleBuffer;         // 16-bit samples buffer
         }
 
         private static bool _initialized;
@@ -71,7 +71,7 @@ namespace PS3Sharp.OS.Modules
         private static readonly AudioPort[] _audioPorts = new AudioPort[AUDIO_PORT_COUNT];
         private static readonly Lock _audioThreadLock = new();
 
-        public static ulong CellAudioInit(PPU ppu)
+        internal static ulong CellAudioInit(PPU ppu)
         {
             Console.WriteLine("[CellAudio] cellAudioInit");
 
@@ -99,7 +99,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong CellAudioPortOpen(PPU ppu)
+        internal static ulong CellAudioPortOpen(PPU ppu)
         {
             if (!_initialized)
             {
@@ -153,7 +153,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong CellAudioGetPortConfig(PPU ppu)
+        internal static ulong CellAudioGetPortConfig(PPU ppu)
         {
             uint port_number = ppu.ReadArg<uint>(ARG0);
             GuestPtr<CellAudioPortConfig> config_ptr = ppu.ReadArg<GuestPtr<CellAudioPortConfig>>(ARG1);
@@ -187,7 +187,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong CellAudioPortStart(PPU ppu)
+        internal static ulong CellAudioPortStart(PPU ppu)
         {
             uint port_number = ppu.ReadArg<uint>(ARG0);
 
@@ -208,7 +208,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong CellAudioPortStop(PPU ppu)
+        internal static ulong CellAudioPortStop(PPU ppu)
         {
             uint port_number = ppu.ReadArg<uint>(ARG0);
             Console.WriteLine($"[CellAudio] cellAudioPortStop port = {port_number}");
@@ -237,14 +237,14 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        public static ulong CellAudioQuit(PPU ppu)
+        internal static ulong CellAudioQuit(PPU ppu)
         {
             // TODO
             Console.WriteLine("[CellAudio] cellAudioQuit");
             return CELL_OK;
         }
 
-        public static ulong CellAudioCreateNotifyEventQueue(PPU ppu)
+        internal static ulong CellAudioCreateNotifyEventQueue(PPU ppu)
         {
             // TODO
             GuestPtr<uint> equeue_id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
@@ -269,7 +269,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong CellAudioSetNotifyEventQueue(PPU ppu)
+        internal static ulong CellAudioSetNotifyEventQueue(PPU ppu)
         {
             // TODO
             ulong key = ppu.ReadArg<ulong>(ARG0);
@@ -306,7 +306,7 @@ namespace PS3Sharp.OS.Modules
             provider.AddSamples(samples, 0, samples.Length);
         }
 
-        public static byte[] GetSamplesWaveData(float[] samples, int samplesCount)
+        internal static byte[] GetSamplesWaveData(float[] samples, int samplesCount)
         {
             byte[] pcm = new byte[samplesCount * 2];
             int sampleIndex = 0,

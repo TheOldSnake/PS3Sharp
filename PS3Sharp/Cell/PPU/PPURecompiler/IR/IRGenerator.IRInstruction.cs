@@ -1,22 +1,22 @@
 ﻿
 namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 {
-    public sealed partial class IRGenerator
+    internal sealed partial class IRGenerator
     {
-        public struct IRInstruction
+        internal struct IRInstruction
         {
-            public Op Opcode;
+            internal Op Opcode;
 
-            public ulong Immediate1;
-            public ulong Immediate2;
-            public ulong Immediate3;
+            internal ulong Immediate1;
+            internal ulong Immediate2;
+            internal ulong Immediate3;
 
-            public Value Operand1;
-            public Value Operand2;
-            public Value Operand3;
-            public Value Destination;
+            internal Value Operand1;
+            internal Value Operand2;
+            internal Value Operand3;
+            internal Value Destination;
 
-            public static IRInstruction Create(Op op, Value destination, Value a = default, Value b = default, Value c = default, ulong constant1 = 0, ulong constant2 = 0, ulong constant3 = 0)
+            internal static IRInstruction Create(Op op, Value destination, Value a = default, Value b = default, Value c = default, ulong constant1 = 0, ulong constant2 = 0, ulong constant3 = 0)
             {
                 return new IRInstruction
                 {
@@ -31,7 +31,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
                 };
             }
 
-            public static IRInstruction Create(Op op, Value destination, ulong constant1 = 0, ulong constant2 = 0, ulong constant3 = 0)
+            internal static IRInstruction Create(Op op, Value destination, ulong constant1 = 0, ulong constant2 = 0, ulong constant3 = 0)
             {
                 return new IRInstruction
                 {
@@ -43,7 +43,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
                 };
             }
 
-            public enum Op
+            internal enum Op
             {
                 GPRLoad,
                 GPRStore,

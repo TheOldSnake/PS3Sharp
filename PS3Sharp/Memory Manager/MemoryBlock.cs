@@ -1,15 +1,15 @@
 ﻿namespace PS3Sharp.Memory_Manager
 {
-    public static unsafe partial class MemoryManager
+    internal static unsafe partial class MemoryManager
     {
-        public struct MemoryBlock
+        internal struct MemoryBlock
         {
-            public uint VirtualAddress;
-            public uint Size;
-            public uint End => VirtualAddress + Size;
-            public uint Handle;
-            public void* NativeAddress;
-            public bool IsFastmem;
+            internal uint VirtualAddress;
+            internal uint Size;
+            internal uint End => VirtualAddress + Size;
+            internal uint Handle;
+            internal void* NativeAddress;
+            internal bool IsFastmem;
         }
     }
 }

@@ -9,13 +9,13 @@ using static PS3Sharp.OS.LV2.LV2Semaphore;
 
 namespace PS3Sharp.OS.Syscall
 {
-    public static class SysSemaphore
+    internal static class SysSemaphore
     {
         private static ConcurrentDictionary<uint, LV2Semaphore> _semaphores = [];
 
-        public static bool GetSemaphore(uint id, out LV2Semaphore? semaphore) => _semaphores.TryGetValue(id, out semaphore);
+        internal static bool GetSemaphore(uint id, out LV2Semaphore? semaphore) => _semaphores.TryGetValue(id, out semaphore);
 
-        public static void AddSemaphore(uint id, LV2Semaphore semaphore)
+        internal static void AddSemaphore(uint id, LV2Semaphore semaphore)
         {
             bool success = _semaphores.TryAdd(id, semaphore);
 
@@ -25,7 +25,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static void RemoveSemaphore(uint id)
+        internal static void RemoveSemaphore(uint id)
         {
             bool success = _semaphores.TryRemove(id, out _);
 
@@ -35,7 +35,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static ulong SysSemaphoreCreate(PPU ppu)
+        internal static ulong SysSemaphoreCreate(PPU ppu)
         {
             GuestPtr<uint> semaphore_id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             GuestPtr<SysSemaphoreAttribute> semaphore_attribute_ptr = ppu.ReadArg<GuestPtr<SysSemaphoreAttribute>>(ARG1);
@@ -50,7 +50,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysSemaphoreDestroy(PPU ppu)
+        internal static ulong SysSemaphoreDestroy(PPU ppu)
         {
             uint handle = ppu.ReadArg<uint>(ARG0);
 
@@ -59,7 +59,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysSemaphoreWait(PPU ppu)
+        internal static ulong SysSemaphoreWait(PPU ppu)
         {
             uint handle = ppu.ReadArg<uint>(ARG0);
             ulong timeout_us = ppu.ReadArg<ulong>(ARG1);
@@ -82,7 +82,7 @@ namespace PS3Sharp.OS.Syscall
             return result;
         }
 
-        public static ulong SysSemaphoreTryWait(PPU ppu)
+        internal static ulong SysSemaphoreTryWait(PPU ppu)
         {
             uint handle = ppu.ReadArg<uint>(ARG0);
 
@@ -97,7 +97,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static ulong SysSemaphorePost(PPU ppu)
+        internal static ulong SysSemaphorePost(PPU ppu)
         {
             uint handle = ppu.ReadArg<uint>(ARG0);
             uint count = ppu.ReadArg<uint>(ARG1);

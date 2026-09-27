@@ -14,13 +14,13 @@ namespace PS3Sharp.OS.Syscall
     // This is for _sys_lwmutex syscalls, not sys_lwmutex (the module)
     // These syscalls gets called when we LLE the module, from liblv2
 
-    public static class _SysLWMutex
+    internal static class _SysLWMutex
     {
         private static readonly ConcurrentDictionary<uint, LV2LWMutex> _lwMutexes = new();
 
-        public static bool GetLWMutex(uint id, out LV2LWMutex lwmutex) => _lwMutexes.TryGetValue(id, out lwmutex);
+        internal static bool GetLWMutex(uint id, out LV2LWMutex lwmutex) => _lwMutexes.TryGetValue(id, out lwmutex);
 
-        public static void AddLWMutex(uint id, LV2LWMutex mutex)
+        internal static void AddLWMutex(uint id, LV2LWMutex mutex)
         {
             bool success = _lwMutexes.TryAdd(id, mutex);
 
@@ -30,7 +30,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static void RemoveLWMutex(uint id)
+        internal static void RemoveLWMutex(uint id)
         {
             bool success = _lwMutexes.TryRemove(id, out _);
 
@@ -40,7 +40,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static ulong _SysLWmutexCreate(PPU ppu)
+        internal static ulong _SysLWmutexCreate(PPU ppu)
         {
             // TODO
 
@@ -70,7 +70,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong _SysLWmutexDestroy(PPU ppu)
+        internal static ulong _SysLWmutexDestroy(PPU ppu)
         {
             // TODO
             uint id = ppu.ReadArg<uint>(ARG0);
@@ -81,7 +81,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong _SysLWmutexLock(PPU ppu)
+        internal static ulong _SysLWmutexLock(PPU ppu)
         {
             // TODO
             uint id = ppu.ReadArg<uint>(ARG0);
@@ -100,7 +100,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static ulong _SysLWmutexTryLock(PPU ppu)
+        internal static ulong _SysLWmutexTryLock(PPU ppu)
         {
             // TODO
             uint id = ppu.ReadArg<uint>(ARG0);
@@ -118,7 +118,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static ulong _SysLWmutexUnlock(PPU ppu)
+        internal static ulong _SysLWmutexUnlock(PPU ppu)
         {
             // TODO
             uint id = ppu.ReadArg<uint>(ARG0);

@@ -7,31 +7,31 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.LV2
 {
-    public sealed class LV2Cond
+    internal sealed class LV2Cond
     {
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct SysCondAttribute : IPS3Struct
+        internal struct SysCondAttribute : IPS3Struct
         {
-            public BigEndian<uint> PShared;
-            public BigEndian<int> Flags;
-            public BigEndian<ulong> IPC_Key;
-            public InlineData.InlineArray8<byte> Name;
+            internal BigEndian<uint> PShared;
+            internal BigEndian<int> Flags;
+            internal BigEndian<ulong> IPC_Key;
+            internal InlineData.InlineArray8<byte> Name;
         }
 
-        public uint Handle { get; } = MemoryManager.GetHandle();
+        internal uint Handle { get; } = MemoryManager.GetHandle();
         private readonly SysCondAttribute _attribute;
         private readonly LV2Mutex _mutex;
         private static readonly ConcurrentDictionary<uint, LV2CondWaiter> _threadCondWaiters = [];
         private readonly List<LV2CondWaiter> Waiters = new();
 
-        public LV2Cond(SysCondAttribute attribute, LV2Mutex mutex)
+        internal LV2Cond(SysCondAttribute attribute, LV2Mutex mutex)
         {
             _attribute = attribute;
             _mutex = mutex;
         }
 
-        public ulong Wait(uint callerThreadID, ulong us_timeout = 0)
+        internal ulong Wait(uint callerThreadID, ulong us_timeout = 0)
         {
             if (!_mutex.IsEntered)
             {
@@ -84,7 +84,7 @@ namespace PS3Sharp.OS.LV2
             return ok ? CELL_OK : CELL_ETIMEDOUT;
         }
 
-        public ulong Signal()
+        internal ulong Signal()
         {
             lock (Waiters)
             {
@@ -95,7 +95,7 @@ namespace PS3Sharp.OS.LV2
             return CELL_OK;
         }
 
-        public ulong SignalAll()
+        internal ulong SignalAll()
         {
             lock (Waiters)
             {
@@ -108,7 +108,7 @@ namespace PS3Sharp.OS.LV2
             return CELL_OK;
         }
 
-        public ulong SignalTo(uint waiterID)
+        internal ulong SignalTo(uint waiterID)
         {
             LV2CondWaiter? waiter;
 

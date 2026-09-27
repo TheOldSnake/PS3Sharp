@@ -6,7 +6,7 @@ using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAlloc
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
 {
-    public unsafe sealed partial class X64Generator
+    internal unsafe sealed partial class X64Generator
     {
         private void MemoryWriteImm64(Assembler asm, AssemblerMemoryOperand addr, ulong value, bool isBE)
         {
@@ -211,7 +211,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
             }
         }
 
-        public AssemblerMemoryOperand GetPointer<T>(Value memoryAddress) where T : unmanaged
+        internal AssemblerMemoryOperand GetPointer<T>(Value memoryAddress) where T : unmanaged
         {
             if (TryGetConst(memoryAddress, out ulong virtualAddress))
             {
@@ -225,7 +225,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
             }
         }
 
-        public AssemblerMemoryOperand GetPointerImmOffset<T>(uint offset) where T : unmanaged
+        internal AssemblerMemoryOperand GetPointerImmOffset<T>(uint offset) where T : unmanaged
         {
             int size = sizeof(T);
 
@@ -239,7 +239,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
             };
         }
 
-        public AssemblerMemoryOperand GetPointerRegOffset<T>(AssemblerRegister64 offset) where T : unmanaged
+        internal AssemblerMemoryOperand GetPointerRegOffset<T>(AssemblerRegister64 offset) where T : unmanaged
         {
             int size = sizeof(T);
 
@@ -398,7 +398,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
         }
     }
 
-    //public void ComputeAddress(Assembler asm, AssemblerRegister64 addressReg, Value memoryAddress) {
+    //internal void ComputeAddress(Assembler asm, AssemblerRegister64 addressReg, Value memoryAddress) {
     //    if (_knownConstants.TryGetValue(memoryAddress, out ulong virtualAddress)) {
     //        TranslateAddress(asm, addressReg, (uint)virtualAddress);
     //    } else {
@@ -408,7 +408,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
     //}
 
 
-    //public void TranslateAddress(Assembler asm, AssemblerRegister64 destination, uint address) {
+    //internal void TranslateAddress(Assembler asm, AssemblerRegister64 destination, uint address) {
     //    UIntPtr pageTable = (UIntPtr)MemoryManager.GetPageTable();
     //    uint page = address >> (int)Fastmem.PAGE_SHIFT;
     //    uint offset = address & (int)Fastmem.PAGE_MASK;
@@ -419,7 +419,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
     //    asm.add(destination, (int)offset);
     //}
 
-    //public void TranslateAddress(Assembler asm, AssemblerRegister64 destination, AssemblerRegister64 address) {
+    //internal void TranslateAddress(Assembler asm, AssemblerRegister64 destination, AssemblerRegister64 address) {
     //    // Save the original register as it's mapped to a guest register
     //    asm.push(address);
 

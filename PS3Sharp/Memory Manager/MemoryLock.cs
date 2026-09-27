@@ -1,8 +1,8 @@
 ﻿namespace PS3Sharp.Memory_Manager
 {
-    public static partial class MemoryManager
+    internal static partial class MemoryManager
     {
-        public readonly ref struct MemoryLock : IDisposable
+        internal readonly ref struct MemoryLock : IDisposable
         {
             public MemoryLock()
             {

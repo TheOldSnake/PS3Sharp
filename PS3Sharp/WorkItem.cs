@@ -1,10 +1,10 @@
 ﻿namespace PS3Sharp
 {
-    public sealed class WorkItem
+    internal sealed class WorkItem
     {
-        public Action Work { get; }
-        public ManualResetEventSlim Done { get; }
-        public WorkItem(Action work)
+        internal Action Work { get; }
+        internal ManualResetEventSlim Done { get; }
+        internal WorkItem(Action work)
         {
             Work = work;
             Done = new ManualResetEventSlim(false);

@@ -3,45 +3,45 @@ using System.Runtime.InteropServices;
 
 namespace PS3Sharp
 {
-    public static unsafe partial class ElfLoader
+    internal static unsafe partial class ElfLoader
     {
         [StructLayout(LayoutKind.Sequential)]
-        public readonly struct ProgramHeader
+        internal readonly struct ProgramHeader
         {
             //Segment types (PT_*)
-            public const uint PT_NULL = 0;
-            public const uint PT_LOAD = 1;
-            public const uint PT_DYNAMIC = 2;
-            public const uint PT_INTERP = 3;
-            public const uint PT_NOTE = 4;
-            public const uint PT_SHLIB = 5;
-            public const uint PT_PHDR = 6;
-            public const uint PT_TLS = 7;
+            internal const uint PT_NULL = 0;
+            internal const uint PT_LOAD = 1;
+            internal const uint PT_DYNAMIC = 2;
+            internal const uint PT_INTERP = 3;
+            internal const uint PT_NOTE = 4;
+            internal const uint PT_SHLIB = 5;
+            internal const uint PT_PHDR = 6;
+            internal const uint PT_TLS = 7;
 
             //OS-specific
-            public const uint PT_LOOS = 0x60000000;
-            public const uint PT_HIOS = 0x6FFFFFFF;
+            internal const uint PT_LOOS = 0x60000000;
+            internal const uint PT_HIOS = 0x6FFFFFFF;
 
             //Processor-specific
-            public const uint PT_LOPROC = 0x70000000;
-            public const uint PT_HIPROC = 0x7FFFFFFF;
+            internal const uint PT_LOPROC = 0x70000000;
+            internal const uint PT_HIPROC = 0x7FFFFFFF;
 
             //PS3-specific
-            public const uint PROC_PARAM = 0x60000001;
-            public const uint PRX_PARAM = 0x60000002;
-            public const uint SCE_PPURELA = 0x700000A4;
+            internal const uint PROC_PARAM = 0x60000001;
+            internal const uint PRX_PARAM = 0x60000002;
+            internal const uint SCE_PPURELA = 0x700000A4;
 
             //Fields
-            public readonly BigEndian<uint> p_type;      /* Segment type */
-            public readonly BigEndian<uint> p_flags;     /* Segment flags */
-            public readonly BigEndian<ulong> p_offset;   /* Segment file offset */
-            public readonly BigEndian<ulong> p_vaddr;    /* Segment virtual address */
-            public readonly BigEndian<ulong> p_paddr;    /* Segment physical address */
-            public readonly BigEndian<ulong> p_filesz;   /* Segment size in file */
-            public readonly BigEndian<ulong> p_memsz;    /* Segment size in memory */
-            public readonly BigEndian<ulong> p_align;    /* Segment alignment */
+            internal readonly BigEndian<uint> p_type;      /* Segment type */
+            internal readonly BigEndian<uint> p_flags;     /* Segment flags */
+            internal readonly BigEndian<ulong> p_offset;   /* Segment file offset */
+            internal readonly BigEndian<ulong> p_vaddr;    /* Segment virtual address */
+            internal readonly BigEndian<ulong> p_paddr;    /* Segment physical address */
+            internal readonly BigEndian<ulong> p_filesz;   /* Segment size in file */
+            internal readonly BigEndian<ulong> p_memsz;    /* Segment size in memory */
+            internal readonly BigEndian<ulong> p_align;    /* Segment alignment */
 
-            public static string GetName(ProgramHeader programHeader)
+            internal static string GetName(ProgramHeader programHeader)
             {
                 ulong type = programHeader.p_type;
                 switch (type)

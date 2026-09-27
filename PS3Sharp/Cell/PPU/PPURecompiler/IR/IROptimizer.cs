@@ -3,9 +3,9 @@ using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 {
-    public sealed class IROptimizer
+    internal sealed class IROptimizer
     {
-        public Dictionary<Value, ulong> ConstantFold(IRContext ctx)
+        internal Dictionary<Value, ulong> ConstantFold(IRContext ctx)
         {
             Dictionary<Value, ulong> constants = new();
             List<IRInstruction> code = ctx.GetIRCode();
@@ -48,7 +48,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             return constants;
         }
 
-        public bool TryComputeConstant(IRInstruction instruction, Dictionary<Value, ulong> constants)
+        internal bool TryComputeConstant(IRInstruction instruction, Dictionary<Value, ulong> constants)
         {
             // Skip special loads
             if (IsSpecialRegisterLoad(instruction))
@@ -150,7 +150,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             return true;
         }
 
-        public void CopyPropagation(IRContext ctx, Dictionary<Value, ulong> knownConstants)
+        internal void CopyPropagation(IRContext ctx, Dictionary<Value, ulong> knownConstants)
         {
             // Copy Propagation on any case where we have ADD value2, value1, 0 or ADD value2, 0, Value1
             // todo: generalize for more opcodes than ADD

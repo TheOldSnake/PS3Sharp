@@ -5,7 +5,7 @@ using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAlloc
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
 {
-    public sealed partial class X64Generator
+    internal sealed partial class X64Generator
     {
         private void Add(Assembler asm, AssemblerRegister64 destReg, AssemblerRegister64 srcReg, ulong imm)
         {
@@ -1099,7 +1099,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
             asm.Label(ref done);
         }
 
-        public void ZeroExtend(Assembler asm, IRInstruction instruction)
+        internal void ZeroExtend(Assembler asm, IRInstruction instruction)
         {
             Value destination = instruction.Destination;
             Value operand = instruction.Operand1;
@@ -1131,7 +1131,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
             }
         }
 
-        public void ZeroExtendTo64(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
+        internal void ZeroExtendTo64(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
         {
             switch (operandType)
             {
@@ -1151,7 +1151,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
             }
         }
 
-        public void ZeroExtendTo32(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
+        internal void ZeroExtendTo32(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
         {
             switch (operandType)
             {
@@ -1167,7 +1167,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
             }
         }
 
-        public void ZeroExtendTo16(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
+        internal void ZeroExtendTo16(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
         {
             switch (operandType)
             {
@@ -1179,7 +1179,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
             }
         }
 
-        public void SignExtend(Assembler asm, IRInstruction instruction)
+        internal void SignExtend(Assembler asm, IRInstruction instruction)
         {
             Value destination = instruction.Destination;
             Value operand = instruction.Operand1;
@@ -1211,7 +1211,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
             }
         }
 
-        public void SignExtendTo64(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
+        internal void SignExtendTo64(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
         {
             switch (operandType)
             {
@@ -1231,7 +1231,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
             }
         }
 
-        public void SignExtendTo32(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
+        internal void SignExtendTo32(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
         {
             switch (operandType)
             {
@@ -1247,7 +1247,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
             }
         }
 
-        public void SignExtendTo16(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
+        internal void SignExtendTo16(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
         {
             switch (operandType)
             {
@@ -1259,7 +1259,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
             }
         }
 
-        public void Truncate(Assembler asm, IRInstruction instruction)
+        internal void Truncate(Assembler asm, IRInstruction instruction)
         {
             Value destination = instruction.Destination;
             Value operand = instruction.Operand1;

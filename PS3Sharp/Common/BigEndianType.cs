@@ -15,12 +15,12 @@ namespace PS3Sharp.Common
     /// </remarks>
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct BigEndian<T> : IPS3Struct, IFormattable, ISpanFormattable where T : unmanaged
+    internal struct BigEndian<T> : IPS3Struct, IFormattable, ISpanFormattable where T : unmanaged
     {
         private T _raw;
 
         // Gets the raw Big Endian value
-        public T RawBE => _raw;
+        internal T RawBE => _raw;
 
         // Converts from BigEndian<T> to the native integer type T automatically
         // (e.g., allows: int x = bigEndianValue;)

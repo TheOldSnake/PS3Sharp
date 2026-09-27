@@ -1,58 +1,58 @@
 ﻿namespace PS3Sharp.Cell.PPU
 {
-    public struct PPUInstruction
+    internal struct PPUInstruction
     {
-        public uint Raw;
-        public Op Op => (Op)(Raw >> 26);
-        public uint BF => (Raw >> 23) & 0x07;
-        public uint Rt => (Raw >> 21) & 0x1F;
-        public uint Vd => (Raw >> 21) & 0x1F;
-        public uint Frt => (Raw >> 21) & 0x1F;
-        public uint Rs => (Raw >> 21) & 0x1F;
-        public uint Frs => (Raw >> 21) & 0x1F;
-        public uint Vs => (Raw >> 21) & 0x1F;
-        public uint Bo => (Raw >> 21) & 0x1F;
-        public uint Bt => (Raw >> 21) & 0x1F;
-        public uint BFA => (Raw >> 18) & 0x07;
-        public uint Ra => (Raw >> 16) & 0x1F;
-        public uint Va => (Raw >> 16) & 0x1F;
-        public uint Fra => (Raw >> 16) & 0x1F;
-        public uint Uimm => (Raw >> 16) & 0x1F;
-        public uint Bi => (Raw >> 16) & 0x1F;
-        public uint Ba => (Raw >> 16) & 0x1F;
-        public uint Vec_SIMM => (Raw >> 16) & 0x1F;
-        public uint Fxm => (Raw >> 12) & 0xFF;
-        public uint Rb => (Raw >> 11) & 0x1F;
-        public uint Vb => (Raw >> 11) & 0x1F;
-        public uint Bb => (Raw >> 11) & 0x1F;
-        public uint Frb => (Raw >> 11) & 0x1F;
-        public uint Oe => (Raw >> 10) & 0x1;
-        public uint Vec_Rc => (Raw >> 10) & 0x1;
-        public short SI => (short)(Raw & 0xFFFF);
-        public long SI_64 => (long)(short)SI;
-        public ushort UI => (ushort)(Raw & 0xFFFF);
-        public int SH => (int)(((Raw >> 11) & 0x1F) | (Raw & 0x2) << 4);            //Shift MSB is in bit 1
-        public uint SPR => (Raw >> 11) & 0x3FF;                                     //The 5 bit pair is reversed
-        public int MB_6 => (int)(((Raw >> 6) & 0x1F) | ((Raw >> 5) & 0x1) << 5);    //MB MSB is in bit 5
-        public int ME_6 => (int)(((Raw >> 6) & 0x1F) | ((Raw >> 5) & 0x1) << 5);    //ME MSB is in bit 5
-        public int MB_5 => (int)((Raw >> 6) & 0x1F);
-        public int Frc => (int)((Raw >> 6) & 0x1F);
-        public int Vc => (int)((Raw >> 6) & 0x1F);
-        public uint SHB => (uint)((Raw >> 6) & 0xF);
-        public uint LEV => (uint)((Raw >> 5) & 0x7F);
-        public int ME_5 => (int)((Raw >> 1) & 0x1F);
-        public ulong DS => (Raw >> 2) & 0x3FFF;
-        public ulong D => Raw & 0xFFFF;
-        public ulong BD => (Raw >> 2) & 0x3FFF;
-        public G04 G04 => (G04)(Raw & 0x7FF);
-        public G1F G1F => (G1F)((Raw >> 1) & 0x3FF);
-        public G3B G3B => (G3B)((Raw >> 1) & 0x1F);
-        public G3F G3F => (G3F)((Raw >> 1) & 0x3FF);
-        public G13 G13 => (G13)((Raw >> 1) & 0x3FF);
-        public uint Rc => Raw & 0x1;
+        internal uint Raw;
+        internal Op Op => (Op)(Raw >> 26);
+        internal uint BF => (Raw >> 23) & 0x07;
+        internal uint Rt => (Raw >> 21) & 0x1F;
+        internal uint Vd => (Raw >> 21) & 0x1F;
+        internal uint Frt => (Raw >> 21) & 0x1F;
+        internal uint Rs => (Raw >> 21) & 0x1F;
+        internal uint Frs => (Raw >> 21) & 0x1F;
+        internal uint Vs => (Raw >> 21) & 0x1F;
+        internal uint Bo => (Raw >> 21) & 0x1F;
+        internal uint Bt => (Raw >> 21) & 0x1F;
+        internal uint BFA => (Raw >> 18) & 0x07;
+        internal uint Ra => (Raw >> 16) & 0x1F;
+        internal uint Va => (Raw >> 16) & 0x1F;
+        internal uint Fra => (Raw >> 16) & 0x1F;
+        internal uint Uimm => (Raw >> 16) & 0x1F;
+        internal uint Bi => (Raw >> 16) & 0x1F;
+        internal uint Ba => (Raw >> 16) & 0x1F;
+        internal uint Vec_SIMM => (Raw >> 16) & 0x1F;
+        internal uint Fxm => (Raw >> 12) & 0xFF;
+        internal uint Rb => (Raw >> 11) & 0x1F;
+        internal uint Vb => (Raw >> 11) & 0x1F;
+        internal uint Bb => (Raw >> 11) & 0x1F;
+        internal uint Frb => (Raw >> 11) & 0x1F;
+        internal uint Oe => (Raw >> 10) & 0x1;
+        internal uint Vec_Rc => (Raw >> 10) & 0x1;
+        internal short SI => (short)(Raw & 0xFFFF);
+        internal long SI_64 => (long)(short)SI;
+        internal ushort UI => (ushort)(Raw & 0xFFFF);
+        internal int SH => (int)(((Raw >> 11) & 0x1F) | (Raw & 0x2) << 4);            //Shift MSB is in bit 1
+        internal uint SPR => (Raw >> 11) & 0x3FF;                                     //The 5 bit pair is reversed
+        internal int MB_6 => (int)(((Raw >> 6) & 0x1F) | ((Raw >> 5) & 0x1) << 5);    //MB MSB is in bit 5
+        internal int ME_6 => (int)(((Raw >> 6) & 0x1F) | ((Raw >> 5) & 0x1) << 5);    //ME MSB is in bit 5
+        internal int MB_5 => (int)((Raw >> 6) & 0x1F);
+        internal int Frc => (int)((Raw >> 6) & 0x1F);
+        internal int Vc => (int)((Raw >> 6) & 0x1F);
+        internal uint SHB => (uint)((Raw >> 6) & 0xF);
+        internal uint LEV => (uint)((Raw >> 5) & 0x7F);
+        internal int ME_5 => (int)((Raw >> 1) & 0x1F);
+        internal ulong DS => (Raw >> 2) & 0x3FFF;
+        internal ulong D => Raw & 0xFFFF;
+        internal ulong BD => (Raw >> 2) & 0x3FFF;
+        internal G04 G04 => (G04)(Raw & 0x7FF);
+        internal G1F G1F => (G1F)((Raw >> 1) & 0x3FF);
+        internal G3B G3B => (G3B)((Raw >> 1) & 0x1F);
+        internal G3F G3F => (G3F)((Raw >> 1) & 0x3FF);
+        internal G13 G13 => (G13)((Raw >> 1) & 0x3FF);
+        internal uint Rc => Raw & 0x1;
     }
 
-    public enum Op : uint
+    internal enum Op : uint
     {
         Altivec = 0x04,
         MULLI = 0x07,
@@ -108,7 +108,7 @@
         G3F = 0x3F,
     }
 
-    public enum G04 : uint
+    internal enum G04 : uint
     {    // Altivec
         VADDFP = 0x00A,
         VSEL = 0x02A,
@@ -154,7 +154,7 @@
         VNOR = 0x504
     }
 
-    public enum G13 : uint
+    internal enum G13 : uint
     {
         MCRF = 0x000,
         BCLR = 0x010,
@@ -170,7 +170,7 @@
         BCCTR = 0x210,
     }
 
-    public enum G1F : uint
+    internal enum G1F : uint
     {
         CMP = 0x000,
         LVEBX = 0x007,
@@ -285,7 +285,7 @@
         DCBZ = 0x3F6
     }
 
-    public enum G3B : uint
+    internal enum G3B : uint
     {
         FDIVS = 0x12,
         FSUBS = 0x14,
@@ -300,7 +300,7 @@
         FNMADDS = 0x1F
     }
 
-    public enum G3F : uint
+    internal enum G3F : uint
     {
         FCMPU = 0x000,
         FRSP = 0x00C,

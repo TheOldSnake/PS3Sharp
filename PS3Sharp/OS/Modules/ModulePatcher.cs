@@ -9,48 +9,48 @@ using static PS3Sharp.ElfLoader;
 
 namespace PS3Sharp.OS.Modules
 {
-    public static class ModulePatcher
+    internal static class ModulePatcher
     {
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct PRXParam : IPS3Struct
+        internal struct PRXParam : IPS3Struct
         {
-            public BigEndian<uint> size;
-            public BigEndian<uint> magic;
-            public BigEndian<uint> version;
-            public BigEndian<uint> pad0;
-            public BigEndian<uint> libentstart;
-            public BigEndian<uint> libentend;
-            public BigEndian<uint> libstubstart;
-            public BigEndian<uint> libstubend;
-            public BigEndian<ushort> ver;
-            public BigEndian<ushort> pad1;
-            public BigEndian<uint> pad2;
+            internal BigEndian<uint> size;
+            internal BigEndian<uint> magic;
+            internal BigEndian<uint> version;
+            internal BigEndian<uint> pad0;
+            internal BigEndian<uint> libentstart;
+            internal BigEndian<uint> libentend;
+            internal BigEndian<uint> libstubstart;
+            internal BigEndian<uint> libstubend;
+            internal BigEndian<ushort> ver;
+            internal BigEndian<ushort> pad1;
+            internal BigEndian<uint> pad2;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct PRXStubHeader : IPS3Struct
+        internal struct PRXStubHeader : IPS3Struct
         {
-            public byte s_size;
-            public byte s_unk0;
-            public BigEndian<ushort> s_version;
-            public BigEndian<ushort> s_unk1;
-            public BigEndian<ushort> s_imports;
-            public BigEndian<uint> s_unk2;
-            public BigEndian<uint> s_unk3;
-            public BigEndian<uint> s_modulename;
-            public BigEndian<uint> s_nid;
-            public BigEndian<uint> s_text;
-            public BigEndian<uint> s_unk4;
-            public BigEndian<uint> s_unk5;
-            public BigEndian<uint> s_unk6;
-            public BigEndian<uint> s_unk7;
+            internal byte s_size;
+            internal byte s_unk0;
+            internal BigEndian<ushort> s_version;
+            internal BigEndian<ushort> s_unk1;
+            internal BigEndian<ushort> s_imports;
+            internal BigEndian<uint> s_unk2;
+            internal BigEndian<uint> s_unk3;
+            internal BigEndian<uint> s_modulename;
+            internal BigEndian<uint> s_nid;
+            internal BigEndian<uint> s_text;
+            internal BigEndian<uint> s_unk4;
+            internal BigEndian<uint> s_unk5;
+            internal BigEndian<uint> s_unk6;
+            internal BigEndian<uint> s_unk7;
         }
 
-        public static List<ModuleStubInfo> Stubs = [];
-        public const ushort ModuleCallSysID = 0x7C7C;
+        internal static List<ModuleStubInfo> Stubs = [];
+        internal const ushort ModuleCallSysID = 0x7C7C;
 
-        public static void HandlePRXImports(BinaryReader reader, ProgramHeader prxProgram)
+        internal static void HandlePRXImports(BinaryReader reader, ProgramHeader prxProgram)
         { // for main elf
             reader.BaseStream.Seek((long)(ulong)prxProgram.p_offset, SeekOrigin.Begin);
             PRXParam prx = ReadPRXParam(reader);
@@ -64,7 +64,7 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        public static unsafe void ImportModules(ReadOnlySpan<PRXStubHeader> moduleStubs)
+        internal static unsafe void ImportModules(ReadOnlySpan<PRXStubHeader> moduleStubs)
         {
             int length = moduleStubs.Length;
 
@@ -86,7 +86,7 @@ namespace PS3Sharp.OS.Modules
             PRXManager.PRXManager.LoadPRXLibraries();
         }
 
-        public static unsafe void ImportFunctions(string moduleName, Span<BigEndian<uint>> nids, Span<BigEndian<uint>> stubCodeAddresses)
+        internal static unsafe void ImportFunctions(string moduleName, Span<BigEndian<uint>> nids, Span<BigEndian<uint>> stubCodeAddresses)
         {
             if (nids.Length != stubCodeAddresses.Length)
             {
@@ -110,7 +110,7 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        public static void PatchModuleCallHLE(string moduleName, string functionName, uint nid, uint stubCodeAddress)
+        internal static void PatchModuleCallHLE(string moduleName, string functionName, uint nid, uint stubCodeAddress)
         {
             ModuleStubInfo stubInfo = new(moduleName, functionName, nid, stubCodeAddress);
             stubInfo.PatchStartAddress = WriteHLEStub(stubCodeAddress);
@@ -176,7 +176,7 @@ namespace PS3Sharp.OS.Modules
             return stubAddress;
         }
 
-        public static ModuleStubInfo GetModuleInfo(uint stubAddress)
+        internal static ModuleStubInfo GetModuleInfo(uint stubAddress)
         { //takes the address of li r11, ModuleCallSysID
             for (int i = 0; i < Stubs.Count; i++)
             {
@@ -196,7 +196,7 @@ namespace PS3Sharp.OS.Modules
             return MemoryMarshal.Read<PRXParam>(buffer);
         }
 
-        public static void PrintPRXParam(PRXParam p)
+        internal static void PrintPRXParam(PRXParam p)
         {
             Console.WriteLine("PRXParam:");
             Console.WriteLine($"size         = 0x{p.size:X8}");

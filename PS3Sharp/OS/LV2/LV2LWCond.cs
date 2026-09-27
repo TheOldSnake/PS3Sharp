@@ -12,19 +12,19 @@ namespace PS3Sharp.OS.LV2
     // But it uses LWMutex instead of Mutex
 
     // This is incomplete 
-    public sealed class LV2LWCond
+    internal sealed class LV2LWCond
     {
         [StructLayout(LayoutKind.Sequential)]
-        public struct SysLWCondAttribute : IPS3Struct
+        internal struct SysLWCondAttribute : IPS3Struct
         {
-            public InlineData.InlineArray8<byte> Name;
+            internal InlineData.InlineArray8<byte> Name;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct SysLWCond : IPS3Struct
+        internal struct SysLWCond : IPS3Struct
         {
-            public BigEndianGuestPtr<LV2LWMutex.LWMutex> LWMutex;   // why is this needed ?
-            public BigEndian<uint> LWCondQueue;
+            internal BigEndianGuestPtr<LV2LWMutex.LWMutex> LWMutex;   // why is this needed ?
+            internal BigEndian<uint> LWCondQueue;
         }
 
         private static readonly ConcurrentDictionary<uint, LV2CondWaiter> _threadCondWaiters = [];
@@ -33,13 +33,13 @@ namespace PS3Sharp.OS.LV2
         private readonly GuestPtr<SysLWCond> _instancePtr;
         private readonly SysLWCondAttribute _attribute;
 
-        public LV2LWCond(GuestPtr<SysLWCond> ptr, SysLWCondAttribute attribute)
+        internal LV2LWCond(GuestPtr<SysLWCond> ptr, SysLWCondAttribute attribute)
         {
             _instancePtr = ptr;
             _attribute = attribute;
         }
 
-        public LV2LWMutex GetLWMutex()
+        internal LV2LWMutex GetLWMutex()
         {
             // this is assuming that the mutex is stored here
             // but we already get a mutex ID in like every syscall of this sealed class.. ?
@@ -64,7 +64,7 @@ namespace PS3Sharp.OS.LV2
             }
         }
 
-        public ulong Wait(uint callerThreadID, ulong us_timeout = 0)
+        internal ulong Wait(uint callerThreadID, ulong us_timeout = 0)
         {
             LV2LWMutex lwmutex = GetLWMutex();
 
@@ -121,7 +121,7 @@ namespace PS3Sharp.OS.LV2
 
         }
 
-        public ulong Signal()
+        internal ulong Signal()
         {
             lock (Waiters)
             {
@@ -132,7 +132,7 @@ namespace PS3Sharp.OS.LV2
             return CELL_OK;
         }
 
-        public ulong SignalAll()
+        internal ulong SignalAll()
         {
             lock (Waiters)
             {

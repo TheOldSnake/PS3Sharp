@@ -10,12 +10,12 @@ using static PS3Sharp.OS.LV2.LV2Cond;
 
 namespace PS3Sharp.OS.Syscall
 {
-    public static class SysCond
+    internal static class SysCond
     {
         private static readonly ConcurrentDictionary<uint, LV2Cond> _conds = [];
-        public static bool GetCond(uint cond_id, out LV2Cond cond) => _conds.TryGetValue(cond_id, out cond);
+        internal static bool GetCond(uint cond_id, out LV2Cond cond) => _conds.TryGetValue(cond_id, out cond);
 
-        public static void AddCond(LV2Cond cond)
+        internal static void AddCond(LV2Cond cond)
         {
             bool success = _conds.TryAdd(cond.Handle, cond);
             if (!success)
@@ -24,7 +24,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static void RemoveCond(uint cond_id)
+        internal static void RemoveCond(uint cond_id)
         {
             bool success = _conds.TryRemove(cond_id, out _);
             if (!success)
@@ -33,7 +33,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static ulong SysCondCreate(PPU ppu)
+        internal static ulong SysCondCreate(PPU ppu)
         {
             GuestPtr<uint> cond_id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             uint mutex_id = ppu.ReadArg<uint>(ARG1);
@@ -58,7 +58,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysCondDestroy(PPU ppu)
+        internal static ulong SysCondDestroy(PPU ppu)
         {
             uint cond_id = ppu.ReadArg<uint>(ARG0);
 
@@ -66,7 +66,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysCondWait(PPU ppu)
+        internal static ulong SysCondWait(PPU ppu)
         {
             uint cond_id = ppu.ReadArg<uint>(ARG0);
             ulong us_timeout = ppu.ReadArg<ulong>(ARG1);
@@ -82,7 +82,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static ulong SysCondSignal(PPU ppu)
+        internal static ulong SysCondSignal(PPU ppu)
         {
             uint cond_id = ppu.ReadArg<uint>(ARG0);
 
@@ -98,7 +98,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static ulong SysCondSignalAll(PPU ppu)
+        internal static ulong SysCondSignalAll(PPU ppu)
         {
             uint cond_id = ppu.ReadArg<uint>(ARG0);
 
@@ -113,7 +113,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static ulong SysCondSignalTo(PPU ppu)
+        internal static ulong SysCondSignalTo(PPU ppu)
         {
             uint cond_id = ppu.ReadArg<uint>(ARG0);
             uint thread_id = ppu.ReadArg<uint>(ARG1);

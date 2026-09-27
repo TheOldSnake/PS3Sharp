@@ -3,14 +3,14 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    public static class CellIO
+    internal static class CellIO
     {
-        public static ulong CellMouseGetInfo(PPU ppu)
+        internal static ulong CellMouseGetInfo(PPU ppu)
         {
             return CELL_OK;
         }
 
-        public static ulong CellPadPeriphGetInfo(PPU ppu)
+        internal static ulong CellPadPeriphGetInfo(PPU ppu)
         {
             return CELL_OK;
         }

@@ -6,14 +6,14 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    public static class SysTTY
+    internal static class SysTTY
     {
         private static ConsoleColor[] Colors = [
             //todo
         ];
 
-        public const uint STDOUT = 1;
-        public const uint STDERR = 2;
+        internal const uint STDOUT = 1;
+        internal const uint STDERR = 2;
 
         //static StreamWriter output = File.AppendText(@"D:\RPCS3\app_home\output.txt");
         private static void Print(string s, ConsoleColor color)
@@ -27,7 +27,7 @@ namespace PS3Sharp.OS.Syscall
             //output.Write(s);
         }
 
-        public static uint SysTTYWrite(PPU ppu)
+        internal static uint SysTTYWrite(PPU ppu)
         {
 
             uint ch = ppu.ReadArg<uint>(ARG0);                               //channel? probably file descriptor

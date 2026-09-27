@@ -5,28 +5,28 @@ using static PS3Sharp.OS.Syscall.SysSPU;
 
 namespace PS3Sharp.OS.LV2
 {
-    public sealed class LV2SPUThreadGroup
+    internal sealed class LV2SPUThreadGroup
     {
-        public uint Handle { get; } = MemoryManager.GetHandle();
-        public GuestPtr<SysSPUThreadGroupAttribute> AttributePtr { get; }
-        public uint Number { get; }
-        public int Priority { get; }
-        public List<SPU> SPUThreads { get; } = new();
+        internal uint Handle { get; } = MemoryManager.GetHandle();
+        internal GuestPtr<SysSPUThreadGroupAttribute> AttributePtr { get; }
+        internal uint Number { get; }
+        internal int Priority { get; }
+        internal List<SPU> SPUThreads { get; } = new();
         private bool _started = false;
 
-        public LV2SPUThreadGroup(GuestPtr<SysSPUThreadGroupAttribute> attrib_ptr, uint number, int prio)
+        internal LV2SPUThreadGroup(GuestPtr<SysSPUThreadGroupAttribute> attrib_ptr, uint number, int prio)
         {
             AttributePtr = attrib_ptr;
             Number = number;
             Priority = prio;
         }
 
-        public void AddThread(SPU spu)
+        internal void AddThread(SPU spu)
         {
             SPUThreads.Add(spu);
         }
 
-        public void StartGroup()
+        internal void StartGroup()
         {
             if (_started)
             {

@@ -7,10 +7,10 @@ using static PS3Sharp.Cell.Arguments;
 
 namespace PS3Sharp.OS.Syscall
 {
-    public static class SysPRX
+    internal static class SysPRX
     { // used by vsh
 
-        public static ulong SysPRXLoadModule(PPU ppu)
+        internal static ulong SysPRXLoadModule(PPU ppu)
         {
             GuestVoidPtr path_ptr = ppu.ReadArg<GuestVoidPtr>(ARG0); //const char* path
             string path = MemoryManager.ReadString(path_ptr);
@@ -18,7 +18,7 @@ namespace PS3Sharp.OS.Syscall
             return 0; // should return module id?
         }
 
-        public static ulong SysPRXGetModuleIDByName(PPU ppu)
+        internal static ulong SysPRXGetModuleIDByName(PPU ppu)
         {
             GuestVoidPtr name_ptr = ppu.ReadArg<GuestVoidPtr>(ARG0); //const char* path
             string name = MemoryManager.ReadString(name_ptr);

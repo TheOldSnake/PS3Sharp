@@ -7,7 +7,7 @@
     /// Structs implementing this interface are expected to match the exact
     /// memory layout used by the PS3, and are expected to be implemented using BigEndian type.
     /// </remarks>
-    public interface IPS3Struct
+    internal interface IPS3Struct
     {
 
     }

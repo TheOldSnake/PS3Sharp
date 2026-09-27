@@ -9,7 +9,7 @@ using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAlloc
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
 {
-    public unsafe sealed partial class X64Generator
+    internal unsafe sealed partial class X64Generator
     {
         private RegisterAllocator.RegisterAllocator _registerAllocator = new();
 
@@ -71,7 +71,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
             _knownConstants = block.Constants;
         }
 
-        public Span<byte> GenerateNativeCode(IRBlock block, PPU ppuThread)
+        internal Span<byte> GenerateNativeCode(IRBlock block, PPU ppuThread)
         {
             ResetState();
             SetupState(block);

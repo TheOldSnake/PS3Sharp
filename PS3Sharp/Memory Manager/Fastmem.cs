@@ -3,13 +3,13 @@ using static PS3Sharp.Memory_Manager.MemoryManager;
 
 namespace PS3Sharp.Memory_Manager
 {
-    public static unsafe class Fastmem
+    internal static unsafe class Fastmem
     {
-        public const uint PAGE_BITS = 16;
-        public const uint PAGE_SHIFT = (32 - PAGE_BITS);
-        public const uint PAGE_COUNT = 1 << (int)PAGE_BITS;
-        public const uint PAGE_SIZE = 1 << (int)PAGE_SHIFT;
-        public const uint PAGE_MASK = PAGE_SIZE - 1;
+        internal const uint PAGE_BITS = 16;
+        internal const uint PAGE_SHIFT = (32 - PAGE_BITS);
+        internal const uint PAGE_COUNT = 1 << (int)PAGE_BITS;
+        internal const uint PAGE_SIZE = 1 << (int)PAGE_SHIFT;
+        internal const uint PAGE_MASK = PAGE_SIZE - 1;
 
         // Everything from here is mostly unused 
 
@@ -21,7 +21,7 @@ namespace PS3Sharp.Memory_Manager
 
 
         // -- Unused --
-        public static void AllocatePageTable()
+        internal static void AllocatePageTable()
         {
             PageTable = (byte**)NativeMemory.AllocZeroed(PageTableSizeBytes);
         }

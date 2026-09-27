@@ -2,7 +2,7 @@
 
 namespace PS3Sharp.Cell.RSX
 {
-    public static partial class VertexShaderGenerator
+    internal static partial class VertexShaderGenerator
     {
         private static readonly string VertexProgramBase = @"
             #version 460        
@@ -96,9 +96,9 @@ namespace PS3Sharp.Cell.RSX
 
         private static readonly string WhiteSpace = @"                ";
         private static string CurrentVetrexShader = VertexProgramBase;
-        public static string LastVertexShader;
-        public static uint VertexShaderShaderStart { get; set; }   // Index of the first instruction
-        public static uint VertexShaderLoadIndex { get; set; }    // Index to load instructions from
+        internal static string LastVertexShader;
+        internal static uint VertexShaderShaderStart { get; set; }   // Index of the first instruction
+        internal static uint VertexShaderLoadIndex { get; set; }    // Index to load instructions from
 
         private static readonly uint[] VertexShaderBuffer = new uint[512 * 4];  // 512 qwords
 
@@ -124,7 +124,7 @@ namespace PS3Sharp.Cell.RSX
             return shader;
         }
 
-        public static VertexInstruction GetVertexInstruction(ReadOnlySpan<uint> data)
+        internal static VertexInstruction GetVertexInstruction(ReadOnlySpan<uint> data)
         {
             VertexInstruction v;
             v.Raw_0 = data[0];
@@ -134,7 +134,7 @@ namespace PS3Sharp.Cell.RSX
             return v;
         }
 
-        public static void UploadInstructions(Queue<BigEndian<uint>> data)
+        internal static void UploadInstructions(Queue<BigEndian<uint>> data)
         {
             while (data.Count > 0)
             {
@@ -144,7 +144,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public static ulong CalculateChecksum()
+        internal static ulong CalculateChecksum()
         {
             ulong checksum = 0;
             for (uint i = VertexShaderShaderStart; i < VertexShaderBuffer.Length; i += 4)
@@ -163,7 +163,7 @@ namespace PS3Sharp.Cell.RSX
             return checksum;
         }
 
-        public static string GenerateVertexShader()
+        internal static string GenerateVertexShader()
         {
             CurrentVetrexShader = string.Empty;
 
@@ -190,7 +190,7 @@ namespace PS3Sharp.Cell.RSX
             return LastVertexShader;
         }
 
-        public static string HandleVectorInstruction(VertexInstruction instruction)
+        internal static string HandleVectorInstruction(VertexInstruction instruction)
         {
             string src0 = GetSource(0, instruction);
             string src1 = GetSource(1, instruction);
@@ -321,7 +321,7 @@ namespace PS3Sharp.Cell.RSX
             return WhiteSpace + output;
         }
 
-        public static string HandleScalarInstruction(VertexInstruction instruction)
+        internal static string HandleScalarInstruction(VertexInstruction instruction)
         {
             // Not sure how scalar work
             // Big TODO
@@ -376,7 +376,7 @@ namespace PS3Sharp.Cell.RSX
             return WhiteSpace + output;
         }
 
-        public static string GetSource(int sourceNumber, VertexInstruction instruction)
+        internal static string GetSource(int sourceNumber, VertexInstruction instruction)
         {
             //some information like "abs" are not in the common "src" fields 
 
@@ -471,7 +471,7 @@ namespace PS3Sharp.Cell.RSX
             return srcName;
         }
 
-        public static (string, string) GetDestination(VertexInstruction instruction, bool isScalar = false)
+        internal static (string, string) GetDestination(VertexInstruction instruction, bool isScalar = false)
         {
             string destName = string.Empty;
 
@@ -577,7 +577,7 @@ namespace PS3Sharp.Cell.RSX
 
         const string xyzw = "xyzw";
 
-        public static string ConditionalSelect(VertexInstruction instruction, string destination, string destinationMask, string source)
+        internal static string ConditionalSelect(VertexInstruction instruction, string destination, string destinationMask, string source)
         { // dest and source are already masked
             // Select CC
             string cc = $"cc{instruction.Cond_Reg_Sel}";
@@ -602,7 +602,7 @@ namespace PS3Sharp.Cell.RSX
             return final;
         }
 
-        public static string GetCast(int numberOfChannels)
+        internal static string GetCast(int numberOfChannels)
         {
             switch (numberOfChannels)
             {

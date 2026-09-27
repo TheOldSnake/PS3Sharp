@@ -11,28 +11,28 @@ namespace PS3Sharp.OS.Syscall
 {
     // File System Syscalls
 
-    public static class SysFs
+    internal static class SysFs
     {
         // This struct is explicitly aligned to 4 bytes
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public struct CellFsStat : IPS3Struct
+        internal struct CellFsStat : IPS3Struct
         {
-            public BigEndian<int> Mode;          // s32
-            public BigEndian<int> UID;           // s32
-            public BigEndian<int> GID;           // s32
-            public BigEndian<ulong> AccessTime;  // u64
-            public BigEndian<ulong> ModifyTime;  // u64
-            public BigEndian<ulong> CreateTime;  // u64
-            public BigEndian<ulong> Size;        // u64
-            public BigEndian<ulong> BlkSize;     // u64
+            internal BigEndian<int> Mode;          // s32
+            internal BigEndian<int> UID;           // s32
+            internal BigEndian<int> GID;           // s32
+            internal BigEndian<ulong> AccessTime;  // u64
+            internal BigEndian<ulong> ModifyTime;  // u64
+            internal BigEndian<ulong> CreateTime;  // u64
+            internal BigEndian<ulong> Size;        // u64
+            internal BigEndian<ulong> BlkSize;     // u64
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct CellFsDirent : IPS3Struct
+        internal struct CellFsDirent : IPS3Struct
         {
-            public byte Type;
-            public byte NameLength;
-            public InlineData.InlineArray256<byte> Name;
+            internal byte Type;
+            internal byte NameLength;
+            internal InlineData.InlineArray256<byte> Name;
         }
 
 
@@ -40,52 +40,52 @@ namespace PS3Sharp.OS.Syscall
         static uint Oct(string v) => Convert.ToUInt32(v, 8);   // Helper (avoid using it at runtime)
 
         // Same as Linux (uses base 8)
-        public static readonly uint CELL_FS_S_IFDIR = Oct("0040000"); // Directory
-        public static readonly uint CELL_FS_S_IFREG = Oct("0100000"); // Regular
-        public static readonly uint CELL_FS_S_IFLNK = Oct("0120000"); // Symbolic link
-        public static readonly uint CELL_FS_S_IFWHT = Oct("0160000"); // Unknown
+        internal static readonly uint CELL_FS_S_IFDIR = Oct("0040000"); // Directory
+        internal static readonly uint CELL_FS_S_IFREG = Oct("0100000"); // Regular
+        internal static readonly uint CELL_FS_S_IFLNK = Oct("0120000"); // Symbolic link
+        internal static readonly uint CELL_FS_S_IFWHT = Oct("0160000"); // Unknown
 
-        public static readonly uint CELL_FS_S_IRUSR = Oct("0000400"); // R for owner
-        public static readonly uint CELL_FS_S_IWUSR = Oct("0000200"); // W for owner
-        public static readonly uint CELL_FS_S_IXUSR = Oct("0000100"); // X for owner
+        internal static readonly uint CELL_FS_S_IRUSR = Oct("0000400"); // R for owner
+        internal static readonly uint CELL_FS_S_IWUSR = Oct("0000200"); // W for owner
+        internal static readonly uint CELL_FS_S_IXUSR = Oct("0000100"); // X for owner
 
-        public static readonly uint CELL_FS_S_IRGRP = Oct("0000040"); // R for group
-        public static readonly uint CELL_FS_S_IWGRP = Oct("0000020"); // W for group
-        public static readonly uint CELL_FS_S_IXGRP = Oct("0000010"); // X for group
+        internal static readonly uint CELL_FS_S_IRGRP = Oct("0000040"); // R for group
+        internal static readonly uint CELL_FS_S_IWGRP = Oct("0000020"); // W for group
+        internal static readonly uint CELL_FS_S_IXGRP = Oct("0000010"); // X for group
 
-        public static readonly uint CELL_FS_S_IROTH = Oct("0000004"); // R for other
-        public static readonly uint CELL_FS_S_IWOTH = Oct("0000002"); // W for other
-        public static readonly uint CELL_FS_S_IXOTH = Oct("0000001"); // X for other
+        internal static readonly uint CELL_FS_S_IROTH = Oct("0000004"); // R for other
+        internal static readonly uint CELL_FS_S_IWOTH = Oct("0000002"); // W for other
+        internal static readonly uint CELL_FS_S_IXOTH = Oct("0000001"); // X for other
 
         //Default Modes
-        public static readonly uint DIR_MODE = Oct("0777") | CELL_FS_S_IFDIR;   // RWX RWX RWX
-        public static readonly uint FILE_MODE = Oct("0666") | CELL_FS_S_IFREG;   // RW- RW- RW-
+        internal static readonly uint DIR_MODE = Oct("0777") | CELL_FS_S_IFDIR;   // RWX RWX RWX
+        internal static readonly uint FILE_MODE = Oct("0666") | CELL_FS_S_IFREG;   // RW- RW- RW-
 
         // SysFsOpen flags
-        public static readonly uint O_RDONLY = 0x0000;              // Read only
-        public static readonly uint O_WRONLY = 0x0001;              // Write only
-        public static readonly uint O_RDWR = 0x0002;                // Read/write
+        internal static readonly uint O_RDONLY = 0x0000;              // Read only
+        internal static readonly uint O_WRONLY = 0x0001;              // Write only
+        internal static readonly uint O_RDWR = 0x0002;                // Read/write
 
-        public static readonly uint O_CREAT = Oct("0100");          // Create file if it does not exist
-        public static readonly uint O_EXCL = Oct("0200");           // Exclusive create
-        public static readonly uint O_NOCTTY = Oct("0400");         // Do not assign controlling terminal
-        public static readonly uint O_TRUNC = Oct("01000");         // Truncate file
-        public static readonly uint O_APPEND = Oct("02000");        // Append on each write
-        public static readonly uint O_NONBLOCK = Oct("04000");      // Non-blocking I/O
+        internal static readonly uint O_CREAT = Oct("0100");          // Create file if it does not exist
+        internal static readonly uint O_EXCL = Oct("0200");           // Exclusive create
+        internal static readonly uint O_NOCTTY = Oct("0400");         // Do not assign controlling terminal
+        internal static readonly uint O_TRUNC = Oct("01000");         // Truncate file
+        internal static readonly uint O_APPEND = Oct("02000");        // Append on each write
+        internal static readonly uint O_NONBLOCK = Oct("04000");      // Non-blocking I/O
 
-        public static readonly uint O_DSYNC = Oct("010000");        // Synchronized writes (data only)
-        public static readonly uint O_SYNC = Oct("04010000");       // Synchronized writes (data + metadata)
+        internal static readonly uint O_DSYNC = Oct("010000");        // Synchronized writes (data only)
+        internal static readonly uint O_SYNC = Oct("04010000");       // Synchronized writes (data + metadata)
         static readonly uint O_RSYNC = O_SYNC;
 
-        public static readonly uint O_DIRECTORY = Oct("0200000");   // Must be a directory
-        public static readonly uint O_NOFOLLOW = Oct("0400000");    // Do not follow symlinks
-        public static readonly uint O_CLOEXEC = Oct("02000000");    // Close on exec
+        internal static readonly uint O_DIRECTORY = Oct("0200000");   // Must be a directory
+        internal static readonly uint O_NOFOLLOW = Oct("0400000");    // Do not follow symlinks
+        internal static readonly uint O_CLOEXEC = Oct("02000000");    // Close on exec
 
         //Same as linux?
-        public const uint FD_STDIN = 0;
-        public const uint FD_STDOUT = 1;
-        public const uint FD_STDERR = 2;
-        public const uint FD_EOF = 4;
+        internal const uint FD_STDIN = 0;
+        internal const uint FD_STDOUT = 1;
+        internal const uint FD_STDERR = 2;
+        internal const uint FD_EOF = 4;
 
         // For the console
         private static CellFsStat ConsoleFsStat = new()
@@ -105,8 +105,8 @@ namespace PS3Sharp.OS.Syscall
         };
 
 
-        public static bool IsGuestAbsolutePath(string guestPath) => guestPath.StartsWith("/");
-        public static string GetAbsoluteHostPath(string guestPath)
+        internal static bool IsGuestAbsolutePath(string guestPath) => guestPath.StartsWith("/");
+        internal static string GetAbsoluteHostPath(string guestPath)
         {
             //Assuming absolute paths 
             if (!IsGuestAbsolutePath(guestPath))
@@ -122,13 +122,13 @@ namespace PS3Sharp.OS.Syscall
         }
 
 
-        public static ulong SysFsAioInit(PPU ppu)
+        internal static ulong SysFsAioInit(PPU ppu)
         {
             Console.WriteLine($"[{ppu.ThreadName}] [SysFs] SysFsAioInit");
             return CELL_OK;
         }
 
-        public static uint SysFsStat(PPU ppu)
+        internal static uint SysFsStat(PPU ppu)
         {
             uint path_ptr = ppu.ReadArg<uint>(ARG0);
             GuestPtr<CellFsStat> stat_ptr = ppu.ReadArg<GuestPtr<CellFsStat>>(ARG1);
@@ -180,7 +180,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static uint SysFsFstat(PPU ppu)
+        internal static uint SysFsFstat(PPU ppu)
         {
             int fd = ppu.ReadArg<int>(ARG0);
             GuestPtr<CellFsStat> stat_ptr = ppu.ReadArg<GuestPtr<CellFsStat>>(ARG1);
@@ -235,7 +235,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysFsOpen(PPU ppu)
+        internal static ulong SysFsOpen(PPU ppu)
         {
             uint path_ptr = ppu.ReadArg<uint>(ARG0);
             uint flags = ppu.ReadArg<uint>(ARG1);
@@ -288,7 +288,7 @@ namespace PS3Sharp.OS.Syscall
             return result;
         }
 
-        public static ulong SysFsLseek(PPU ppu)
+        internal static ulong SysFsLseek(PPU ppu)
         {
             int fd = ppu.ReadArg<int>(ARG0);
             long offset = ppu.ReadArg<long>(ARG1);
@@ -309,7 +309,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysFsRead(PPU ppu, bool IsSys = true)
+        internal static ulong SysFsRead(PPU ppu, bool IsSys = true)
         {
             int fd = ppu.ReadArg<int>(ARG0);
             GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(ARG1);
@@ -355,7 +355,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysFsWrite(PPU ppu)
+        internal static ulong SysFsWrite(PPU ppu)
         {
             int fd = ppu.ReadArg<int>(ARG0);
             GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(ARG1);
@@ -368,7 +368,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysFsClose(PPU ppu)
+        internal static ulong SysFsClose(PPU ppu)
         {
             int fd = ppu.ReadArg<int>(ARG0);
 
@@ -377,14 +377,14 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysFsMkDir(PPU ppu)
+        internal static ulong SysFsMkDir(PPU ppu)
         {
             // todo
             Console.WriteLine($"[SysFsMkDir] SysFsMkDir -> CELL_OK");
             return CELL_OK;
         }
 
-        public static ulong SysFsOpenDir(PPU ppu)
+        internal static ulong SysFsOpenDir(PPU ppu)
         {
             // todo
             return CELL_ENOENT;
@@ -411,7 +411,7 @@ namespace PS3Sharp.OS.Syscall
             return result;
         }
 
-        public static ulong SysFsReadDir(PPU ppu)
+        internal static ulong SysFsReadDir(PPU ppu)
         {
             int fd = ppu.ReadArg<int>(ARG0);
             GuestPtr<CellFsDirent> direent_ptr = ppu.ReadArg<GuestPtr<CellFsDirent>>(ARG1);
@@ -425,7 +425,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysFsCloseDir(PPU ppu)
+        internal static ulong SysFsCloseDir(PPU ppu)
         {
             // todo
             // Console.WriteLine($"[SysFsCloseDir] SysFsCloseDir -> CELL_OK");

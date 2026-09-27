@@ -10,46 +10,46 @@ using static PS3Sharp.Cell.ErrorCode;
 namespace PS3Sharp.OS.Modules
 {
 
-    public static class CellGame
+    internal static class CellGame
     {
 
         static string ContentDirectory => PS3Sharp.ContentDir.Replace("\\", "/") + "\0";
         static string USRDIR => PS3Sharp.ContentDir.Replace("\\", "/") + @"/USRDIR" + "\0";
 
-        public const uint CELL_GAME_PARAMID_TITLE = 0;
-        public const uint CELL_GAME_PARAMID_TITLE_DEFAULT = 1;
-        public const uint CELL_GAME_PARAMID_TITLE_JAPANESE = 2;
-        public const uint CELL_GAME_PARAMID_TITLE_ENGLISH = 3;
-        public const uint CELL_GAME_PARAMID_TITLE_FRENCH = 4;
-        public const uint CELL_GAME_PARAMID_TITLE_SPANISH = 5;
-        public const uint CELL_GAME_PARAMID_TITLE_GERMAN = 6;
-        public const uint CELL_GAME_PARAMID_TITLE_ITALIAN = 7;
-        public const uint CELL_GAME_PARAMID_TITLE_DUTCH = 8;
-        public const uint CELL_GAME_PARAMID_TITLE_PORTUGUESE = 9;
-        public const uint CELL_GAME_PARAMID_TITLE_RUSSIAN = 10;
-        public const uint CELL_GAME_PARAMID_TITLE_KOREAN = 11;
-        public const uint CELL_GAME_PARAMID_TITLE_CHINESE_T = 12;
-        public const uint CELL_GAME_PARAMID_TITLE_CHINESE_S = 13;
-        public const uint CELL_GAME_PARAMID_TITLE_FINNISH = 14;
-        public const uint CELL_GAME_PARAMID_TITLE_SWEDISH = 15;
-        public const uint CELL_GAME_PARAMID_TITLE_DANISH = 16;
-        public const uint CELL_GAME_PARAMID_TITLE_NORWEGIAN = 17;
-        public const uint CELL_GAME_PARAMID_TITLE_POLISH = 18;
-        public const uint CELL_GAME_PARAMID_TITLE_PORTUGUESE_BRAZIL = 19;
-        public const uint CELL_GAME_PARAMID_TITLE_ENGLISH_UK = 20;
-        public const uint CELL_GAME_PARAMID_TITLE_TURKISH = 21;
+        internal const uint CELL_GAME_PARAMID_TITLE = 0;
+        internal const uint CELL_GAME_PARAMID_TITLE_DEFAULT = 1;
+        internal const uint CELL_GAME_PARAMID_TITLE_JAPANESE = 2;
+        internal const uint CELL_GAME_PARAMID_TITLE_ENGLISH = 3;
+        internal const uint CELL_GAME_PARAMID_TITLE_FRENCH = 4;
+        internal const uint CELL_GAME_PARAMID_TITLE_SPANISH = 5;
+        internal const uint CELL_GAME_PARAMID_TITLE_GERMAN = 6;
+        internal const uint CELL_GAME_PARAMID_TITLE_ITALIAN = 7;
+        internal const uint CELL_GAME_PARAMID_TITLE_DUTCH = 8;
+        internal const uint CELL_GAME_PARAMID_TITLE_PORTUGUESE = 9;
+        internal const uint CELL_GAME_PARAMID_TITLE_RUSSIAN = 10;
+        internal const uint CELL_GAME_PARAMID_TITLE_KOREAN = 11;
+        internal const uint CELL_GAME_PARAMID_TITLE_CHINESE_T = 12;
+        internal const uint CELL_GAME_PARAMID_TITLE_CHINESE_S = 13;
+        internal const uint CELL_GAME_PARAMID_TITLE_FINNISH = 14;
+        internal const uint CELL_GAME_PARAMID_TITLE_SWEDISH = 15;
+        internal const uint CELL_GAME_PARAMID_TITLE_DANISH = 16;
+        internal const uint CELL_GAME_PARAMID_TITLE_NORWEGIAN = 17;
+        internal const uint CELL_GAME_PARAMID_TITLE_POLISH = 18;
+        internal const uint CELL_GAME_PARAMID_TITLE_PORTUGUESE_BRAZIL = 19;
+        internal const uint CELL_GAME_PARAMID_TITLE_ENGLISH_UK = 20;
+        internal const uint CELL_GAME_PARAMID_TITLE_TURKISH = 21;
 
-        public const uint CELL_GAME_PARAMID_TITLE_ID = 100;
-        public const uint CELL_GAME_PARAMID_VERSION = 101;
-        public const uint CELL_GAME_PARAMID_PARENTAL_LEVEL = 102;
-        public const uint CELL_GAME_PARAMID_RESOLUTION = 103;
-        public const uint CELL_GAME_PARAMID_SOUND_FORMAT = 104;
-        public const uint CELL_GAME_PARAMID_PS3_SYSTEM_VER = 105;
-        public const uint CELL_GAME_PARAMID_APP_VER = 106;
+        internal const uint CELL_GAME_PARAMID_TITLE_ID = 100;
+        internal const uint CELL_GAME_PARAMID_VERSION = 101;
+        internal const uint CELL_GAME_PARAMID_PARENTAL_LEVEL = 102;
+        internal const uint CELL_GAME_PARAMID_RESOLUTION = 103;
+        internal const uint CELL_GAME_PARAMID_SOUND_FORMAT = 104;
+        internal const uint CELL_GAME_PARAMID_PS3_SYSTEM_VER = 105;
+        internal const uint CELL_GAME_PARAMID_APP_VER = 106;
 
-        public const uint CELL_GAME_ERROR_NOTPATCH = 0x8002CB27;
+        internal const uint CELL_GAME_ERROR_NOTPATCH = 0x8002CB27;
 
-        public static readonly Dictionary<uint, string> CellGameParamId = new() {
+        internal static readonly Dictionary<uint, string> CellGameParamId = new() {
             { CELL_GAME_PARAMID_TITLE,                   "TITLE"          },
             { CELL_GAME_PARAMID_TITLE_DEFAULT,           "TITLE"          },
             { CELL_GAME_PARAMID_TITLE_JAPANESE,          "TITLE_00"       },
@@ -84,14 +84,14 @@ namespace PS3Sharp.OS.Modules
         };
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct CellGameContentSize : IPS3Struct
+        internal struct CellGameContentSize : IPS3Struct
         {
-            public BigEndian<int> HDDFreeSizeKB;
-            public BigEndian<int> SizeKB;
-            public BigEndian<int> SysSizeKB;
+            internal BigEndian<int> HDDFreeSizeKB;
+            internal BigEndian<int> SizeKB;
+            internal BigEndian<int> SysSizeKB;
         }
 
-        public static ulong CellGameBootCheck(PPU ppu)
+        internal static ulong CellGameBootCheck(PPU ppu)
         {
             GuestPtr<uint> type_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             GuestPtr<uint> attrib_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
@@ -124,7 +124,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong CellGameContentPermit(PPU ppu)
+        internal static ulong CellGameContentPermit(PPU ppu)
         {
             uint content_dir_ptr = ppu.ReadArg<uint>(ARG0);
             uint usr_dir_ptr = ppu.ReadArg<uint>(ARG1);
@@ -142,7 +142,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong CellGameGetParamInt(PPU ppu)
+        internal static ulong CellGameGetParamInt(PPU ppu)
         {
             uint id = ppu.ReadArg<uint>(ARG0);
             GuestPtr<uint> value_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
@@ -162,7 +162,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong CellGameGetParamString(PPU ppu)
+        internal static ulong CellGameGetParamString(PPU ppu)
         {
             uint id = ppu.ReadArg<uint>(ARG0);
             GuestPtr<uint> buffer_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
@@ -196,19 +196,19 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong CellGameDataCheck(PPU ppu)
+        internal static ulong CellGameDataCheck(PPU ppu)
         {
             Console.WriteLine($"[CellGame] cellGameDataCheck");
             return CELL_OK;
         }
 
-        public static ulong CellGameGetDiscContentInfoUpdatePath(PPU ppu)
+        internal static ulong CellGameGetDiscContentInfoUpdatePath(PPU ppu)
         {
             Console.WriteLine($"[CellGame] cellGameGetDiscContentInfoUpdatePath");
             return CELL_OK;
         }
 
-        public static ulong CellGamePatchCheck(PPU ppu)
+        internal static ulong CellGamePatchCheck(PPU ppu)
         {
             Console.WriteLine($"[CellGame] CellGamePatchCheck");
             return CELL_GAME_ERROR_NOTPATCH;

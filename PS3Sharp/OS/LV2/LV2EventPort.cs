@@ -5,42 +5,42 @@ using System.Runtime.InteropServices;
 
 namespace PS3Sharp.OS.LV2
 {
-    public sealed class LV2EventPort
+    internal sealed class LV2EventPort
     {
 
         // This is what will be sent through event_queue
         // We can probably not use BigEndian here
         [StructLayout(LayoutKind.Sequential)]
-        public struct SysEventData : IPS3Struct
+        internal struct SysEventData : IPS3Struct
         {
-            public BigEndian<ulong> Source;
-            public BigEndian<ulong> Data1;
-            public BigEndian<ulong> Data2;
-            public BigEndian<ulong> Data3;
+            internal BigEndian<ulong> Source;
+            internal BigEndian<ulong> Data1;
+            internal BigEndian<ulong> Data2;
+            internal BigEndian<ulong> Data3;
         }
 
         // We can probably not use BigEndian here too
         [StructLayout(LayoutKind.Sequential)]
-        public struct SysEventPort : IPS3Struct
+        internal struct SysEventPort : IPS3Struct
         {
-            public BigEndian<ulong> Name;
-            public BigEndian<int> Type;
-            public BigEndian<ulong> EqueueID;
+            internal BigEndian<ulong> Name;
+            internal BigEndian<int> Type;
+            internal BigEndian<ulong> EqueueID;
         }
 
-        public readonly int Type;
-        public readonly ulong Name;
-        public uint Handle { get; } = MemoryManager.GetHandle();
+        internal readonly int Type;
+        internal readonly ulong Name;
+        internal uint Handle { get; } = MemoryManager.GetHandle();
 
         private LV2EventQueue? _qonnectedQueue;
 
-        public LV2EventPort(ulong name, int type)
+        internal LV2EventPort(ulong name, int type)
         {
             Name = name;
             Type = type;
         }
 
-        public void Connect(LV2EventQueue queue)
+        internal void Connect(LV2EventQueue queue)
         {
             if (_qonnectedQueue == null)
             {
@@ -53,12 +53,12 @@ namespace PS3Sharp.OS.LV2
             }
         }
 
-        public void Disconnect()
+        internal void Disconnect()
         {
             _qonnectedQueue = null;
         }
 
-        public void Send(ulong data1, ulong data2, ulong data3)
+        internal void Send(ulong data1, ulong data2, ulong data3)
         {
             if (_qonnectedQueue != null)
             {

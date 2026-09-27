@@ -6,16 +6,16 @@ using static PS3Sharp.ELFLoader.ElfLoader;
 
 namespace PS3Sharp
 {
-    public static partial class ElfLoader
+    internal static partial class ElfLoader
     {
 
-        public struct LoadedPRXSegment
+        internal struct LoadedPRXSegment
         { // Custom struct - not from ELF spec
-            public ProgramHeader ProgramHeader;
-            public uint ActualEntry;
+            internal ProgramHeader ProgramHeader;
+            internal uint ActualEntry;
         }
 
-        public static byte[] GetSegmentData(BinaryReader reader, ref ProgramHeader programHeader)
+        internal static byte[] GetSegmentData(BinaryReader reader, ref ProgramHeader programHeader)
         {
             ulong offset = programHeader.p_offset;
             ulong size = programHeader.p_filesz;
@@ -24,7 +24,7 @@ namespace PS3Sharp
             return reader.ReadBytes((int)size);
         }
 
-        public static bool IsValidELF(ReadOnlySpan<byte> ident)
+        internal static bool IsValidELF(ReadOnlySpan<byte> ident)
         {
             // Ensure ELFMAG is present in the first 4 bytes
             int length = ElfHeader.ELFMAG_ROS.Length;
@@ -33,7 +33,7 @@ namespace PS3Sharp
         }
 
         private static long StringTableLocation;
-        public static uint LoadMainElf(string path)
+        internal static uint LoadMainElf(string path)
         {
             BinaryReader reader = new(File.OpenRead(path));
 
@@ -71,7 +71,7 @@ namespace PS3Sharp
             return (uint)mainHeader.e_entry;
         }
 
-        public static List<LoadedPRXSegment> LoadPRXElf(BinaryReader reader)
+        internal static List<LoadedPRXSegment> LoadPRXElf(BinaryReader reader)
         {
             List<LoadedPRXSegment> loadedSegments = new();
 
@@ -108,7 +108,7 @@ namespace PS3Sharp
             return loadedSegments;
         }
 
-        public static ReadOnlySpan<ProgramHeader> GetProgramHeadersArray(BinaryReader reader, ref ElfHeader header)
+        internal static ReadOnlySpan<ProgramHeader> GetProgramHeadersArray(BinaryReader reader, ref ElfHeader header)
         {
             // Get the array of program headers in the ELF
             ushort numberOfProgramHeaders = header.e_phnum; // how many program headers
@@ -117,7 +117,7 @@ namespace PS3Sharp
             return ReadElfSpan<ProgramHeader>(reader, (long)programHeadersOffset, numberOfProgramHeaders);
         }
 
-        public static void HandleELFLoadableSegments(BinaryReader reader, ref ElfHeader mainHeader)
+        internal static void HandleELFLoadableSegments(BinaryReader reader, ref ElfHeader mainHeader)
         {
             ReadOnlySpan<ProgramHeader> programHeaders = GetProgramHeadersArray(reader, ref mainHeader);
 
@@ -338,7 +338,7 @@ namespace PS3Sharp
             return stringTableOffset;
         }
 
-        public static T ReadElfStruct<T>(BinaryReader reader, long offset) where T : unmanaged
+        internal static T ReadElfStruct<T>(BinaryReader reader, long offset) where T : unmanaged
         {
             int size = Unsafe.SizeOf<T>();
             Span<byte> buffer = size >= 1024 ? new byte[size] : stackalloc byte[size];
@@ -350,7 +350,7 @@ namespace PS3Sharp
             return MemoryMarshal.Read<T>(buffer);
         }
 
-        public static ReadOnlySpan<T> ReadElfSpan<T>(BinaryReader reader, long offset, uint numberOfElements) where T : unmanaged
+        internal static ReadOnlySpan<T> ReadElfSpan<T>(BinaryReader reader, long offset, uint numberOfElements) where T : unmanaged
         {
             int size = (int)(Unsafe.SizeOf<T>() * numberOfElements);
             Span<byte> buffer = new byte[size];
@@ -361,7 +361,7 @@ namespace PS3Sharp
             return MemoryMarshal.Cast<byte, T>(buffer);
         }
 
-        public static string ResolveSectionName(BinaryReader reader, uint sectionName)
+        internal static string ResolveSectionName(BinaryReader reader, uint sectionName)
         {
             string name = string.Empty;
             reader.BaseStream.Seek(StringTableLocation + sectionName, SeekOrigin.Begin);

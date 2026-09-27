@@ -8,40 +8,40 @@ using static PS3Sharp.OS.LV2.LV2EventPort;
 
 namespace PS3Sharp.OS.LV2
 {
-    public sealed class LV2EventQueue
+    internal sealed class LV2EventQueue
     {
         // Event Queue attributes
-        public const uint SYS_PPU_QUEUE = 1;
-        public const uint SYS_SPU_QUEUE = 2;
+        internal const uint SYS_PPU_QUEUE = 1;
+        internal const uint SYS_SPU_QUEUE = 2;
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct SysEventQueueAttribute : IPS3Struct
+        internal struct SysEventQueueAttribute : IPS3Struct
         {
-            public BigEndian<uint> Protocol;
-            public BigEndian<uint> Type;
-            public InlineData.InlineArray8<byte> Name;
+            internal BigEndian<uint> Protocol;
+            internal BigEndian<uint> Type;
+            internal InlineData.InlineArray8<byte> Name;
         }
 
         private readonly BlockingCollection<SysEventData> _queue;
-        public readonly SysEventQueueAttribute _attribute;
-        public readonly ulong IPCKey;
-        public uint Handle { get; } = MemoryManager.GetHandle();
+        internal readonly SysEventQueueAttribute _attribute;
+        internal readonly ulong IPCKey;
+        internal uint Handle { get; } = MemoryManager.GetHandle();
 
-        public bool IsSPUQueue => _attribute.Type == SYS_SPU_QUEUE;
+        internal bool IsSPUQueue => _attribute.Type == SYS_SPU_QUEUE;
 
-        public LV2EventQueue(int size, ulong ipc, SysEventQueueAttribute attribute)
+        internal LV2EventQueue(int size, ulong ipc, SysEventQueueAttribute attribute)
         {
             _queue = new BlockingCollection<SysEventData>(size);
             IPCKey = ipc;
             _attribute = attribute;
         }
 
-        public void Send(SysEventData evt)
+        internal void Send(SysEventData evt)
         {
             _queue.Add(evt);
         }
 
-        public ulong Receive(ulong us_timeout, out SysEventData sysEvent)
+        internal ulong Receive(ulong us_timeout, out SysEventData sysEvent)
         {
             bool ok;
 
@@ -61,7 +61,7 @@ namespace PS3Sharp.OS.LV2
         }
 
         // Tries to read "count" events without blocking
-        public ReadOnlySpan<SysEventData> TryReceive(int events_count)
+        internal ReadOnlySpan<SysEventData> TryReceive(int events_count)
         {
             SysEventData[] data = new SysEventData[events_count];
             int read = 0;
@@ -81,7 +81,7 @@ namespace PS3Sharp.OS.LV2
             return data.AsSpan(0, read);
         }
 
-        public void Drain()
+        internal void Drain()
         {
             // Since there is no built in Clear() in the BlockingCollection
             // Just take out all remaining items using a loop

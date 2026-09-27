@@ -6,17 +6,17 @@ using System.Runtime.CompilerServices;
 
 namespace PS3Sharp.Cell.RSX
 {
-    public sealed class RSXElementBuffer
+    internal sealed class RSXElementBuffer
     {
-        public uint BufferAddress { get; set; }                 // Index list address
-        public DrawElementsType ElementBufferType { get; set; } // Index list element type
+        internal uint BufferAddress { get; set; }                 // Index list address
+        internal DrawElementsType ElementBufferType { get; set; } // Index list element type
 
-        public int TotalElements { get; private set; }
+        internal int TotalElements { get; private set; }
 
-        public ScratchBuffer ScratchBuffer = new();
+        internal ScratchBuffer ScratchBuffer = new();
 
         // I don't like passing the Queue here
-        public uint SetupElementBuffer(Queue<BigEndian<uint>> param)
+        internal uint SetupElementBuffer(Queue<BigEndian<uint>> param)
         {
             uint max = 0;
 
@@ -66,7 +66,7 @@ namespace PS3Sharp.Cell.RSX
             TotalElements = newTotal;
         }
 
-        public T GetMax<T>() where T : unmanaged, INumber<T>
+        internal T GetMax<T>() where T : unmanaged, INumber<T>
         {
             Span<T> buffer = ScratchBuffer.GetLastRequestedBuffer<T>();
             T max = buffer[0];
@@ -82,12 +82,12 @@ namespace PS3Sharp.Cell.RSX
             return max;
         }
 
-        public Span<byte> GetLastScratchData()
+        internal Span<byte> GetLastScratchData()
         {
             return ScratchBuffer.GetLastRequestedBuffer<byte>();
         }
 
-        public void Reset()
+        internal void Reset()
         {
             TotalElements = 0;
         }

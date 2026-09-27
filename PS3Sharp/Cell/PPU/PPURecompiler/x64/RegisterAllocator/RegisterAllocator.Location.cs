@@ -3,22 +3,22 @@ using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator
 {
-    public sealed partial class RegisterAllocator
+    internal sealed partial class RegisterAllocator
     {
-        public sealed class Location
+        internal sealed class Location
         {
-            public Liveness Liveness { get; }
+            internal Liveness Liveness { get; }
             private AssemblerRegister64? Register { get; set; }
-            public int SpillSlot { get; set; } = -1;
+            internal int SpillSlot { get; set; } = -1;
 
-            public bool IsSpilled => SpillSlot >= 0;
-            public Value Value => Liveness.Value;
-            public Location(Liveness liveness)
+            internal bool IsSpilled => SpillSlot >= 0;
+            internal Value Value => Liveness.Value;
+            internal Location(Liveness liveness)
             {
                 Liveness = liveness;
             }
 
-            public AssemblerRegister64 GetRegister()
+            internal AssemblerRegister64 GetRegister()
             {
                 if (Register != null)
                 {
@@ -30,12 +30,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator
                 }
             }
 
-            public void AssignRegister(AssemblerRegister64 register)
+            internal void AssignRegister(AssemblerRegister64 register)
             {
                 Register = register;
             }
 
-            public void UnassignRegister()
+            internal void UnassignRegister()
             {
                 Register = null;
             }

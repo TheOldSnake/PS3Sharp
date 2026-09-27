@@ -13,12 +13,12 @@ namespace PS3Sharp.OS.Modules
 
     // This is for sys_lwmutex module, not _sys_lwmutex (the syscalls)
 
-    public static class SysLwMutex
+    internal static class SysLwMutex
     {
         private static readonly ConcurrentDictionary<uint, LV2LWMutex> _lwMutexes = [];
 
-        public static bool GetLWMutex(uint id, out LV2LWMutex? mutex) => _lwMutexes.TryGetValue(id, out mutex);
-        public static void AddLWMutex(uint id, LV2LWMutex mutex)
+        internal static bool GetLWMutex(uint id, out LV2LWMutex? mutex) => _lwMutexes.TryGetValue(id, out mutex);
+        internal static void AddLWMutex(uint id, LV2LWMutex mutex)
         {
             bool success = _lwMutexes.TryAdd(id, mutex);
 
@@ -28,7 +28,7 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        public static void RemoveLWMutex(uint id)
+        internal static void RemoveLWMutex(uint id)
         {
             bool success = _lwMutexes.TryRemove(id, out _);
 
@@ -38,7 +38,7 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        public static ulong SysLWmutexCreate(PPU ppu)
+        internal static ulong SysLWmutexCreate(PPU ppu)
         {
             GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(ARG0);
             GuestPtr<LWMutexAttrib> attribute_ptr = ppu.ReadArg<GuestPtr<LWMutexAttrib>>(ARG1);
@@ -71,7 +71,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong SysLWmutexLock(PPU ppu)
+        internal static ulong SysLWmutexLock(PPU ppu)
         {
             GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(ARG0);
             ulong us_timeout = ppu.ReadArg<ulong>(ARG1);
@@ -96,7 +96,7 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        public static ulong SysLWmutexTryLock(PPU ppu)
+        internal static ulong SysLWmutexTryLock(PPU ppu)
         {
             GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(ARG0);
 
@@ -120,7 +120,7 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        public static ulong SysLWmutexUnlock(PPU ppu)
+        internal static ulong SysLWmutexUnlock(PPU ppu)
         {
             GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(ARG0);
 
@@ -144,7 +144,7 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        public static ulong SysLWmutexDestroy(PPU ppu)
+        internal static ulong SysLWmutexDestroy(PPU ppu)
         {
             GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(ARG0);
 

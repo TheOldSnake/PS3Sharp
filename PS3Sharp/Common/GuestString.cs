@@ -3,11 +3,11 @@ using System.Text;
 
 namespace PS3Sharp.Common
 {
-    public struct GuestString
+    internal struct GuestString
     {
-        public readonly uint Address;   // char* -- native endianness
-        public bool IsNullString => Address == 0;
-        public GuestString(uint address)
+        internal readonly uint Address;   // char* -- native endianness
+        internal bool IsNullString => Address == 0;
+        internal GuestString(uint address)
         {
             Address = address;
         }

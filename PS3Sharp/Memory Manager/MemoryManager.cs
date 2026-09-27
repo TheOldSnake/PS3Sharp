@@ -8,25 +8,25 @@ using System.Text;
 
 namespace PS3Sharp.Memory_Manager
 {
-    public static unsafe partial class MemoryManager
+    internal static unsafe partial class MemoryManager
     {
 
         // Constants
-        public const ulong VIRTUAL_MEMORY_SIZE = 0x1_0000_0000; // 32-bit - 4 GiB
-        public const uint RAM_SIZE = 256 * 1024 * 1024;
-        public const uint RAM_START = 0x00010000;
-        public const uint RAM_END = RAM_START + RAM_SIZE;
-        public const uint STACK_REGION_START = 0xD0000000;
-        public const uint STACK_REGION_SIZE = 0x10000000;
-        public const uint STACK_REGION_BASE = STACK_REGION_START + STACK_REGION_SIZE - 16; //must be 16-byte aligned?
-        public const uint DEFAULT_STACK_SIZE = 0x40000;
-        public const uint RSX_VIDEO_MEM_SIZE = 256 * 1024 * 1024;
-        public const uint RSX_VIDEO_MEM_START = 0xC0000000;
-        public const uint RSX_VIDEO_MEM_END = RSX_VIDEO_MEM_START + RSX_VIDEO_MEM_SIZE;
-        public const uint SPU_LS_SIZE = 256 * 1024;
-        public const uint RAW_SPU_MEM_START = 0xE0000000;
-        public const uint RAW_SPU_OFFSET = 0x100000;
-        public const uint RAW_SPU_PROBLEM_OFFSET = 0x40000;
+        internal const ulong VIRTUAL_MEMORY_SIZE = 0x1_0000_0000; // 32-bit - 4 GiB
+        internal const uint RAM_SIZE = 256 * 1024 * 1024;
+        internal const uint RAM_START = 0x00010000;
+        internal const uint RAM_END = RAM_START + RAM_SIZE;
+        internal const uint STACK_REGION_START = 0xD0000000;
+        internal const uint STACK_REGION_SIZE = 0x10000000;
+        internal const uint STACK_REGION_BASE = STACK_REGION_START + STACK_REGION_SIZE - 16; //must be 16-byte aligned?
+        internal const uint DEFAULT_STACK_SIZE = 0x40000;
+        internal const uint RSX_VIDEO_MEM_SIZE = 256 * 1024 * 1024;
+        internal const uint RSX_VIDEO_MEM_START = 0xC0000000;
+        internal const uint RSX_VIDEO_MEM_END = RSX_VIDEO_MEM_START + RSX_VIDEO_MEM_SIZE;
+        internal const uint SPU_LS_SIZE = 256 * 1024;
+        internal const uint RAW_SPU_MEM_START = 0xE0000000;
+        internal const uint RAW_SPU_OFFSET = 0x100000;
+        internal const uint RAW_SPU_PROBLEM_OFFSET = 0x40000;
 
 
         // MemoryBlock table (managed array)
@@ -41,24 +41,24 @@ namespace PS3Sharp.Memory_Manager
         private static readonly List<MemoryBlock> Allocations = [];
         private static readonly Dictionary<uint, MemoryReservation> Reservations = [];
 
-        public static ulong TotalAllocatedSize { get; private set; } = 0;
+        internal static ulong TotalAllocatedSize { get; private set; } = 0;
 
-        public static uint NextAllocationAddress = 0x30000000; // I don't know where to start
-        public static uint NextStackAllocationAddress = MemoryManager.STACK_REGION_START;
-        public static uint NextHandle = 0x100;
+        internal static uint NextAllocationAddress = 0x30000000; // I don't know where to start
+        internal static uint NextStackAllocationAddress = MemoryManager.STACK_REGION_START;
+        internal static uint NextHandle = 0x100;
 
-        //public MemoryBlock TLSImage;
-        public static GuestVoidPtr TLS_Image;
-        public static uint TLS_Image_Size;
+        //internal MemoryBlock TLSImage;
+        internal static GuestVoidPtr TLS_Image;
+        internal static uint TLS_Image_Size;
 
-        public static MemoryLock AcquireTemporaryLock()
+        internal static MemoryLock AcquireTemporaryLock()
         {
             // Return a new instance of MemoryLock to be used with "using" scope
             // (without "using" scope we need to call Dispose() manually)
             return new MemoryLock();
         }
 
-        public static void Initialize()
+        internal static void Initialize()
         {
             ReserveVirtualMemory();
         }
@@ -138,7 +138,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static uint GetHandle()
+        internal static uint GetHandle()
         {
             lock (_managerLock)
             {
@@ -148,19 +148,19 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static void* GetGuestMemoryBase()
+        internal static void* GetGuestMemoryBase()
         {
             return GuestMemoryBase;
         }
 
-        public static MemoryBlock GetBlockInfo(uint virtualAddress)
+        internal static MemoryBlock GetBlockInfo(uint virtualAddress)
         {
             // Lookup the block struct in the block table
             uint page = virtualAddress >> (int)Fastmem.PAGE_SHIFT;
             return MemoryBlockTable[page];
         }
 
-        public static bool IsAllocated(uint virtualAddress)
+        internal static bool IsAllocated(uint virtualAddress)
         {
             return GetBlockInfo(virtualAddress).NativeAddress != null;
         }
@@ -171,30 +171,30 @@ namespace PS3Sharp.Memory_Manager
             return (size + Fastmem.PAGE_SIZE - 1) & ~Fastmem.PAGE_MASK;
         }
 
-        public static uint AlignPowerOfTwo(uint value, uint alignment)
+        internal static uint AlignPowerOfTwo(uint value, uint alignment)
         {
             return (value + alignment - 1) & ~(alignment - 1);
         }
 
-        public static uint Align(uint value, uint alignment)
+        internal static uint Align(uint value, uint alignment)
         {
             uint remainder = value % alignment;
             return remainder == 0 ? value : (value + alignment - remainder);
         }
 
-        public static uint ReadPPUInstruction(uint virtualAddress)
+        internal static uint ReadPPUInstruction(uint virtualAddress)
         {
             // PPU does not have self modifying code 
             return *(BigEndian<uint>*)GetNativeAddress(virtualAddress);
         }
 
-        public static uint ReadRSXInstruction(uint virtualAddress)
+        internal static uint ReadRSXInstruction(uint virtualAddress)
         {
             return *(BigEndian<uint>*)GetNativeAddress(virtualAddress);
         }
 
         // Writes the little endian data to the big endian memory
-        public static void Write<T>(uint virtualAddress, T value) where T : unmanaged
+        internal static void Write<T>(uint virtualAddress, T value) where T : unmanaged
         {
             BigEndian<T>* native_address = (BigEndian<T>*)GetNativeAddress(virtualAddress);
             *native_address = value;
@@ -203,14 +203,14 @@ namespace PS3Sharp.Memory_Manager
         }
 
         // Writes the data to the big endian memory without any conversion
-        public static void WriteBE<T>(uint virtualAddress, T value) where T : unmanaged
+        internal static void WriteBE<T>(uint virtualAddress, T value) where T : unmanaged
         {
             void* native_address = GetNativeAddress(virtualAddress);
             *(T*)native_address = value;
         }
 
         // Reads from the big endian memory and swaps data to little endian
-        public static T Read<T>(uint virtualAddress) where T : unmanaged
+        internal static T Read<T>(uint virtualAddress) where T : unmanaged
         {
             void* native_address = GetNativeAddress(virtualAddress);
             T value = *(BigEndian<T>*)native_address;
@@ -218,13 +218,13 @@ namespace PS3Sharp.Memory_Manager
         }
 
         // Reads from the big endian memory without any conversion
-        public static T ReadBE<T>(uint virtualAddress) where T : unmanaged
+        internal static T ReadBE<T>(uint virtualAddress) where T : unmanaged
         {
             void* native_address = GetNativeAddress(virtualAddress);
             return *(T*)native_address;
         }
 
-        public static T LoadAndReserve<T>(uint virtualAddress, uint threadId, PPU ppu) where T : unmanaged
+        internal static T LoadAndReserve<T>(uint virtualAddress, uint threadId, PPU ppu) where T : unmanaged
         {
             lock (_managerLock)
             {
@@ -234,7 +234,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static bool StoreConditional<T>(uint virtualAddress, uint threadId, T value, PPU ppu) where T : unmanaged
+        internal static bool StoreConditional<T>(uint virtualAddress, uint threadId, T value, PPU ppu) where T : unmanaged
         {
             lock (_managerLock)
             {
@@ -251,7 +251,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static void ReserveAddress(uint virtualAddress, int size, uint threadId)
+        internal static void ReserveAddress(uint virtualAddress, int size, uint threadId)
         {
 
             lock (_managerLock)
@@ -268,7 +268,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static bool TryAccess(uint virtualAddress, int size, uint threadId)
+        internal static bool TryAccess(uint virtualAddress, int size, uint threadId)
         {
 
             ulong accessStart = virtualAddress;
@@ -292,7 +292,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static void InvalidateReservations(uint virtualAddress, int size)
+        internal static void InvalidateReservations(uint virtualAddress, int size)
         {
             ulong accessStart = virtualAddress;
             ulong accessEnd = (ulong)(virtualAddress + size);
@@ -313,7 +313,7 @@ namespace PS3Sharp.Memory_Manager
         }
 
         // Returns a native pointer to the struct in the -unmanaged- guest memory
-        public static T* GetPtr<T>(GuestPtr<T> ptr) where T : unmanaged, IPS3Struct
+        internal static T* GetPtr<T>(GuestPtr<T> ptr) where T : unmanaged, IPS3Struct
         {
             void* native_address = GetNativeAddress(ptr.Address);
             return (T*)native_address;
@@ -321,14 +321,14 @@ namespace PS3Sharp.Memory_Manager
 
         // Returns a managed reference to a struct in the -unmanaged- guest memory
 
-        public static ref T GetRef<T>(GuestPtr<T> ptr) where T : unmanaged, IPS3Struct
+        internal static ref T GetRef<T>(GuestPtr<T> ptr) where T : unmanaged, IPS3Struct
         {
             void* native_address = GetNativeAddress(ptr.Address);
             return ref *(T*)native_address;
         }
 
         // Returns a managed reference to a struct in the -unmanaged- guest memory        
-        public static ref T GetRef<T>(GuestVoidPtr ptr) where T : unmanaged, IPS3Struct
+        internal static ref T GetRef<T>(GuestVoidPtr ptr) where T : unmanaged, IPS3Struct
         {    // Unused
             void* native_address = GetNativeAddress(ptr.Address);
             return ref *(T*)native_address;
@@ -336,7 +336,7 @@ namespace PS3Sharp.Memory_Manager
 
         // writes a struct atomically
 
-        public static void WriteStruct<T>(uint virtualAddress, T value) where T : unmanaged, IPS3Struct
+        internal static void WriteStruct<T>(uint virtualAddress, T value) where T : unmanaged, IPS3Struct
         {
             lock (_managerLock)
             {
@@ -347,7 +347,7 @@ namespace PS3Sharp.Memory_Manager
 
         // Reads a struct atomically
 
-        public static T ReadStruct<T>(uint virtualAddress) where T : unmanaged, IPS3Struct
+        internal static T ReadStruct<T>(uint virtualAddress) where T : unmanaged, IPS3Struct
         {
             lock (_managerLock)
             {
@@ -357,8 +357,8 @@ namespace PS3Sharp.Memory_Manager
         }
 
         // Updates a struct atomically
-        public delegate void RefAction<T>(ref T value);
-        public static void UpdateStruct<T>(uint addr, RefAction<T> updater) where T : unmanaged, IPS3Struct
+        internal delegate void RefAction<T>(ref T value);
+        internal static void UpdateStruct<T>(uint addr, RefAction<T> updater) where T : unmanaged, IPS3Struct
         {
             lock (_managerLock)
             {
@@ -369,7 +369,7 @@ namespace PS3Sharp.Memory_Manager
         }
 
         // Initializes a struct atomically
-        public static void InitializeStruct<T>(uint virtualAddress, T value) where T : unmanaged, IPS3Struct
+        internal static void InitializeStruct<T>(uint virtualAddress, T value) where T : unmanaged, IPS3Struct
         {      // Unused
             UpdateStruct<T>(virtualAddress, (ref T val) => val = value);
         }
@@ -423,7 +423,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static void SetMemoryBlock(ref MemoryBlock block, int index)
+        internal static void SetMemoryBlock(ref MemoryBlock block, int index)
         {
             lock (_managerLock)
             {
@@ -431,7 +431,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static void UnsetMemoryBlock(int index)
+        internal static void UnsetMemoryBlock(int index)
         {
             lock (_managerLock)
             {
@@ -439,7 +439,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static void SetMemoryBlockTable(int start, int end, ref MemoryBlock block)
+        internal static void SetMemoryBlockTable(int start, int end, ref MemoryBlock block)
         {
             lock (_managerLock)
             {
@@ -450,7 +450,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static MemoryBlock AllocateStackSpace(uint size)
+        internal static MemoryBlock AllocateStackSpace(uint size)
         {
             size = PageAlign(size); // Ensure size is page aligned
             MemoryBlock block = AllocateVirtualAddress(NextStackAllocationAddress, size);
@@ -458,7 +458,7 @@ namespace PS3Sharp.Memory_Manager
             return block;
         }
 
-        public static MemoryBlock AllocateVirtualAddress(uint virtualAddress, uint size)
+        internal static MemoryBlock AllocateVirtualAddress(uint virtualAddress, uint size)
         {
             size = PageAlign(size); // Ensure size is page aligned
 
@@ -488,7 +488,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static MemoryBlock AllocateVirtualMemory(uint size, uint alignment = 0)
+        internal static MemoryBlock AllocateVirtualMemory(uint size, uint alignment = 0)
         {
             size = PageAlign(size);  // Ensure size is page aligned
 
@@ -517,7 +517,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static MemoryBlock AllocatePhysicalMemory(uint size)
+        internal static MemoryBlock AllocatePhysicalMemory(uint size)
         {
             lock (_managerLock)
             {
@@ -526,7 +526,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static MemoryBlock ResizeBlock(MemoryBlock block, uint newSize)
+        internal static MemoryBlock ResizeBlock(MemoryBlock block, uint newSize)
         {
             lock (_managerLock)
             {
@@ -575,7 +575,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static void FreeByVirtualAddress(uint virtualAddress)
+        internal static void FreeByVirtualAddress(uint virtualAddress)
         {
             lock (_managerLock)
             {
@@ -595,7 +595,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static void FreeByHandle(uint handle)
+        internal static void FreeByHandle(uint handle)
         {
             lock (_managerLock)
             {
@@ -616,7 +616,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static MemoryBlock AllocateTLS()
+        internal static MemoryBlock AllocateTLS()
         {
             lock (_managerLock)
             {
@@ -637,7 +637,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static void SetTLS(uint virtualAddress, uint size)
+        internal static void SetTLS(uint virtualAddress, uint size)
         {
             lock (_managerLock)
             {
@@ -647,7 +647,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static bool IsVirtualAddressAllocated(uint virtualAddress)
+        internal static bool IsVirtualAddressAllocated(uint virtualAddress)
         {
             lock (_managerLock)
             {
@@ -664,7 +664,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static bool IsVirtualHandleAllocated(uint handle)
+        internal static bool IsVirtualHandleAllocated(uint handle)
         {
             lock (_managerLock)
             {
@@ -681,7 +681,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static uint FindAllocatableAddress(uint targetAddress, uint size)
+        internal static uint FindAllocatableAddress(uint targetAddress, uint size)
         {
             lock (_managerLock)
             {
@@ -705,7 +705,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static MemoryBlock GetAllocationByVirtualAddress(uint virtualAddress)
+        internal static MemoryBlock GetAllocationByVirtualAddress(uint virtualAddress)
         {
             lock (_managerLock)
             {
@@ -723,7 +723,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static MemoryBlock GetAllocationByHandle(ulong handle)
+        internal static MemoryBlock GetAllocationByHandle(ulong handle)
         {
             lock (_managerLock)
             {
@@ -740,7 +740,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static bool IsHandleAllocated(ulong handle)
+        internal static bool IsHandleAllocated(ulong handle)
         {
             lock (_managerLock)
             {
@@ -757,7 +757,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static uint RemapByHandle(uint handle, uint destinationStart)
+        internal static uint RemapByHandle(uint handle, uint destinationStart)
         {
             lock (_managerLock)
             {
@@ -775,7 +775,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static uint RemapByVirtualAddress(uint virtualAddress, uint destinationStart)
+        internal static uint RemapByVirtualAddress(uint virtualAddress, uint destinationStart)
         {
             lock (_managerLock)
             {
@@ -789,7 +789,7 @@ namespace PS3Sharp.Memory_Manager
             }
         }
 
-        public static void CopyBufferToVirtualMemory(ReadOnlySpan<byte> source, uint destinationVirtualAddress)
+        internal static void CopyBufferToVirtualMemory(ReadOnlySpan<byte> source, uint destinationVirtualAddress)
         {
             // Direct copy
             byte* nativeDestination = (byte*)GetNativeAddress(destinationVirtualAddress);
@@ -797,7 +797,7 @@ namespace PS3Sharp.Memory_Manager
             source.CopyTo(destSpan);
         }
 
-        public static void ReadBufferFromVirtualMemory(uint sourceVirtualAddress, Span<byte> destination)
+        internal static void ReadBufferFromVirtualMemory(uint sourceVirtualAddress, Span<byte> destination)
         {
             // Direct copy
             byte* nativeSource = (byte*)GetNativeAddress(sourceVirtualAddress);
@@ -805,7 +805,7 @@ namespace PS3Sharp.Memory_Manager
             sourceSpan.CopyTo(destination);
         }
 
-        public static void CopyVirtualMemory(uint sourceVirtualAddress, uint destinationVirtualAddress, int byteCount)
+        internal static void CopyVirtualMemory(uint sourceVirtualAddress, uint destinationVirtualAddress, int byteCount)
         {
             if (byteCount == 0)
             {
@@ -822,7 +822,7 @@ namespace PS3Sharp.Memory_Manager
             sourceSpan.CopyTo(destSpan);
         }
 
-        public static void ClearMemory(uint virtualAddress, uint byteCount, byte value = 0)
+        internal static void ClearMemory(uint virtualAddress, uint byteCount, byte value = 0)
         {
             if (byteCount == 0)
             {
@@ -833,20 +833,20 @@ namespace PS3Sharp.Memory_Manager
             NativeMemory.Fill(dest, byteCount, value);
         }
 
-        public static string ReadString(uint virtualAddress)
+        internal static string ReadString(uint virtualAddress)
         {
             byte* native = (byte*)GetNativeAddress(virtualAddress);
             return Encoding.UTF8.GetString(MemoryMarshal.CreateReadOnlySpanFromNullTerminated(native));
         }
 
-        public static unsafe Span<T> CreateSpan<T>(uint virtualAddress, int length) where T : unmanaged
+        internal static unsafe Span<T> CreateSpan<T>(uint virtualAddress, int length) where T : unmanaged
         { // Must be in unsafe conte
             byte* ptr = (byte*)GetNativeAddress(virtualAddress);
             return new Span<T>(ptr, length);
         }
 
         // Returns a ref of a value without flipping it -- Use carefully !
-        public static unsafe ref T DangerousBigEndianRef<T>(uint virtualAddress)
+        internal static unsafe ref T DangerousBigEndianRef<T>(uint virtualAddress)
         {
             T* ptr = (T*)GetNativeAddress(virtualAddress);
             return ref *ptr;

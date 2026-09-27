@@ -4,7 +4,7 @@ using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator
 {
-    public sealed partial class RegisterAllocator
+    internal sealed partial class RegisterAllocator
     {
 
         // Register pools
@@ -48,21 +48,21 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator
             r11,
         ];
 
-        public AssemblerRegister64 PPUStatePointer => rbx;
-        public AssemblerRegister64 StackPointer => rsp;
-        public AssemblerRegister64 SpillArrayPointer => rbp;
-        public AssemblerRegister64 MemoryBasePointer => r8;
+        internal AssemblerRegister64 PPUStatePointer => rbx;
+        internal AssemblerRegister64 StackPointer => rsp;
+        internal AssemblerRegister64 SpillArrayPointer => rbp;
+        internal AssemblerRegister64 MemoryBasePointer => r8;
 
-        public ReadOnlySpan<AssemblerRegister64> AllRegisters => StaticRegisterPool64;
-        public ReadOnlySpan<AssemblerRegister64> AllNonVolatileRegisters => StaticNonVolatileRegisterPool64;
-        public ReadOnlySpan<AssemblerRegister64> AllVolatileRegisters => StaticVolatileRegisterPool64;
+        internal ReadOnlySpan<AssemblerRegister64> AllRegisters => StaticRegisterPool64;
+        internal ReadOnlySpan<AssemblerRegister64> AllNonVolatileRegisters => StaticNonVolatileRegisterPool64;
+        internal ReadOnlySpan<AssemblerRegister64> AllVolatileRegisters => StaticVolatileRegisterPool64;
 
         private List<AssemblerRegister64> CurrentRegisterPool = new();
         private bool _canAllocate => CurrentRegisterPool.Count > 0;
         private int _spillIndex = 0;
 
-        public bool IsVolatile(AssemblerRegister64 reg) => StaticVolatileRegisterPool64.Contains(reg);
-        public bool IsNonVolatile(AssemblerRegister64 reg) => StaticNonVolatileRegisterPool64.Contains(reg);
+        internal bool IsVolatile(AssemblerRegister64 reg) => StaticVolatileRegisterPool64.Contains(reg);
+        internal bool IsNonVolatile(AssemblerRegister64 reg) => StaticNonVolatileRegisterPool64.Contains(reg);
 
         private AssemblerRegister64 RequestRegister64()
         {
@@ -76,7 +76,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator
             CurrentRegisterPool.Add(reg);
         }
 
-        public void ResetAllocatorState()
+        internal void ResetAllocatorState()
         {
             _spillIndex = 0;
             CurrentRegisterPool.Clear();
@@ -95,7 +95,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator
             return isSpecialMulDiv;
         }
 
-        public List<AssemblerRegister64> CreateRegisterPool(List<IRInstruction> code)
+        internal List<AssemblerRegister64> CreateRegisterPool(List<IRInstruction> code)
         {
 
             // Initial list of all registers
@@ -134,7 +134,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator
             return regs;
         }
 
-        public Dictionary<Value, Location> AllocateHostRegisters(List<IRInstruction> code, Dictionary<Value, ulong> knownConstants)
+        internal Dictionary<Value, Location> AllocateHostRegisters(List<IRInstruction> code, Dictionary<Value, ulong> knownConstants)
         {
             // Reset
 

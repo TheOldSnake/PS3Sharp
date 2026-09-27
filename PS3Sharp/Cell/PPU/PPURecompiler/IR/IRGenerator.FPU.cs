@@ -2,26 +2,26 @@
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 {
-    public sealed partial class IRGenerator
+    internal sealed partial class IRGenerator
     {
-        public void MTFSF(PPUInstruction instruction)
+        internal void MTFSF(PPUInstruction instruction)
         {
             // Move To FPSCR
         }
 
-        public void MTFSFI(PPUInstruction instruction)
+        internal void MTFSFI(PPUInstruction instruction)
         {
             // Move To FPSCR
         }
 
-        public void MFFS(PPUInstruction instruction)
+        internal void MFFS(PPUInstruction instruction)
         {
             // Move from FPSCR
             Value zero = _irContext.Zero; // need to be float/double zero
             _irContext.SetFPR(instruction.Frt, zero);
         }
 
-        public void FCMPU(PPUInstruction instruction)
+        internal void FCMPU(PPUInstruction instruction)
         {
             Value a = _irContext.GetFPR(instruction.Fra);
             Value b = _irContext.GetFPR(instruction.Frb);
@@ -30,12 +30,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             _irContext.UpdateCR(a, b, (PPU.CRNumber)bf); // need to compare floats.. 
         }
 
-        public void FCMPO(PPUInstruction instruction)
+        internal void FCMPO(PPUInstruction instruction)
         {
             FCMPU(instruction); // Same thing?
         }
 
-        public void LFS(PPUInstruction instruction)
+        internal void LFS(PPUInstruction instruction)
         {
             Value ea = GetEa(instruction, MemAccessForm.DForm, true);
 

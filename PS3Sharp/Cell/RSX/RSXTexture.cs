@@ -6,33 +6,33 @@ using static PS3Sharp.Cell.RSX.RSXCommand;
 
 namespace PS3Sharp.Cell.RSX
 {
-    public sealed class RSXTexture()
+    internal sealed class RSXTexture()
     {
 
         // Atributes 
-        public uint Address => PS3Sharp.RSX.OffsetToAddress(Offset, MemoryLocation); // Final address
-        public uint Offset { get; set; }         // Offset in memory     
-        public uint MemoryLocation { get; set; } // RSX memory or CELL
-        public uint Format { get; set; }
-        public uint Filter { get; set; }
-        public uint Wrap { get; set; }
-        public uint SwizzleValue { get; set; }
-        public uint Width { get; set; }
-        public uint Height { get; set; }
-        public uint Pitch { get; set; }
-        public uint Depth { get; set; }
-        public bool IsEnabled { get; set; }
+        internal uint Address => PS3Sharp.RSX.OffsetToAddress(Offset, MemoryLocation); // Final address
+        internal uint Offset { get; set; }         // Offset in memory     
+        internal uint MemoryLocation { get; set; } // RSX memory or CELL
+        internal uint Format { get; set; }
+        internal uint Filter { get; set; }
+        internal uint Wrap { get; set; }
+        internal uint SwizzleValue { get; set; }
+        internal uint Width { get; set; }
+        internal uint Height { get; set; }
+        internal uint Pitch { get; set; }
+        internal uint Depth { get; set; }
+        internal bool IsEnabled { get; set; }
 
-        public uint PixelFormatValue => Format & 0x00001F00;
-        public bool IsSurface => GLRenderer.AddressIsSurface(Address);
+        internal uint PixelFormatValue => Format & 0x00001F00;
+        internal bool IsSurface => GLRenderer.AddressIsSurface(Address);
 
-        public ScratchBuffer ScratchBuffer { get; } = new ScratchBuffer();
-        public TextureCacheKey CacheKey = new();
+        internal ScratchBuffer ScratchBuffer { get; } = new ScratchBuffer();
+        internal TextureCacheKey CacheKey = new();
 
         private static ReadOnlySpan<int> _swizzleTable => [(int)All.Alpha, (int)All.Red, (int)All.Green, (int)All.Blue];
         private static readonly string[] _swizzleStringTable = ["a", "r", "g", "b"];
 
-        public static readonly Swizzle DefaultSwizzle = new()
+        internal static readonly Swizzle DefaultSwizzle = new()
         {
             A = _swizzleTable[0],
             R = _swizzleTable[1],
@@ -40,42 +40,42 @@ namespace PS3Sharp.Cell.RSX
             B = _swizzleTable[3],
         };
 
-        public struct Swizzle
+        internal struct Swizzle
         {
-            public int A;
-            public int R;
-            public int G;
-            public int B;
+            internal int A;
+            internal int R;
+            internal int G;
+            internal int B;
         }
 
-        public struct TextureCacheKey
+        internal struct TextureCacheKey
         {
-            public uint Address;
-            public uint Width;
-            public uint Height;
-            public ulong Hash;
+            internal uint Address;
+            internal uint Width;
+            internal uint Height;
+            internal ulong Hash;
         }
 
-        public int GetSizeInBytes()
+        internal int GetSizeInBytes()
         {
             int pitch = (int)Pitch;
             int height = (int)Height;
             return IsCompressed() ? GetCompressedSize() : pitch * height;
         }
 
-        public Span<byte> GetScratchData()
+        internal Span<byte> GetScratchData()
         {
             int sizeInBytes = GetSizeInBytes();
             Span<byte> data = ScratchBuffer.RequestBuffer<byte>(sizeInBytes);
             return data;
         }
 
-        public Span<byte> GetLastScratchData()
+        internal Span<byte> GetLastScratchData()
         {
             return ScratchBuffer.GetLastRequestedBuffer<byte>();
         }
 
-        public PixelInternalFormat GetPixelInternalFormat()
+        internal PixelInternalFormat GetPixelInternalFormat()
         {
             switch (PixelFormatValue)
             {
@@ -93,7 +93,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public InternalFormat GetCompressedInternalFormat()
+        internal InternalFormat GetCompressedInternalFormat()
         {
             // For GL.CompressedTexImage2D
 
@@ -107,7 +107,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public PixelFormat GetPixelFormat()
+        internal PixelFormat GetPixelFormat()
         {
             switch (PixelFormatValue)
             {
@@ -125,7 +125,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public PixelType GetPixelType()
+        internal PixelType GetPixelType()
         {
 
             switch (PixelFormatValue)
@@ -137,7 +137,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public int GetBytesPerPixel()
+        internal int GetBytesPerPixel()
         {
             switch (PixelFormatValue)
             {
@@ -151,7 +151,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public bool IsCompressed()
+        internal bool IsCompressed()
         {
             uint pixelFormat = PixelFormatValue;
 
@@ -163,7 +163,7 @@ namespace PS3Sharp.Cell.RSX
             return isCompressed;
         }
 
-        public int GetCompressedSize()
+        internal int GetCompressedSize()
         {
             // DXT texture is divided into 4×4 blocks
             // the size of a single tile is either 8 or 16 bytes depending on the type
@@ -185,7 +185,7 @@ namespace PS3Sharp.Cell.RSX
             return blocksWidth * blockHeight * bytesPerBlock;
         }
 
-        public Swizzle GetSwizzle()
+        internal Swizzle GetSwizzle()
         {
 
             uint pixelFormat = PixelFormatValue;
@@ -254,7 +254,7 @@ namespace PS3Sharp.Cell.RSX
             return swizzleResult;
         }
 
-        public TextureMinFilter GetMinFilter()
+        internal TextureMinFilter GetMinFilter()
         {
             uint minFilter = (Filter >> 16) & 0xF;
 
@@ -272,7 +272,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public TextureMagFilter GetMagFilter()
+        internal TextureMagFilter GetMagFilter()
         {
             uint magFilter = (Filter >> 24) & 0xF;
 
@@ -292,19 +292,19 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public TextureWrapMode GetWrapS()
+        internal TextureWrapMode GetWrapS()
         {
             uint wrapS = Wrap & 0xFF;
             return GetWrap(wrapS);
         }
 
-        public TextureWrapMode GetWrapT()
+        internal TextureWrapMode GetWrapT()
         {
             uint wrapT = (Wrap >> 8) & 0xFF;
             return GetWrap(wrapT);
         }
 
-        public TextureWrapMode GetWrapR()
+        internal TextureWrapMode GetWrapR()
         {
             uint wrapR = (Wrap >> 16) & 0xFF;
             return GetWrap(wrapR);
@@ -331,7 +331,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public void FetchTextureData()
+        internal void FetchTextureData()
         {
             Span<byte> destination = GetScratchData();
 
@@ -339,7 +339,7 @@ namespace PS3Sharp.Cell.RSX
             MemoryManager.ReadBufferFromVirtualMemory(Address, destination);
         }
 
-        public void UpdateHashKey()
+        internal void UpdateHashKey()
         {
             ReadOnlySpan<byte> data = GetLastScratchData();
             CacheKey.Address = Address;
@@ -348,7 +348,7 @@ namespace PS3Sharp.Cell.RSX
             CacheKey.Hash = XxHash3.HashToUInt64(data);
         }
 
-        public void PrintInfo(int location)
+        internal void PrintInfo(int location)
         { // For debugging
             Console.WriteLine($"Texture[{location}] addr = 0x{Address:X8} w = {Width} h = {Height} pitch = {Pitch} swizzle = 0x{SwizzleValue:X} Format = 0x{Format:X8}");
         }

@@ -8,14 +8,14 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    public static class SysLWCond
+    internal static class SysLWCond
     {     // This is incomplete 
 
 
         private static readonly ConcurrentDictionary<uint, LV2LWCond> _conds = [];
-        public static bool GetLWCond(uint cond_id, out LV2LWCond cond) => _conds.TryGetValue(cond_id, out cond);
+        internal static bool GetLWCond(uint cond_id, out LV2LWCond cond) => _conds.TryGetValue(cond_id, out cond);
 
-        public static void AddLWCond(uint id, LV2LWCond cond)
+        internal static void AddLWCond(uint id, LV2LWCond cond)
         {
             bool success = _conds.TryAdd(id, cond);
             if (!success)
@@ -24,7 +24,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static void RemoveLWCond(uint cond_id)
+        internal static void RemoveLWCond(uint cond_id)
         {
             bool success = _conds.TryRemove(cond_id, out _);
             if (!success)
@@ -33,7 +33,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static ulong SysLWCondCreate(PPU ppu)
+        internal static ulong SysLWCondCreate(PPU ppu)
         {
             uint handle = MemoryManager.GetHandle();
 

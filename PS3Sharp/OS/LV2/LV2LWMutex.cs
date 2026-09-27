@@ -8,55 +8,55 @@ using static PS3Sharp.Cell.ErrorCode;
 namespace PS3Sharp.OS.LV2
 {
 
-    public sealed class LV2LWMutex
+    internal sealed class LV2LWMutex
     {
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct LWMutex : IPS3Struct
+        internal struct LWMutex : IPS3Struct
         {
-            public BigEndian<uint> Owner;
-            public BigEndian<uint> Waiter;
-            public BigEndian<uint> Attribute;
-            public BigEndian<uint> RecursiveCount;
-            public BigEndian<uint> SleepQueue;
+            internal BigEndian<uint> Owner;
+            internal BigEndian<uint> Waiter;
+            internal BigEndian<uint> Attribute;
+            internal BigEndian<uint> RecursiveCount;
+            internal BigEndian<uint> SleepQueue;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct LWMutexAttrib : IPS3Struct
+        internal struct LWMutexAttrib : IPS3Struct
         {
-            public BigEndian<uint> Protocol;
-            public BigEndian<uint> Recursive;
-            public InlineData.InlineArray8<byte> Name;
+            internal BigEndian<uint> Protocol;
+            internal BigEndian<uint> Recursive;
+            internal InlineData.InlineArray8<byte> Name;
         }
 
-        public const uint SYS_SYNC_RECURSIVE = 0x10;
-        public const uint SYS_SYNC_NOT_RECURSIVE = 0x20;
+        internal const uint SYS_SYNC_RECURSIVE = 0x10;
+        internal const uint SYS_SYNC_NOT_RECURSIVE = 0x20;
 
-        public const uint SYS_SYNC_FIFO = 0x1;                  // First In, First Out Order
-        public const uint SYS_SYNC_PRIORITY = 0x2;              // Priority Order
-        public const uint SYS_SYNC_PRIORITY_INHERIT = 0x3;      // Basic Priority Inheritance Protocol
-        public const uint SYS_SYNC_RETRY = 0x4;                 // Not selected while unlocking
+        internal const uint SYS_SYNC_FIFO = 0x1;                  // First In, First Out Order
+        internal const uint SYS_SYNC_PRIORITY = 0x2;              // Priority Order
+        internal const uint SYS_SYNC_PRIORITY_INHERIT = 0x3;      // Basic Priority Inheritance Protocol
+        internal const uint SYS_SYNC_RETRY = 0x4;                 // Not selected while unlocking
 
         private readonly object _mutex = new();
 
-        public readonly GuestPtr<LWMutex> InstancePtr;
+        internal readonly GuestPtr<LWMutex> InstancePtr;
         private readonly LWMutexAttrib _attributes;
         private readonly bool _isRecursive;
 
-        public LV2LWMutex(GuestPtr<LWMutex> ptr, LWMutexAttrib attribute)
+        internal LV2LWMutex(GuestPtr<LWMutex> ptr, LWMutexAttrib attribute)
         {
             InstancePtr = ptr;
             _attributes = attribute;
             _isRecursive = attribute.Recursive == SYS_SYNC_RECURSIVE;
         }
 
-        public bool IsEntered()
+        internal bool IsEntered()
         {
             return Monitor.IsEntered(_mutex);
         }
 
         // functions for _sys_lwmutex syscalls:
-        public ulong _Sys_Lock(ulong us_timeout)
+        internal ulong _Sys_Lock(ulong us_timeout)
         {
             bool ok;
             if (us_timeout > 0)
@@ -72,13 +72,13 @@ namespace PS3Sharp.OS.LV2
             return ok ? CELL_OK : CELL_ETIMEDOUT;
         }
 
-        public ulong _Sys_TryLock()
+        internal ulong _Sys_TryLock()
         {
             bool ok = Monitor.TryEnter(_mutex, 0);
             return ok ? CELL_OK : CELL_ETIMEDOUT;
         }
 
-        public ulong _Sys_Unlock()
+        internal ulong _Sys_Unlock()
         {
             if (!Monitor.IsEntered(_mutex))
             {
@@ -91,7 +91,7 @@ namespace PS3Sharp.OS.LV2
 
 
         // functions for sys_lwmutex module:
-        public ulong Lock(uint threadID, ulong us_timeout)
+        internal ulong Lock(uint threadID, ulong us_timeout)
         {
             //bool canLock = CanLock(ref mutex, threadID);
 
@@ -130,7 +130,7 @@ namespace PS3Sharp.OS.LV2
             }
         }
 
-        public ulong TryLock(uint threadID)
+        internal ulong TryLock(uint threadID)
         {
 
             if (Monitor.IsEntered(_mutex))
@@ -194,7 +194,7 @@ namespace PS3Sharp.OS.LV2
             }
         }
 
-        public ulong Unlock(uint threadID)
+        internal ulong Unlock(uint threadID)
         {
             // Error if we did not lock the mutex before
             if (!Monitor.IsEntered(_mutex))

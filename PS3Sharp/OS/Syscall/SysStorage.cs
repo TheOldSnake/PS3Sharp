@@ -9,9 +9,9 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    public static class SysStorage
+    internal static class SysStorage
     {
-        public enum Devices : ulong
+        internal enum Devices : ulong
         {
             ATA_HDD = 0x101000000000007UL,
             BDVD_DRIVE = 0x101000000000006UL,
@@ -36,35 +36,35 @@ namespace PS3Sharp.OS.Syscall
 
         private static readonly ConcurrentDictionary<uint, StorageDevice> _openDevices = new();
 
-        public sealed class StorageDevice
+        internal sealed class StorageDevice
         {
-            public readonly Devices Type;
-            public readonly byte[] Data;
+            internal readonly Devices Type;
+            internal readonly byte[] Data;
 
-            public StorageDevice(Devices type, int size)
+            internal StorageDevice(Devices type, int size)
             {
                 Type = type;
                 Data = new byte[size];
             }
 
-            public Span<byte> CreateSpan(int start, int size)
+            internal Span<byte> CreateSpan(int start, int size)
             {
                 return new Span<byte>(Data, start, size);
             }
         }
 
-        public struct StorageDeviceInfo : IPS3Struct
+        internal struct StorageDeviceInfo : IPS3Struct
         {
-            public InlineData.InlineArray32<byte> Name;
-            public BigEndian<uint> Zero;
-            public BigEndian<uint> Zero2;
-            public BigEndian<ulong> SectorCount;
-            public BigEndian<uint> SectorSize;
-            public BigEndian<uint> One;
-            public InlineData.InlineArray8<byte> Flags;
+            internal InlineData.InlineArray32<byte> Name;
+            internal BigEndian<uint> Zero;
+            internal BigEndian<uint> Zero2;
+            internal BigEndian<ulong> SectorCount;
+            internal BigEndian<uint> SectorSize;
+            internal BigEndian<uint> One;
+            internal InlineData.InlineArray8<byte> Flags;
         };
 
-        public static ulong SysStorageGetDeviceInfo(PPU ppu)
+        internal static ulong SysStorageGetDeviceInfo(PPU ppu)
         {
             return CELL_OK;
             ulong device = ppu.ReadArg<ulong>(ARG0);
@@ -103,7 +103,7 @@ namespace PS3Sharp.OS.Syscall
         }
 
 
-        public static ulong GetUSBMassStorageInfo(GuestPtr<StorageDeviceInfo> info_ptr, ulong dev_num)
+        internal static ulong GetUSBMassStorageInfo(GuestPtr<StorageDeviceInfo> info_ptr, ulong dev_num)
         {
             if (dev_num > 0)
             {
@@ -128,7 +128,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysStorageOpen(PPU ppu)
+        internal static ulong SysStorageOpen(PPU ppu)
         {
             return CELL_OK;
             ulong dev = ppu.ReadArg<ulong>(ARG0);
@@ -175,7 +175,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysStorageRead(PPU ppu)
+        internal static ulong SysStorageRead(PPU ppu)
         {
             return CELL_OK;
 
@@ -214,7 +214,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysStorageClose(PPU ppu)
+        internal static ulong SysStorageClose(PPU ppu)
         {
             return CELL_OK;
             uint fd = ppu.ReadArg<uint>(ARG0);

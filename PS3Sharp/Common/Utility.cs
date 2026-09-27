@@ -6,14 +6,14 @@ using System.Text;
 
 namespace PS3Sharp.Common
 {
-    public static class Utility
+    internal static class Utility
     {
-        public static long TimeBaseStart = Stopwatch.GetTimestamp();
-        public static double TimeBaseFreq = Stopwatch.Frequency;
-        //public const ulong TB_FREQUENCY = 80000000; //80 Mhz
+        internal static long TimeBaseStart = Stopwatch.GetTimestamp();
+        internal static double TimeBaseFreq = Stopwatch.Frequency;
+        //internal const ulong TB_FREQUENCY = 80000000; //80 Mhz
 
         // todo clean this
-        public static ulong ReadTime_Microseconds()
+        internal static ulong ReadTime_Microseconds()
         {
 
             return GetCurrentMicrosecondSince1970();
@@ -25,12 +25,12 @@ namespace PS3Sharp.Common
             //return (ulong)((Stopwatch.GetTimestamp() - TimeBaseStart) * (TB_FREQUENCY / TimeBaseFreq));
         }
 
-        public static string ToString(ReadOnlySpan<byte> c_str)
+        internal static string ToString(ReadOnlySpan<byte> c_str)
         {
             return Encoding.UTF8.GetString(c_str);
         }
 
-        public static Span<byte> ToCString(string str)
+        internal static Span<byte> ToCString(string str)
         {
 
             if (!str.EndsWith('\0'))
@@ -41,39 +41,39 @@ namespace PS3Sharp.Common
             return Encoding.UTF8.GetBytes(str);
         }
 
-        public static ulong GetCurrentTickSince1970()
+        internal static ulong GetCurrentTickSince1970()
         {
             long ticks = DateTimeOffset.UtcNow.UtcTicks - 621355968000000000L; //in 100-nanosecond ticks
             return (ulong)ticks;
         }
 
-        public static ulong GetCurrentNanosecondsSince1970()
+        internal static ulong GetCurrentNanosecondsSince1970()
         {
             ulong ticks = GetCurrentTickSince1970();
             return ticks * 100;
         }
 
-        public static ulong GetCurrentMicrosecondSince1970()
+        internal static ulong GetCurrentMicrosecondSince1970()
         {
             ulong ticks = GetCurrentTickSince1970();
             return ticks / 10;
         }
 
-        public static ulong GetCurrentMillisecondSince1970()
+        internal static ulong GetCurrentMillisecondSince1970()
         {
             //We can get it directly
             long value = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             return (ulong)value;
         }
 
-        public static ulong GetCurrentSecondsSince1970()
+        internal static ulong GetCurrentSecondsSince1970()
         {
             //We can get it directly
             long value = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             return (ulong)value;
         }
 
-        public static string ToHostPath(string guestPath)
+        internal static string ToHostPath(string guestPath)
         {
             //Assuming absolute paths
             if (!guestPath.StartsWith('/'))
@@ -85,12 +85,12 @@ namespace PS3Sharp.Common
             return guestPath.Replace($"/", $"\\").Substring(1);
         }
 
-        public static ulong Hash(Span<byte> data)
+        internal static ulong Hash(Span<byte> data)
         {
             return BitConverter.ToUInt64(XxHash64.Hash(data));
         }
 
-        public static void DumpMemoryAsImage(uint address, int width, int height, string path)
+        internal static void DumpMemoryAsImage(uint address, int width, int height, string path)
         { // As BRGA8888
             SKBitmap bitmap = new(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
 

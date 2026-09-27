@@ -7,9 +7,9 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    public static class SysProcess
+    internal static class SysProcess
     {
-        public static ulong SysProcessExit(PPU ppu)
+        internal static ulong SysProcessExit(PPU ppu)
         {
             int exitCode = ppu.ReadArg<int>(ARG0);
             ppu.StopThread();
@@ -26,17 +26,17 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysProcessExit2(PPU ppu)
+        internal static ulong SysProcessExit2(PPU ppu)
         {
             return SysProcessExit(ppu);
         }
 
-        public static ulong SysProcessGetPID(PPU ppu)
+        internal static ulong SysProcessGetPID(PPU ppu)
         {
             return 0x1000500;
         }
 
-        public static ulong SysProcessGetSDKVersion(PPU ppu)
+        internal static ulong SysProcessGetSDKVersion(PPU ppu)
         {
             uint pid = ppu.ReadArg<uint>(ARG0);
             GuestPtr<uint> ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
@@ -44,7 +44,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysProcessIsSPULockLineReservationAddress(PPU ppu)
+        internal static ulong SysProcessIsSPULockLineReservationAddress(PPU ppu)
         {
             uint address = ppu.ReadArg<uint>(ARG0);
             ulong flags = ppu.ReadArg<ulong>(ARG1);

@@ -8,12 +8,12 @@ using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler
 {
-    public unsafe sealed class PPURecompiler : IDisposable
+    internal unsafe sealed class PPURecompiler : IDisposable
     {
-        public struct X64Block
+        internal struct X64Block
         {
-            public delegate* unmanaged[Stdcall]<void> Code;
-            public int IsSyscallExit;
+            internal delegate* unmanaged[Stdcall]<void> Code;
+            internal int IsSyscallExit;
         }
 
         private const int PAGE_BITS = 16;
@@ -31,9 +31,9 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler
         private nint CurrentPageEndAddress;
         private bool disposedValue;
 
-        public static ulong NumberOfCompiledBlocks = 0;
-        public static ulong NumberOfExecutedBlocks = 0;
-        public static ulong TotalAllocatedPages = 0;
+        internal static ulong NumberOfCompiledBlocks = 0;
+        internal static ulong NumberOfExecutedBlocks = 0;
+        internal static ulong TotalAllocatedPages = 0;
 
         private X64Block* GetOrCreateBlock(uint virtualAddress)
         {
@@ -57,7 +57,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler
             return &page[l2];
         }
 
-        public void RunPPU(PPU ppu)
+        internal void RunPPU(PPU ppu)
         {
 
             X64Block* block = GetOrCreateBlock(ppu.State->PC);
@@ -146,7 +146,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler
             return (value + alignment - 1) & ~(alignment - 1);
         }
 
-        public void Dispose(bool disposing)
+        internal void Dispose(bool disposing)
         {
             if (!disposedValue)
             {

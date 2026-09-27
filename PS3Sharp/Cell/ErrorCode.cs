@@ -1,81 +1,81 @@
 ﻿namespace PS3Sharp.Cell
 {
-    public static class ErrorCode
+    internal static class ErrorCode
     {
         // Used as return values
 
         // These values are based on RPCS3's source code
 
-        public const uint CELL_OK = 0x00000000; // OK
-        public const uint CELL_CANCEL = 0x00000001; // Cancel
+        internal const uint CELL_OK = 0x00000000; // OK
+        internal const uint CELL_CANCEL = 0x00000001; // Cancel
 
-        public const uint CELL_EAGAIN = 0x80010001; // The resource is temporarily unavailable
-        public const uint CELL_EINVAL = 0x80010002; // An invalid argument value is specified
-        public const uint CELL_ENOSYS = 0x80010003; // The feature is not yet implemented
-        public const uint CELL_ENOMEM = 0x80010004; // Memory allocation failure
-        public const uint CELL_ESRCH = 0x80010005; // The resource with the specified identifier does not exist
-        public const uint CELL_ENOENT = 0x80010006; // The file does not exist
-        public const uint CELL_ENOEXEC = 0x80010007; // The file is in unrecognized format
-        public const uint CELL_EDEADLK = 0x80010008; // Resource deadlock is avoided
-        public const uint CELL_EPERM = 0x80010009; // The operation is not permitted
-        public const uint CELL_EBUSY = 0x8001000A; // The device or resource is busy
-        public const uint CELL_ETIMEDOUT = 0x8001000B; // The operation is timed out
-        public const uint CELL_EABORT = 0x8001000C; // The operation is aborted
-        public const uint CELL_EFAULT = 0x8001000D; // Invalid memory access
-        public const uint CELL_ENOCHILD = 0x8001000E; // Process has no child(s)
-        public const uint CELL_ESTAT = 0x8001000F; // State of the target thread is invalid
-        public const uint CELL_EALIGN = 0x80010010; // Alignment is invalid.
-        public const uint CELL_EKRESOURCE = 0x80010011; // Shortage of the kernel resources
-        public const uint CELL_EISDIR = 0x80010012; // The file is a directory
-        public const uint CELL_ECANCELED = 0x80010013; // Operation canceled
-        public const uint CELL_EEXIST = 0x80010014; // Entry already exists
-        public const uint CELL_EISCONN = 0x80010015; // Port is already connected
-        public const uint CELL_ENOTCONN = 0x80010016; // Port is not connected
-        public const uint CELL_EAUTHFAIL = 0x80010017; // Program authentication fail
-        public const uint CELL_ENOTMSELF = 0x80010018; // The file is not a MSELF
-        public const uint CELL_ESYSVER = 0x80010019; // System version error
-        public const uint CELL_EAUTHFATAL = 0x8001001A; // Fatal system error
-        public const uint CELL_EDOM = 0x8001001B; // Math domain violation
-        public const uint CELL_ERANGE = 0x8001001C; // Math range violation
-        public const uint CELL_EILSEQ = 0x8001001D; // Illegal multi-byte sequence in input
-        public const uint CELL_EFPOS = 0x8001001E; // File position error
-        public const uint CELL_EINTR = 0x8001001F; // Syscall was interrupted
-        public const uint CELL_EFBIG = 0x80010020; // File too large
-        public const uint CELL_EMLINK = 0x80010021; // Too many links
-        public const uint CELL_ENFILE = 0x80010022; // File table overflow
-        public const uint CELL_ENOSPC = 0x80010023; // No space left on device
-        public const uint CELL_ENOTTY = 0x80010024; // Not a TTY
-        public const uint CELL_EPIPE = 0x80010025; // Broken pipe
-        public const uint CELL_EROFS = 0x80010026; // Read-only filesystem (write fail)
-        public const uint CELL_ESPIPE = 0x80010027; // Illegal seek (e.g. seek on pipe)
-        public const uint CELL_E2BIG = 0x80010028; // Arg list too long
-        public const uint CELL_EACCES = 0x80010029; // Access violation
-        public const uint CELL_EBADF = 0x8001002A; // Invalid file descriptor
-        public const uint CELL_EIO = 0x8001002B; // Filesystem mounting failed (actually IO error...EIO)
-        public const uint CELL_EMFILE = 0x8001002C; // Too many files open
-        public const uint CELL_ENODEV = 0x8001002D; // No device
-        public const uint CELL_ENOTDIR = 0x8001002E; // Not a directory
-        public const uint CELL_ENXIO = 0x8001002F; // No such device or IO
-        public const uint CELL_EXDEV = 0x80010030; // Cross-device link error
-        public const uint CELL_EBADMSG = 0x80010031; // Bad Message
-        public const uint CELL_EINPROGRESS = 0x80010032; // In progress
-        public const uint CELL_EMSGSIZE = 0x80010033; // Message size error
-        public const uint CELL_ENAMETOOLONG = 0x80010034; // Name too long
-        public const uint CELL_ENOLCK = 0x80010035; // No lock
-        public const uint CELL_ENOTEMPTY = 0x80010036; // Not empty
-        public const uint CELL_ENOTSUP = 0x80010037; // Not supported
-        public const uint CELL_EFSSPECIFIC = 0x80010038; // File-system specific error
-        public const uint CELL_EOVERFLOW = 0x80010039; // Overflow occured
-        public const uint CELL_ENOTMOUNTED = 0x8001003A; // Filesystem not mounted
-        public const uint CELL_ENOTSDATA = 0x8001003B; // Not SData
-        public const uint CELL_ESDKVER = 0x8001003C; // Incorrect version in sys_load_param
-        public const uint CELL_ENOLICDISC = 0x8001003D; // Pointer is null. Similar than 0x8001003E but with some PARAM.SFO parameter (TITLE_ID?) embedded.
-        public const uint CELL_ENOLICENT = 0x8001003E; // Pointer is null
+        internal const uint CELL_EAGAIN = 0x80010001; // The resource is temporarily unavailable
+        internal const uint CELL_EINVAL = 0x80010002; // An invalid argument value is specified
+        internal const uint CELL_ENOSYS = 0x80010003; // The feature is not yet implemented
+        internal const uint CELL_ENOMEM = 0x80010004; // Memory allocation failure
+        internal const uint CELL_ESRCH = 0x80010005; // The resource with the specified identifier does not exist
+        internal const uint CELL_ENOENT = 0x80010006; // The file does not exist
+        internal const uint CELL_ENOEXEC = 0x80010007; // The file is in unrecognized format
+        internal const uint CELL_EDEADLK = 0x80010008; // Resource deadlock is avoided
+        internal const uint CELL_EPERM = 0x80010009; // The operation is not permitted
+        internal const uint CELL_EBUSY = 0x8001000A; // The device or resource is busy
+        internal const uint CELL_ETIMEDOUT = 0x8001000B; // The operation is timed out
+        internal const uint CELL_EABORT = 0x8001000C; // The operation is aborted
+        internal const uint CELL_EFAULT = 0x8001000D; // Invalid memory access
+        internal const uint CELL_ENOCHILD = 0x8001000E; // Process has no child(s)
+        internal const uint CELL_ESTAT = 0x8001000F; // State of the target thread is invalid
+        internal const uint CELL_EALIGN = 0x80010010; // Alignment is invalid.
+        internal const uint CELL_EKRESOURCE = 0x80010011; // Shortage of the kernel resources
+        internal const uint CELL_EISDIR = 0x80010012; // The file is a directory
+        internal const uint CELL_ECANCELED = 0x80010013; // Operation canceled
+        internal const uint CELL_EEXIST = 0x80010014; // Entry already exists
+        internal const uint CELL_EISCONN = 0x80010015; // Port is already connected
+        internal const uint CELL_ENOTCONN = 0x80010016; // Port is not connected
+        internal const uint CELL_EAUTHFAIL = 0x80010017; // Program authentication fail
+        internal const uint CELL_ENOTMSELF = 0x80010018; // The file is not a MSELF
+        internal const uint CELL_ESYSVER = 0x80010019; // System version error
+        internal const uint CELL_EAUTHFATAL = 0x8001001A; // Fatal system error
+        internal const uint CELL_EDOM = 0x8001001B; // Math domain violation
+        internal const uint CELL_ERANGE = 0x8001001C; // Math range violation
+        internal const uint CELL_EILSEQ = 0x8001001D; // Illegal multi-byte sequence in input
+        internal const uint CELL_EFPOS = 0x8001001E; // File position error
+        internal const uint CELL_EINTR = 0x8001001F; // Syscall was interrupted
+        internal const uint CELL_EFBIG = 0x80010020; // File too large
+        internal const uint CELL_EMLINK = 0x80010021; // Too many links
+        internal const uint CELL_ENFILE = 0x80010022; // File table overflow
+        internal const uint CELL_ENOSPC = 0x80010023; // No space left on device
+        internal const uint CELL_ENOTTY = 0x80010024; // Not a TTY
+        internal const uint CELL_EPIPE = 0x80010025; // Broken pipe
+        internal const uint CELL_EROFS = 0x80010026; // Read-only filesystem (write fail)
+        internal const uint CELL_ESPIPE = 0x80010027; // Illegal seek (e.g. seek on pipe)
+        internal const uint CELL_E2BIG = 0x80010028; // Arg list too long
+        internal const uint CELL_EACCES = 0x80010029; // Access violation
+        internal const uint CELL_EBADF = 0x8001002A; // Invalid file descriptor
+        internal const uint CELL_EIO = 0x8001002B; // Filesystem mounting failed (actually IO error...EIO)
+        internal const uint CELL_EMFILE = 0x8001002C; // Too many files open
+        internal const uint CELL_ENODEV = 0x8001002D; // No device
+        internal const uint CELL_ENOTDIR = 0x8001002E; // Not a directory
+        internal const uint CELL_ENXIO = 0x8001002F; // No such device or IO
+        internal const uint CELL_EXDEV = 0x80010030; // Cross-device link error
+        internal const uint CELL_EBADMSG = 0x80010031; // Bad Message
+        internal const uint CELL_EINPROGRESS = 0x80010032; // In progress
+        internal const uint CELL_EMSGSIZE = 0x80010033; // Message size error
+        internal const uint CELL_ENAMETOOLONG = 0x80010034; // Name too long
+        internal const uint CELL_ENOLCK = 0x80010035; // No lock
+        internal const uint CELL_ENOTEMPTY = 0x80010036; // Not empty
+        internal const uint CELL_ENOTSUP = 0x80010037; // Not supported
+        internal const uint CELL_EFSSPECIFIC = 0x80010038; // File-system specific error
+        internal const uint CELL_EOVERFLOW = 0x80010039; // Overflow occured
+        internal const uint CELL_ENOTMOUNTED = 0x8001003A; // Filesystem not mounted
+        internal const uint CELL_ENOTSDATA = 0x8001003B; // Not SData
+        internal const uint CELL_ESDKVER = 0x8001003C; // Incorrect version in sys_load_param
+        internal const uint CELL_ENOLICDISC = 0x8001003D; // Pointer is null. Similar than 0x8001003E but with some PARAM.SFO parameter (TITLE_ID?) embedded.
+        internal const uint CELL_ENOLICENT = 0x8001003E; // Pointer is null
 
-        public const uint CELL_SYSMODULE_ERROR_UNKNOWN = 0x80012002;
+        internal const uint CELL_SYSMODULE_ERROR_UNKNOWN = 0x80012002;
 
 
-        public static readonly Dictionary<ulong, string> CellErrorNames = new() {
+        internal static readonly Dictionary<ulong, string> CellErrorNames = new() {
             { CELL_OK, "CELL_OK" },
             { CELL_CANCEL, "CELL_CANCEL" },
 

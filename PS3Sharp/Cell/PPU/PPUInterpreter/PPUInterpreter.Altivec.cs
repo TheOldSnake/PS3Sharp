@@ -3,7 +3,7 @@ using static PS3Sharp.Cell.PPU.PPU;
 
 namespace PS3Sharp.Cell.PPU.PPUInterpreter
 {
-    public static unsafe partial class PPUInterpreter
+    internal static unsafe partial class PPUInterpreter
     {
         private static void Altivec(PPUInstruction instruction, PPU ppu)
         {
@@ -74,7 +74,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void PrintAllVectors(PPU ppu)
+        internal static void PrintAllVectors(PPU ppu)
         {
             for (int i = 0; i < 32; i++)
             {
@@ -82,7 +82,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void SetCR(PPU ppu, UInt128 result)
+        internal static void SetCR(PPU ppu, UInt128 result)
         {
             if (result == UInt128.MaxValue)
             {
@@ -102,27 +102,27 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
         }
 
         // Load Instructions
-        public static void LVX(PPUInstruction instruction, PPU ppu)
+        internal static void LVX(PPUInstruction instruction, PPU ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true) & ~0xFU;
             ppu.VRF[instruction.Vd].Value128 = MemoryManager.Read<UInt128>(ea);
         }
 
-        public static void LVEWX(PPUInstruction instruction, PPU ppu)
+        internal static void LVEWX(PPUInstruction instruction, PPU ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true) & ~0x3U;
             uint m = (ea >> 2) & 3;          //m=EA[28–29] 
             ppu.VRF[instruction.Vd].UInts[3 - m] = MemoryManager.Read<uint>(ea);
         }
 
-        public static void LVEHX(PPUInstruction instruction, PPU ppu)
+        internal static void LVEHX(PPUInstruction instruction, PPU ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true) & ~0x1U;
             uint m = (ea >> 1) & 7;          //m=EA[28–30] 
             ppu.VRF[instruction.Vd].UShorts[7 - m] = MemoryManager.Read<ushort>(ea);
         }
 
-        public static void LVEBX(PPUInstruction instruction, PPU ppu)
+        internal static void LVEBX(PPUInstruction instruction, PPU ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
             uint m = ea & 0xF;              //m=EA[28–31] 
@@ -130,13 +130,13 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
         }
 
         // Store Instructions 
-        public static void STVX(PPUInstruction instruction, PPU ppu)
+        internal static void STVX(PPUInstruction instruction, PPU ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true) & ~0xFU;
             MemoryManager.Write<UInt128>(ea, ppu.VRF[instruction.Vs].Value128);
         }
 
-        public static void STVEWX(PPUInstruction instruction, PPU ppu)
+        internal static void STVEWX(PPUInstruction instruction, PPU ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true) & ~0x3U;
             uint m = (ea >> 2) & 3;          //m=EA[28–29] 
@@ -144,7 +144,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             MemoryManager.Write<uint>(ea, data);
         }
 
-        public static void STVEHX(PPUInstruction instruction, PPU ppu)
+        internal static void STVEHX(PPUInstruction instruction, PPU ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true) & ~0x1U;
             uint m = (ea >> 1) & 7;         //m=EA[28–30] 
@@ -152,7 +152,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             MemoryManager.Write<ushort>(ea, data);
         }
 
-        public static void STVEBX(PPUInstruction instruction, PPU ppu)
+        internal static void STVEBX(PPUInstruction instruction, PPU ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
             uint m = ea & 0xF;              //m=EA[28–31] 
@@ -160,7 +160,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             MemoryManager.Write<byte>(ea, data);
         }
 
-        public static void VADDUWM(PPUInstruction instruction, PPU ppu)
+        internal static void VADDUWM(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -171,7 +171,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             V128ADD<uint>(va, vb, vd);
         }
 
-        public static void VADDFP(PPUInstruction instruction, PPU ppu)
+        internal static void VADDFP(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -182,7 +182,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             V128ADD<float>(va, vb, vd);
         }
 
-        public static void VSUBFP(PPUInstruction instruction, PPU ppu)
+        internal static void VSUBFP(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -193,7 +193,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             V128SUB<float>(va, vb, vd);
         }
 
-        public static void VAND(PPUInstruction instruction, PPU ppu)
+        internal static void VAND(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -204,7 +204,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             V128AND(va, vb, vd);
         }
 
-        public static void VANDC(PPUInstruction instruction, PPU ppu)
+        internal static void VANDC(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -215,7 +215,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             V128ANDC(va, vb, vd);
         }
 
-        public static void VOR(PPUInstruction instruction, PPU ppu)
+        internal static void VOR(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -226,7 +226,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             V128OR(va, vb, vd);
         }
 
-        public static void VNOR(PPUInstruction instruction, PPU ppu)
+        internal static void VNOR(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -237,7 +237,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             V128NOR(va, vb, vd);
         }
 
-        public static void VXOR(PPUInstruction instruction, PPU ppu)
+        internal static void VXOR(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -248,7 +248,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             V128XOR(va, vb, vd);
         }
 
-        public static void LVSL(PPUInstruction instruction, PPU ppu)
+        internal static void LVSL(PPUInstruction instruction, PPU ppu)
         {
             uint addr = GetEA(instruction, ppu, MemAccessForm.XForm, true);
             uint sh = addr & 0xF;
@@ -271,7 +271,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             //Console.WriteLine($"LVSL vd = {instruction.Vd} val = {ppu.VRF[instruction.Vd].Value128:X}");
         }
 
-        public static void LVLX(PPUInstruction instruction, PPU ppu)
+        internal static void LVLX(PPUInstruction instruction, PPU ppu)
         {
             // Appearently this insturction is only in the CELL processor
 
@@ -285,7 +285,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void LVRX(PPUInstruction instruction, PPU ppu)
+        internal static void LVRX(PPUInstruction instruction, PPU ppu)
         {
             // Appearently this insturction is only in the CELL processor
 
@@ -299,7 +299,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void VPERM(PPUInstruction instruction, PPU ppu)
+        internal static void VPERM(PPUInstruction instruction, PPU ppu)
         {
             PPUVR reg_a = ppu.VRF[instruction.Va];
             PPUVR reg_b = ppu.VRF[instruction.Vb];
@@ -326,7 +326,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             // Console.WriteLine($"VPERM vd = {instruction.Vd} val = {ppu.VRF[instruction.Vd].Value128:X}");
         }
 
-        public static void VSPLTW(PPUInstruction instruction, PPU ppu)
+        internal static void VSPLTW(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
             uint* vb = ppu.VRF[instruction.Vb].UInts;
@@ -338,7 +338,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             V128SPLT_Gen<uint>(vd, word);
         }
 
-        public static void VSPLTISW(PPUInstruction instruction, PPU ppu)
+        internal static void VSPLTISW(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -349,7 +349,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             V128SPLT_Gen<uint>(vd, (uint)signExtended);
         }
 
-        public static void VSPLTISH(PPUInstruction instruction, PPU ppu)
+        internal static void VSPLTISH(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -360,7 +360,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             V128SPLT_Gen<ushort>(vd, (ushort)signExtended);
         }
 
-        public static void VMADDFP(PPUInstruction instruction, PPU ppu)
+        internal static void VMADDFP(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -372,7 +372,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             V128MADD(va, vb, vc, vd);
         }
 
-        public static void VNMSUBFP(PPUInstruction instruction, PPU ppu)
+        internal static void VNMSUBFP(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -384,7 +384,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             V128NMSUB(va, vb, vc, vd);
         }
 
-        public static void VMRGLW(PPUInstruction instruction, PPU ppu)
+        internal static void VMRGLW(PPUInstruction instruction, PPU ppu)
         {
             //Copy the registers first
             PPUVR a = ppu.VRF[instruction.Va];
@@ -396,7 +396,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             ppu.VRF[instruction.Vd].UInts[3] = a.UInts[1];
         }
 
-        public static void VMRGHW(PPUInstruction instruction, PPU ppu)
+        internal static void VMRGHW(PPUInstruction instruction, PPU ppu)
         {
             //Copy the registers first
             PPUVR a = ppu.VRF[instruction.Va];
@@ -408,7 +408,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             ppu.VRF[instruction.Vd].UInts[3] = a.UInts[3];
         }
 
-        public static void VSLDOI(PPUInstruction instruction, PPU ppu)
+        internal static void VSLDOI(PPUInstruction instruction, PPU ppu)
         {
             PPUVR reg_a = ppu.VRF[instruction.Va];
             PPUVR reg_b = ppu.VRF[instruction.Vb];
@@ -429,7 +429,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void VREFP(PPUInstruction instruction, PPU ppu)
+        internal static void VREFP(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -439,7 +439,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             V128REFP(vb, vd);
         }
 
-        public static void VRSQRTEFP(PPUInstruction instruction, PPU ppu)
+        internal static void VRSQRTEFP(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -449,7 +449,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             V128RSQRTEFP(vb, vd);
         }
 
-        public static void VSEL(PPUInstruction instruction, PPU ppu)
+        internal static void VSEL(PPUInstruction instruction, PPU ppu)
         {
             //if bit[i] of vc is 0 then vd[i] = va[i] 
             //if bit[i] of vc is 1 then vd[i] = vb[i]
@@ -461,7 +461,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             ppu.VRF[instruction.Vd].Value128 = vb_masked | va_masked;
         }
 
-        public static void VSLW(PPUInstruction instruction, PPU ppu)
+        internal static void VSLW(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -475,7 +475,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             vd[3] = va[3] << (int)(vb[3] & 0x1F);
         }
 
-        public static void VCTSXS(PPUInstruction instruction, PPU ppu)
+        internal static void VCTSXS(PPUInstruction instruction, PPU ppu)
         {
             long factor = 1 << (int)instruction.Uimm; //or Math.Pow(2, instruction.Uimm);
 
@@ -488,7 +488,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             ppu.VRF[instruction.Vd].UInts[3] = (uint)Math.Clamp((long)ppu.VRF[instruction.Vb].Floats[3] * factor, int.MinValue, int.MaxValue);
         }
 
-        public static void VCFSX(PPUInstruction instruction, PPU ppu)
+        internal static void VCFSX(PPUInstruction instruction, PPU ppu)
         {
             long factor = 1 << (int)instruction.Uimm; //or Math.Pow(2, instruction.Uimm);
 
@@ -498,7 +498,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             ppu.VRF[instruction.Vd].Floats[3] = ((float)(int)ppu.VRF[instruction.Vb].UInts[3]) / factor;
         }
 
-        public static void VCMPEQUW(PPUInstruction instruction, PPU ppu)
+        internal static void VCMPEQUW(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -515,7 +515,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void VCMPEQFW(PPUInstruction instruction, PPU ppu)
+        internal static void VCMPEQFW(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -532,7 +532,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void VCMPGTFP(PPUInstruction instruction, PPU ppu)
+        internal static void VCMPGTFP(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -549,7 +549,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void VCMPGEFP(PPUInstruction instruction, PPU ppu)
+        internal static void VCMPGEFP(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -566,7 +566,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void VMAXFP(PPUInstruction instruction, PPU ppu)
+        internal static void VMAXFP(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -577,7 +577,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             V128MAXFP(va, vb, vd);
         }
 
-        public static void VMINFP(PPUInstruction instruction, PPU ppu)
+        internal static void VMINFP(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -588,7 +588,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             V128MINFP(va, vb, vd);
         }
 
-        public static void VPKSWSS(PPUInstruction instruction, PPU ppu)
+        internal static void VPKSWSS(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -609,7 +609,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             vd[7] = (short)Math.Clamp(va[3], short.MinValue, short.MaxValue);
         }
 
-        public static void VUPKLSH(PPUInstruction instruction, PPU ppu)
+        internal static void VUPKLSH(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -623,7 +623,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             vd[3] = vb[3];
         }
 
-        public static void VUPKHSH(PPUInstruction instruction, PPU ppu)
+        internal static void VUPKHSH(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -637,7 +637,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             vd[3] = vb[7];
         }
 
-        public static void VADDUHM(PPUInstruction instruction, PPU ppu)
+        internal static void VADDUHM(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -648,7 +648,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             V128ADD<ushort>(va, vb, vd);
         }
 
-        public static void VSUBUHM(PPUInstruction instruction, PPU ppu)
+        internal static void VSUBUHM(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -659,7 +659,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             V128SUB<ushort>(va, vb, vd);
         }
 
-        public static void VMULOSH(PPUInstruction instruction, PPU ppu)
+        internal static void VMULOSH(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -677,7 +677,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             vd[3] = va[6] * vb[6];
         }
 
-        public static void VMULESH(PPUInstruction instruction, PPU ppu)
+        internal static void VMULESH(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -695,7 +695,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             vd[3] = va[7] * vb[7];
         }
 
-        public static void VSRAW(PPUInstruction instruction, PPU ppu)
+        internal static void VSRAW(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -710,7 +710,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             vd[3] = va[3] >> (vb[3] & 0x1F);
         }
 
-        public static void VCTUXS(PPUInstruction instruction, PPU ppu)
+        internal static void VCTUXS(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 
@@ -725,7 +725,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             vd[3] = (uint)Math.Clamp(vb[3] * factor, 0, uint.MaxValue);
         }
 
-        public static void VCFUX(PPUInstruction instruction, PPU ppu)
+        internal static void VCFUX(PPUInstruction instruction, PPU ppu)
         {
             PPUVR* vrf = ppu.VRF;
 

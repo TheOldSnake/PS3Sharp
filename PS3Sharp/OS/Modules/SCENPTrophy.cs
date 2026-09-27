@@ -7,15 +7,15 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    public static class SCENPTrophy
+    internal static class SCENPTrophy
     {
-        public static ulong SCENpTrophyInit(PPU ppu)
+        internal static ulong SCENpTrophyInit(PPU ppu)
         {
             Console.WriteLine($"[SCENPTrophy] sceNpTrophyInit");
             return CELL_OK;
         }
 
-        public static ulong SCENpTrophyCreateContext(PPU ppu)
+        internal static ulong SCENpTrophyCreateContext(PPU ppu)
         {
             GuestVoidPtr context_ptr = ppu.ReadArg<GuestVoidPtr>(ARG0);
             GuestVoidPtr command_id_ptr = ppu.ReadArg<GuestVoidPtr>(ARG1);
@@ -30,7 +30,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong SCENpTrophyRegisterContext(PPU ppu)
+        internal static ulong SCENpTrophyRegisterContext(PPU ppu)
         {
             // I am not sure how this works, but this code is baes on RPCS3 and chonkystation 
 
@@ -71,7 +71,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong SCENpTrophyCreateHandle(PPU ppu)
+        internal static ulong SCENpTrophyCreateHandle(PPU ppu)
         {
             GuestVoidPtr handle_ptr = ppu.ReadArg<GuestVoidPtr>(ARG0);
 
@@ -82,7 +82,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong SCENpTrophyGetRequiredDiskSpace(PPU ppu)
+        internal static ulong SCENpTrophyGetRequiredDiskSpace(PPU ppu)
         {
             GuestVoidPtr require_space_ptr = ppu.ReadArg<GuestVoidPtr>(ARG2);
             MemoryManager.Write<uint>(require_space_ptr, 0);
@@ -90,13 +90,13 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong SCENpTrophyGetGameInfo(PPU ppu)
+        internal static ulong SCENpTrophyGetGameInfo(PPU ppu)
         {
             Console.WriteLine($"[SCENPTrophy] sceNpTrophyGetGameInfo");
             return CELL_OK;
         }
 
-        public static ulong SCENpTrophyGetTrophyUnlockState(PPU ppu)
+        internal static ulong SCENpTrophyGetTrophyUnlockState(PPU ppu)
         {
             //This can be stubbed more
 
@@ -112,7 +112,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong SCENpTrophyUnlockTrophy(PPU ppu)
+        internal static ulong SCENpTrophyUnlockTrophy(PPU ppu)
         {
             uint ctx = ppu.ReadArg<uint>(ARG0);
             uint handle = ppu.ReadArg<uint>(ARG1);

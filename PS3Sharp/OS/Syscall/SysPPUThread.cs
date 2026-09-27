@@ -8,7 +8,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    public static class SysPPUThread
+    internal static class SysPPUThread
     {
         private static readonly string[] IgnoredThreads = [ 
             // Minecraft -- these PPU threads expect the SPU to be functional, will crash otherwise 
@@ -17,7 +17,7 @@ namespace PS3Sharp.OS.Syscall
             //"_libpngdecSpursHdlr0", 
         ];
 
-        public static ulong SysPPUThreadGetID(PPU ppu)
+        internal static ulong SysPPUThreadGetID(PPU ppu)
         {
             GuestPtr<ulong> id_ptr = ppu.ReadArg<GuestPtr<ulong>>(ARG0);
             MemoryManager.Write<ulong>(id_ptr, ppu.ThreadID);
@@ -26,7 +26,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysPPUThreadGetPriority(PPU ppu)
+        internal static ulong SysPPUThreadGetPriority(PPU ppu)
         {
             uint id = ppu.ReadArg<uint>(ARG0);
             GuestPtr<int> prio_ptr = ppu.ReadArg<GuestPtr<int>>(ARG1);
@@ -37,7 +37,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysPPUThreadSetPriority(PPU ppu)
+        internal static ulong SysPPUThreadSetPriority(PPU ppu)
         {
             uint id = ppu.ReadArg<uint>(ARG0);
             int priority = ppu.ReadArg<int>(ARG1);
@@ -49,7 +49,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysPPUThreadCreate(PPU ppu)
+        internal static ulong SysPPUThreadCreate(PPU ppu)
         {
             //int sys_ppu_thread_create(sys_ppu_thread_t *thread_id, & void (*entry)(uint64_t), uint64_t arg, 0, int prio, size_t stacksize, uint64_t flags, const char *threadname); 
 
@@ -82,7 +82,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysPPUThreadExit(PPU ppu)
+        internal static ulong SysPPUThreadExit(PPU ppu)
         {
             int exit_code = ppu.ReadArg<int>(ARG0);
             Console.WriteLine($"[SysPPUThread] sys_ppu_thread_exit: {ppu.ThreadName} thread_id = 0x{ppu.ThreadID:X8} exit_code = {exit_code}");
@@ -91,13 +91,13 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysPPUThreadYield(PPU ppu)
+        internal static ulong SysPPUThreadYield(PPU ppu)
         {
             Thread.Yield();
             return CELL_OK;
         }
 
-        public static ulong SysPPUThreadJoin(PPU ppu)
+        internal static ulong SysPPUThreadJoin(PPU ppu)
         {
             uint id = ppu.ReadArg<uint>(ARG0);
             GuestPtr<ulong> exit_code_ptr = ppu.ReadArg<GuestPtr<ulong>>(ARG1);
@@ -109,7 +109,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysPPUThreadOnce(PPU ppu)
+        internal static ulong SysPPUThreadOnce(PPU ppu)
         {
             // TODO
             // Minecraft needs this !
@@ -134,13 +134,13 @@ namespace PS3Sharp.OS.Syscall
         }
 
 
-        public struct ThreadStackInfo : IPS3Struct
+        internal struct ThreadStackInfo : IPS3Struct
         {
-            public BigEndian<uint> addr;
-            public BigEndian<uint> size;
+            internal BigEndian<uint> addr;
+            internal BigEndian<uint> size;
         }
 
-        public static ulong SysPPUThreadGetStackInfo(PPU ppu)
+        internal static ulong SysPPUThreadGetStackInfo(PPU ppu)
         {
             Console.WriteLine($"[SysPPUThread] SysPPUThreadGetStackInfo");
 

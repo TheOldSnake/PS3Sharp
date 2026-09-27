@@ -8,17 +8,17 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    public static class SysMemory
+    internal static class SysMemory
     {
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct SysMemoryInfo : IPS3Struct
+        internal struct SysMemoryInfo : IPS3Struct
         {
-            public BigEndian<uint> TotalUserMemory;
-            public BigEndian<uint> AvailableUserMemory;
+            internal BigEndian<uint> TotalUserMemory;
+            internal BigEndian<uint> AvailableUserMemory;
         }
 
-        public static ulong SysMemoryAllocate(PPU ppu)
+        internal static ulong SysMemoryAllocate(PPU ppu)
         {
             //int sys_memory_allocate(size_t size, uint64_t flags, sys_addr_t * alloc_addr); 
 
@@ -46,7 +46,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysMemoryFree(PPU ppu)
+        internal static ulong SysMemoryFree(PPU ppu)
         {
             GuestVoidPtr ptr = ppu.ReadArg<GuestVoidPtr>(ARG0);
 
@@ -59,7 +59,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysMemoryGetUserMemorySize(PPU ppu)
+        internal static ulong SysMemoryGetUserMemorySize(PPU ppu)
         {
             GuestPtr<SysMemoryInfo> memory_info_ptr = ppu.ReadArg<GuestPtr<SysMemoryInfo>>(ARG0);
 

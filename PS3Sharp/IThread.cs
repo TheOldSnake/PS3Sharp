@@ -1,11 +1,11 @@
 ﻿namespace PS3Sharp
 {
-    public interface IThread
+    internal interface IThread
     {
-        public void StartThread();
+        internal void StartThread();
 
-        public void PauseThread();
+        internal void PauseThread();
 
-        public void StopThread();
+        internal void StopThread();
     }
 }

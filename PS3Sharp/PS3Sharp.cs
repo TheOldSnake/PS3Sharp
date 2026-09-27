@@ -7,27 +7,27 @@ using PS3Sharp.SFOLoader;
 
 namespace PS3Sharp
 {
-    public sealed class PS3Sharp
+    internal sealed class PS3Sharp
     {
 
         // For now we share the file system with RPCS3
-        public const string FileSystemBase = @"D:\RPCS3\";
-        public const string ContentDir = @"\dev_hdd0\game\NPUB31790";
-        public const string ELFDir = FileSystemBase + ContentDir + @"\USRDIR\EBOOT.elf";
-        public const string SFODir = FileSystemBase + ContentDir + @"\PARAM.SFO";
+        internal const string FileSystemBase = @"D:\RPCS3\";
+        internal const string ContentDir = @"\dev_hdd0\game\NPUB31790";
+        internal const string ELFDir = FileSystemBase + ContentDir + @"\USRDIR\EBOOT.elf";
+        internal const string SFODir = FileSystemBase + ContentDir + @"\PARAM.SFO";
 
-        //public const string FileSystemBase = @"D:\RPCS3\"; 
+        //internal const string FileSystemBase = @"D:\RPCS3\"; 
 
-        //public const string ContentDir = @"\test";
-        //public const string ELFDir = FileSystemBase + ContentDir + @"\ppu_integer_shift.ppu.elf";
-        //public const string SFODir = FileSystemBase + ContentDir + @"\PARAM.SFO";
+        //internal const string ContentDir = @"\test";
+        //internal const string ELFDir = FileSystemBase + ContentDir + @"\ppu_integer_shift.ppu.elf";
+        //internal const string SFODir = FileSystemBase + ContentDir + @"\PARAM.SFO";
 
-        public static readonly SFO? SFO = SFO.Load(SFODir);
-        public static readonly RealitySynthesizer RSX = RealitySynthesizer.Instance;
+        internal static readonly SFO? SFO = SFO.Load(SFODir);
+        internal static readonly RealitySynthesizer RSX = RealitySynthesizer.Instance;
 
-        public static void TerminateEmulator(int code) => Environment.Exit(code);
+        internal static void TerminateEmulator(int code) => Environment.Exit(code);
 
-        public static void Main()
+        internal static void Main()
         {
 
             Console.WriteLine("PS3 lol");
@@ -42,7 +42,7 @@ namespace PS3Sharp
             RunEmu(ppu_main);
         }
 
-        public static PPU CreateMainPPUThread(string eld_dir)
+        internal static PPU CreateMainPPUThread(string eld_dir)
         {
             uint entryPointer = ElfLoader.LoadMainElf(eld_dir);
             PPU ppu_main = new("main_thread", entryPointer, path_to_executable: eld_dir);
@@ -50,14 +50,14 @@ namespace PS3Sharp
             return ppu_main;
         }
 
-        public static void RunEmu(PPU main)
+        internal static void RunEmu(PPU main)
         {
             ThreadManager.RunPPUThread(main);
             ThreadManager.JoinThread(main.NativeThread);  // If main_thread exits, terminate everything
             ThreadManager.StopAll();
         }
 
-        public static void RunCellTestRom(string path)
+        internal static void RunCellTestRom(string path)
         {
             // Load code at 0x1000000
             byte[] code = File.ReadAllBytes(path);
@@ -111,7 +111,7 @@ namespace PS3Sharp
             }
         }
 
-        public static void RunSimpleElf(string path)
+        internal static void RunSimpleElf(string path)
         {
             uint entryPointer = ElfLoader.LoadMainElf(path);
 

@@ -1,19 +1,19 @@
 ﻿namespace PS3Sharp.Memory_Manager
 {
-    public static partial class MemoryManager
+    internal static partial class MemoryManager
     {
         // Unused functions that depends on the older paging system 
 
         /* 
          
-         public static bool IsWithinSingleBlock(uint virtualAddress, uint length) {
+         internal static bool IsWithinSingleBlock(uint virtualAddress, uint length) {
             // Check if "virtualAddress + length" exceeds the block end
             MemoryBlock ownerBlock = GetBlockInfo(virtualAddress);
             return ownerBlock.End > virtualAddress + length;
         }
 
 
-          public static void ClearMemory(uint virtualAddress, uint count, byte value = 0) {
+          internal static void ClearMemory(uint virtualAddress, uint count, byte value = 0) {
             if (count == 0) {
                 return;
             }
@@ -49,7 +49,7 @@
             }
         } 
 
-        public static void CopyBufferToVirtualMemory(ReadOnlySpan<byte> source, uint destinationVirtualAddress) {
+        internal static void CopyBufferToVirtualMemory(ReadOnlySpan<byte> source, uint destinationVirtualAddress) {
             // A virtual memory block is contiguous in native memory,
             // but adjacent virtual blocks are not necessarily contiguous.
 
@@ -75,7 +75,7 @@
             }
         }
 
-        public static void ReadBufferFromVirtualMemory(uint sourceVirtualAddress, Span<byte> destination) {
+        internal static void ReadBufferFromVirtualMemory(uint sourceVirtualAddress, Span<byte> destination) {
             // A virtual memory block is contiguous in native memory,
             // but adjacent virtual blocks are not necessarily contiguous.
 
@@ -102,7 +102,7 @@
             }
         }
 
-        public static void CopyVirtualMemory(uint sourceVirtualAddress, uint destinationVirtualAddress, int byteCount) {
+        internal static void CopyVirtualMemory(uint sourceVirtualAddress, uint destinationVirtualAddress, int byteCount) {
             // A virtual memory block is contiguous in native memory,
             // but adjacent virtual blocks are not necessarily contiguous.
 
@@ -140,7 +140,7 @@
         }    
 
 
-         public static ReadOnlySpan<T> ReadSpanFromVirtualMemory<T>(uint virtualAddress, int length, out bool wasCopied) where T : unmanaged, IPS3Struct {
+         internal static ReadOnlySpan<T> ReadSpanFromVirtualMemory<T>(uint virtualAddress, int length, out bool wasCopied) where T : unmanaged, IPS3Struct {
             int byteSize = length * sizeof(T);
             Span<byte> data;
 

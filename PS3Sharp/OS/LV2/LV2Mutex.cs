@@ -6,38 +6,38 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.LV2
 {
-    public sealed class LV2Mutex
+    internal sealed class LV2Mutex
     {
-        public const uint SYS_SYNC_RECURSIVE = 0x10;
-        public const uint SYS_SYNC_NOT_RECURSIVE = 0x20;
+        internal const uint SYS_SYNC_RECURSIVE = 0x10;
+        internal const uint SYS_SYNC_NOT_RECURSIVE = 0x20;
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct SysMutexAttribute : IPS3Struct
+        internal struct SysMutexAttribute : IPS3Struct
         {
-            public BigEndian<uint> protocol;  // SYS_SYNC_FIFO, SYS_SYNC_PRIORITY or SYS_SYNC_PRIORITY_INHERIT
-            public BigEndian<uint> Recursive; // SYS_SYNC_RECURSIVE or SYS_SYNC_NOT_RECURSIVE
-            public BigEndian<uint> PShared;
-            public BigEndian<uint> Adaptive;
-            public BigEndian<ulong> IPC_Key;
-            public BigEndian<int> Flags;
-            public BigEndian<uint> Pad;
-            public InlineData.InlineArray8<byte> Name;
+            internal BigEndian<uint> protocol;  // SYS_SYNC_FIFO, SYS_SYNC_PRIORITY or SYS_SYNC_PRIORITY_INHERIT
+            internal BigEndian<uint> Recursive; // SYS_SYNC_RECURSIVE or SYS_SYNC_NOT_RECURSIVE
+            internal BigEndian<uint> PShared;
+            internal BigEndian<uint> Adaptive;
+            internal BigEndian<ulong> IPC_Key;
+            internal BigEndian<int> Flags;
+            internal BigEndian<uint> Pad;
+            internal InlineData.InlineArray8<byte> Name;
         }
 
         private readonly SysMutexAttribute _attribute;
         private readonly object _mutex = new();
-        public uint Handle { get; } = MemoryManager.GetHandle();
+        internal uint Handle { get; } = MemoryManager.GetHandle();
 
-        public SysMutexAttribute Attribute => _attribute;
+        internal SysMutexAttribute Attribute => _attribute;
         private bool _isRecursive => _attribute.protocol == SYS_SYNC_RECURSIVE;
-        public bool IsEntered => Monitor.IsEntered(_mutex);
+        internal bool IsEntered => Monitor.IsEntered(_mutex);
 
-        public LV2Mutex(SysMutexAttribute attribute)
+        internal LV2Mutex(SysMutexAttribute attribute)
         {
             _attribute = attribute;
         }
 
-        public ulong Lock(ulong timeout = 0)
+        internal ulong Lock(ulong timeout = 0)
         {
             if (Monitor.IsEntered(_mutex))
             {
@@ -73,13 +73,13 @@ namespace PS3Sharp.OS.LV2
             return CELL_OK;
         }
 
-        public ulong TryLock()
+        internal ulong TryLock()
         {
             bool success = Monitor.TryEnter(_mutex, 0);
             return success ? CELL_OK : CELL_EBUSY;
         }
 
-        public ulong Unlock()
+        internal ulong Unlock()
         {
             if (!Monitor.IsEntered(_mutex))
             {

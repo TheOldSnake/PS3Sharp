@@ -6,33 +6,33 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.LV2
 {
-    public sealed class LV2Semaphore
+    internal sealed class LV2Semaphore
     {
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct SysSemaphoreAttribute : IPS3Struct
+        internal struct SysSemaphoreAttribute : IPS3Struct
         {
-            public BigEndian<uint> Protocol;
-            public BigEndian<uint> PShared;
-            public BigEndian<ulong> IPC_KEY;
-            public BigEndian<int> Flags;
-            public BigEndian<uint> Padding;
-            public InlineData.InlineArray8<byte> Name;
+            internal BigEndian<uint> Protocol;
+            internal BigEndian<uint> PShared;
+            internal BigEndian<ulong> IPC_KEY;
+            internal BigEndian<int> Flags;
+            internal BigEndian<uint> Padding;
+            internal InlineData.InlineArray8<byte> Name;
         }
 
         private readonly SemaphoreSlim _semaphore;
         private readonly SysSemaphoreAttribute _attribute;
         private readonly int _maxCount;
-        public uint Handle { get; } = MemoryManager.GetHandle();
+        internal uint Handle { get; } = MemoryManager.GetHandle();
 
-        public LV2Semaphore(int initialCount, int maxCount, SysSemaphoreAttribute attribute)
+        internal LV2Semaphore(int initialCount, int maxCount, SysSemaphoreAttribute attribute)
         {
             _semaphore = new SemaphoreSlim(initialCount, maxCount);
             _attribute = attribute;
             _maxCount = maxCount;
         }
 
-        public ulong Release(int count)
+        internal ulong Release(int count)
         {
             if (count <= 0)
             {
@@ -52,13 +52,13 @@ namespace PS3Sharp.OS.LV2
             }
         }
 
-        public ulong TryWait()
+        internal ulong TryWait()
         {
             bool ok = _semaphore.Wait(0);
             return ok ? CELL_OK : CELL_EBUSY;
         }
 
-        public ulong Wait(ulong us_timeout)
+        internal ulong Wait(ulong us_timeout)
         {
             bool ok;
 

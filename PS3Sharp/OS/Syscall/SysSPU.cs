@@ -10,76 +10,76 @@ using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 namespace PS3Sharp.OS.Syscall
 {
-    public static class SysSPU
+    internal static class SysSPU
     {
-        public const uint SYS_SPU_THREAD_EVENT_USER = 1;
+        internal const uint SYS_SPU_THREAD_EVENT_USER = 1;
 
-        public const ulong SYS_SPU_THREAD_EVENT_USER_KEY = 0xFFFFFFFF53505501;
+        internal const ulong SYS_SPU_THREAD_EVENT_USER_KEY = 0xFFFFFFFF53505501;
 
-        public const uint SYS_SPU_THREAD_GROUP_EVENT_RUN = 1;
-        public const uint SYS_SPU_THREAD_GROUP_EVENT_EXCEPTION = 2;
-        public const uint SYS_SPU_THREAD_GROUP_EVENT_SYSTEM_MODULE = 4;
+        internal const uint SYS_SPU_THREAD_GROUP_EVENT_RUN = 1;
+        internal const uint SYS_SPU_THREAD_GROUP_EVENT_EXCEPTION = 2;
+        internal const uint SYS_SPU_THREAD_GROUP_EVENT_SYSTEM_MODULE = 4;
 
-        public const ulong SYS_SPU_THREAD_GROUP_EVENT_RUN_KEY = 0xFFFFFFFF53505500;
-        public const ulong SYS_SPU_THREAD_GROUP_EVENT_EXCEPTION_KEY = 0xFFFFFFFF53505503;
-        public const ulong SYS_SPU_THREAD_GROUP_EVENT_SYSTEM_MODULE_KEY = 0xFFFFFFFF53505504;
+        internal const ulong SYS_SPU_THREAD_GROUP_EVENT_RUN_KEY = 0xFFFFFFFF53505500;
+        internal const ulong SYS_SPU_THREAD_GROUP_EVENT_EXCEPTION_KEY = 0xFFFFFFFF53505503;
+        internal const ulong SYS_SPU_THREAD_GROUP_EVENT_SYSTEM_MODULE_KEY = 0xFFFFFFFF53505504;
 
-        public const int SYS_SPU_SEGMENT_TYPE_COPY = 0x0001;
-        public const int SYS_SPU_SEGMENT_TYPE_FILL = 0x0002;
-        public const int SYS_SPU_SEGMENT_TYPE_INFO = 0x0004;
+        internal const int SYS_SPU_SEGMENT_TYPE_COPY = 0x0001;
+        internal const int SYS_SPU_SEGMENT_TYPE_FILL = 0x0002;
+        internal const int SYS_SPU_SEGMENT_TYPE_INFO = 0x0004;
 
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct SysSPUSegment : IPS3Struct
+        internal struct SysSPUSegment : IPS3Struct
         {
-            public BigEndian<int> Type;            // Segment type (COPY / FILL / INFO)
-            public BigEndian<uint> LSAddress;      // Addr in LS that this segment will be loaded to
-            public BigEndian<int> Size;
+            internal BigEndian<int> Type;            // Segment type (COPY / FILL / INFO)
+            internal BigEndian<uint> LSAddress;      // Addr in LS that this segment will be loaded to
+            internal BigEndian<int> Size;
 
             // Address of the segment in memory, for COPY type segments OR
             // The value to fill the segment with, for FILL type segments OR
             // Padding
-            public BigEndian<uint> Src;
+            internal BigEndian<uint> Src;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct SysSPUImage : IPS3Struct
+        internal struct SysSPUImage : IPS3Struct
         {
-            public BigEndian<uint> Type;
-            public BigEndian<uint> Entry;
-            public BigEndian<uint> SegmentsPtr;
-            public BigEndian<uint> SegmentsCount;
+            internal BigEndian<uint> Type;
+            internal BigEndian<uint> Entry;
+            internal BigEndian<uint> SegmentsPtr;
+            internal BigEndian<uint> SegmentsCount;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct SysSPUThreadGroupAttribute : IPS3Struct
+        internal struct SysSPUThreadGroupAttribute : IPS3Struct
         {
-            public BigEndian<uint> NameLength;
-            public BigEndian<uint> NamePtr;
-            public BigEndian<uint> Type;
-            public BigEndian<uint> ContainerID; // Memory container id
+            internal BigEndian<uint> NameLength;
+            internal BigEndian<uint> NamePtr;
+            internal BigEndian<uint> Type;
+            internal BigEndian<uint> ContainerID; // Memory container id
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct SysSPUThreadAttribute : IPS3Struct
+        internal struct SysSPUThreadAttribute : IPS3Struct
         {
-            public BigEndian<uint> NamePtr;
-            public BigEndian<uint> NameLength;
-            public BigEndian<uint> Option;
+            internal BigEndian<uint> NamePtr;
+            internal BigEndian<uint> NameLength;
+            internal BigEndian<uint> Option;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct SysSPUThreadArgument : IPS3Struct
+        internal struct SysSPUThreadArgument : IPS3Struct
         {
-            public BigEndian<ulong> Arg1;
-            public BigEndian<ulong> Arg2;
-            public BigEndian<ulong> Arg3;
-            public BigEndian<ulong> Arg4;
+            internal BigEndian<ulong> Arg1;
+            internal BigEndian<ulong> Arg2;
+            internal BigEndian<ulong> Arg3;
+            internal BigEndian<ulong> Arg4;
         }
 
         private static readonly ConcurrentDictionary<uint, LV2SPUThreadGroup> _SPUThreadGroupes = new();
 
-        public static void AddSPUThreadGroup(LV2SPUThreadGroup group)
+        internal static void AddSPUThreadGroup(LV2SPUThreadGroup group)
         {
             if (!_SPUThreadGroupes.TryAdd(group.Handle, group))
             {
@@ -87,7 +87,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static void RemoveSPUThreadGroup(uint handle)
+        internal static void RemoveSPUThreadGroup(uint handle)
         {
             if (!_SPUThreadGroupes.TryRemove(handle, out _))
             {
@@ -95,19 +95,19 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static bool GetSPUThreadGroup(uint handle, out LV2SPUThreadGroup group)
+        internal static bool GetSPUThreadGroup(uint handle, out LV2SPUThreadGroup group)
         {
             return _SPUThreadGroupes.TryGetValue(handle, out group);
         }
 
-        public static ulong SysSPUInitialize(PPU ppu)
+        internal static ulong SysSPUInitialize(PPU ppu)
         {
             return CELL_OK;
         }
 
 
         // TODO
-        public static ulong SysSPUThreadGroupCreate(PPU ppu)
+        internal static ulong SysSPUThreadGroupCreate(PPU ppu)
         {
             GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             uint num = ppu.ReadArg<uint>(ARG1);
@@ -123,7 +123,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysSPUThreadInitialize(PPU ppu)
+        internal static ulong SysSPUThreadInitialize(PPU ppu)
         {
             GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             uint group_id = ppu.ReadArg<uint>(ARG1);
@@ -158,7 +158,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysSPUThreadGroupStart(PPU ppu)
+        internal static ulong SysSPUThreadGroupStart(PPU ppu)
         {
             uint group_id = ppu.ReadArg<uint>(ARG0);
 
@@ -174,7 +174,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysSPUThreadGroupConnectEventAllThreads(PPU ppu)
+        internal static ulong SysSPUThreadGroupConnectEventAllThreads(PPU ppu)
         {
             uint group_id = ppu.ReadArg<uint>(ARG0);
             uint equeue_id = ppu.ReadArg<uint>(ARG1);

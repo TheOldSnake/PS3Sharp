@@ -6,9 +6,9 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    public static class SysVm
+    internal static class SysVm
     {
-        public static ulong SysVmMemoryMap(PPU ppu)
+        internal static ulong SysVmMemoryMap(PPU ppu)
         {
             // TODO implement properly 
             // For now we just do a normal allocation

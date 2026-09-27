@@ -8,61 +8,61 @@ using static PS3Sharp.Cell.PPU.PPU;
 
 namespace PS3Sharp.OS.Modules
 {
-    public static class CellFont
+    internal static class CellFont
     {
         //We LLE CellFont, this sealed class is purely for debugging purposes
 
-        public struct CellFont_ : IPS3Struct
+        internal struct CellFont_ : IPS3Struct
         {
-            public BigEndian<float> scale_x;
-            public BigEndian<float> scale_y;
-            public BigEndian<float> slant;
-            public BigEndian<uint> renderer_addr;
+            internal BigEndian<float> scale_x;
+            internal BigEndian<float> scale_y;
+            internal BigEndian<float> slant;
+            internal BigEndian<uint> renderer_addr;
 
-            public BigEndian<uint> fontdata_addr;
-            public BigEndian<uint> origin;
+            internal BigEndian<uint> fontdata_addr;
+            internal BigEndian<uint> origin;
             //struct stbtt_fontinfo* stbfont;
         }
 
-        public struct CellFontGlyphMetrics : IPS3Struct
+        internal struct CellFontGlyphMetrics : IPS3Struct
         {
-            public BigEndian<float> width;
-            public BigEndian<float> height;
+            internal BigEndian<float> width;
+            internal BigEndian<float> height;
 
-            public BigEndian<float> h_bearingX;
-            public BigEndian<float> h_bearingY;
-            public BigEndian<float> h_advance;
+            internal BigEndian<float> h_bearingX;
+            internal BigEndian<float> h_bearingY;
+            internal BigEndian<float> h_advance;
 
-            public BigEndian<float> v_bearingX;
-            public BigEndian<float> v_bearingY;
-            public BigEndian<float> v_advance;
+            internal BigEndian<float> v_bearingX;
+            internal BigEndian<float> v_bearingY;
+            internal BigEndian<float> v_advance;
         }
 
 
-        public struct CellFontRenderSurface : IPS3Struct
+        internal struct CellFontRenderSurface : IPS3Struct
         {
-            public BigEndianGuestVoidPtr buffer;
-            public BigEndian<int> widthByte;
-            public BigEndian<int> pixelSizeByte;
-            public BigEndian<int> width;
-            public BigEndian<int> height;
+            internal BigEndianGuestVoidPtr buffer;
+            internal BigEndian<int> widthByte;
+            internal BigEndian<int> pixelSizeByte;
+            internal BigEndian<int> width;
+            internal BigEndian<int> height;
 
             // Scissor
-            public BigEndian<uint> sc_x0;
-            public BigEndian<uint> sc_y0;
-            public BigEndian<uint> sc_x1;
-            public BigEndian<uint> sc_y1;
+            internal BigEndian<uint> sc_x0;
+            internal BigEndian<uint> sc_y0;
+            internal BigEndian<uint> sc_x1;
+            internal BigEndian<uint> sc_y1;
         }
 
 
-        public struct CellFontImageTransInfo : IPS3Struct
+        internal struct CellFontImageTransInfo : IPS3Struct
         {
-            public BigEndianGuestVoidPtr image;
-            public BigEndian<uint> imageWidthByte;
-            public BigEndian<uint> imageWidth;
-            public BigEndian<uint> imageHeight;
-            public BigEndianGuestVoidPtr surface;
-            public BigEndian<uint> surfWidthByte;
+            internal BigEndianGuestVoidPtr image;
+            internal BigEndian<uint> imageWidthByte;
+            internal BigEndian<uint> imageWidth;
+            internal BigEndian<uint> imageHeight;
+            internal BigEndianGuestVoidPtr surface;
+            internal BigEndian<uint> surfWidthByte;
         }
 
         private static void PrintCellFontData(GuestPtr<CellFont_> font_ptr)
@@ -187,7 +187,7 @@ namespace PS3Sharp.OS.Modules
             //}
         }
 
-        public static void Log_CellFontGetCharGlyphMetrics(PPUGPR[] gprs)
+        internal static void Log_CellFontGetCharGlyphMetrics(PPUGPR[] gprs)
         {
             GuestPtr<CellFont_> font_ptr = gprs[ARG0].Value32;
             uint code = gprs[ARG1].Value32;
@@ -202,7 +202,7 @@ namespace PS3Sharp.OS.Modules
             throw new Exception("Done");
         }
 
-        public static void Log_CellFontRenderCharGlyphImage(PPUGPR[] gprs, PPUFPR[] fprs)
+        internal static void Log_CellFontRenderCharGlyphImage(PPUGPR[] gprs, PPUFPR[] fprs)
         {
             GuestPtr<CellFont_> font_ptr = gprs[ARG0].Value32;
             uint code = gprs[ARG1].Value32;

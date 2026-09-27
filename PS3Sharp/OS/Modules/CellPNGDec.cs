@@ -13,81 +13,81 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    public static class CellPNGDec
+    internal static class CellPNGDec
     { //We can probably LLE this
 
-        public const uint PNG_CODEC_VERSION = 0x00420000;
-        public const uint CELL_PNGDEC_FILE = 0;
-        public const uint CELL_PNGDEC_BUFFER = 1;
+        internal const uint PNG_CODEC_VERSION = 0x00420000;
+        internal const uint CELL_PNGDEC_FILE = 0;
+        internal const uint CELL_PNGDEC_BUFFER = 1;
 
-        public const int CELL_PNGDEC_GRAYSCALE = 1;
-        public const int CELL_PNGDEC_RGB = 2;
-        public const int CELL_PNGDEC_PALETTE = 4;
-        public const int CELL_PNGDEC_GRAYSCALE_ALPHA = 9;
-        public const int CELL_PNGDEC_RGBA = 10;
-        public const int CELL_PNGDEC_ARGB = 20;
+        internal const int CELL_PNGDEC_GRAYSCALE = 1;
+        internal const int CELL_PNGDEC_RGB = 2;
+        internal const int CELL_PNGDEC_PALETTE = 4;
+        internal const int CELL_PNGDEC_GRAYSCALE_ALPHA = 9;
+        internal const int CELL_PNGDEC_RGBA = 10;
+        internal const int CELL_PNGDEC_ARGB = 20;
 
-        public struct CellPngDecThreadOutParam : IPS3Struct
+        internal struct CellPngDecThreadOutParam : IPS3Struct
         {
-            public BigEndian<uint> CodecVersion;
+            internal BigEndian<uint> CodecVersion;
         }
 
-        public struct CellPngDecSrc : IPS3Struct
+        internal struct CellPngDecSrc : IPS3Struct
         {
-            public BigEndian<uint> SrcSelect;
-            public BigEndian<uint> Filename_ptr;
-            public BigEndian<long> FileOffset;
-            public BigEndian<uint> FileSize;
-            public BigEndian<uint> StreamPtr;
-            public BigEndian<uint> StreamSize;
-            public BigEndian<uint> spu_thread_enable; //?
+            internal BigEndian<uint> SrcSelect;
+            internal BigEndian<uint> Filename_ptr;
+            internal BigEndian<long> FileOffset;
+            internal BigEndian<uint> FileSize;
+            internal BigEndian<uint> StreamPtr;
+            internal BigEndian<uint> StreamSize;
+            internal BigEndian<uint> spu_thread_enable; //?
         }
 
-        public struct CellPngDecInfo : IPS3Struct
+        internal struct CellPngDecInfo : IPS3Struct
         {
-            public BigEndian<uint> Width;
-            public BigEndian<uint> Height;
-            public BigEndian<uint> NumberOfComponents;
-            public BigEndian<int> ColorSpace;
-            public BigEndian<uint> BitDepth;
-            public BigEndian<int> InterlaceMethod;
-            public BigEndian<uint> ChunkInfo;
+            internal BigEndian<uint> Width;
+            internal BigEndian<uint> Height;
+            internal BigEndian<uint> NumberOfComponents;
+            internal BigEndian<int> ColorSpace;
+            internal BigEndian<uint> BitDepth;
+            internal BigEndian<int> InterlaceMethod;
+            internal BigEndian<uint> ChunkInfo;
         }
 
-        public struct CellPngDecInParam : IPS3Struct
+        internal struct CellPngDecInParam : IPS3Struct
         {
-            public BigEndian<uint> CommandPtr;
-            public BigEndian<uint> OutputMode;
-            public BigEndian<int> OutputColorSpace;
-            public BigEndian<uint> OutputBitDepth;
-            public BigEndian<uint> OutputPackFlag;
-            public BigEndian<uint> OutputAlphaSel;
-            public BigEndian<uint> OutputColorAlpha;
+            internal BigEndian<uint> CommandPtr;
+            internal BigEndian<uint> OutputMode;
+            internal BigEndian<int> OutputColorSpace;
+            internal BigEndian<uint> OutputBitDepth;
+            internal BigEndian<uint> OutputPackFlag;
+            internal BigEndian<uint> OutputAlphaSel;
+            internal BigEndian<uint> OutputColorAlpha;
         }
 
-        public struct CellPngDecOutParam : IPS3Struct
+        internal struct CellPngDecOutParam : IPS3Struct
         {
-            public BigEndian<ulong> OutputWidthByte;
-            public BigEndian<uint> OutputWidth;
-            public BigEndian<uint> OutputHeight;
-            public BigEndian<uint> OutputComponents;
-            public BigEndian<uint> OutputBitDepth;
-            public BigEndian<int> OutputMode;
-            public BigEndian<int> OutputColorSpace;
-            public BigEndian<uint> UseMemorySpace;
+            internal BigEndian<ulong> OutputWidthByte;
+            internal BigEndian<uint> OutputWidth;
+            internal BigEndian<uint> OutputHeight;
+            internal BigEndian<uint> OutputComponents;
+            internal BigEndian<uint> OutputBitDepth;
+            internal BigEndian<int> OutputMode;
+            internal BigEndian<int> OutputColorSpace;
+            internal BigEndian<uint> UseMemorySpace;
         }
 
-        public struct CellPngDecDataOutInfo : IPS3Struct
+        internal struct CellPngDecDataOutInfo : IPS3Struct
         {
-            public BigEndian<uint> ChunkInformation;
-            public BigEndian<uint> NumText;
-            public BigEndian<uint> NumUnknownChunk;
-            public BigEndian<int> Status;
+            internal BigEndian<uint> ChunkInformation;
+            internal BigEndian<uint> NumText;
+            internal BigEndian<uint> NumUnknownChunk;
+            internal BigEndian<int> Status;
         }
 
-        public struct CellPngDecDataCtrlParam : IPS3Struct
+        internal struct CellPngDecDataCtrlParam : IPS3Struct
         {
-            public BigEndian<ulong> OutputBytesPerLine;
+            internal BigEndian<ulong> OutputBytesPerLine;
         }
 
         private static uint _decoderCurrentHandle;
@@ -97,7 +97,7 @@ namespace PS3Sharp.OS.Modules
 
         private static Image GetImage(ReadOnlySpan<byte> pngData) => Image.Load(pngData);
 
-        public static void EnsureImageIsSet(string function)
+        internal static void EnsureImageIsSet(string function)
         {
             if (_currentImage == null)
             {
@@ -105,7 +105,7 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        public static void SwizzleRGBAtoARGB(ref Image<Rgba32> rgba_img)
+        internal static void SwizzleRGBAtoARGB(ref Image<Rgba32> rgba_img)
         {
             rgba_img.ProcessPixelRows(accessor =>
             {
@@ -161,7 +161,7 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        public static ulong CellPngDecCreate(PPU ppu)
+        internal static ulong CellPngDecCreate(PPU ppu)
         {
             GuestPtr<uint> handle_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             uint thread_in_param_ptr = ppu.ReadArg<uint>(ARG1);
@@ -183,7 +183,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong CellPngDecOpen(PPU ppu)
+        internal static ulong CellPngDecOpen(PPU ppu)
         {
             uint handle = ppu.ReadArg<uint>(ARG0);
             GuestPtr<uint> sub_handle_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
@@ -205,7 +205,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong CellPngDecReadHeader(PPU ppu)
+        internal static ulong CellPngDecReadHeader(PPU ppu)
         {
             EnsureImageIsSet("cellPngDecReadHeader");
 
@@ -230,7 +230,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong CellPngDecSetParameter(PPU ppu)
+        internal static ulong CellPngDecSetParameter(PPU ppu)
         {
             EnsureImageIsSet("cellPngDecReadHeader");
 
@@ -262,7 +262,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong CellPngDecDecodeData(PPU ppu)
+        internal static ulong CellPngDecDecodeData(PPU ppu)
         {
             EnsureImageIsSet("cellPngDecDecodeData");
 
@@ -326,7 +326,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static void DecodeImage<T>(int bytesPerLine, Span<byte> destination) where T : unmanaged, IPixel<T>
+        internal static void DecodeImage<T>(int bytesPerLine, Span<byte> destination) where T : unmanaged, IPixel<T>
         {
             destination.Clear();
             Span<T> destinationPixels = MemoryMarshal.Cast<byte, T>(destination);
@@ -359,7 +359,7 @@ namespace PS3Sharp.OS.Modules
             //DumpDecodedImage(srcImg);
         }
 
-        public static ulong CellPngDecClose(PPU ppu)
+        internal static ulong CellPngDecClose(PPU ppu)
         {
             // Reset
             _currentOutParam = default;
@@ -370,7 +370,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong CellPngDecDestroy(PPU ppu)
+        internal static ulong CellPngDecDestroy(PPU ppu)
         {
             //Reset
             _currentOutParam = default;
@@ -382,7 +382,7 @@ namespace PS3Sharp.OS.Modules
         }
 
         static int dumps = 0;
-        public static void DumpDecodedImage(Image image)
+        internal static void DumpDecodedImage(Image image)
         {
             image.Save($@"pngdumps\{dumps}.png");
             dumps++;

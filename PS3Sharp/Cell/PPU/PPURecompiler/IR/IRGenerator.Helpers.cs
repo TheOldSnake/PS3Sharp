@@ -1,10 +1,10 @@
 ﻿namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 {
-    public sealed partial class IRGenerator
+    internal sealed partial class IRGenerator
     {
         // Helpers
 
-        public Value CkdAdd(Value a, Value b, out Value carry)
+        internal Value CkdAdd(Value a, Value b, out Value carry)
         {
             // Add with carry helper
             Value result = Add(a, b);
@@ -12,7 +12,7 @@
             return result;
         }
 
-        public Value WriteBit(Value destination, int bitNumber, Value flag)
+        internal Value WriteBit(Value destination, int bitNumber, Value flag)
         {
             // Clear bit                                                               
             Value mask = Constant(~(1u << bitNumber));
@@ -24,7 +24,7 @@
             return Or(destination, shiftedFlag);
         }
 
-        public Value ReadBit(Value source, int bitNumber)
+        internal Value ReadBit(Value source, int bitNumber)
         {
             Value shiftCount = Constant((ulong)bitNumber);
             Value shiftedSource = ShiftRight(source, shiftCount);
@@ -32,13 +32,13 @@
             return And(shiftedSource, mask);
         }
 
-        public Value ReadBit(Value source, Value bitNumber)
+        internal Value ReadBit(Value source, Value bitNumber)
         {
             Value shiftedSource = ShiftRight(source, bitNumber);
             return And(shiftedSource, _irContext.One);
         }
 
-        public Value GPRLoad(ulong gprNumber)
+        internal Value GPRLoad(ulong gprNumber)
         {
             Value value = _irContext.CreateValue(Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.GPRLoad, value, gprNumber);
@@ -46,14 +46,14 @@
             return value;
         }
 
-        public void GPRStore(Value src, ulong gprNumber, int index = -1)
+        internal void GPRStore(Value src, ulong gprNumber, int index = -1)
         {
             EnsureSameType(src.Type, Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.GPRStore, src, gprNumber);
             _irContext.AddInstruction(instruction, index);
         }
 
-        public Value FPRLoad(ulong fprNumber)
+        internal Value FPRLoad(ulong fprNumber)
         {
             Value value = _irContext.CreateValue(Value.ValueType.F64);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.FPRLoad, value, fprNumber);
@@ -61,7 +61,7 @@
             return value;
         }
 
-        public void FPRStore(Value src, ulong fprNumber, int index = -1)
+        internal void FPRStore(Value src, ulong fprNumber, int index = -1)
         {
             EnsureSameType(src.Type, Value.ValueType.F64);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.FPRStore, src, fprNumber);
@@ -69,7 +69,7 @@
         }
 
 
-        public Value CRLoad()
+        internal Value CRLoad()
         {
             Value value = _irContext.CreateValue(Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.CRLoad, value, 0);
@@ -77,14 +77,14 @@
             return value;
         }
 
-        public void CRStore(Value src, int index = -1)
+        internal void CRStore(Value src, int index = -1)
         {
             EnsureSameType(src.Type, Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.CRStore, src, 0);
             _irContext.AddInstruction(instruction, index);
         }
 
-        public Value CTRLoad()
+        internal Value CTRLoad()
         {
             Value value = _irContext.CreateValue(Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.CTRLoad, value, 0);
@@ -92,14 +92,14 @@
             return value;
         }
 
-        public void CTRStore(Value src, int index = -1)
+        internal void CTRStore(Value src, int index = -1)
         {
             EnsureSameType(src.Type, Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.CTRStore, src, 0);
             _irContext.AddInstruction(instruction, index);
         }
 
-        public Value LRLoad()
+        internal Value LRLoad()
         {
             Value value = _irContext.CreateValue(Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.LRLoad, value, 0);
@@ -107,14 +107,14 @@
             return value;
         }
 
-        public void LRStore(Value src, int index = -1)
+        internal void LRStore(Value src, int index = -1)
         {
             EnsureSameType(src.Type, Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.LRStore, src, 0);
             _irContext.AddInstruction(instruction, index);
         }
 
-        public Value XERLoad()
+        internal Value XERLoad()
         {
             Value value = _irContext.CreateValue(Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.XERLoad, value, 0);
@@ -122,14 +122,14 @@
             return value;
         }
 
-        public void XERStore(Value src, int index = -1)
+        internal void XERStore(Value src, int index = -1)
         {
             EnsureSameType(src.Type, Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.XERStore, src, 0);
             _irContext.AddInstruction(instruction, index);
         }
 
-        public Value VRSaveLoad()
+        internal Value VRSaveLoad()
         {
             Value value = _irContext.CreateValue(Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.VRSaveLoad, value, 0);
@@ -137,21 +137,21 @@
             return value;
         }
 
-        public void VRSaveStore(Value src, int index = -1)
+        internal void VRSaveStore(Value src, int index = -1)
         {
             EnsureSameType(src.Type, Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.VRSaveStore, src, 0);
             _irContext.AddInstruction(instruction, index);
         }
 
-        public void PCStore(Value src)
+        internal void PCStore(Value src)
         {
             EnsureSameType(src.Type, Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.PCStore, src, 0);
             _irContext.AddInstruction(instruction);
         }
 
-        public Value Constant(ulong constant, Value.ValueType type = Value.ValueType.I64)
+        internal Value Constant(ulong constant, Value.ValueType type = Value.ValueType.I64)
         {
             Value value = _irContext.CreateValue(type);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Constant, value, constant);
@@ -159,7 +159,7 @@
             return value;
         }
 
-        public Value Constant(long constant, Value.ValueType type = Value.ValueType.I64)
+        internal Value Constant(long constant, Value.ValueType type = Value.ValueType.I64)
         {
             Value value = _irContext.CreateValue(type);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Constant, value, (ulong)constant);
@@ -167,7 +167,7 @@
             return value;
         }
 
-        public Value Load8(Value virtualAddress)
+        internal Value Load8(Value virtualAddress)
         {
             Value value = _irContext.CreateValue(Value.ValueType.I8);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Load8, value, virtualAddress);
@@ -175,7 +175,7 @@
             return value;
         }
 
-        public Value Load16(Value virtualAddress)
+        internal Value Load16(Value virtualAddress)
         {
             Value value = _irContext.CreateValue(Value.ValueType.I16);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Load16, value, virtualAddress);
@@ -183,7 +183,7 @@
             return value;
         }
 
-        public Value Load16Reversed(Value virtualAddress)
+        internal Value Load16Reversed(Value virtualAddress)
         {
             Value value = _irContext.CreateValue(Value.ValueType.I16);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Load16Rev, value, virtualAddress);
@@ -191,7 +191,7 @@
             return value;
         }
 
-        public Value Load32(Value virtualAddress)
+        internal Value Load32(Value virtualAddress)
         {
             Value value = _irContext.CreateValue(Value.ValueType.I32);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Load32, value, virtualAddress);
@@ -199,7 +199,7 @@
             return value;
         }
 
-        public Value Load32Reversed(Value virtualAddress)
+        internal Value Load32Reversed(Value virtualAddress)
         {
             Value value = _irContext.CreateValue(Value.ValueType.I32);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Load32Rev, value, virtualAddress);
@@ -207,7 +207,7 @@
             return value;
         }
 
-        public Value Load32AndReserve(Value virtualAddress)
+        internal Value Load32AndReserve(Value virtualAddress)
         {
             Value value = _irContext.CreateValue(Value.ValueType.I32);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Load32Rx, value, virtualAddress);
@@ -215,7 +215,7 @@
             return value;
         }
 
-        public Value Load64(Value virtualAddress)
+        internal Value Load64(Value virtualAddress)
         {
             Value value = _irContext.CreateValue(Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Load64, value, virtualAddress);
@@ -223,7 +223,7 @@
             return value;
         }
 
-        public Value Load64AndReserve(Value virtualAddress)
+        internal Value Load64AndReserve(Value virtualAddress)
         {
             Value value = _irContext.CreateValue(Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Load64Rx, value, virtualAddress);
@@ -231,7 +231,7 @@
             return value;
         }
 
-        public Value Load128(Value virtualAddress)
+        internal Value Load128(Value virtualAddress)
         {
             Value value = _irContext.CreateValue(Value.ValueType.I128);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Load128, value, virtualAddress);
@@ -239,42 +239,42 @@
             return value;
         }
 
-        public void Store8(Value virtualAddress, Value src)
+        internal void Store8(Value virtualAddress, Value src)
         {
             EnsureSameType(src.Type, Value.ValueType.I8);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Store8, virtualAddress, src);
             _irContext.AddInstruction(instruction);
         }
 
-        public void Store16(Value virtualAddress, Value src)
+        internal void Store16(Value virtualAddress, Value src)
         {
             EnsureSameType(src.Type, Value.ValueType.I16);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Store16, virtualAddress, src);
             _irContext.AddInstruction(instruction);
         }
 
-        public void Store16Reversed(Value virtualAddress, Value src)
+        internal void Store16Reversed(Value virtualAddress, Value src)
         {
             EnsureSameType(src.Type, Value.ValueType.I16);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Store16Rev, virtualAddress, src);
             _irContext.AddInstruction(instruction);
         }
 
-        public void Store32(Value virtualAddress, Value src)
+        internal void Store32(Value virtualAddress, Value src)
         {
             EnsureSameType(src.Type, Value.ValueType.I32);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Store32, virtualAddress, src);
             _irContext.AddInstruction(instruction);
         }
 
-        public void Store32Reversed(Value virtualAddress, Value src)
+        internal void Store32Reversed(Value virtualAddress, Value src)
         {
             EnsureSameType(src.Type, Value.ValueType.I32);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Store32Rev, virtualAddress, src);
             _irContext.AddInstruction(instruction);
         }
 
-        public Value Store32Conditional(Value virtualAddress, Value src)
+        internal Value Store32Conditional(Value virtualAddress, Value src)
         {
             // This instruction returns success/failure
             EnsureSameType(src.Type, Value.ValueType.I32);
@@ -284,14 +284,14 @@
             return success;
         }
 
-        public void Store64(Value virtualAddress, Value src)
+        internal void Store64(Value virtualAddress, Value src)
         {
             EnsureSameType(src.Type, Value.ValueType.I64);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Store64, virtualAddress, src);
             _irContext.AddInstruction(instruction);
         }
 
-        public Value Store64Conditional(Value virtualAddress, Value src)
+        internal Value Store64Conditional(Value virtualAddress, Value src)
         {
             // This instruction returns success/failure
             EnsureSameType(src.Type, Value.ValueType.I64);
@@ -301,14 +301,14 @@
             return success;
         }
 
-        public void Store128(Value virtualAddress, Value src)
+        internal void Store128(Value virtualAddress, Value src)
         {
             EnsureSameType(src.Type, Value.ValueType.I128);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Store128, virtualAddress, src);
             _irContext.AddInstruction(instruction);
         }
 
-        public Value And(Value a, Value b)
+        internal Value And(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -317,7 +317,7 @@
             return result;
         }
 
-        public Value Or(Value a, Value b)
+        internal Value Or(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -326,7 +326,7 @@
             return result;
         }
 
-        public Value Xor(Value a, Value b)
+        internal Value Xor(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -335,7 +335,7 @@
             return result;
         }
 
-        public Value Nor(Value a, Value b)
+        internal Value Nor(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -344,7 +344,7 @@
             return result;
         }
 
-        public Value Not(Value a)
+        internal Value Not(Value a)
         {
             Value result = _irContext.CreateValue(a.Type);
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Not, result, a);
@@ -352,7 +352,7 @@
             return result;
         }
 
-        public Value ShiftLeft(Value a, Value b)
+        internal Value ShiftLeft(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -361,7 +361,7 @@
             return result;
         }
 
-        public Value ShiftRight(Value a, Value b)
+        internal Value ShiftRight(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -370,7 +370,7 @@
             return result;
         }
 
-        public Value ShiftRightArithmetic(Value a, Value b)
+        internal Value ShiftRightArithmetic(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -379,7 +379,7 @@
             return result;
         }
 
-        public Value RotateLeft(Value a, Value b)
+        internal Value RotateLeft(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -388,7 +388,7 @@
             return result;
         }
 
-        public Value RotateRight(Value a, Value b)
+        internal Value RotateRight(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -397,7 +397,7 @@
             return result;
         }
 
-        public Value Add(Value a, Value b)
+        internal Value Add(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -406,7 +406,7 @@
             return result;
         }
 
-        public Value Sub(Value a, Value b)
+        internal Value Sub(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -415,7 +415,7 @@
             return result;
         }
 
-        public Value IMulLD(Value a, Value b)
+        internal Value IMulLD(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -424,7 +424,7 @@
             return result;
         }
 
-        public Value IMulHD(Value a, Value b)
+        internal Value IMulHD(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -433,7 +433,7 @@
             return result;
         }
 
-        public Value IMulLW(Value a, Value b)
+        internal Value IMulLW(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -442,7 +442,7 @@
             return result;
         }
 
-        public Value IMulHW(Value a, Value b)
+        internal Value IMulHW(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -451,7 +451,7 @@
             return result;
         }
 
-        public Value MulHD(Value a, Value b)
+        internal Value MulHD(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -460,7 +460,7 @@
             return result;
         }
 
-        public Value MulHW(Value a, Value b)
+        internal Value MulHW(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -469,7 +469,7 @@
             return result;
         }
 
-        public Value CheckedIDivD(Value a, Value b)
+        internal Value CheckedIDivD(Value a, Value b)
         {
             // CheckedIDivD is an IR operation whose semantics guarantee 
             // that the invalid PPC division cases produce zero.
@@ -481,7 +481,7 @@
             return result;
         }
 
-        public Value CheckedDivD(Value a, Value b)
+        internal Value CheckedDivD(Value a, Value b)
         {
             // CheckedDivD is an IR operation whose semantics guarantee 
             // that the invalid PPC division cases produce zero.
@@ -493,7 +493,7 @@
             return result;
         }
 
-        public Value CheckedIDivW(Value a, Value b)
+        internal Value CheckedIDivW(Value a, Value b)
         {
             // CheckedIDivW is an IR operation whose semantics guarantee 
             // that the invalid PPC division cases produce zero.
@@ -505,7 +505,7 @@
             return result;
         }
 
-        public Value CheckedDivW(Value a, Value b)
+        internal Value CheckedDivW(Value a, Value b)
         {
             // CheckedDivW is an IR operation whose semantics guarantee 
             // that the invalid PPC division cases produce zero.
@@ -517,7 +517,7 @@
             return result;
         }
 
-        public Value Select(Value condition, Value trueValue, Value falseValue)
+        internal Value Select(Value condition, Value trueValue, Value falseValue)
         {
             EnsureSameType(trueValue, falseValue);
             Value result = _irContext.CreateValue(trueValue.Type);
@@ -526,7 +526,7 @@
             return result;
         }
 
-        public Value SetEqual(Value a, Value b)
+        internal Value SetEqual(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -535,7 +535,7 @@
             return result;
         }
 
-        public Value SetNotEqual(Value a, Value b)
+        internal Value SetNotEqual(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -544,7 +544,7 @@
             return result;
         }
 
-        public Value SetLessThanUnsigned(Value a, Value b)
+        internal Value SetLessThanUnsigned(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -553,7 +553,7 @@
             return result;
         }
 
-        public Value SetLessThanEqUnsigned(Value a, Value b)
+        internal Value SetLessThanEqUnsigned(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -562,7 +562,7 @@
             return result;
         }
 
-        public Value SetGreaterThanUnsigned(Value a, Value b)
+        internal Value SetGreaterThanUnsigned(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -571,7 +571,7 @@
             return result;
         }
 
-        public Value SetGreaterThanEqUnsigned(Value a, Value b)
+        internal Value SetGreaterThanEqUnsigned(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -580,7 +580,7 @@
             return result;
         }
 
-        public Value SetLessThanSigned(Value a, Value b)
+        internal Value SetLessThanSigned(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -589,7 +589,7 @@
             return result;
         }
 
-        public Value SetLessThanEqSigned(Value a, Value b)
+        internal Value SetLessThanEqSigned(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -598,7 +598,7 @@
             return result;
         }
 
-        public Value SetGreaterThanSigned(Value a, Value b)
+        internal Value SetGreaterThanSigned(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -607,7 +607,7 @@
             return result;
         }
 
-        public Value SetGreaterThanEqSigned(Value a, Value b)
+        internal Value SetGreaterThanEqSigned(Value a, Value b)
         {
             EnsureSameType(a, b);
             Value result = _irContext.CreateValue(a.Type);
@@ -616,7 +616,7 @@
             return result;
         }
 
-        public Value SignExtend(Value a, Value.ValueType type)
+        internal Value SignExtend(Value a, Value.ValueType type)
         {
             int sourceSize = Value.GetValueSize(a.Type);
             int destinationSize = Value.GetValueSize(type);
@@ -635,7 +635,7 @@
             }
         }
 
-        public Value ZeroExtend(Value a, Value.ValueType type)
+        internal Value ZeroExtend(Value a, Value.ValueType type)
         {
             int sourceSize = Value.GetValueSize(a.Type);
             int destinationSize = Value.GetValueSize(type);
@@ -654,7 +654,7 @@
             }
         }
 
-        public Value Truncate(Value a, Value.ValueType type)
+        internal Value Truncate(Value a, Value.ValueType type)
         {
             int sourceSize = Value.GetValueSize(a.Type);
             int destinationSize = Value.GetValueSize(type);
@@ -673,7 +673,7 @@
             }
         }
 
-        public Value CountLeadingZeroes(Value a)
+        internal Value CountLeadingZeroes(Value a)
         {
             Value result = _irContext.CreateValue(Value.ValueType.I64);    // count is 64-bit
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.CNTLZ, result, a);
@@ -681,13 +681,13 @@
             return result;
         }
 
-        public void IRSyscall(PPUInstruction ppcInstruction, uint address)
+        internal void IRSyscall(PPUInstruction ppcInstruction, uint address)
         {
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Syscall, default, ppcInstruction.Raw, address);
             _irContext.AddInstruction(instruction);
         }
 
-        public void InterpreterFallback(PPUInstruction ppcInstruction)
+        internal void InterpreterFallback(PPUInstruction ppcInstruction)
         {
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.InterpreterFallback, default, ppcInstruction.Raw);
             _irContext.AddInstruction(instruction);
@@ -696,14 +696,14 @@
             throw new Exception($"Interpreter Fallback: Op = {ppcInstruction.Op} Raw = 0x{ppcInstruction.Raw:X8} ");
         }
 
-        public void Return()
+        internal void Return()
         {
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Ret, default, 0);
             _irContext.AddInstruction(instruction);
         }
 
         // Static helpers
-        public static bool IsBranch(PPUInstruction instruction)
+        internal static bool IsBranch(PPUInstruction instruction)
         {
             Op op = instruction.Op;
 
@@ -719,13 +719,13 @@
             }
         }
 
-        public static bool IsSyscall(PPUInstruction instruction)
+        internal static bool IsSyscall(PPUInstruction instruction)
         {
             Op op = instruction.Op;
             return op == Op.SC;
         }
 
-        public static void EnsureSameType(Value a, Value b)
+        internal static void EnsureSameType(Value a, Value b)
         {
             if (a.Type != b.Type)
             {
@@ -733,7 +733,7 @@
             }
         }
 
-        public static void EnsureSameType(Value.ValueType typeA, Value.ValueType typeB)
+        internal static void EnsureSameType(Value.ValueType typeA, Value.ValueType typeB)
         {
             if (typeA != typeB)
             {
@@ -741,7 +741,7 @@
             }
         }
 
-        public static bool IsRegularStore(IRInstruction instruction)
+        internal static bool IsRegularStore(IRInstruction instruction)
         {
             bool isStore =
                 instruction.Opcode == IRInstruction.Op.Store8 ||
@@ -757,7 +757,7 @@
             return isStore;
         }
 
-        public static bool IsSpecialRegisterStore(IRInstruction instruction)
+        internal static bool IsSpecialRegisterStore(IRInstruction instruction)
         {
             bool isStore =
                 instruction.Opcode == IRInstruction.Op.GPRStore ||
@@ -773,7 +773,7 @@
             return isStore;
         }
 
-        public static bool IsSpecialRegisterLoad(IRInstruction instruction)
+        internal static bool IsSpecialRegisterLoad(IRInstruction instruction)
         {
             bool isStore =
                 instruction.Opcode == IRInstruction.Op.GPRLoad ||
@@ -789,7 +789,7 @@
         }
 
 
-        public static bool IsMemoryOp(IRInstruction instruction)
+        internal static bool IsMemoryOp(IRInstruction instruction)
         {
             bool isMemOp =
                 instruction.Opcode == IRInstruction.Op.Load8 ||
@@ -814,7 +814,7 @@
             return isMemOp;
         }
 
-        public static bool HasCalls(List<IRInstruction> instructions)
+        internal static bool HasCalls(List<IRInstruction> instructions)
         {
             for (int i = 0; i < instructions.Count; i++)
             {
@@ -827,7 +827,7 @@
             return false;
         }
 
-        public static bool HasMemoryOp(List<IRInstruction> instructions)
+        internal static bool HasMemoryOp(List<IRInstruction> instructions)
         {
             for (int i = 0; i < instructions.Count; i++)
             {
@@ -840,7 +840,7 @@
             return false;
         }
 
-        public static bool RequiresCall(IRInstruction instruction)
+        internal static bool RequiresCall(IRInstruction instruction)
         {
             bool requresCall =
                 instruction.Opcode == IRInstruction.Op.Syscall ||
@@ -849,7 +849,7 @@
             return requresCall;
         }
 
-        public static int GetNumberOfValidOperands(IRInstruction instruction)
+        internal static int GetNumberOfValidOperands(IRInstruction instruction)
         {
             int operands = 0;
 

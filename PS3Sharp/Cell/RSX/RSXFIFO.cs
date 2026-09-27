@@ -9,9 +9,9 @@ using static PS3Sharp.Cell.RSX.RSXCommand;
 
 namespace PS3Sharp.Cell.RSX
 {
-    public sealed partial class RealitySynthesizer
+    internal sealed partial class RealitySynthesizer
     {
-        public unsafe void HandleInstruction(RSXCommand command, CellGcmCtrlRegister* ctrl)
+        internal unsafe void HandleInstruction(RSXCommand command, CellGcmCtrlRegister* ctrl)
         {
             //PrintCommand(command);
             Queue<BigEndian<uint>> param;
@@ -688,7 +688,7 @@ namespace PS3Sharp.Cell.RSX
             //Console.WriteLine($"[RSX] SemaphoreRelease [{CurrentState.CurrentSemaphoreOffset}] = 0x{value:X8}");
         }
 
-        public void DividerFrequencyOp(Queue<BigEndian<uint>> param)
+        internal void DividerFrequencyOp(Queue<BigEndian<uint>> param)
         {
             uint op = param.Dequeue();
             if (op != 0)
@@ -1383,7 +1383,7 @@ namespace PS3Sharp.Cell.RSX
             //Console.WriteLine($"RSX NV40TCL_VTXBUF_ADDRESS location = {location} - offset = 0x{offset:X8} address = 0x{CurrentState.VertexAttributes[location].BufferAddress:X}");
         }
 
-        public void VertexImmediate4F(uint methodRegister, Queue<BigEndian<uint>> param)
+        internal void VertexImmediate4F(uint methodRegister, Queue<BigEndian<uint>> param)
         {
             uint location = (methodRegister - NV40TCL_VTX_ATTR_4F_0) >> 4;
 
@@ -1405,7 +1405,7 @@ namespace PS3Sharp.Cell.RSX
             //Console.WriteLine($"vertex buffer {location} imm: ({x}. {y}, {z}, {w})");
         }
 
-        public void VertexImmediate2F(uint methodRegister, Queue<BigEndian<uint>> param)
+        internal void VertexImmediate2F(uint methodRegister, Queue<BigEndian<uint>> param)
         {
             uint location = (methodRegister - NV40TCL_VTX_ATTR_2F_0) >> 3;
 

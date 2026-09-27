@@ -8,22 +8,22 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.FileSystem
 {
-    public static class FileSystemManager
+    internal static class FileSystemManager
     {
         private static readonly ConcurrentDictionary<int, GuestFile> _openFiles = new();
         private static readonly ConcurrentDictionary<int, GuestDirectory> _openDirectories = new();
-        public sealed class GuestFile : IDisposable
+        internal sealed class GuestFile : IDisposable
         {
-            public readonly string Path;
-            public readonly int FileDescriptor;
-            public readonly uint OwnerThread;
-            public readonly FileStream Stream;
-            public readonly BinaryReader Reader;
-            public readonly BinaryWriter Writer;
+            internal readonly string Path;
+            internal readonly int FileDescriptor;
+            internal readonly uint OwnerThread;
+            internal readonly FileStream Stream;
+            internal readonly BinaryReader Reader;
+            internal readonly BinaryWriter Writer;
 
-            public readonly ulong Size;
+            internal readonly ulong Size;
 
-            public GuestFile(string path, int fileDescriptor, uint ownerThread)
+            internal GuestFile(string path, int fileDescriptor, uint ownerThread)
             {
                 Path = path;
                 FileDescriptor = fileDescriptor;
@@ -42,16 +42,16 @@ namespace PS3Sharp.FileSystem
             }
         }
 
-        public sealed class GuestDirectory
+        internal sealed class GuestDirectory
         {
-            public readonly string Path;
-            public readonly int FileDescriptor;
-            public readonly uint OwnerThread;
-            public readonly ulong Size;
-            public int CurrentEntry = 0;
-            public DirectoryInfo DirectoryInfo { get; private set; }
+            internal readonly string Path;
+            internal readonly int FileDescriptor;
+            internal readonly uint OwnerThread;
+            internal readonly ulong Size;
+            internal int CurrentEntry = 0;
+            internal DirectoryInfo DirectoryInfo { get; private set; }
 
-            public GuestDirectory(string path, int fileDescriptor, uint ownerThread)
+            internal GuestDirectory(string path, int fileDescriptor, uint ownerThread)
             {
                 Path = path;
                 FileDescriptor = fileDescriptor;
@@ -61,7 +61,7 @@ namespace PS3Sharp.FileSystem
             }
         }
 
-        public static void InitializeFileSystem()
+        internal static void InitializeFileSystem()
         {
             if (!Directory.Exists(@"dev_hdd0\game"))
             {
@@ -76,20 +76,20 @@ namespace PS3Sharp.FileSystem
             }
         }
 
-        public static bool IsDirectory(string path) => Directory.Exists(path);
-        public static bool IsDirectoryOpen(int fd) => _openDirectories.ContainsKey(fd);
-        public static bool IsDirectoryOpen(string path) => _openDirectories.Values.Any(f => f.Path == path);
-        public static bool GetDirectory(int fd, out GuestDirectory? directory) => _openDirectories.TryGetValue(fd, out directory);
+        internal static bool IsDirectory(string path) => Directory.Exists(path);
+        internal static bool IsDirectoryOpen(int fd) => _openDirectories.ContainsKey(fd);
+        internal static bool IsDirectoryOpen(string path) => _openDirectories.Values.Any(f => f.Path == path);
+        internal static bool GetDirectory(int fd, out GuestDirectory? directory) => _openDirectories.TryGetValue(fd, out directory);
 
-        public static bool IsFile(string path) => File.Exists(path);
-        public static bool IsFileOpen(int fd) => _openFiles.ContainsKey(fd);
-        public static bool IsFileOpen(string path) => _openFiles.Values.Any(f => f.Path == path);
-        public static bool IsEncryptedFile(string path) => path.EndsWith(".edat", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".sdat", StringComparison.OrdinalIgnoreCase);
-        public static bool HasBeenDecrypted(string path) => File.Exists(path + ".unedat");
-        public static GuestFile GetFileByPath(string path) => _openFiles.Values.First(f => f.Path == path); // Normally not used
-        public static bool GetFile(int fd, out GuestFile? file) => _openFiles.TryGetValue(fd, out file);
+        internal static bool IsFile(string path) => File.Exists(path);
+        internal static bool IsFileOpen(int fd) => _openFiles.ContainsKey(fd);
+        internal static bool IsFileOpen(string path) => _openFiles.Values.Any(f => f.Path == path);
+        internal static bool IsEncryptedFile(string path) => path.EndsWith(".edat", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".sdat", StringComparison.OrdinalIgnoreCase);
+        internal static bool HasBeenDecrypted(string path) => File.Exists(path + ".unedat");
+        internal static GuestFile GetFileByPath(string path) => _openFiles.Values.First(f => f.Path == path); // Normally not used
+        internal static bool GetFile(int fd, out GuestFile? file) => _openFiles.TryGetValue(fd, out file);
 
-        public static ulong GetFileSize(string filePath)
+        internal static ulong GetFileSize(string filePath)
         {
             if (!File.Exists(filePath))
             {
@@ -100,7 +100,7 @@ namespace PS3Sharp.FileSystem
             return (ulong)fileInfo.Length; // size in bytes
         }
 
-        public static ulong GetDirectorySize(string directoryPath)
+        internal static ulong GetDirectorySize(string directoryPath)
         {
             if (!Directory.Exists(directoryPath))
             {
@@ -111,7 +111,7 @@ namespace PS3Sharp.FileSystem
             return (ulong)dir.GetFiles("*", SearchOption.AllDirectories).Sum(file => file.Length);
         }
 
-        public static ulong OpenFile(string host_path, int fd, uint ownerThread)
+        internal static ulong OpenFile(string host_path, int fd, uint ownerThread)
         {
 
             // Error if it's a directory
@@ -133,7 +133,7 @@ namespace PS3Sharp.FileSystem
             return CELL_OK;
         }
 
-        public static ulong OpenDirectory(string host_path, int fd, uint ownerThread)
+        internal static ulong OpenDirectory(string host_path, int fd, uint ownerThread)
         {
 
             // Error if it's a file
@@ -155,13 +155,13 @@ namespace PS3Sharp.FileSystem
             return CELL_OK;
         }
 
-        public static void Close(int fd)
+        internal static void Close(int fd)
         {
             _openFiles.Remove(fd, out GuestFile? file);
             file?.Dispose();
         }
 
-        public static long Seek(int fd, long offset, int mode)
+        internal static long Seek(int fd, long offset, int mode)
         {
             if (mode < 0 || mode > 2)
             {
@@ -180,7 +180,7 @@ namespace PS3Sharp.FileSystem
             return file.Stream.Position;
         }
 
-        public static ulong Read(int fd, ulong nbytes, GuestVoidPtr destinationBuffer)
+        internal static ulong Read(int fd, ulong nbytes, GuestVoidPtr destinationBuffer)
         {
             if (nbytes > int.MaxValue)
             {
@@ -216,7 +216,7 @@ namespace PS3Sharp.FileSystem
             return nbytes;
         }
 
-        public static Span<byte> ReadSpan(int fd, ulong nbytes)
+        internal static Span<byte> ReadSpan(int fd, ulong nbytes)
         {
             if (nbytes > int.MaxValue)
             {
@@ -234,7 +234,7 @@ namespace PS3Sharp.FileSystem
             }
         }
 
-        public static ulong Write(int fd, int nBytes, GuestVoidPtr sourceBuffer)
+        internal static ulong Write(int fd, int nBytes, GuestVoidPtr sourceBuffer)
         {
             if (_openFiles.TryGetValue(fd, out GuestFile? file))
             {
@@ -255,7 +255,7 @@ namespace PS3Sharp.FileSystem
             return (ulong)nBytes;
         }
 
-        public static ulong ReadDir(int fd, GuestPtr<SysFs.CellFsDirent> dirent_ptr)
+        internal static ulong ReadDir(int fd, GuestPtr<SysFs.CellFsDirent> dirent_ptr)
         {
             // Todo: move constants 
             const byte CELL_FS_TYPE_DIRECTORY = 1;

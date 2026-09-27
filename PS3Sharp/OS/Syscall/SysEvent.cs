@@ -11,14 +11,14 @@ using static PS3Sharp.OS.LV2.LV2EventQueue;
 
 namespace PS3Sharp.OS.Syscall
 {
-    public static class SysEvent
+    internal static class SysEvent
     {
         private static readonly ConcurrentDictionary<uint, LV2EventQueue> _eventQueues = new();
         private static readonly ConcurrentDictionary<uint, LV2EventPort> _eventPorts = new();
 
-        public static bool GetEventQueueByID(uint id, out LV2EventQueue? eventQueue) => _eventQueues.TryGetValue(id, out eventQueue);
+        internal static bool GetEventQueueByID(uint id, out LV2EventQueue? eventQueue) => _eventQueues.TryGetValue(id, out eventQueue);
 
-        public static void AddEventQueue(uint handle, LV2EventQueue eventQueue)
+        internal static void AddEventQueue(uint handle, LV2EventQueue eventQueue)
         {
             bool ok = _eventQueues.TryAdd(handle, eventQueue);
 
@@ -28,7 +28,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static void RemoveEventQueue(uint handle)
+        internal static void RemoveEventQueue(uint handle)
         {
             bool ok = _eventQueues.TryRemove(handle, out _);
 
@@ -38,9 +38,9 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static bool GetEventPortByID(uint id, out LV2EventPort? evenPort) => _eventPorts.TryGetValue(id, out evenPort);
+        internal static bool GetEventPortByID(uint id, out LV2EventPort? evenPort) => _eventPorts.TryGetValue(id, out evenPort);
 
-        public static void AddEventPort(uint handle, LV2EventPort eventPort)
+        internal static void AddEventPort(uint handle, LV2EventPort eventPort)
         {
             bool ok = _eventPorts.TryAdd(handle, eventPort);
 
@@ -50,7 +50,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static void RemoveEventPort(uint handle)
+        internal static void RemoveEventPort(uint handle)
         {
             bool ok = _eventPorts.TryRemove(handle, out _);
 
@@ -60,7 +60,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static bool GetEventQueueBindingByIPCkey(ulong ipc_key, out LV2EventQueue? eventQueue)
+        internal static bool GetEventQueueBindingByIPCkey(ulong ipc_key, out LV2EventQueue? eventQueue)
         {
             //Search for the queue -- we should probably use another dictionary to look up using ipc_key directly
             eventQueue = _eventQueues.FirstOrDefault(eventQueue => eventQueue.Value.IPCKey == ipc_key).Value;
@@ -70,7 +70,7 @@ namespace PS3Sharp.OS.Syscall
 
         // sys_event_queue syscalls
 
-        public static ulong SysEventQueueCreate(PPU ppu)
+        internal static ulong SysEventQueueCreate(PPU ppu)
         {
             GuestPtr<uint> queue_id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             GuestPtr<SysEventQueueAttribute> queue_attribute_ptr = ppu.ReadArg<GuestPtr<SysEventQueueAttribute>>(ARG1);
@@ -89,7 +89,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysEventQueueReceive(PPU ppu)
+        internal static ulong SysEventQueueReceive(PPU ppu)
         {
             uint queue_id = ppu.ReadArg<uint>(ARG0);
             GuestVoidPtr event_ptr = ppu.ReadArg<GuestVoidPtr>(ARG1); //?
@@ -129,7 +129,7 @@ namespace PS3Sharp.OS.Syscall
             return errorCode;
         }
 
-        public static ulong SysEventQueueDestroy(PPU ppu)
+        internal static ulong SysEventQueueDestroy(PPU ppu)
         {
             uint queue_id = ppu.ReadArg<uint>(ARG0);
             int mode = ppu.ReadArg<int>(ARG1);      //?
@@ -140,7 +140,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysEventQueueTryReceive(PPU ppu)
+        internal static ulong SysEventQueueTryReceive(PPU ppu)
         {
             uint queue_id = ppu.ReadArg<uint>(ARG0);
             GuestPtr<SysEventData> event_array_ptr = ppu.ReadArg<GuestPtr<SysEventData>>(ARG1);
@@ -166,7 +166,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysEventQueueDrain(PPU ppu)
+        internal static ulong SysEventQueueDrain(PPU ppu)
         {
             uint queue_id = ppu.ReadArg<uint>(ARG0);
 
@@ -183,7 +183,7 @@ namespace PS3Sharp.OS.Syscall
 
         //sys_event_port syscalls
 
-        public static ulong SysEventPortCreate(PPU ppu)
+        internal static ulong SysEventPortCreate(PPU ppu)
         {
             GuestPtr<uint> eport_id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             int port_type = ppu.ReadArg<int>(ARG1);
@@ -200,7 +200,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysEventPortDestroy(PPU ppu)
+        internal static ulong SysEventPortDestroy(PPU ppu)
         {
             uint eport_id = ppu.ReadArg<uint>(ARG0);
 
@@ -210,7 +210,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysEventPortConnectLocal(PPU ppu)
+        internal static ulong SysEventPortConnectLocal(PPU ppu)
         {
             uint event_port_id = ppu.ReadArg<uint>(ARG0);
             uint queue_id = ppu.ReadArg<uint>(ARG1);
@@ -230,7 +230,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysEventPortConnectIPC(PPU ppu)
+        internal static ulong SysEventPortConnectIPC(PPU ppu)
         {
             uint event_port_id = ppu.ReadArg<uint>(ARG0);
             ulong ipc_key = ppu.ReadArg<ulong>(ARG1);
@@ -250,7 +250,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysEventPortDisconnect(PPU ppu)
+        internal static ulong SysEventPortDisconnect(PPU ppu)
         {
             uint event_port_id = ppu.ReadArg<uint>(ARG0);
 
@@ -266,7 +266,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysEventPortSend(PPU ppu)
+        internal static ulong SysEventPortSend(PPU ppu)
         {
             uint event_port_id = ppu.ReadArg<uint>(ARG0);
             ulong data1 = ppu.ReadArg<ulong>(ARG1);

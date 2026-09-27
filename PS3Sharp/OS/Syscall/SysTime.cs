@@ -6,9 +6,9 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    public static class SysTime
+    internal static class SysTime
     {
-        public static uint SysTimeGetCurrentTime(PPU ppu)
+        internal static uint SysTimeGetCurrentTime(PPU ppu)
         {
             GuestPtr<long> sec = ppu.ReadArg<GuestPtr<long>>(ARG0);   //sys_time_sec_t*
             GuestPtr<long> nsec = ppu.ReadArg<GuestPtr<long>>(ARG1);  //sys_time_nsec_t* 
@@ -20,13 +20,13 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysTimeGetSystemTime(PPU ppu)
+        internal static ulong SysTimeGetSystemTime(PPU ppu)
         {
             //Console.WriteLine($"[SysPrxForUser] sys_time_get_system_time");
             return Utility.GetCurrentMicrosecondSince1970(); //in microseconds
         }
 
-        public static ulong SysTimeGetTimeZone(PPU ppu)
+        internal static ulong SysTimeGetTimeZone(PPU ppu)
         {
             GuestPtr<uint> timezone_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             GuestPtr<uint> summertime_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
@@ -38,7 +38,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysTimeGetTimebaseFrequency(PPU ppu)
+        internal static ulong SysTimeGetTimebaseFrequency(PPU ppu)
         {
             //Console.WriteLine("[SysTime] SysTimeGetTimebaseFrequency");
             return 80000000UL; //80 Mhz

@@ -9,13 +9,13 @@ using static PS3Sharp.OS.LV2.LV2EventFlag;
 
 namespace PS3Sharp.OS.Syscall
 {
-    public static class SysEventFlag
+    internal static class SysEventFlag
     {
         private static readonly ConcurrentDictionary<uint, LV2EventFlag> _eventFlags = [];
 
-        public static bool GetEventFlag(uint handle, out LV2EventFlag? eventFlag) => _eventFlags.TryGetValue(handle, out eventFlag);
+        internal static bool GetEventFlag(uint handle, out LV2EventFlag? eventFlag) => _eventFlags.TryGetValue(handle, out eventFlag);
 
-        public static void AddEventFlag(uint handle, LV2EventFlag eventFlag)
+        internal static void AddEventFlag(uint handle, LV2EventFlag eventFlag)
         {
             bool success = _eventFlags.TryAdd(handle, eventFlag);
 
@@ -25,7 +25,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static void RemoveEventFlag(uint handle)
+        internal static void RemoveEventFlag(uint handle)
         {
             bool success = _eventFlags.TryRemove(handle, out _);
 
@@ -35,7 +35,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static ulong SysEventFlagCreate(PPU ppu)
+        internal static ulong SysEventFlagCreate(PPU ppu)
         {
             GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             GuestVoidPtr attributes_ptr = ppu.ReadArg<GuestVoidPtr>(ARG1);
@@ -50,7 +50,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysEventFlagDestroy(PPU ppu)
+        internal static ulong SysEventFlagDestroy(PPU ppu)
         {
             uint id = ppu.ReadArg<uint>(ARG0);
             RemoveEventFlag(id);
@@ -59,7 +59,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysEventFlagWait(PPU ppu)
+        internal static ulong SysEventFlagWait(PPU ppu)
         {
             uint id = ppu.ReadArg<uint>(ARG0);
             ulong bitPattern = ppu.ReadArg<ulong>(ARG1);
@@ -89,7 +89,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        public static ulong SysEventFlagSet(PPU ppu)
+        internal static ulong SysEventFlagSet(PPU ppu)
         {
             uint id = ppu.ReadArg<uint>(ARG0);
             ulong bitPattern = ppu.ReadArg<ulong>(ARG1);
@@ -109,7 +109,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysEventFlagClear(PPU ppu)
+        internal static ulong SysEventFlagClear(PPU ppu)
         {
             uint id = ppu.ReadArg<uint>(ARG0);
             ulong bitPattern = ppu.ReadArg<ulong>(ARG1);

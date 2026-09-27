@@ -7,60 +7,60 @@ using System.Runtime.InteropServices;
 
 namespace PS3Sharp
 {
-    public static class GLRenderer
+    internal static class GLRenderer
     {
-        public static bool IsInitialized { get; private set; }
+        internal static bool IsInitialized { get; private set; }
 
         // Handles for VAO / EBO / Depth texture
-        public static int VertexArrayObject { get; private set; }
-        public static int ElementBufferObject { get; private set; }
-        public static int DepthTexture { get; private set; }
+        internal static int VertexArrayObject { get; private set; }
+        internal static int ElementBufferObject { get; private set; }
+        internal static int DepthTexture { get; private set; }
 
         // Current shaders / program handles
-        public static int DefaultGLProgram { get; private set; }
-        public static int CurrentProgramHandle { get; private set; }
-        public static int CurrentVertexShaderHandle { get; private set; }
-        public static int CurrentFragmentShaderHandle { get; private set; }
+        internal static int DefaultGLProgram { get; private set; }
+        internal static int CurrentProgramHandle { get; private set; }
+        internal static int CurrentVertexShaderHandle { get; private set; }
+        internal static int CurrentFragmentShaderHandle { get; private set; }
 
         // Dictionaries probable need their own cache sealed class
 
         // Shader checksum to handle lookup dictionaries
-        public static Dictionary<(ulong vertexChecksum, ulong fragmentChecksum), int> CompiledPrograms { get; private set; } = [];
-        public static Dictionary<ulong, int> CompiledVertexShaders { get; private set; } = [];
-        public static Dictionary<ulong, int> CompiledFragmentShaders { get; private set; } = [];
+        internal static Dictionary<(ulong vertexChecksum, ulong fragmentChecksum), int> CompiledPrograms { get; private set; } = [];
+        internal static Dictionary<ulong, int> CompiledVertexShaders { get; private set; } = [];
+        internal static Dictionary<ulong, int> CompiledFragmentShaders { get; private set; } = [];
 
         // Surface to fbo/texture lookup dictionary
-        public static Dictionary<uint, (int fbo, int texture)> Surfaces { get; private set; } = [];
+        internal static Dictionary<uint, (int fbo, int texture)> Surfaces { get; private set; } = [];
 
         // Texture cache lookup dictionary
-        public static Dictionary<RSXTexture.TextureCacheKey, int> TextureCache { get; private set; } = [];
+        internal static Dictionary<RSXTexture.TextureCacheKey, int> TextureCache { get; private set; } = [];
 
         // Texture swizzle cache lookup dictionary (lookup by gl tex handle)
-        public static Dictionary<int, RSXTexture.Swizzle> TextureSwizzleCache { get; private set; } = [];
+        internal static Dictionary<int, RSXTexture.Swizzle> TextureSwizzleCache { get; private set; } = [];
 
         // Vertex buffer cache lookup dictionary
-        public static Dictionary<RSXVertexBuffer.VertexCacheKey, int> VertexCache { get; private set; } = [];
+        internal static Dictionary<RSXVertexBuffer.VertexCacheKey, int> VertexCache { get; private set; } = [];
 
         // Last framebuffer that was bound
-        public static int LastBoundFBO { get; private set; }
+        internal static int LastBoundFBO { get; private set; }
 
         private static readonly int FBOTextureUnit = 20; // or anything more than 15
 
         // Global GL states (probaly need their own sealed class)
-        public static float ClearColorR { get; private set; } = 0.0f;
-        public static float ClearColorG { get; private set; } = 0.0f;
-        public static float ClearColorB { get; private set; } = 0.0f;
-        public static float ClearColorA { get; private set; } = 1.0f;
+        internal static float ClearColorR { get; private set; } = 0.0f;
+        internal static float ClearColorG { get; private set; } = 0.0f;
+        internal static float ClearColorB { get; private set; } = 0.0f;
+        internal static float ClearColorA { get; private set; } = 1.0f;
 
-        public static float BlendColorR { get; private set; } = 0.0f;
-        public static float BlendColorG { get; private set; } = 0.0f;
-        public static float BlendColorB { get; private set; } = 0.0f;
-        public static float BlendColorA { get; private set; } = 1.0f;
+        internal static float BlendColorR { get; private set; } = 0.0f;
+        internal static float BlendColorG { get; private set; } = 0.0f;
+        internal static float BlendColorB { get; private set; } = 0.0f;
+        internal static float BlendColorA { get; private set; } = 1.0f;
 
-        public static bool ColorMaskR { get; private set; } = false;
-        public static bool ColorMaskG { get; private set; } = false;
-        public static bool ColorMaskB { get; private set; } = false;
-        public static bool ColorMaskA { get; private set; } = false;
+        internal static bool ColorMaskR { get; private set; } = false;
+        internal static bool ColorMaskG { get; private set; } = false;
+        internal static bool ColorMaskB { get; private set; } = false;
+        internal static bool ColorMaskA { get; private set; } = false;
 
 
         private static GameWindow Window => WindowManager.WindowInstance;
@@ -103,7 +103,7 @@ namespace PS3Sharp
 
         private static readonly float[] BlackPixel = [0.0f, 0.0f, 0.0f, 0.0f];
 
-        public static void InitializeRenderer()
+        internal static void InitializeRenderer()
         {
             if (Window == null)
             {
@@ -141,7 +141,7 @@ namespace PS3Sharp
             IsInitialized = true;
         }
 
-        public static void CreateGLObjects()
+        internal static void CreateGLObjects()
         {
             // Create VAO and EBO
             VertexArrayObject = GL.GenVertexArray();
@@ -157,7 +157,7 @@ namespace PS3Sharp
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent24, 1280, 720, 0, PixelFormat.DepthComponent, PixelType.Float, 0);
         }
 
-        public static int CreateAndUseProgram(int vertexHandle, int fragmentHandle)
+        internal static int CreateAndUseProgram(int vertexHandle, int fragmentHandle)
         {
             CurrentVertexShaderHandle = vertexHandle;
             CurrentFragmentShaderHandle = fragmentHandle;
@@ -173,7 +173,7 @@ namespace PS3Sharp
             return CurrentProgramHandle;
         }
 
-        public static void SwitchProgram(int handle)
+        internal static void SwitchProgram(int handle)
         {
             if (CurrentProgramHandle != handle)
             {
@@ -182,7 +182,7 @@ namespace PS3Sharp
             }
         }
 
-        public static int CompileShader(ShaderType type, string source)
+        internal static int CompileShader(ShaderType type, string source)
         {
             int shader = GL.CreateShader(type);
             GL.ShaderSource(shader, source);
@@ -212,7 +212,7 @@ namespace PS3Sharp
             }
         }
 
-        public static void BlitFBO()
+        internal static void BlitFBO()
         {
             // Just blit the last draw FBO into the screen, this is probably inaccurate
             // we can also draw a square instrad of GL.BlitFramebuffer
@@ -223,7 +223,7 @@ namespace PS3Sharp
             SwapBuffers();
         }
 
-        public static void DrawFrame(uint surface_a)
+        internal static void DrawFrame(uint surface_a)
         {          // unused
             // Draw a quad that uses surface A as a texture
             int surface_a_tex = GetSurfaceTexture(surface_a);
@@ -245,7 +245,7 @@ namespace PS3Sharp
             SetSurface(surface_a); // Rebinds surface a fbo
         }
 
-        public static void SetSurface(uint address)
+        internal static void SetSurface(uint address)
         {
             // Activate the fbo texture unit, we don't want to bind to one of the 16 units accidentally
             GL.ActiveTexture(TextureUnit.Texture0 + FBOTextureUnit);
@@ -288,7 +288,7 @@ namespace PS3Sharp
             GL.ActiveTexture(TextureUnit.Texture0);
         }
 
-        public static int GetSurfaceTexture(uint address)
+        internal static int GetSurfaceTexture(uint address)
         {
             int handle = -1;
 
@@ -300,12 +300,12 @@ namespace PS3Sharp
             return handle;
         }
 
-        public static bool AddressIsSurface(uint address)
+        internal static bool AddressIsSurface(uint address)
         {
             return Surfaces.ContainsKey(address);
         }
 
-        public static bool UploadConstant(float[] values)
+        internal static bool UploadConstant(float[] values)
         {
             int c_location = GL.GetUniformLocation(CurrentProgramHandle, $"c[0]");
             const int count = 468;
@@ -319,7 +319,7 @@ namespace PS3Sharp
             return false;
         }
 
-        public static bool UploadUniform4(string name, Vector4 value)
+        internal static bool UploadUniform4(string name, Vector4 value)
         {
             int location = GL.GetUniformLocation(CurrentProgramHandle, name);
 
@@ -332,7 +332,7 @@ namespace PS3Sharp
             return false;
         }
 
-        public static void UploadUniform3(string name, Vector3 value)
+        internal static void UploadUniform3(string name, Vector3 value)
         {
 
             int location = GL.GetUniformLocation(CurrentProgramHandle, name);
@@ -344,7 +344,7 @@ namespace PS3Sharp
             GL.Uniform3(location, value);
         }
 
-        public static void UploadUniform2I(string name, Vector2i value)
+        internal static void UploadUniform2I(string name, Vector2i value)
         {
             int location = GL.GetUniformLocation(CurrentProgramHandle, name);
 
@@ -356,17 +356,17 @@ namespace PS3Sharp
             GL.Uniform2(location, value);
         }
 
-        public static int CreateGLTexture()
+        internal static int CreateGLTexture()
         {
             return GL.GenTexture();
         }
 
-        public static void SetTextureView(int tex, PixelInternalFormat pixelInternalFormat, int numLevels, int numLayers)
+        internal static void SetTextureView(int tex, PixelInternalFormat pixelInternalFormat, int numLevels, int numLayers)
         {
             GL.TextureView(tex, TextureTarget.Texture2D, 0, pixelInternalFormat, 0, numLevels, 0, numLayers);
         }
 
-        public static void BindTextureByHandle(int textureIndex, int glTexHandle, int flip)
+        internal static void BindTextureByHandle(int textureIndex, int glTexHandle, int flip)
         {
             int samplerLocation = GL.GetUniformLocation(CurrentProgramHandle, $"u_tex{textureIndex}");
             int flipBoolLocation = GL.GetUniformLocation(CurrentProgramHandle, $"u_flip_tex_flags[{textureIndex}]");
@@ -383,7 +383,7 @@ namespace PS3Sharp
             GL.Uniform1(flipBoolLocation, flip);
         }
 
-        public static void UploadTextureData<T>(PixelInternalFormat internalFormat, int width, int height, int pitch_pixels,
+        internal static void UploadTextureData<T>(PixelInternalFormat internalFormat, int width, int height, int pitch_pixels,
             PixelFormat format, PixelType type, ReadOnlySpan<T> data, bool swapBytes) where T : unmanaged
         {
 
@@ -400,7 +400,7 @@ namespace PS3Sharp
             GL.TexImage2D<T>(TextureTarget.Texture2D, 0, internalFormat, width, height, 0, format, type, ref dataReference);
         }
 
-        public static void UploadCompressedTextureData<T>(InternalFormat internalFormat, int width, int height, ReadOnlySpan<T> data) where T : unmanaged
+        internal static void UploadCompressedTextureData<T>(InternalFormat internalFormat, int width, int height, ReadOnlySpan<T> data) where T : unmanaged
         {
 
             if (data.IsEmpty)
@@ -414,12 +414,12 @@ namespace PS3Sharp
             GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, internalFormat, width, height, 0, data.Length, ref dataReference);
         }
 
-        public static void GenerateMipMap()
+        internal static void GenerateMipMap()
         {
             GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
         }
 
-        public static void SetPixelStoreParameters(int swapBytes, int unpackRowLength)
+        internal static void SetPixelStoreParameters(int swapBytes, int unpackRowLength)
         {
             GL.PixelStore(PixelStoreParameter.UnpackSwapBytes, swapBytes);
             GL.PixelStore(PixelStoreParameter.UnpackRowLength, unpackRowLength);
@@ -430,7 +430,7 @@ namespace PS3Sharp
             //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
         }
 
-        public static void SetWrapParameters(TextureWrapMode wrapS, TextureWrapMode wrapT)
+        internal static void SetWrapParameters(TextureWrapMode wrapS, TextureWrapMode wrapT)
         {
             //Console.WriteLine($"wrapS = {wrapS}");
             //Console.WriteLine($"wrapT = {wrapT}");
@@ -438,7 +438,7 @@ namespace PS3Sharp
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)wrapT);
         }
 
-        public static void SetFilterParameters(TextureMinFilter minFilter, TextureMagFilter magFilter)
+        internal static void SetFilterParameters(TextureMinFilter minFilter, TextureMagFilter magFilter)
         {
             //Console.WriteLine($"minFilter = {minFilter}");
             //Console.WriteLine($"magFilter = {magFilter}");
@@ -446,7 +446,7 @@ namespace PS3Sharp
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)magFilter);
         }
 
-        public static void SetTextureSwizzle(RSXTexture.Swizzle swizzle)
+        internal static void SetTextureSwizzle(RSXTexture.Swizzle swizzle)
         {
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleA, swizzle.A);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleR, swizzle.R);
@@ -454,27 +454,27 @@ namespace PS3Sharp
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleB, swizzle.B);
         }
 
-        public static void SetTextureSwizzleA(int value)
+        internal static void SetTextureSwizzleA(int value)
         {
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleA, value);
         }
 
-        public static void SetTextureSwizzleR(int value)
+        internal static void SetTextureSwizzleR(int value)
         {
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleR, value);
         }
 
-        public static void SetTextureSwizzleG(int value)
+        internal static void SetTextureSwizzleG(int value)
         {
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleG, value);
         }
 
-        public static void SetTextureSwizzleB(int value)
+        internal static void SetTextureSwizzleB(int value)
         {
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleB, value);
         }
 
-        public static void ResetTextureSwizzle()
+        internal static void ResetTextureSwizzle()
         {
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleA, (int)All.Alpha);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleR, (int)All.Red);
@@ -482,22 +482,22 @@ namespace PS3Sharp
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleB, (int)All.Blue);
         }
 
-        public static void ClearColorBuffer()
+        internal static void ClearColorBuffer()
         {
             GL.Clear(ClearBufferMask.ColorBufferBit);
         }
 
-        public static void ClearDepthBuffer()
+        internal static void ClearDepthBuffer()
         {
             GL.Clear(ClearBufferMask.DepthBufferBit);
         }
 
-        public static void ClearStencilBuffer()
+        internal static void ClearStencilBuffer()
         {
             GL.Clear(ClearBufferMask.StencilBufferBit);
         }
 
-        public static void SetClearColor(float r, float g, float b, float a)
+        internal static void SetClearColor(float r, float g, float b, float a)
         {
             ClearColorR = r;
             ClearColorG = g;
@@ -506,7 +506,7 @@ namespace PS3Sharp
             GL.ClearColor(r, g, b, a);
         }
 
-        public static void SetBlendColor(float r, float g, float b, float a)
+        internal static void SetBlendColor(float r, float g, float b, float a)
         {
             BlendColorR = r;
             BlendColorG = g;
@@ -515,7 +515,7 @@ namespace PS3Sharp
             GL.BlendColor(r, g, b, a);
         }
 
-        public static void SetColorMask(bool r, bool g, bool b, bool a)
+        internal static void SetColorMask(bool r, bool g, bool b, bool a)
         {
             ColorMaskR = r;
             ColorMaskG = g;
@@ -524,80 +524,80 @@ namespace PS3Sharp
             GL.ColorMask(r, g, b, a);
         }
 
-        public static void EnableAttrib(int index)
+        internal static void EnableAttrib(int index)
         {
             GL.EnableVertexAttribArray(index);
         }
 
-        public static void DisableAttrib(int index)
+        internal static void DisableAttrib(int index)
         {
             GL.DisableVertexAttribArray(index);
         }
 
-        public static void EnableBlending()
+        internal static void EnableBlending()
         {
             GL.Enable(EnableCap.Blend);
         }
 
-        public static void DisableBlending()
+        internal static void DisableBlending()
         {
             GL.Disable(EnableCap.Blend);
         }
 
-        public static void SetBlendFactors(BlendingFactorSrc srcFactor, BlendingFactorDest dstFactor, BlendingFactorSrc srcAlpha, BlendingFactorDest dstAlpha)
+        internal static void SetBlendFactors(BlendingFactorSrc srcFactor, BlendingFactorDest dstFactor, BlendingFactorSrc srcAlpha, BlendingFactorDest dstAlpha)
         {
             GL.BlendFuncSeparate(srcFactor, dstFactor, srcAlpha, dstAlpha);
         }
 
-        public static void SetBlendEquation(BlendEquationMode rgb, BlendEquationMode alpha)
+        internal static void SetBlendEquation(BlendEquationMode rgb, BlendEquationMode alpha)
         {
             GL.BlendEquationSeparate(rgb, alpha);
         }
 
-        public static void EnabelDepthTest()
+        internal static void EnabelDepthTest()
         {
             GL.Enable(EnableCap.DepthTest);
         }
 
-        public static void DisableDepthTest()
+        internal static void DisableDepthTest()
         {
             GL.Disable(EnableCap.DepthTest);
         }
 
-        public static void SetDepthFunction(DepthFunction function)
+        internal static void SetDepthFunction(DepthFunction function)
         {
             GL.DepthFunc(function);
         }
 
-        public static void SetDepthMask(bool mask)
+        internal static void SetDepthMask(bool mask)
         {
             GL.DepthMask(mask);
         }
 
-        public static void SetScissor(int x, int y, int width, int height)
+        internal static void SetScissor(int x, int y, int width, int height)
         {
             GL.Scissor(x, y, width, height);
         }
 
-        public static int CreateGLVertexBuffer()
+        internal static int CreateGLVertexBuffer()
         {
             return GL.GenBuffer();
         }
 
-        public static void SetIndexList<T>(Span<T> indices) where T : unmanaged
+        internal static void SetIndexList<T>(Span<T> indices) where T : unmanaged
         {
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
             GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * Unsafe.SizeOf<T>(), ref indices[0], BufferUsageHint.StreamDraw);
         }
 
-        public static void SetIndexList<T>(List<T> indices) where T : unmanaged
+        internal static void SetIndexList<T>(List<T> indices) where T : unmanaged
         {
             Span<T> indicesAsSpan = CollectionsMarshal.AsSpan<T>(indices);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
             GL.BufferData(BufferTarget.ElementArrayBuffer, indicesAsSpan.Length * Unsafe.SizeOf<T>(), ref indicesAsSpan[0], BufferUsageHint.StreamDraw);
         }
 
-        public static void SetVertexAttrib(int location, int size, VertexAttribPointerType dtype, bool isNormalized)
+        internal static void SetVertexAttrib(int location, int size, VertexAttribPointerType dtype, bool isNormalized)
         {
             GL.VertexAttribPointer(
                index: location,          // layout(location = X)
@@ -609,27 +609,27 @@ namespace PS3Sharp
             );
         }
 
-        public static void BindBuffer(int handle)
+        internal static void BindBuffer(int handle)
         {
             GL.BindBuffer(BufferTarget.ArrayBuffer, handle);
         }
 
-        public static void UploadBuffer<T>(Span<T> data) where T : unmanaged
+        internal static void UploadBuffer<T>(Span<T> data) where T : unmanaged
         {
             GL.BufferData(BufferTarget.ArrayBuffer, data.Length * Unsafe.SizeOf<T>(), ref data[0], BufferUsageHint.StreamDraw);
         }
 
-        public static void DrawElements(BeginMode mode, int count, DrawElementsType drawElementsType)
+        internal static void DrawElements(BeginMode mode, int count, DrawElementsType drawElementsType)
         {
             GL.DrawElements(mode, count, drawElementsType, 0);
         }
 
-        public static void DrawArrays(PrimitiveType mode, int first, int count)
+        internal static void DrawArrays(PrimitiveType mode, int first, int count)
         {
             GL.DrawArrays(mode, first, count);
         }
 
-        public static void SwapBuffers()
+        internal static void SwapBuffers()
         {
             Window.SwapBuffers();
         }

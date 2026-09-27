@@ -8,9 +8,9 @@ using static PS3Sharp.Memory_Manager.MemoryManager;
 
 namespace PS3Sharp.OS.Modules
 {
-    public static class SysPrxForUser
+    internal static class SysPrxForUser
     {
-        public static ulong SysInitializeTLS(PPU ppu)
+        internal static ulong SysInitializeTLS(PPU ppu)
         {
             ulong thread_id = ppu.ReadArg<ulong>(ARG0);
             uint tls_seg_addr = ppu.ReadArg<uint>(ARG1);
@@ -30,7 +30,7 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        public static ulong SysProcessExit(PPU ppu)
+        internal static ulong SysProcessExit(PPU ppu)
         {
             int exitCode = ppu.ReadArg<int>(ARG0);
             ppu.StopThread();
@@ -47,28 +47,28 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong SysSpinlockInitialize(PPU ppu)
+        internal static ulong SysSpinlockInitialize(PPU ppu)
         {
             //TODO
             Console.WriteLine($"[SysPrxForUser] sys_spinlock_initialize");
             return CELL_OK;
         }
 
-        public static ulong SysSpinlockUnlock(PPU ppu)
+        internal static ulong SysSpinlockUnlock(PPU ppu)
         {
             //TODO
             Console.WriteLine($"[SysPrxForUser] sys_spinlock_unlock");
             return CELL_OK;
         }
 
-        public static ulong SysSpinlockLock(PPU ppu)
+        internal static ulong SysSpinlockLock(PPU ppu)
         {
             //TODO
             Console.WriteLine($"[SysPrxForUser] sys_spinlock_lock");
             return CELL_OK;
         }
 
-        public static ulong SysMmapperAllocateMemory(PPU ppu)
+        internal static ulong SysMmapperAllocateMemory(PPU ppu)
         {
             //Allocates physical memory, and returns a handle
 
@@ -92,7 +92,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong SysMmapperFreeMemory(PPU ppu)
+        internal static ulong SysMmapperFreeMemory(PPU ppu)
         {
             //Fress memory by handle
             uint handle = ppu.ReadArg<uint>(ARG0);
@@ -107,49 +107,49 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong SysMmapperUnmapMemory(PPU ppu)
+        internal static ulong SysMmapperUnmapMemory(PPU ppu)
         {
             //TODO
             Console.WriteLine($"[SysPrxForUser] sys_mmapper_unmap_memory");
             return CELL_OK;
         }
 
-        public static ulong _Sys_Process_atexitspawn(PPU ppu)
+        internal static ulong _Sys_Process_atexitspawn(PPU ppu)
         {
             //TODO
             Console.WriteLine($"[SysPrxForUser] _sys_process_atexitspawn");
             return CELL_OK;
         }
 
-        public static ulong _Sys_Process_at_Exitspawn(PPU ppu)
+        internal static ulong _Sys_Process_at_Exitspawn(PPU ppu)
         {
             //TODO
             Console.WriteLine($"[SysPrxForUser] _sys_process_at_Exitspawn");
             return CELL_OK;
         }
 
-        public static ulong Sys_game_process_exitspawn2(PPU ppu)
+        internal static ulong Sys_game_process_exitspawn2(PPU ppu)
         {
             //TODO
             Console.WriteLine($"[SysPrxForUser] sys_game_process_exitspawn2");
             return CELL_OK;
         }
 
-        public static ulong Sys_Prx_Exitspawn_With_Level(PPU ppu)
+        internal static ulong Sys_Prx_Exitspawn_With_Level(PPU ppu)
         {
             //TODO
             Console.WriteLine($"[SysPrxForUser] sys_prx_exitspawn_with_level");
             return CELL_OK;
         }
 
-        public static ulong Sys_SPU_Image_Import(PPU ppu)
+        internal static ulong Sys_SPU_Image_Import(PPU ppu)
         {
             //TODO
             Console.WriteLine($"[SysPrxForUser] sys_spu_image_import");
             return CELL_OK;
         }
 
-        public static ulong _Sys_Memset(PPU ppu)
+        internal static ulong _Sys_Memset(PPU ppu)
         {
             GuestVoidPtr dest = ppu.ReadArg<GuestVoidPtr>(ARG0);
             int ch = ppu.ReadArg<int>(ARG1);
@@ -160,7 +160,7 @@ namespace PS3Sharp.OS.Modules
             return dest;
         }
 
-        public static ulong _Sys_Strncpy(PPU ppu)
+        internal static ulong _Sys_Strncpy(PPU ppu)
         {
             uint dest = ppu.ReadArg<uint>(ARG0);
             uint src = ppu.ReadArg<uint>(ARG1);

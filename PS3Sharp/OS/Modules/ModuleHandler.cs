@@ -6,16 +6,16 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    public struct ModuleStubInfo
+    internal struct ModuleStubInfo
     {
         //This is not one of the PS3 structs, I made it just to make identifying/patching the module function easier
-        public readonly string ModuleName;
-        public readonly string FunctionName;
-        public readonly uint NID;
-        public readonly uint StubAddress; //The address of the beginning of the block
-        public uint PatchStartAddress;    //The address of the patched code
+        internal readonly string ModuleName;
+        internal readonly string FunctionName;
+        internal readonly uint NID;
+        internal readonly uint StubAddress; //The address of the beginning of the block
+        internal uint PatchStartAddress;    //The address of the patched code
 
-        public ModuleStubInfo(string moduleName, string functionName, uint nid, uint stubAddress)
+        internal ModuleStubInfo(string moduleName, string functionName, uint nid, uint stubAddress)
         {
             ModuleName = moduleName;
             FunctionName = functionName;
@@ -24,9 +24,9 @@ namespace PS3Sharp.OS.Modules
         }
     }
 
-    public static partial class ModuleHandler
+    internal static partial class ModuleHandler
     {
-        public static void HandleModuleCall(PPU ppu)
+        internal static void HandleModuleCall(PPU ppu)
         {
             uint stubAddress = ppu.GetPC() - 8; //the instruction before syscall
             ModuleStubInfo info = ModulePatcher.GetModuleInfo(stubAddress);
@@ -67,7 +67,7 @@ namespace PS3Sharp.OS.Modules
             ppu.Return(result);
         }
 
-        public static ulong ModuleStub(ModuleStubInfo info, PPU ppu, ulong ret = CELL_OK)
+        internal static ulong ModuleStub(ModuleStubInfo info, PPU ppu, ulong ret = CELL_OK)
         {
             // Console.WriteLine($"[{ppu.ThreadName}] unimplemented {info.ModuleName} -> {info.FunctionName} lr = {ppu.GetLR():X8}");
             if (info.FunctionName.Contains("cellSpurs"))
@@ -79,7 +79,7 @@ namespace PS3Sharp.OS.Modules
             return ret;
         }
 
-        public static ulong FunctionStub(PPU ppu)
+        internal static ulong FunctionStub(PPU ppu)
         {
             return CELL_OK;
         }

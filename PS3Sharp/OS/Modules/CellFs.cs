@@ -7,22 +7,22 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    public static class CellFs
+    internal static class CellFs
     {
-        public static ulong CellFsAioInit(PPU ppu) => SysFs.SysFsAioInit(ppu);
-        public static ulong CellFsStat(PPU ppu) => SysFs.SysFsStat(ppu);
-        public static ulong CellFsFstat(PPU ppu) => SysFs.SysFsFstat(ppu);
-        public static ulong CellFsOpen(PPU ppu) => SysFs.SysFsOpen(ppu);
-        public static ulong CellFsLseek(PPU ppu) => SysFs.SysFsLseek(ppu);
-        public static ulong CellFsRead(PPU ppu) => SysFs.SysFsRead(ppu, false);
-        public static ulong CellFsWrite(PPU ppu) => SysFs.SysFsWrite(ppu);
-        public static ulong CellFsClose(PPU ppu) => SysFs.SysFsClose(ppu);
-        public static ulong CellFsMakedir(PPU ppu) => SysFs.SysFsMkDir(ppu);
-        public static ulong CellFsReaddir(PPU ppu) => SysFs.SysFsReadDir(ppu);
-        public static ulong CellFsOpenDir(PPU ppu) => SysFs.SysFsOpenDir(ppu);
-        public static ulong CellFsCloseDir(PPU ppu) => SysFs.SysFsCloseDir(ppu);
+        internal static ulong CellFsAioInit(PPU ppu) => SysFs.SysFsAioInit(ppu);
+        internal static ulong CellFsStat(PPU ppu) => SysFs.SysFsStat(ppu);
+        internal static ulong CellFsFstat(PPU ppu) => SysFs.SysFsFstat(ppu);
+        internal static ulong CellFsOpen(PPU ppu) => SysFs.SysFsOpen(ppu);
+        internal static ulong CellFsLseek(PPU ppu) => SysFs.SysFsLseek(ppu);
+        internal static ulong CellFsRead(PPU ppu) => SysFs.SysFsRead(ppu, false);
+        internal static ulong CellFsWrite(PPU ppu) => SysFs.SysFsWrite(ppu);
+        internal static ulong CellFsClose(PPU ppu) => SysFs.SysFsClose(ppu);
+        internal static ulong CellFsMakedir(PPU ppu) => SysFs.SysFsMkDir(ppu);
+        internal static ulong CellFsReaddir(PPU ppu) => SysFs.SysFsReadDir(ppu);
+        internal static ulong CellFsOpenDir(PPU ppu) => SysFs.SysFsOpenDir(ppu);
+        internal static ulong CellFsCloseDir(PPU ppu) => SysFs.SysFsCloseDir(ppu);
 
-        public static ulong CellFsGetFreeSize(PPU ppu)
+        internal static ulong CellFsGetFreeSize(PPU ppu)
         {
             GuestVoidPtr path_ptr = ppu.ReadArg<GuestVoidPtr>(ARG0);
             GuestPtr<uint> block_size_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);

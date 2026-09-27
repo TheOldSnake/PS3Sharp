@@ -4406,7 +4406,7 @@
 0x464FF889 cellHttpResponseGetContentLength
 0xBEF53A2B cellVoiceGetBitRate
 0xEBBFEAC3 svc1dGetSideInfoSeq
-0xF8206492 cellSslCertGetPublicKey
+0xF8206492 cellSslCertGetinternalKey
 0x78C2B936 _ZNK3paf10PhSaveData8GetFrameEv
 0xF0947035 ctanhf
 0x49609306 cellGemSetRumble
@@ -7329,7 +7329,7 @@
 0x8A96E574 cellPngEncCoreOpen
 0x165AD4A6 _ZN3paf7PhSText8SetStyleEif
 0xF1CFF87D _ZNSt10ctype_baseD2Ev
-0x033C4905 cellSslCertGetRsaPublicKeyExponent
+0x033C4905 cellSslCertGetRsainternalKeyExponent
 0x97C85E96 cellGcmSetTextureOptimization
 0x20A97BA2 cellPadLddRegisterController
 0xE12F7196 cellAsfParser2AStdSeekTime
@@ -8669,7 +8669,7 @@
 0x05D65DFF sceNpScoreGetRankingByNpId
 0x6CE65E82 _ZN8cxmlutil5GetIDERKN4cxml7ElementEPKcPS5_
 0xEB1BB57F _ZN3paf7PhXmBar9SelectOutEf
-0x8E505175 cellSslCertGetRsaPublicKeyModulus
+0x8E505175 cellSslCertGetRsainternalKeyModulus
 0xA5B68C24 FT_Stream_ReadLong
 0xAF02E7DE _cellSslPemReadX509
 0xE82969E2 sceNpClansAbortRequest

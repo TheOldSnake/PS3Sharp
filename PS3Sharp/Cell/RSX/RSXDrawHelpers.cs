@@ -6,16 +6,16 @@ using System.Runtime.CompilerServices;
 
 namespace PS3Sharp.Cell.RSX
 {
-    public sealed partial class RealitySynthesizer
+    internal sealed partial class RealitySynthesizer
     {
-        public void BindSurfaceA()
+        internal void BindSurfaceA()
         {
             // Bind Surface A
             uint surface_a_address = OffsetToAddress(CurrentState.Surface_A_Offset, CurrentState.Surface_A_Location & 1);
             GLRenderer.SetSurface(surface_a_address);
         }
 
-        public void SetupRenderer(uint vertexCount, uint startOffset = 0)
+        internal void SetupRenderer(uint vertexCount, uint startOffset = 0)
         {
             BindSurfaceA();
 
@@ -29,7 +29,7 @@ namespace PS3Sharp.Cell.RSX
             UploadTextures();
         }
 
-        public void SetupRendererImmediateMode()
+        internal void SetupRendererImmediateMode()
         {
             // Does not setup vao
             BindSurfaceA();
@@ -49,7 +49,7 @@ namespace PS3Sharp.Cell.RSX
         private static int VertexShadersCount = 0;
         private static int FragmentShadersCount = 0;
 
-        public void SetupShaders()
+        internal void SetupShaders()
         {
             ulong vertexChecksum = 0;
             ulong fragmentChecksum = 0;
@@ -138,7 +138,7 @@ namespace PS3Sharp.Cell.RSX
             Console.WriteLine($"Created a new program: {newProgram}");
         }
 
-        public void UploadConstants()
+        internal void UploadConstants()
         {
             if (CurrentState.ConstantsDirty || CurrentState.ShaderProgramHasChanged)
             {
@@ -147,7 +147,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public void UploadUniforms()
+        internal void UploadUniforms()
         {
             // Upload uniforms
 
@@ -166,7 +166,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public void UploadViewportTransforms()
+        internal void UploadViewportTransforms()
         {
             if (CurrentState.SurfaceClipDirty)
             {
@@ -187,7 +187,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public (T, uint) SetupIndexList<T>(Queue<BigEndian<uint>> param) where T : unmanaged, INumber<T>
+        internal (T, uint) SetupIndexList<T>(Queue<BigEndian<uint>> param) where T : unmanaged, INumber<T>
         {
             // TODO: Optimize this with scratch buffers and caches  
 
@@ -213,7 +213,7 @@ namespace PS3Sharp.Cell.RSX
             return (maxIndex, (uint)indexList.Count);
         }
 
-        public T FillIndexList<T>(List<T> indexList, uint elementBufferAddress, uint indexStart, uint indicesCount) where T : unmanaged, INumber<T>
+        internal T FillIndexList<T>(List<T> indexList, uint elementBufferAddress, uint indexStart, uint indicesCount) where T : unmanaged, INumber<T>
         {
             uint sizeOfT = (uint)Unsafe.SizeOf<T>();
             T max = T.Zero;
@@ -235,7 +235,7 @@ namespace PS3Sharp.Cell.RSX
             return max;
         }
 
-        public void SetVertexData(uint vertexCount, uint startOffset)
+        internal void SetVertexData(uint vertexCount, uint startOffset)
         {
 
             // Fetch vertex buffers from memory in parallel
@@ -290,7 +290,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public void CreateAndUploadVertexBuffer(int location, RSXVertexBuffer vertexBuffer)
+        internal void CreateAndUploadVertexBuffer(int location, RSXVertexBuffer vertexBuffer)
         {
             // Data is ready in the scratch buffer
             Span<byte> vertexData = vertexBuffer.GetLastScratchData();
@@ -303,7 +303,7 @@ namespace PS3Sharp.Cell.RSX
             GLRenderer.VertexCache.Add(vertexBuffer.CacheKey, handle);
         }
 
-        public void DrawArrays(uint vertexCount, uint first)
+        internal void DrawArrays(uint vertexCount, uint first)
         {
             if (CurrentState.BeginMode != BeginMode.QuadStrip && CurrentState.BeginMode != BeginMode.Polygon)
             {
@@ -331,7 +331,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public void SetVertexDataImmediate(int location, RSXVertexBuffer vertexBuffer, uint vertexCount)
+        internal void SetVertexDataImmediate(int location, RSXVertexBuffer vertexBuffer, uint vertexCount)
         {
             // This is very slow and hacky
 
@@ -366,7 +366,7 @@ namespace PS3Sharp.Cell.RSX
             GLRenderer.UploadBuffer<float>(immFinal);
         }
 
-        public uint[] BuildQuadIndices(uint quadCount)
+        internal uint[] BuildQuadIndices(uint quadCount)
         {
             uint[] indices = new uint[quadCount * 6];
 
@@ -387,7 +387,7 @@ namespace PS3Sharp.Cell.RSX
             return indices;
         }
 
-        public (BlendingFactorSrc, BlendingFactorSrc) GetSrcBlendFactors(uint value)
+        internal (BlendingFactorSrc, BlendingFactorSrc) GetSrcBlendFactors(uint value)
         {
             uint src = value & 0xFFFF;
             uint alpha = (value >> 16) & 0xFFFF;
@@ -405,7 +405,7 @@ namespace PS3Sharp.Cell.RSX
             return (srcFactor, alphaFactor);
         }
 
-        public (BlendingFactorDest, BlendingFactorDest) GetDestBlendFactors(uint value)
+        internal (BlendingFactorDest, BlendingFactorDest) GetDestBlendFactors(uint value)
         {
             uint src = value & 0xFFFF;
             uint alpha = (value >> 16) & 0xFFFF;
@@ -423,7 +423,7 @@ namespace PS3Sharp.Cell.RSX
             return (srcFactor, alphaFactor);
         }
 
-        public (BlendEquationMode, BlendEquationMode) GetBlendEquation(uint value)
+        internal (BlendEquationMode, BlendEquationMode) GetBlendEquation(uint value)
         {
             uint rgb = value & 0xFFFF;
             uint alpha = (value >> 16) & 0xFFFF;
@@ -442,7 +442,7 @@ namespace PS3Sharp.Cell.RSX
         }
 
 
-        public void UploadTextures()
+        internal void UploadTextures()
         {
 
             // Fetch the data and compute hashes in parallel 
@@ -494,7 +494,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public int CreateAndUploadTexture(int location, RSXTexture texture)
+        internal int CreateAndUploadTexture(int location, RSXTexture texture)
         {
             // Data should be ready in the scratch buffer
             ReadOnlySpan<byte> data = texture.GetLastScratchData();
@@ -545,7 +545,7 @@ namespace PS3Sharp.Cell.RSX
             return glTexHandle;
         }
 
-        public int TryBindVertexFromCache(int location, RSXVertexBuffer vertexBuffer)
+        internal int TryBindVertexFromCache(int location, RSXVertexBuffer vertexBuffer)
         {
             if (GLRenderer.VertexCache.TryGetValue(vertexBuffer.CacheKey, out int glvertexHandle))
             {
@@ -557,7 +557,7 @@ namespace PS3Sharp.Cell.RSX
             return -1;
         }
 
-        public int TryBindTextureFromCache(int location, RSXTexture texture)
+        internal int TryBindTextureFromCache(int location, RSXTexture texture)
         {
             if (GLRenderer.TextureCache.TryGetValue(texture.CacheKey, out int glTexHandle))
             {
@@ -568,7 +568,7 @@ namespace PS3Sharp.Cell.RSX
             return -1;
         }
 
-        public int TryBindSurface(int location, RSXTexture texture)
+        internal int TryBindSurface(int location, RSXTexture texture)
         {
             int handle = GLRenderer.GetSurfaceTexture(texture.Address);
 
@@ -580,7 +580,7 @@ namespace PS3Sharp.Cell.RSX
             return handle;
         }
 
-        public void SetSwizzle(int glTexHandle, RSXTexture texture)
+        internal void SetSwizzle(int glTexHandle, RSXTexture texture)
         {
             // This code assumes that the texture is already bound
 

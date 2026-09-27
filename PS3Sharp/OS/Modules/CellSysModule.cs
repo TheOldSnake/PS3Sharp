@@ -4,9 +4,9 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    public static class CellSysModule
+    internal static class CellSysModule
     {
-        public static ulong CellSysmoduleLoadModule(PPU ppu)
+        internal static ulong CellSysmoduleLoadModule(PPU ppu)
         {
             //TODO
             ushort id = ppu.ReadArg<ushort>(ARG0);
@@ -24,19 +24,19 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong CellSysmoduleUnloadModule(PPU ppu)
+        internal static ulong CellSysmoduleUnloadModule(PPU ppu)
         {
             Console.WriteLine($"[CellSysModule] cellSysmoduleUnloadModule");
             return CELL_OK;
         }
 
-        public static ulong CellSysmoduleIsLoaded(PPU ppu)
+        internal static ulong CellSysmoduleIsLoaded(PPU ppu)
         {
             Console.WriteLine($"[CellSysModule] cellSysmoduleIsLoaded");
             return CELL_OK;
         }
 
-        public static readonly Dictionary<ushort, string> ModuleMap = new() {
+        internal static readonly Dictionary<ushort, string> ModuleMap = new() {
             { 0x0000, "sys_net" },
             { 0x0001, "cellHttp" },
             { 0x0002, "cellHttpUtil" },

@@ -5,7 +5,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.Syscall
 {
-    public static class SyscallHandler
+    internal static class SyscallHandler
     {
         // Constants
 
@@ -155,7 +155,7 @@ namespace PS3Sharp.Syscall
             Array.Fill(SyscallTable, Unknown);
         }
 
-        public static void HandleSyscall(PPU ppu, uint lev)
+        internal static void HandleSyscall(PPU ppu, uint lev)
         {
             uint sys_id = ppu.ReadArg<uint>(SYSCALL_ID_REG);
 
@@ -332,19 +332,19 @@ namespace PS3Sharp.Syscall
             ppu.Return(result);
         }
 
-        public static ulong Syscallstub(string name)
+        internal static ulong Syscallstub(string name)
         {
             Console.WriteLine($"unimplemented syscall : {name}");
             return CELL_OK;
         }
 
-        public static ulong Syscallstub(string name, ulong ret)
+        internal static ulong Syscallstub(string name, ulong ret)
         {
             Console.WriteLine(name);
             return ret;
         }
 
-        public static ulong Unknown(PPU ppu)
+        internal static ulong Unknown(PPU ppu)
         {
             uint sys_id = ppu.ReadArg<uint>(SYSCALL_ID_REG);
             throw new Exception($"unhandled syscall : 0x{sys_id:X3}");

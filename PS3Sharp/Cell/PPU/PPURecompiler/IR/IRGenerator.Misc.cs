@@ -2,16 +2,16 @@
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 {
-    public sealed partial class IRGenerator
+    internal sealed partial class IRGenerator
     {
 
-        public void Syscall(PPUInstruction instruction)
+        internal void Syscall(PPUInstruction instruction)
         {
             //IRSyscall(instruction, _irContext.CurrentPC);
             _irContext.ExitPC = Constant(_irContext.CurrentPC);
         }
 
-        public void MFSPR(PPUInstruction instruction)
+        internal void MFSPR(PPUInstruction instruction)
         {
             uint spr = ((instruction.SPR & 0x1F) << 5) | ((instruction.SPR >> 5) & 0x1F);
             uint rt = instruction.Rt;
@@ -42,7 +42,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             _irContext.SetGPR(rt, result);
         }
 
-        public void MTSPR(PPUInstruction instruction)
+        internal void MTSPR(PPUInstruction instruction)
         {
             uint spr = ((instruction.SPR & 0x1F) << 5) | ((instruction.SPR >> 5) & 0x1F);
             uint rs = instruction.Rs;
@@ -71,7 +71,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             }
         }
 
-        public void MFCR(PPUInstruction instruction)
+        internal void MFCR(PPUInstruction instruction)
         {
             uint rt = instruction.Rt;
             Value cr = _irContext.GetCR();
@@ -79,7 +79,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             //TODO: mfocrf
         }
 
-        public void MTCRF(PPUInstruction instruction)
+        internal void MTCRF(PPUInstruction instruction)
         {
             uint rs = instruction.Rs;
             bool isOneField = ((instruction.Raw >> 20) & 1) == 1;
@@ -105,21 +105,21 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             }
         }
 
-        public void MCRF(PPUInstruction instruction)
+        internal void MCRF(PPUInstruction instruction)
         {
             // CR_BF = CR_BFA
             Value bfa = _irContext.GetCRField((CRNumber)instruction.BFA);
             _irContext.WriteCRField((CRNumber)instruction.BF, bfa);
         }
 
-        public void MFTB(PPUInstruction instruction)
+        internal void MFTB(PPUInstruction instruction)
         {
             uint spr = ((instruction.SPR & 0x1F) << 5) | ((instruction.SPR >> 5) & 0x1F);
             throw new Exception("[IR] TODO: MFTB");
         }
 
         // Helper for conditional branches
-        public Value TestBranchCondition(uint bo, uint bi)
+        internal Value TestBranchCondition(uint bo, uint bi)
         {
             // Based on PPC manual page 34
 
@@ -189,7 +189,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             _irContext.ExitPC = Constant((uint)target);
         }
 
-        public void BC(PPUInstruction instruction)
+        internal void BC(PPUInstruction instruction)
         {
             bool lk = (instruction.Raw & 1) == 1;
             bool aa = ((instruction.Raw >> 1) & 1) == 1;
@@ -212,7 +212,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             _irContext.ExitPC = Select(result, Constant(target), Constant(_irContext.CurrentPC));
         }
 
-        public void BCLR(PPUInstruction instruction)
+        internal void BCLR(PPUInstruction instruction)
         {
             bool lk = (instruction.Raw & 1) == 1;
             Value target = _irContext.GetLR();
@@ -226,7 +226,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             _irContext.ExitPC = Select(result, target, Constant(_irContext.CurrentPC));
         }
 
-        public void BCCTR(PPUInstruction instruction)
+        internal void BCCTR(PPUInstruction instruction)
         {
             bool lk = (instruction.Raw & 1) == 1;
             Value target = _irContext.GetCTR();
@@ -242,7 +242,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
         // Compare instructions
 
-        public void CMPI(PPUInstruction instruction)
+        internal void CMPI(PPUInstruction instruction)
         {
             uint ra = instruction.Ra;
             bool l = ((instruction.Raw >> 21) & 0x1) == 1; // long
@@ -263,7 +263,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             _irContext.UpdateCR(a, si64, (CRNumber)bf);
         }
 
-        public void CMPLI(PPUInstruction instruction)
+        internal void CMPLI(PPUInstruction instruction)
         {
             uint ra = instruction.Ra;
             bool l = ((instruction.Raw >> 21) & 0x1) == 1; // long
@@ -284,7 +284,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             _irContext.UpdateCR(a, ui, (CRNumber)bf, signed: false); // unsigned compare
         }
 
-        public void CMPL(PPUInstruction instruction)
+        internal void CMPL(PPUInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -307,7 +307,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             _irContext.UpdateCR(a, b, (CRNumber)bf, signed: false); // unsigned compare
         }
 
-        public void CMP(PPUInstruction instruction)
+        internal void CMP(PPUInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -331,7 +331,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
         }
 
         // Sign Extension instructions
-        public void EXTSB(PPUInstruction instruction)
+        internal void EXTSB(PPUInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
@@ -348,7 +348,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             }
         }
 
-        public void EXTSH(PPUInstruction instruction)
+        internal void EXTSH(PPUInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
@@ -365,7 +365,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             }
         }
 
-        public void EXTSW(PPUInstruction instruction)
+        internal void EXTSW(PPUInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
@@ -382,7 +382,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             }
         }
 
-        public void CNTLZD(PPUInstruction instruction)
+        internal void CNTLZD(PPUInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
@@ -397,7 +397,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             }
         }
 
-        public void CNTLZW(PPUInstruction instruction)
+        internal void CNTLZW(PPUInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;

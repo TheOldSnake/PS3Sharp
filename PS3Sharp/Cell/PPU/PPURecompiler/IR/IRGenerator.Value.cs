@@ -1,10 +1,10 @@
 ﻿namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 {
-    public sealed partial class IRGenerator
+    internal sealed partial class IRGenerator
     {
-        public readonly struct Value : IEquatable<Value>
+        internal readonly struct Value : IEquatable<Value>
         {
-            public enum ValueType
+            internal enum ValueType
             {
                 None,
                 I8,
@@ -17,20 +17,20 @@
                 Vector128,
             }
 
-            public readonly int Id = -1;
-            public readonly ValueType Type;
+            internal readonly int Id = -1;
+            internal readonly ValueType Type;
 
-            public bool IsValid => Id > 0;
+            internal bool IsValid => Id > 0;
 
-            public static Value Invalid => new(-1, ValueType.None);
+            internal static Value Invalid => new(-1, ValueType.None);
 
-            public Value(int id, ValueType type)
+            internal Value(int id, ValueType type)
             {
                 Id = id;
                 Type = type;
             }
 
-            public static int GetValueSize(ValueType type)
+            internal static int GetValueSize(ValueType type)
             {
                 switch (type)
                 {
@@ -60,7 +60,7 @@
                 }
             }
 
-            public static int GetBitCount(ValueType type)
+            internal static int GetBitCount(ValueType type)
             {
                 switch (type)
                 {

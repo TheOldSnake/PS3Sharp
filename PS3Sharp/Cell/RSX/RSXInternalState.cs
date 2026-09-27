@@ -3,57 +3,57 @@ using OpenTK.Mathematics;
 
 namespace PS3Sharp.Cell.RSX
 {
-    public sealed partial class RSXInternalState
+    internal sealed partial class RSXInternalState
     {
-        public uint CurrentSemaphoreOffset { get; set; }
-        public uint CurrentSemaphoreLocation { get; set; }
-        public RSXVertexBuffer[] VertexBuffers { get; } = new RSXVertexBuffer[16];
-        public RSXTexture[] Textures { get; } = new RSXTexture[16];
-        public RSXElementBuffer ElementBuffer { get; } = new RSXElementBuffer();
+        internal uint CurrentSemaphoreOffset { get; set; }
+        internal uint CurrentSemaphoreLocation { get; set; }
+        internal RSXVertexBuffer[] VertexBuffers { get; } = new RSXVertexBuffer[16];
+        internal RSXTexture[] Textures { get; } = new RSXTexture[16];
+        internal RSXElementBuffer ElementBuffer { get; } = new RSXElementBuffer();
 
-        //public uint ElementBufferAddress { get; set; }          // Indices list address
-        //public DrawElementsType ElementBufferType { get; set; } // Indices list type
+        //internal uint ElementBufferAddress { get; set; }          // Indices list address
+        //internal DrawElementsType ElementBufferType { get; set; } // Indices list type
 
-        public uint PointX { get; set; }
-        public uint PointY { get; set; }
-        public uint DestOffset { get; set; }
+        internal uint PointX { get; set; }
+        internal uint PointY { get; set; }
+        internal uint DestOffset { get; set; }
 
-        public BeginMode BeginMode { get; set; }
-        public bool Begin { get; set; }
+        internal BeginMode BeginMode { get; set; }
+        internal bool Begin { get; set; }
 
-        public bool BlendingEnabled { get; set; }
-        public bool DepthTestEnabled { get; set; }
-        public bool DepthMask { get; set; }
-        public BlendEquationMode CurrentBlendMode { get; set; }
-        public BlendingFactorSrc CurrentBlendSrcFactor { get; set; }
-        public BlendingFactorSrc CurrentBlendSrcAlphaFactor { get; set; }
-        public BlendingFactorDest CurrentBlendDestFactor { get; set; }
-        public BlendingFactorDest CurrentBlendDestAlphaFactor { get; set; }
-        public uint ScissorX { get; set; }
-        public uint ScissorY { get; set; }
-        public uint ScissorWidth { get; set; }
-        public uint ScissorHeight { get; set; }
-        public float[] Constants { get; } = new float[468 * 4]; // 468 of vec4
-        public bool ConstantsDirty { get; set; }
-        public bool ShaderProgramHasChanged { get; set; }
-        public Dictionary<uint, Vector4> AllUniforms { get; } = [];   // Dictionary of all uniforms and their values
+        internal bool BlendingEnabled { get; set; }
+        internal bool DepthTestEnabled { get; set; }
+        internal bool DepthMask { get; set; }
+        internal BlendEquationMode CurrentBlendMode { get; set; }
+        internal BlendingFactorSrc CurrentBlendSrcFactor { get; set; }
+        internal BlendingFactorSrc CurrentBlendSrcAlphaFactor { get; set; }
+        internal BlendingFactorDest CurrentBlendDestFactor { get; set; }
+        internal BlendingFactorDest CurrentBlendDestAlphaFactor { get; set; }
+        internal uint ScissorX { get; set; }
+        internal uint ScissorY { get; set; }
+        internal uint ScissorWidth { get; set; }
+        internal uint ScissorHeight { get; set; }
+        internal float[] Constants { get; } = new float[468 * 4]; // 468 of vec4
+        internal bool ConstantsDirty { get; set; }
+        internal bool ShaderProgramHasChanged { get; set; }
+        internal Dictionary<uint, Vector4> AllUniforms { get; } = [];   // Dictionary of all uniforms and their values
 
         // Don't use { get; set; } on these structs
-        public Vector2i SurfaceClip = new();
-        public bool SurfaceClipDirty { get; set; }
+        internal Vector2i SurfaceClip = new();
+        internal bool SurfaceClipDirty { get; set; }
 
-        public Vector4 ViewPortOffset = new();
-        public bool ViewPortOffsetDirty { get; set; }
+        internal Vector4 ViewPortOffset = new();
+        internal bool ViewPortOffsetDirty { get; set; }
 
-        public Vector4 ViewPortScale = new();
-        public bool ViewPortScaleDirty { get; set; }
+        internal Vector4 ViewPortScale = new();
+        internal bool ViewPortScaleDirty { get; set; }
 
 
-        public uint Surface_A_Offset;
-        public uint Surface_A_Location;
-        public bool FrameDirty { get; set; }
+        internal uint Surface_A_Offset;
+        internal uint Surface_A_Location;
+        internal bool FrameDirty { get; set; }
 
-        public static readonly BeginMode[] BeginModeLookup = [
+        internal static readonly BeginMode[] BeginModeLookup = [
             BeginMode.Points,        // 1
             BeginMode.Lines,         // 2
             BeginMode.LineLoop,      // 3
@@ -66,7 +66,7 @@ namespace PS3Sharp.Cell.RSX
             BeginMode.Polygon        // 10
         ];
 
-        public static readonly PrimitiveType[] PrimitiveTypeLookup = [
+        internal static readonly PrimitiveType[] PrimitiveTypeLookup = [
             PrimitiveType.Points,        // 1
             PrimitiveType.Lines,         // 2
             PrimitiveType.LineLoop,      // 3
@@ -80,7 +80,7 @@ namespace PS3Sharp.Cell.RSX
         ];
 
 
-        public static readonly Dictionary<uint, BlendingFactorSrc> BlendSrcFactors = new() {
+        internal static readonly Dictionary<uint, BlendingFactorSrc> BlendSrcFactors = new() {
             { 0x00000000, BlendingFactorSrc.Zero },
             { 0x00000001, BlendingFactorSrc.One },
 
@@ -102,7 +102,7 @@ namespace PS3Sharp.Cell.RSX
         };
 
 
-        public static readonly Dictionary<uint, BlendingFactorDest> BlendDestFactors = new() {
+        internal static readonly Dictionary<uint, BlendingFactorDest> BlendDestFactors = new() {
             { 0x00000000, BlendingFactorDest.Zero },
             { 0x00000001, BlendingFactorDest.One },
 
@@ -124,7 +124,7 @@ namespace PS3Sharp.Cell.RSX
         };
 
 
-        public static readonly Dictionary<uint, BlendEquationMode> BlendEquationModes = new() {
+        internal static readonly Dictionary<uint, BlendEquationMode> BlendEquationModes = new() {
             { 0x8006, BlendEquationMode.FuncAdd },
             { 0x8007, BlendEquationMode.Min },
             { 0x8008, BlendEquationMode.Max },

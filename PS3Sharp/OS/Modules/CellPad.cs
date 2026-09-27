@@ -8,66 +8,66 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    public static class CellPad
+    internal static class CellPad
     {
-        public const uint CELL_PAD_ERROR_NO_DEVICE = 0x80121107;
-        public const uint CELL_PAD_MAX_PORT_NUM = 7;
-        public const uint CELL_PAD_MAX_CODES = 64;
+        internal const uint CELL_PAD_ERROR_NO_DEVICE = 0x80121107;
+        internal const uint CELL_PAD_MAX_PORT_NUM = 7;
+        internal const uint CELL_PAD_MAX_CODES = 64;
 
         // Button bit positions
         // Index 2
-        public const uint CELL_PAD_CTRL_SELECT = 0;
-        public const uint CELL_PAD_CTRL_L3 = 1;
-        public const uint CELL_PAD_CTRL_R3 = 2;
-        public const uint CELL_PAD_CTRL_START = 3;
-        public const uint CELL_PAD_CTRL_UP = 4;
-        public const uint CELL_PAD_CTRL_RIGHT = 5;
-        public const uint CELL_PAD_CTRL_DOWN = 6;
-        public const uint CELL_PAD_CTRL_LEFT = 7;
+        internal const uint CELL_PAD_CTRL_SELECT = 0;
+        internal const uint CELL_PAD_CTRL_L3 = 1;
+        internal const uint CELL_PAD_CTRL_R3 = 2;
+        internal const uint CELL_PAD_CTRL_START = 3;
+        internal const uint CELL_PAD_CTRL_UP = 4;
+        internal const uint CELL_PAD_CTRL_RIGHT = 5;
+        internal const uint CELL_PAD_CTRL_DOWN = 6;
+        internal const uint CELL_PAD_CTRL_LEFT = 7;
 
         // Index 3
-        public const uint CELL_PAD_CTRL_L2 = 0 + 16;
-        public const uint CELL_PAD_CTRL_R2 = 1 + 16;
-        public const uint CELL_PAD_CTRL_L1 = 2 + 16;
-        public const uint CELL_PAD_CTRL_R1 = 3 + 16;
-        public const uint CELL_PAD_CTRL_TRIANGLE = 4 + 16;
-        public const uint CELL_PAD_CTRL_CIRCLE = 5 + 16;
-        public const uint CELL_PAD_CTRL_CROSS = 6 + 16;
-        public const uint CELL_PAD_CTRL_SQUARE = 7 + 16;
+        internal const uint CELL_PAD_CTRL_L2 = 0 + 16;
+        internal const uint CELL_PAD_CTRL_R2 = 1 + 16;
+        internal const uint CELL_PAD_CTRL_L1 = 2 + 16;
+        internal const uint CELL_PAD_CTRL_R1 = 3 + 16;
+        internal const uint CELL_PAD_CTRL_TRIANGLE = 4 + 16;
+        internal const uint CELL_PAD_CTRL_CIRCLE = 5 + 16;
+        internal const uint CELL_PAD_CTRL_CROSS = 6 + 16;
+        internal const uint CELL_PAD_CTRL_SQUARE = 7 + 16;
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct CellPadInfo2 : IPS3Struct
+        internal struct CellPadInfo2 : IPS3Struct
         {
-            public BigEndian<uint> MaxConnect;
-            public BigEndian<uint> NowConnect;
-            public BigEndian<uint> SystemInfo;
+            internal BigEndian<uint> MaxConnect;
+            internal BigEndian<uint> NowConnect;
+            internal BigEndian<uint> SystemInfo;
 
-            public InlineData.InlineArray7<BigEndian<uint>> PortStatus;
-            public InlineData.InlineArray7<BigEndian<uint>> PortSetting;
-            public InlineData.InlineArray7<BigEndian<uint>> DeviceCapability;
-            public InlineData.InlineArray7<BigEndian<uint>> DeviceType;
+            internal InlineData.InlineArray7<BigEndian<uint>> PortStatus;
+            internal InlineData.InlineArray7<BigEndian<uint>> PortSetting;
+            internal InlineData.InlineArray7<BigEndian<uint>> DeviceCapability;
+            internal InlineData.InlineArray7<BigEndian<uint>> DeviceType;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct CellPadData : IPS3Struct
+        internal struct CellPadData : IPS3Struct
         {
-            public BigEndian<int> Len;
-            public InlineData.InlineArray64<BigEndian<ushort>> Buttons; // This probably stores the button states for all connected controllers
+            internal BigEndian<int> Len;
+            internal InlineData.InlineArray64<BigEndian<ushort>> Buttons; // This probably stores the button states for all connected controllers
         }
 
-        public static ulong CellPadInit(PPU ppu)
+        internal static ulong CellPadInit(PPU ppu)
         {
             //Console.WriteLine($"[CellPad] cellPadInit");
             return CELL_OK;
         }
 
-        public static ulong CellPadSetPortSetting(PPU ppu)
+        internal static ulong CellPadSetPortSetting(PPU ppu)
         {
             //Console.WriteLine($"[CellPad] cellPadSetPortSetting");
             return CELL_OK;
         }
 
-        public static ulong CellPadGetData(PPU ppu)
+        internal static ulong CellPadGetData(PPU ppu)
         {
             uint port = ppu.ReadArg<uint>(ARG0);
             GuestPtr<CellPadData> data_ptr = ppu.ReadArg<GuestPtr<CellPadData>>(ARG1);
@@ -94,13 +94,13 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        public static ulong CellPadGetInfo(PPU ppu)
+        internal static ulong CellPadGetInfo(PPU ppu)
         {
             return CELL_OK;
         }
 
 
-        public static ulong CellPadGetInfo2(PPU ppu)
+        internal static ulong CellPadGetInfo2(PPU ppu)
         {
             GuestPtr<CellPadInfo2> info_ptr = ppu.ReadArg<GuestPtr<CellPadInfo2>>(ARG0);
             uint nowConnected = WindowManager.GetJoystickState() == null ? 0U : 1U;

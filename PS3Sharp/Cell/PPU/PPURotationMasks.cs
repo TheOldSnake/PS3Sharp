@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace PS3Sharp.Cell.PPU
 {
-    public static class PPURotationMasks
+    internal static class PPURotationMasks
     {
         private static readonly ulong[] RotationMasksArray = new ulong[64 * 64];
 
@@ -35,7 +35,7 @@ namespace PS3Sharp.Cell.PPU
         {
             // Generate ReadOnlySpan<ulong> definition of RotationMasks based on the data filled in RotationMasksArray
 
-            Console.WriteLine("public static ReadOnlySpan<ulong> RotationMasksSpan => [");
+            Console.WriteLine("internal static ReadOnlySpan<ulong> RotationMasksSpan => [");
 
             for (int i = 0; i < masks.Length; i++)
             {
@@ -50,7 +50,7 @@ namespace PS3Sharp.Cell.PPU
         }
 
         // Use this getter to access the masks from interpreter / recompiler
-        public static ulong GetRotationMask(int mb, int me)
+        internal static ulong GetRotationMask(int mb, int me)
         {
             // Avoid bounds checks, mb/me bitfields cannot exceed 6 bits
             int index = (mb * 64) + me;

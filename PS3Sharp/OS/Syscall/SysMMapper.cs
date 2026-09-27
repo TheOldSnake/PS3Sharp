@@ -7,12 +7,12 @@ using static PS3Sharp.Memory_Manager.MemoryManager;
 
 namespace PS3Sharp.Syscall
 {
-    public static class SysMMapper
+    internal static class SysMMapper
     {
         //sys_mmapper syscalls
         //not to be confused with sys_mmapper functions in sysPrxForUser
 
-        public static ulong SysMMapperAllocateAddress(PPU ppu)
+        internal static ulong SysMMapperAllocateAddress(PPU ppu)
         {
             //int sys_mmapper_allocate_address(size_t size, uint64_t flags, size_t alignment, sys_addr_t * alloc_addr); 
 
@@ -40,7 +40,7 @@ namespace PS3Sharp.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysMMapperFreeAddress(PPU ppu)
+        internal static ulong SysMMapperFreeAddress(PPU ppu)
         {
             GuestVoidPtr addr = ppu.ReadArg<GuestVoidPtr>(ARG0);
             if (!addr.IsNullPtr)
@@ -50,7 +50,7 @@ namespace PS3Sharp.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysMMapperAllocateMemory(PPU ppu)
+        internal static ulong SysMMapperAllocateMemory(PPU ppu)
         {
             ulong ipc_key = ppu.ReadArg<ulong>(ARG0);
             ulong size = ppu.ReadArg<ulong>(ARG1);
@@ -65,7 +65,7 @@ namespace PS3Sharp.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysMMapperSearchAndMap(PPU ppu)
+        internal static ulong SysMMapperSearchAndMap(PPU ppu)
         {
             //Search for block by Handle (id) and remap it
 
@@ -81,7 +81,7 @@ namespace PS3Sharp.Syscall
             return CELL_OK;
         }
 
-        public static ulong SysMMapperMapSharedMemory(PPU ppu)
+        internal static ulong SysMMapperMapSharedMemory(PPU ppu)
         {
             uint address = ppu.ReadArg<uint>(ARG0);
             uint handle = ppu.ReadArg<uint>(ARG1);

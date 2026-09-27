@@ -3,9 +3,9 @@ using static PS3Sharp.Cell.PPU.PPU;
 
 namespace PS3Sharp.Cell.PPU.PPUInterpreter
 {
-    public static unsafe partial class PPUInterpreter
+    internal static unsafe partial class PPUInterpreter
     {
-        public enum MemAccessForm
+        internal enum MemAccessForm
         {
             DForm,
             DSForm,
@@ -13,7 +13,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
         }
 
         // A helper to compute EA
-        public static uint GetEA(PPUInstruction instruction, PPU ppu, MemAccessForm form, bool checkRA)
+        internal static uint GetEA(PPUInstruction instruction, PPU ppu, MemAccessForm form, bool checkRA)
         {
             /*ulong b = instruction.Ra != 0 ? ppu.GPR[instruction.Ra].Value64 : 0;
             short d = da_form? (short)(instruction.DS << 2) : (short)instruction.D;
@@ -437,7 +437,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
         // Load String instructions
 
-        public static void LSWI(PPUInstruction instruction, PPU ppu)
+        internal static void LSWI(PPUInstruction instruction, PPU ppu)
         {
             // TODO
 

@@ -7,45 +7,45 @@ using System.Runtime.InteropServices;
 
 namespace PS3Sharp.Cell.RSX
 {
-    public sealed partial class RealitySynthesizer : IThread
+    internal sealed partial class RealitySynthesizer : IThread
     {
         [StructLayout(LayoutKind.Sequential)]
-        public struct CellGcmConfig : IPS3Struct
+        internal struct CellGcmConfig : IPS3Struct
         {
-            public BigEndian<uint> Local_Addr;    // Pointer to RSX local memory
-            public BigEndian<uint> IO_Addr;
-            public BigEndian<uint> Local_Size;    // Size of RSX memory
-            public BigEndian<uint> IO_Size;
-            public BigEndian<uint> MemFreq;
-            public BigEndian<uint> CoreFreq;
+            internal BigEndian<uint> Local_Addr;    // Pointer to RSX local memory
+            internal BigEndian<uint> IO_Addr;
+            internal BigEndian<uint> Local_Size;    // Size of RSX memory
+            internal BigEndian<uint> IO_Size;
+            internal BigEndian<uint> MemFreq;
+            internal BigEndian<uint> CoreFreq;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct CellGcmCtxData : IPS3Struct
+        internal struct CellGcmCtxData : IPS3Struct
         {
-            public BigEndian<uint> Begin;       /* Start address of command buffer */
-            public BigEndian<uint> End;         /* End address of command buffer */
-            public BigEndian<uint> Current;     /* Current address of command buffer */
-            public BigEndian<uint> Callback;    /* Callback function that is called when "current" reaches "end" */
+            internal BigEndian<uint> Begin;       /* Start address of command buffer */
+            internal BigEndian<uint> End;         /* End address of command buffer */
+            internal BigEndian<uint> Current;     /* Current address of command buffer */
+            internal BigEndian<uint> Callback;    /* Callback function that is called when "current" reaches "end" */
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct CellGcmCtrlRegister : IPS3Struct
+        internal struct CellGcmCtrlRegister : IPS3Struct
         {
-            public BigEndian<uint> Put;        /* member for accessing the PUT register */
-            public BigEndian<uint> Get;        /* member for accessing the GET register */
-            public BigEndian<uint> Ref;		   /* member for accessing the REF register. Initial value is 0xFFFFFFFF */
+            internal BigEndian<uint> Put;        /* member for accessing the PUT register */
+            internal BigEndian<uint> Get;        /* member for accessing the GET register */
+            internal BigEndian<uint> Ref;		   /* member for accessing the REF register. Initial value is 0xFFFFFFFF */
         }
 
-        public sealed class RSXFrameBuffer
+        internal sealed class RSXFrameBuffer
         {
-            public uint Address;
-            public uint Pitch;
-            public uint Width;
-            public uint Height;
+            internal uint Address;
+            internal uint Pitch;
+            internal uint Width;
+            internal uint Height;
         }
 
-        public enum RSXThreadStates
+        internal enum RSXThreadStates
         {
             Running,
             Paused,
@@ -53,34 +53,34 @@ namespace PS3Sharp.Cell.RSX
         }
 
         // Constants
-        public const uint GCM_LOCATION_RSX = 0;     // Memory buffer is located in RSX memory.
-        public const uint GCM_LOCATION_CELL = 1;    // Memory buffer is located in main memory.
-        public const uint GCM_LOCATION_REPORT = 2;  // Memory buffer is located in report memory.
-        public const uint VRAM_SIZE = 249 * 1024 * 1024;
-        public const ulong FRAME_TIME_US = (ulong)(16.666 * 1000);
+        internal const uint GCM_LOCATION_RSX = 0;     // Memory buffer is located in RSX memory.
+        internal const uint GCM_LOCATION_CELL = 1;    // Memory buffer is located in main memory.
+        internal const uint GCM_LOCATION_REPORT = 2;  // Memory buffer is located in report memory.
+        internal const uint VRAM_SIZE = 249 * 1024 * 1024;
+        internal const ulong FRAME_TIME_US = (ulong)(16.666 * 1000);
 
-        public bool MemoryAllocated { get; private set; }
+        internal bool MemoryAllocated { get; private set; }
 
-        public GuestPtr<CellGcmConfig> ConfigPtr { get; private set; }
-        public GuestPtr<CellGcmCtxData> CtxPtr { get; private set; }
-        public GuestPtr<CellGcmCtrlRegister> CtrlPtr { get; private set; }
-        public GuestVoidPtr VRAM_Ptr { get; private set; }
-        public GuestPtr<byte> LabelsPtr { get; private set; }
+        internal GuestPtr<CellGcmConfig> ConfigPtr { get; private set; }
+        internal GuestPtr<CellGcmCtxData> CtxPtr { get; private set; }
+        internal GuestPtr<CellGcmCtrlRegister> CtrlPtr { get; private set; }
+        internal GuestVoidPtr VRAM_Ptr { get; private set; }
+        internal GuestPtr<byte> LabelsPtr { get; private set; }
 
-        public RSXFrameBuffer[] FrameBuffers { get; } = new RSXFrameBuffer[255];
-        public RSXInternalState CurrentState { get; } = new RSXInternalState();
+        internal RSXFrameBuffer[] FrameBuffers { get; } = new RSXFrameBuffer[255];
+        internal RSXInternalState CurrentState { get; } = new RSXInternalState();
         private static PPU.PPU? _RSX_PPU_Thread;    // for executing rsx callbacks that are ppu functions
-        public Thread? NativeThread { get; set; }
-        public RSXThreadStates RsxThreadState = RSXThreadStates.Stopped;
+        internal Thread? NativeThread { get; set; }
+        internal RSXThreadStates RsxThreadState = RSXThreadStates.Stopped;
 
         private readonly ConcurrentQueue<WorkItem> CommandQueue = new(); // External commands from PPU thread
-        public static RealitySynthesizer Instance { get; } = new RealitySynthesizer();
+        internal static RealitySynthesizer Instance { get; } = new RealitySynthesizer();
 
         private Stack<uint> CallStack = new();
         private ulong LastVblank;
-        public static ulong LastFlipTime;
+        internal static ulong LastFlipTime;
 
-        public void EnqueueCommand(WorkItem command) => CommandQueue.Enqueue(command);
+        internal void EnqueueCommand(WorkItem command) => CommandQueue.Enqueue(command);
 
         private RealitySynthesizer()
         {
@@ -103,7 +103,7 @@ namespace PS3Sharp.Cell.RSX
             ThreadManager.CreateRSXThread(this);
         }
 
-        public void CreateRSXPPUThread(ulong r2)
+        internal void CreateRSXPPUThread(ulong r2)
         {
             if (_RSX_PPU_Thread == null)
             {
@@ -119,7 +119,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public void AllocateRSXMemory()
+        internal void AllocateRSXMemory()
         {
             AllocateVram();
             AllocateConfigReg();
@@ -204,7 +204,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public uint AddressToOffset(uint address)
+        internal uint AddressToOffset(uint address)
         {
             CellGcmCtxData ctx = MemoryManager.ReadStruct<CellGcmCtxData>(CtxPtr);
             CellGcmConfig config = MemoryManager.ReadStruct<CellGcmConfig>(ConfigPtr);
@@ -226,7 +226,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public uint OffsetToAddress(uint offset, uint location)
+        internal uint OffsetToAddress(uint offset, uint location)
         {
             uint address;
             if (location == GCM_LOCATION_RSX)
@@ -247,7 +247,7 @@ namespace PS3Sharp.Cell.RSX
             return address;
         }
 
-        public void UpdateGet(int value)
+        internal void UpdateGet(int value)
         {
             MemoryManager.UpdateStruct<CellGcmCtrlRegister>(CtrlPtr, (ref ctrl) =>
             {
@@ -255,7 +255,7 @@ namespace PS3Sharp.Cell.RSX
             });
         }
 
-        public void SetPut(uint value)
+        internal void SetPut(uint value)
         {
             MemoryManager.UpdateStruct<CellGcmCtrlRegister>(CtrlPtr, (ref ctrl) =>
             {
@@ -263,7 +263,7 @@ namespace PS3Sharp.Cell.RSX
             });
         }
 
-        public void SetGet(uint value)
+        internal void SetGet(uint value)
         {
             MemoryManager.UpdateStruct<CellGcmCtrlRegister>(CtrlPtr, (ref ctrl) =>
             {
@@ -271,7 +271,7 @@ namespace PS3Sharp.Cell.RSX
             });
         }
 
-        public void RSXThreadMain()
+        internal void RSXThreadMain()
         {
             // CellGcmCtrlRegister ctrl = MemoryManager.ReadStruct<CellGcmCtrlRegister>(GCMCtrl_Address);
             unsafe
@@ -303,7 +303,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public void RunCommandBuffer()
+        internal void RunCommandBuffer()
         {
 
             unsafe
@@ -355,7 +355,7 @@ namespace PS3Sharp.Cell.RSX
 
         }
 
-        public void PrintCommand(RSXCommand command)
+        internal void PrintCommand(RSXCommand command)
         {
             Console.WriteLine($"RSX Command = 0x{command.Raw:X8} - " +
                 $"NonIncrement = {command.NonIncrement} - " +

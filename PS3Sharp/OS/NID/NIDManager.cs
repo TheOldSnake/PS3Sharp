@@ -2,12 +2,12 @@
 
 namespace PS3Sharp.OS.NID
 {
-    public static class NIDManager
+    internal static class NIDManager
     {
-        public static Dictionary<uint, string> NIDList = ParseNIDsFile(@"OS\NID\NIDs.txt");
-        public static bool NIDInitialized;
+        internal static Dictionary<uint, string> NIDList = ParseNIDsFile(@"OS\NID\NIDs.txt");
+        internal static bool NIDInitialized;
 
-        public static Dictionary<uint, string> ParseNIDsFile(string path)
+        internal static Dictionary<uint, string> ParseNIDsFile(string path)
         {
             Dictionary<uint, string> dict = new();
 
@@ -42,7 +42,7 @@ namespace PS3Sharp.OS.NID
             return dict;
         }
 
-        public static uint GetNID(string name)
+        internal static uint GetNID(string name)
         {
             if (NIDList == null)
             {

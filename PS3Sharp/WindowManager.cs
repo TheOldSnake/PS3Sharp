@@ -7,15 +7,15 @@ using PS3Sharp.Cell.PPU.PPUInterpreter;
 
 namespace PS3Sharp
 {
-    public static class WindowManager
+    internal static class WindowManager
     {
-        public static bool IsInitialized { get; private set; }
-        public static GameWindow WindowInstance { get; private set; }
+        internal static bool IsInitialized { get; private set; }
+        internal static GameWindow WindowInstance { get; private set; }
         private static Vector2i CurrentWindowSize;
 
-        public static bool IsRunning => WindowInstance != null && !WindowInstance.IsExiting && WindowInstance.Exists;
+        internal static bool IsRunning => WindowInstance != null && !WindowInstance.IsExiting && WindowInstance.Exists;
 
-        public static void InitializeWindow()
+        internal static void InitializeWindow()
         {
             GLFWProvider.CheckForMainThread = false;
             NativeWindowSettings nativeSettings = new()
@@ -37,7 +37,7 @@ namespace PS3Sharp
             IsInitialized = true;
         }
 
-        public static Vector2i GetCenterOfScreen(Vector2i size)
+        internal static Vector2i GetCenterOfScreen(Vector2i size)
         {
             //Get screen resolution 
             VideoMode videoMode = Monitors.GetPrimaryMonitor().CurrentVideoMode;
@@ -48,7 +48,7 @@ namespace PS3Sharp
             return new Vector2i(newX, newY);
         }
 
-        public static JoystickState? GetJoystickState()
+        internal static JoystickState? GetJoystickState()
         {
             if (IsInitialized)
             {
@@ -61,7 +61,7 @@ namespace PS3Sharp
             return null;
         }
 
-        public static void ProcessEvents()
+        internal static void ProcessEvents()
         {
             WindowInstance.ProcessEvents(0.0);
             if (WindowInstance.IsExiting)

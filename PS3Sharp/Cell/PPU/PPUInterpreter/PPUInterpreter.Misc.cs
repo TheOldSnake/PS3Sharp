@@ -4,7 +4,7 @@ using static PS3Sharp.Cell.PPU.PPU;
 
 namespace PS3Sharp.Cell.PPU.PPUInterpreter
 {
-    public static unsafe partial class PPUInterpreter
+    internal static unsafe partial class PPUInterpreter
     {
 
         //Syscall

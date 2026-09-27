@@ -7,47 +7,47 @@ using System.Runtime.InteropServices;
 
 namespace PS3Sharp.Cell.RSX
 {
-    public sealed class RSXVertexBuffer
+    internal sealed class RSXVertexBuffer
     {
 
         // Attributes 
-        public bool IsEnabled { get; set; }
-        public uint BufferAddress { get; set; }
-        public VertexAttribPointerType AttribType { get; set; }
-        public uint NumberOfElements { get; set; }
-        public uint Stride { get; set; }
-        public bool IsNormalized { get; set; }
+        internal bool IsEnabled { get; set; }
+        internal uint BufferAddress { get; set; }
+        internal VertexAttribPointerType AttribType { get; set; }
+        internal uint NumberOfElements { get; set; }
+        internal uint Stride { get; set; }
+        internal bool IsNormalized { get; set; }
 
         // Immediate data is currently only for floats
-        public List<float> ImmediateData { get; } = new List<float>();
-        public Span<float> ImmediateDataSpan => CollectionsMarshal.AsSpan(ImmediateData);
-        public bool HasImmediateData => ImmediateData.Count > 0;
+        internal List<float> ImmediateData { get; } = new List<float>();
+        internal Span<float> ImmediateDataSpan => CollectionsMarshal.AsSpan(ImmediateData);
+        internal bool HasImmediateData => ImmediateData.Count > 0;
 
         // Scratch buffer to hold data
-        public ScratchBuffer ScratchBuffer { get; } = new ScratchBuffer();
-        public VertexCacheKey CacheKey = new();
+        internal ScratchBuffer ScratchBuffer { get; } = new ScratchBuffer();
+        internal VertexCacheKey CacheKey = new();
 
-        public struct VertexCacheKey
+        internal struct VertexCacheKey
         {
-            public uint Address;
-            public uint Type;
-            public uint NumberOfElements;
-            public uint Stride;
-            public ulong Hash;
+            internal uint Address;
+            internal uint Type;
+            internal uint NumberOfElements;
+            internal uint Stride;
+            internal ulong Hash;
         }
 
-        public Span<T> GetScratchData<T>(int elementsCount) where T : unmanaged
+        internal Span<T> GetScratchData<T>(int elementsCount) where T : unmanaged
         {
             Span<T> data = ScratchBuffer.RequestBuffer<T>(elementsCount);
             return data;
         }
 
-        public Span<byte> GetLastScratchData()
+        internal Span<byte> GetLastScratchData()
         {
             return ScratchBuffer.GetLastRequestedBuffer<byte>();
         }
 
-        public void FetchVertexData(uint vertexCount, uint startOffset)
+        internal void FetchVertexData(uint vertexCount, uint startOffset)
         {
             switch (AttribType)
             {
@@ -73,7 +73,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public void FetchVertexBufferData<T>(uint vertexCount, uint startOffset) where T : unmanaged
+        internal void FetchVertexBufferData<T>(uint vertexCount, uint startOffset) where T : unmanaged
         {
             uint bufferAddress = BufferAddress;
             uint elementsPerUnitCount = NumberOfElements;
@@ -108,7 +108,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        public void UpdateHashKey()
+        internal void UpdateHashKey()
         {
             Span<byte> data = GetLastScratchData();
             CacheKey.Address = BufferAddress;
@@ -118,7 +118,7 @@ namespace PS3Sharp.Cell.RSX
             CacheKey.Hash = XxHash3.HashToUInt64(data);
         }
 
-        public void PrintInfo(int location)
+        internal void PrintInfo(int location)
         { // For debugging
             string inputName = VertexShaderGenerator.InputNames[location];
             Console.WriteLine($"[RSX] Setting up vertex buffer {location} ({inputName}) - type = {AttribType}, address = 0x{BufferAddress:X8}, n_elements = {NumberOfElements}, stride = {Stride}");

@@ -4,7 +4,7 @@ using PS3Sharp.OS.Syscall;
 
 namespace PS3Sharp.OS.Modules
 {
-    public static partial class ModuleHandler
+    internal static partial class ModuleHandler
     {
 
         // Bind Module functions

@@ -3,18 +3,18 @@ using static PS3Sharp.Cell.PPU.PPURotationMasks;
 
 namespace PS3Sharp.Cell.PPU.PPUInterpreter
 {
-    public static unsafe partial class PPUInterpreter
+    internal static unsafe partial class PPUInterpreter
     {
 
         // Add with carry out helpers
-        public static ulong CkdAdd(ulong a, ulong b, out bool carry)
+        internal static ulong CkdAdd(ulong a, ulong b, out bool carry)
         {
             ulong result = a + b;
             carry = result < a;
             return result;
         }
 
-        public static uint CkdAdd(uint a, uint b, out bool carry)
+        internal static uint CkdAdd(uint a, uint b, out bool carry)
         {
             uint result = a + b;
             carry = result < a;
@@ -108,7 +108,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void ADDZE(PPUInstruction instruction, PPU ppu)
+        internal static void ADDZE(PPUInstruction instruction, PPU ppu)
         {
             ulong ra = ppu.GPR[instruction.Ra].Value64;
             ulong ca = ppu.State->XER.CA;
@@ -128,7 +128,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void ADDME(PPUInstruction instruction, PPU ppu)
+        internal static void ADDME(PPUInstruction instruction, PPU ppu)
         {
             ulong ra = ppu.GPR[instruction.Ra].Value64;
             ulong ca = ppu.State->XER.CA;
@@ -214,7 +214,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void SUBFZE(PPUInstruction instruction, PPU ppu)
+        internal static void SUBFZE(PPUInstruction instruction, PPU ppu)
         {
             ulong ra = ppu.GPR[instruction.Ra].Value64;
             ulong ca = ppu.State->XER.CA;
@@ -229,7 +229,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void SUBFME(PPUInstruction instruction, PPU ppu)
+        internal static void SUBFME(PPUInstruction instruction, PPU ppu)
         {
             ulong ra = ppu.GPR[instruction.Ra].Value64;
             ulong ca = ppu.State->XER.CA;
@@ -248,13 +248,13 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
         }
 
         // General logic instructions
-        public static void ANDI(PPUInstruction instruction, PPU ppu)
+        internal static void ANDI(PPUInstruction instruction, PPU ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ppu.GPR[instruction.Rs].Value64 & instruction.UI;
             UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
         }
 
-        public static void ANDIS(PPUInstruction instruction, PPU ppu)
+        internal static void ANDIS(PPUInstruction instruction, PPU ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ppu.GPR[instruction.Rs].Value64 & ((ulong)instruction.UI << 16);
             UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
@@ -284,7 +284,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             // Does not affect CR
         }
 
-        public static void AND(PPUInstruction instruction, PPU ppu)
+        internal static void AND(PPUInstruction instruction, PPU ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ppu.GPR[instruction.Rs].Value64 & ppu.GPR[instruction.Rb].Value64;
             if (instruction.Rc == 1)
@@ -293,7 +293,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void OR(PPUInstruction instruction, PPU ppu)
+        internal static void OR(PPUInstruction instruction, PPU ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ppu.GPR[instruction.Rs].Value64 | ppu.GPR[instruction.Rb].Value64;
             if (instruction.Rc == 1)
@@ -302,7 +302,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void XOR(PPUInstruction instruction, PPU ppu)
+        internal static void XOR(PPUInstruction instruction, PPU ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ppu.GPR[instruction.Rs].Value64 ^ ppu.GPR[instruction.Rb].Value64;
             if (instruction.Rc == 1)
@@ -311,7 +311,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void NAND(PPUInstruction instruction, PPU ppu)
+        internal static void NAND(PPUInstruction instruction, PPU ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ~(ppu.GPR[instruction.Rs].Value64 & ppu.GPR[instruction.Rb].Value64);
             if (instruction.Rc == 1)
@@ -320,7 +320,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void NOR(PPUInstruction instruction, PPU ppu)
+        internal static void NOR(PPUInstruction instruction, PPU ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ~(ppu.GPR[instruction.Rs].Value64 | ppu.GPR[instruction.Rb].Value64);
             if (instruction.Rc == 1)
@@ -329,7 +329,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void EQV(PPUInstruction instruction, PPU ppu)
+        internal static void EQV(PPUInstruction instruction, PPU ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ~(ppu.GPR[instruction.Rs].Value64 ^ ppu.GPR[instruction.Rb].Value64);
             if (instruction.Rc == 1)
@@ -338,7 +338,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void ANDC(PPUInstruction instruction, PPU ppu)
+        internal static void ANDC(PPUInstruction instruction, PPU ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ppu.GPR[instruction.Rs].Value64 & (~ppu.GPR[instruction.Rb].Value64);
             if (instruction.Rc == 1)
@@ -347,7 +347,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void ORC(PPUInstruction instruction, PPU ppu)
+        internal static void ORC(PPUInstruction instruction, PPU ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ppu.GPR[instruction.Rs].Value64 | (~ppu.GPR[instruction.Rb].Value64);
             if (instruction.Rc == 1)
@@ -356,7 +356,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void NEG(PPUInstruction instruction, PPU ppu)
+        internal static void NEG(PPUInstruction instruction, PPU ppu)
         {
             //RT = ¬(RA) + 1
             ppu.GPR[instruction.Rt].SValue64 = -ppu.GPR[instruction.Ra].SValue64;
@@ -372,7 +372,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
         }
 
         // Condition register bit logic opcodes
-        public static (uint ba, uint bb) GetBitsAB(PPUInstruction instruction, PPU ppu)
+        internal static (uint ba, uint bb) GetBitsAB(PPUInstruction instruction, PPU ppu)
         {
             //Helper for condition register bit opcodes
             uint ba = (ppu.State->CR.Raw >> (int)(31 - instruction.Ba)) & 1;
@@ -380,56 +380,56 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             return (ba, bb);
         }
 
-        public static void CROR(PPUInstruction instruction, PPU ppu)
+        internal static void CROR(PPUInstruction instruction, PPU ppu)
         {
             (uint ba, uint bb) = GetBitsAB(instruction, ppu);
             uint bt_value = ba | bb; //OR
             ppu.State->CR.WriteCRBit(instruction.Bt, bt_value & 1);
         }
 
-        public static void CRORC(PPUInstruction instruction, PPU ppu)
+        internal static void CRORC(PPUInstruction instruction, PPU ppu)
         {
             (uint ba, uint bb) = GetBitsAB(instruction, ppu);
             uint bt_value = ba | (~bb); //ORC
             ppu.State->CR.WriteCRBit(instruction.Bt, bt_value & 1);
         }
 
-        public static void CRAND(PPUInstruction instruction, PPU ppu)
+        internal static void CRAND(PPUInstruction instruction, PPU ppu)
         {
             (uint ba, uint bb) = GetBitsAB(instruction, ppu);
             uint bt_value = ba & bb; //AND
             ppu.State->CR.WriteCRBit(instruction.Bt, bt_value & 1);
         }
 
-        public static void CRANDC(PPUInstruction instruction, PPU ppu)
+        internal static void CRANDC(PPUInstruction instruction, PPU ppu)
         {
             (uint ba, uint bb) = GetBitsAB(instruction, ppu);
             uint bt_value = ba & (~bb); //ANDC
             ppu.State->CR.WriteCRBit(instruction.Bt, bt_value & 1);
         }
 
-        public static void CRXOR(PPUInstruction instruction, PPU ppu)
+        internal static void CRXOR(PPUInstruction instruction, PPU ppu)
         {
             (uint ba, uint bb) = GetBitsAB(instruction, ppu);
             uint bt_value = ba ^ bb; //XOR
             ppu.State->CR.WriteCRBit(instruction.Bt, bt_value & 1);
         }
 
-        public static void CRNAND(PPUInstruction instruction, PPU ppu)
+        internal static void CRNAND(PPUInstruction instruction, PPU ppu)
         {
             (uint ba, uint bb) = GetBitsAB(instruction, ppu);
             uint bt_value = ~(ba & bb); //NAND
             ppu.State->CR.WriteCRBit(instruction.Bt, bt_value & 1);
         }
 
-        public static void CRNOR(PPUInstruction instruction, PPU ppu)
+        internal static void CRNOR(PPUInstruction instruction, PPU ppu)
         {
             (uint ba, uint bb) = GetBitsAB(instruction, ppu);
             uint bt_value = ~(ba | bb); //NOR
             ppu.State->CR.WriteCRBit(instruction.Bt, bt_value & 1);
         }
 
-        public static void CREQV(PPUInstruction instruction, PPU ppu)
+        internal static void CREQV(PPUInstruction instruction, PPU ppu)
         {
             (uint ba, uint bb) = GetBitsAB(instruction, ppu);
             uint bt_value = ~(ba ^ bb); //EQV (~XOR)
@@ -438,13 +438,13 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
 
         // Multiply instructions
-        public static void MULLI(PPUInstruction instruction, PPU ppu)
+        internal static void MULLI(PPUInstruction instruction, PPU ppu)
         { //Multiply low immediate
             ppu.GPR[instruction.Rt].SValue64 = ppu.GPR[instruction.Ra].SValue64 * instruction.SI_64;
             //No special registers affected
         }
 
-        public static void MULLW(PPUInstruction instruction, PPU ppu)
+        internal static void MULLW(PPUInstruction instruction, PPU ppu)
         { //Multiply word, write 64-bit result (signed)
             ppu.GPR[instruction.Rt].SValue64 = (long)ppu.GPR[instruction.Ra].SValue32 * (long)ppu.GPR[instruction.Rb].SValue32;
             if (instruction.Rc == 1)
@@ -458,7 +458,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void MULHW(PPUInstruction instruction, PPU ppu)
+        internal static void MULHW(PPUInstruction instruction, PPU ppu)
         { //Multiply word, write high 32-bit (signed)
             long result = ((long)ppu.GPR[instruction.Ra].SValue32) * ((long)ppu.GPR[instruction.Rb].SValue32);
             ppu.GPR[instruction.Rt].SValue64 = (int)(result >> 32);
@@ -474,7 +474,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void MULHWU(PPUInstruction instruction, PPU ppu)
+        internal static void MULHWU(PPUInstruction instruction, PPU ppu)
         { //Multiply word, write high 32-bit (unsigned)
             ulong result = ((ulong)ppu.GPR[instruction.Ra].Value32) * ((ulong)ppu.GPR[instruction.Rb].Value32);
             ppu.GPR[instruction.Rt].Value64 = (uint)(result >> 32);
@@ -490,7 +490,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void MULLD(PPUInstruction instruction, PPU ppu)
+        internal static void MULLD(PPUInstruction instruction, PPU ppu)
         { //Multiply double word (signed)
             ppu.GPR[instruction.Rt].SValue64 = ppu.GPR[instruction.Ra].SValue64 * ppu.GPR[instruction.Rb].SValue64;
             if (instruction.Rc == 1)
@@ -504,7 +504,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void MULHD(PPUInstruction instruction, PPU ppu)
+        internal static void MULHD(PPUInstruction instruction, PPU ppu)
         { //Multiply double word, write high 64-bit (signed)
             Int128 result = ((Int128)ppu.GPR[instruction.Ra].SValue64) * ((Int128)ppu.GPR[instruction.Rb].SValue64);
             ppu.GPR[instruction.Rt].SValue64 = (long)(result >> 64);
@@ -519,7 +519,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void MULHDU(PPUInstruction instruction, PPU ppu)
+        internal static void MULHDU(PPUInstruction instruction, PPU ppu)
         { //Multiply double word, write high 64-bit (unsigned)
             UInt128 result = ((UInt128)ppu.GPR[instruction.Ra].Value64) * ((UInt128)ppu.GPR[instruction.Rb].Value64);
             ppu.GPR[instruction.Rt].Value64 = (ulong)(result >> 64);
@@ -535,7 +535,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
         }
 
         // Divide instructions
-        public static void DIVD(PPUInstruction instruction, PPU ppu)
+        internal static void DIVD(PPUInstruction instruction, PPU ppu)
         {
             long a = ppu.GPR[instruction.Ra].SValue64;
             long b = ppu.GPR[instruction.Rb].SValue64;
@@ -560,7 +560,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void DIVDU(PPUInstruction instruction, PPU ppu)
+        internal static void DIVDU(PPUInstruction instruction, PPU ppu)
         {
             ulong a = ppu.GPR[instruction.Ra].Value64;
             ulong b = ppu.GPR[instruction.Rb].Value64;
@@ -585,7 +585,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void DIVW(PPUInstruction instruction, PPU ppu)
+        internal static void DIVW(PPUInstruction instruction, PPU ppu)
         {
             int a = ppu.GPR[instruction.Ra].SValue32;
             int b = ppu.GPR[instruction.Rb].SValue32;
@@ -612,7 +612,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void DIVWU(PPUInstruction instruction, PPU ppu)
+        internal static void DIVWU(PPUInstruction instruction, PPU ppu)
         {
             uint a = ppu.GPR[instruction.Ra].Value32;
             uint b = ppu.GPR[instruction.Rb].Value32;
@@ -638,7 +638,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
         }
 
         // Shift instructions
-        public static void SLD(PPUInstruction instruction, PPU ppu)
+        internal static void SLD(PPUInstruction instruction, PPU ppu)
         {
             int shift = (int)(ppu.GPR[instruction.Rb].Value64 & 0x7F);
             ulong result = shift >= 64 ? 0 : ppu.GPR[instruction.Rs].Value64 << shift;
@@ -650,7 +650,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void SLW(PPUInstruction instruction, PPU ppu)
+        internal static void SLW(PPUInstruction instruction, PPU ppu)
         {
             int shift = (int)(ppu.GPR[instruction.Rb].Value64 & 0x3F);
             ulong result = shift >= 32 ? 0 : ppu.GPR[instruction.Rs].Value32 << shift;
@@ -662,7 +662,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void SRAD(PPUInstruction instruction, PPU ppu)
+        internal static void SRAD(PPUInstruction instruction, PPU ppu)
         {
             int shift = (int)(ppu.GPR[instruction.Rb].Value32 & 0x7F);
             int mask = (1 << shift) - 1;
@@ -705,7 +705,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void SRADI(PPUInstruction instruction, PPU ppu)
+        internal static void SRADI(PPUInstruction instruction, PPU ppu)
         {
             int mask = (1 << instruction.SH) - 1;
             bool hasOnes = (ppu.GPR[instruction.Rs].SValue64 & mask) > 0;
@@ -735,7 +735,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void SRAW(PPUInstruction instruction, PPU ppu)
+        internal static void SRAW(PPUInstruction instruction, PPU ppu)
         {
             int shift = (int)(ppu.GPR[instruction.Rb].Value32 & 0x3F);
             int mask = (1 << shift) - 1;
@@ -778,7 +778,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void SRAWI(PPUInstruction instruction, PPU ppu)
+        internal static void SRAWI(PPUInstruction instruction, PPU ppu)
         {
             int shift = instruction.SH & 0x1F; //5 bits
             int mask = (1 << (shift)) - 1;
@@ -810,7 +810,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void SRD(PPUInstruction instruction, PPU ppu)
+        internal static void SRD(PPUInstruction instruction, PPU ppu)
         {
             int shift = (int)(ppu.GPR[instruction.Rb].Value64 & 0x7F);
             ulong result = shift >= 64 ? 0 : ppu.GPR[instruction.Rs].Value64 >> shift;
@@ -822,7 +822,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void SRW(PPUInstruction instruction, PPU ppu)
+        internal static void SRW(PPUInstruction instruction, PPU ppu)
         {
             int shift = (int)(ppu.GPR[instruction.Rb].Value64 & 0x3F);
             ulong result = shift >= 32 ? 0 : ppu.GPR[instruction.Rs].Value32 >> shift;
@@ -898,14 +898,14 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
         //    return bitCount == 64 ? ulong.MaxValue : mask;
         //}
 
-        public static (int, int) FlipStartEnd(int start, int end)
+        internal static (int, int) FlipStartEnd(int start, int end)
         {
             int actualStart = 63 - end;
             int actualEnd = 63 - start;
             return (actualStart, actualEnd);
         }
 
-        public static void RLDCL(PPUInstruction instruction, PPU ppu)
+        internal static void RLDCL(PPUInstruction instruction, PPU ppu)
         {
             int amount = (int)(ppu.GPR[instruction.Rb].Value32 & 0x3F); //6-bits
             ulong rotated = BitOperations.RotateLeft(ppu.GPR[instruction.Rs].Value64, amount);
@@ -919,7 +919,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void RLDCR(PPUInstruction instruction, PPU ppu)
+        internal static void RLDCR(PPUInstruction instruction, PPU ppu)
         {
             int amount = (int)(ppu.GPR[instruction.Rb].Value32 & 0x3F); //6-bits
             ulong rotated = BitOperations.RotateLeft(ppu.GPR[instruction.Rs].Value64, amount);
@@ -933,7 +933,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void RLDIC(PPUInstruction instruction, PPU ppu)
+        internal static void RLDIC(PPUInstruction instruction, PPU ppu)
         {
             ulong mask = GetRotationMask(instruction.MB_6, 63 - instruction.SH);
             ulong rotated = BitOperations.RotateLeft(ppu.GPR[instruction.Rs].Value64, instruction.SH);
@@ -945,7 +945,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void RLDICL(PPUInstruction instruction, PPU ppu)
+        internal static void RLDICL(PPUInstruction instruction, PPU ppu)
         {
             ulong rotated = BitOperations.RotateLeft(ppu.GPR[instruction.Rs].Value64, instruction.SH);
             ulong mask = GetRotationMask(instruction.MB_6, 63);
@@ -958,7 +958,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void RLDICR(PPUInstruction instruction, PPU ppu)
+        internal static void RLDICR(PPUInstruction instruction, PPU ppu)
         {
             ulong rotated = BitOperations.RotateLeft(ppu.GPR[instruction.Rs].Value64, instruction.SH);
             ulong mask = GetRotationMask(0, instruction.ME_6);
@@ -970,7 +970,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void RLDIMI(PPUInstruction instruction, PPU ppu)
+        internal static void RLDIMI(PPUInstruction instruction, PPU ppu)
         {
             ulong mask = GetRotationMask(instruction.MB_6, 63 - instruction.SH);
             ulong rotated = BitOperations.RotateLeft(ppu.GPR[instruction.Rs].Value64, instruction.SH);
@@ -984,7 +984,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void RLWIMI(PPUInstruction instruction, PPU ppu)
+        internal static void RLWIMI(PPUInstruction instruction, PPU ppu)
         {
             int n = instruction.SH & 0x1F; //Rotate 32 takes only 5 bits of SH
 
@@ -1003,7 +1003,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void RLWINM(PPUInstruction instruction, PPU ppu)
+        internal static void RLWINM(PPUInstruction instruction, PPU ppu)
         {
             int n = instruction.SH & 0x1F; //Rotate 32 takes only 5 bits of SH
 
@@ -1019,7 +1019,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        public static void RLWNM(PPUInstruction instruction, PPU ppu)
+        internal static void RLWNM(PPUInstruction instruction, PPU ppu)
         {
             int n = (int)(ppu.GPR[instruction.Rb].Value32 & 0x1F); //Rotate 32 takes only 5 bits of RB
 

@@ -12,11 +12,11 @@ using static PS3Sharp.ElfLoader;
 
 namespace PS3Sharp.PRXManager
 {
-    public static class PRXManager
+    internal static class PRXManager
     {    // todo
 
         // List of function that are forced to be HLE
-        public static List<string> ForceHLE = [
+        internal static List<string> ForceHLE = [
             "sys_process_exit",
             "sys_initialize_tls",
 
@@ -43,7 +43,7 @@ namespace PS3Sharp.PRXManager
         ];
 
         // List of LLEd libraries file names
-        public static readonly List<string> PRXList = [
+        internal static readonly List<string> PRXList = [
             "liblv2",
             "libsync2",
             "libfiber",
@@ -61,69 +61,69 @@ namespace PS3Sharp.PRXManager
         ];
 
         // List of loaded libraries
-        public static List<LibraryInfo> LoadedLibraries = [];
+        internal static List<LibraryInfo> LoadedLibraries = [];
 
         // List of library initialization functions to be called at startup
-        public static List<LibraryInitialization> LibraryInitializations = [];
+        internal static List<LibraryInitialization> LibraryInitializations = [];
 
-        public struct LibraryInitialization
+        internal struct LibraryInitialization
         {
-            public string LibName;
-            public uint Prologue;
-            public uint Epilogue;
-            public uint Start;
-            public uint Stop;
+            internal string LibName;
+            internal uint Prologue;
+            internal uint Epilogue;
+            internal uint Start;
+            internal uint Stop;
         }
 
-        public static Dictionary<uint, uint> ExportedFunctions = new();
+        internal static Dictionary<uint, uint> ExportedFunctions = new();
 
 
         [StructLayout(LayoutKind.Sequential)]
-        public readonly struct LibraryInfo : IPS3Struct
+        internal readonly struct LibraryInfo : IPS3Struct
         {
-            public readonly BigEndian<ushort> Attributes;
-            public readonly InlineData.InlineArray2<byte> VerInfo;
-            public readonly InlineData.InlineArray28<byte> Name;
-            public readonly BigEndian<uint> TOC;
+            internal readonly BigEndian<ushort> Attributes;
+            internal readonly InlineData.InlineArray2<byte> VerInfo;
+            internal readonly InlineData.InlineArray28<byte> Name;
+            internal readonly BigEndian<uint> TOC;
 
             // Exports
-            public readonly BigEndian<uint> ExportsStart;
-            public readonly BigEndian<uint> ExportsEnd;
+            internal readonly BigEndian<uint> ExportsStart;
+            internal readonly BigEndian<uint> ExportsEnd;
 
             // Imports
-            public readonly BigEndian<uint> ImportsStart;
-            public readonly BigEndian<uint> ImportsEnd;
+            internal readonly BigEndian<uint> ImportsStart;
+            internal readonly BigEndian<uint> ImportsEnd;
         }
 
 
         // Export or import module struct
         [StructLayout(LayoutKind.Sequential)]
-        public readonly struct PRXModuleInfo : IPS3Struct
+        internal readonly struct PRXModuleInfo : IPS3Struct
         {
-            public readonly byte Size;
-            public readonly byte Unk0;
-            public readonly BigEndian<ushort> Version;
-            public readonly BigEndian<ushort> Attributes;
-            public readonly BigEndian<ushort> FunctionCount;
-            public readonly BigEndian<ushort> VariablesCount;
-            public readonly BigEndian<ushort> TLSVariablesCount;
-            public readonly byte HashInfo;
-            public readonly byte TLSHashInfo;
-            public readonly InlineData.InlineArray2<byte> Unk1;
+            internal readonly byte Size;
+            internal readonly byte Unk0;
+            internal readonly BigEndian<ushort> Version;
+            internal readonly BigEndian<ushort> Attributes;
+            internal readonly BigEndian<ushort> FunctionCount;
+            internal readonly BigEndian<ushort> VariablesCount;
+            internal readonly BigEndian<ushort> TLSVariablesCount;
+            internal readonly byte HashInfo;
+            internal readonly byte TLSHashInfo;
+            internal readonly InlineData.InlineArray2<byte> Unk1;
 
-            public readonly BigEndian<uint> Name_Ptr;
-            public readonly BigEndian<uint> NIDs_Ptr;
-            public readonly BigEndian<uint> Addresses_Ptr;
+            internal readonly BigEndian<uint> Name_Ptr;
+            internal readonly BigEndian<uint> NIDs_Ptr;
+            internal readonly BigEndian<uint> Addresses_Ptr;
 
             //what are these for?
-            public readonly BigEndian<uint> VNIDs_Ptr;
-            public readonly BigEndian<uint> VStubs_Ptr;
+            internal readonly BigEndian<uint> VNIDs_Ptr;
+            internal readonly BigEndian<uint> VStubs_Ptr;
 
-            public readonly BigEndian<uint> Unk4;
-            public readonly BigEndian<uint> Unk5;
+            internal readonly BigEndian<uint> Unk4;
+            internal readonly BigEndian<uint> Unk5;
         }
 
-        public static void LoadPRXLibraries()
+        internal static void LoadPRXLibraries()
         {
             // Load all segments
             for (int i = 0; i < PRXList.Count; i++)
@@ -283,7 +283,7 @@ namespace PS3Sharp.PRXManager
             }
         }
 
-        public static void InitializeLibraries(PPU ppu)
+        internal static void InitializeLibraries(PPU ppu)
         {
             uint pc;
 
@@ -309,7 +309,7 @@ namespace PS3Sharp.PRXManager
             }
         }
 
-        public static string GetLibName(LibraryInfo lib_info)
+        internal static string GetLibName(LibraryInfo lib_info)
         {
             ReadOnlySpan<byte> name_buffer = lib_info.Name;
             int name_end = name_buffer.IndexOf((byte)0);

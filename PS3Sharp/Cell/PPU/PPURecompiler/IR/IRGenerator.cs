@@ -2,12 +2,12 @@
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 {
-    public sealed partial class IRGenerator
+    internal sealed partial class IRGenerator
     {
         private IRContext _irContext;
         private readonly IROptimizer _irOptimizer = new();
 
-        public IRBlock GenerateIRBlock(uint address)
+        internal IRBlock GenerateIRBlock(uint address)
         {
             // Console.WriteLine($"Generating IR - address = 0x{address:X8}");
 

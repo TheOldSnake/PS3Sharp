@@ -5,41 +5,41 @@ using System.Runtime.InteropServices;
 
 namespace PS3Sharp.Cell.SPU
 {
-    public unsafe sealed class SPU : IDisposable
+    internal unsafe sealed class SPU : IDisposable
     {
         private bool disposedValue;
 
-        public string Name { get; }
-        public uint ID { get; } = 0xFFFFFFFF;
-        public uint GroupID { get; } = 0xFFFFFFFF;
-        public SysSPU.SysSPUImage Image { get; }
-        public SysSPU.SysSPUThreadArgument Argument { get; }
+        internal string Name { get; }
+        internal uint ID { get; } = 0xFFFFFFFF;
+        internal uint GroupID { get; } = 0xFFFFFFFF;
+        internal SysSPU.SysSPUImage Image { get; }
+        internal SysSPU.SysSPUThreadArgument Argument { get; }
 
         private uint[] _ports { get; } = new uint[64];
         private object _lock { get; } = new object();
 
-        public bool PortIsFree(int port) => _ports[port] == 0xFFFFFFFF;
+        internal bool PortIsFree(int port) => _ports[port] == 0xFFFFFFFF;
 
-        public static readonly int GPRByteSize = 128 * sizeof(SPURegister);
-        public static readonly int LocalStorageSize = 256 * 1024;
+        internal static readonly int GPRByteSize = 128 * sizeof(SPURegister);
+        internal static readonly int LocalStorageSize = 256 * 1024;
 
         // Allocate GPR
-        public SPURegister* GPR { get; private set; } = (SPURegister*)NativeMemory.AllocZeroed((nuint)GPRByteSize);
+        internal SPURegister* GPR { get; private set; } = (SPURegister*)NativeMemory.AllocZeroed((nuint)GPRByteSize);
 
         // Allocate local storage
-        public byte* LS { get; private set; } = (byte*)NativeMemory.AllocZeroed((nuint)LocalStorageSize);
+        internal byte* LS { get; private set; } = (byte*)NativeMemory.AllocZeroed((nuint)LocalStorageSize);
 
-        public uint PC { get; private set; } = 0;
+        internal uint PC { get; private set; } = 0;
 
-        public ThreadStatus Status { get; private set; } = ThreadStatus.Stopped;
+        internal ThreadStatus Status { get; private set; } = ThreadStatus.Stopped;
 
-        public enum ThreadStatus
+        internal enum ThreadStatus
         {
             Stopped = 0,
             Running = 1,
         }
 
-        public SPU(string name, uint id, uint groupID, SysSPU.SysSPUImage img, SysSPU.SysSPUThreadArgument arg)
+        internal SPU(string name, uint id, uint groupID, SysSPU.SysSPUImage img, SysSPU.SysSPUThreadArgument arg)
         {
             Name = name;
             ID = id;
@@ -53,7 +53,7 @@ namespace PS3Sharp.Cell.SPU
             }
         }
 
-        public void SetPort(int port, uint id)
+        internal void SetPort(int port, uint id)
         {
             if (_ports[port] == 0xFFFFFFFF)
             {
@@ -65,7 +65,7 @@ namespace PS3Sharp.Cell.SPU
             }
         }
 
-        public void Reset()
+        internal void Reset()
         {
             NativeMemory.Clear(GPR, (nuint)GPRByteSize);
             NativeMemory.Clear(LS, (nuint)LocalStorageSize);
@@ -74,7 +74,7 @@ namespace PS3Sharp.Cell.SPU
             Status = ThreadStatus.Stopped;
         }
 
-        public void Start()
+        internal void Start()
         {
             LoadImage();
             SetArgs();
@@ -84,7 +84,7 @@ namespace PS3Sharp.Cell.SPU
             //...
         }
 
-        public void LoadImage()
+        internal void LoadImage()
         {
             GuestPtr<uint> entry = Image.Entry;
             uint count = (uint)Image.SegmentsCount;
@@ -125,7 +125,7 @@ namespace PS3Sharp.Cell.SPU
             }
         }
 
-        public void SetArgs()
+        internal void SetArgs()
         {
             GPR[3].ULongs[1] = Argument.Arg1;
             GPR[4].ULongs[1] = Argument.Arg2;
@@ -133,7 +133,7 @@ namespace PS3Sharp.Cell.SPU
             GPR[6].ULongs[1] = Argument.Arg4;
         }
 
-        public void Dispose(bool disposing)
+        internal void Dispose(bool disposing)
         {
             if (!disposedValue)
             {

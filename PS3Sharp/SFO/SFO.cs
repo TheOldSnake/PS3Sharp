@@ -4,34 +4,34 @@ using System.Text;
 
 namespace PS3Sharp.SFOLoader
 {
-    public sealed class SFO
+    internal sealed class SFO
     {
         // Little Endian
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct SFOHeader
+        internal struct SFOHeader
         {
-            public uint Magic;
-            public uint Version;
-            public uint KeyTableOffset;
-            public uint DataTableOffset;
-            public uint EntriesCount;
+            internal uint Magic;
+            internal uint Version;
+            internal uint KeyTableOffset;
+            internal uint DataTableOffset;
+            internal uint EntriesCount;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct SFOIndexEntry
+        internal struct SFOIndexEntry
         {
-            public ushort KeyOffset;
-            public ushort ParamFormat;
-            public uint ParamLength;
-            public uint ParamMaxLength;
-            public uint DataOffset;
+            internal ushort KeyOffset;
+            internal ushort ParamFormat;
+            internal uint ParamLength;
+            internal uint ParamMaxLength;
+            internal uint DataOffset;
         }
 
-        public const uint MagicValue = 0x46535000; // "\0PSF"
-        public const ushort ParamFormatString = 0x004;
-        public const ushort ParamFormatArray = 0x204;
-        public const ushort ParamFormatUInt = 0x404;
+        internal const uint MagicValue = 0x46535000; // "\0PSF"
+        internal const ushort ParamFormatString = 0x004;
+        internal const ushort ParamFormatArray = 0x204;
+        internal const ushort ParamFormatUInt = 0x404;
 
         private readonly Dictionary<string, uint> UIntsDictionary;
         private readonly Dictionary<string, string> StringsDictionary;
@@ -42,12 +42,12 @@ namespace PS3Sharp.SFOLoader
             StringsDictionary = strings;
         }
 
-        public string TitleID => StringsDictionary["TITLE_ID"];
-        public string Title => StringsDictionary["TITLE"];
-        public bool UIntLookup(string key, out uint value) => UIntsDictionary.TryGetValue(key, out value);
-        public bool StringLookup(string key, out string value) => StringsDictionary.TryGetValue(key, out value);
+        internal string TitleID => StringsDictionary["TITLE_ID"];
+        internal string Title => StringsDictionary["TITLE"];
+        internal bool UIntLookup(string key, out uint value) => UIntsDictionary.TryGetValue(key, out value);
+        internal bool StringLookup(string key, out string value) => StringsDictionary.TryGetValue(key, out value);
 
-        public static SFO Load(string path)
+        internal static SFO Load(string path)
         {
             if (!File.Exists(path) || !path.EndsWith(".SFO"))
             {
