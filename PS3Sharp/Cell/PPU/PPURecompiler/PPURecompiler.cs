@@ -22,7 +22,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
         private const uint Mask = Size - 1;
         private X64Block*[] _blocks = new X64Block*[Size];
 
-		private IRGenerator _irGenerator  = new IRGenerator();
+		private IRGenerator _irGenerator = new IRGenerator();
 		private X64Generator _x64Generator = new X64Generator();
 
 		private nint NextBlockAddress;
