@@ -78,14 +78,13 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
 
             Assembler asm = new(64);
 
-            void* state = ppuThread.State;
             int stackSlots = GetRequiredStackSlots();
             List<AssemblerRegister64> allocatedNonVolatileRegisters = GetNonVolatileMappedRegisters();
 
             bool hasCalls = HasCalls(block.IRCode);
             bool hasMemoryOp = HasMemoryOp(block.IRCode);
 
-            EmitBlockEntry(asm, stackSlots, state, allocatedNonVolatileRegisters, hasMemoryOp);
+            EmitBlockEntry(asm, stackSlots, allocatedNonVolatileRegisters, hasMemoryOp);
 
             for (int i = 0; i < block.IRCode.Count; i++)
             {
@@ -146,7 +145,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
             _currentStackOffset -= 8;
         }
 
-        private void EmitBlockEntry(Assembler asm, int spillSlotCount, void* ppuState, List<AssemblerRegister64> nonVolatileRegs, bool hasMemoryOp)
+        private void EmitBlockEntry(Assembler asm, int spillSlotCount, List<AssemblerRegister64> nonVolatileRegs, bool hasMemoryOp)
         {
 
             // Size of spill array
@@ -184,11 +183,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
 
             if (spillBytes > 0)
             {
-                asm.sub(Stack, spillBytes);                     // Allocate array for spill slots
-                asm.mov(SpillArray, Stack);                     // SpillArray Points at array[0]
+                asm.sub(Stack, spillBytes);     // Allocate array for spill slots
+                asm.mov(SpillArray, Stack);     // SpillArray Points at array[0]
             }
 
-            asm.mov(PPUState, (UIntPtr)ppuState);
+            // Move ppu state pointer argument from rcx 
+            asm.mov(PPUState, rcx);
 
             // Current offset includes the 8 bytes for the return address
             _currentStackOffset = 8 + pushedBytes + spillBytes;
