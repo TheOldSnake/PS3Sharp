@@ -49,7 +49,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler
             // If not already allocated, allocate the page
             if (page == null)
             {
-                page = (X64Block*)NativeMemory.Alloc((nuint)(PAGE_SIZE * sizeof(X64Block)));
+                page = (X64Block*)NativeMemory.AllocZeroed((nuint)(PAGE_SIZE * sizeof(X64Block)));
                 NativeMemory.Clear(page, (nuint)(PAGE_SIZE * sizeof(X64Block)));
                 _blocks[l1] = page;
             }
