@@ -1,20 +1,17 @@
-﻿using OpenTK.Graphics.ES20;
-using PS3Sharp.Cell.PPU;
-using PS3Sharp.Common;
+﻿using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
 using PS3Sharp.OS.Syscall;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Text;
-using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.FileSystem
 {
     public static class FileSystemManager
     {
-        private static readonly ConcurrentDictionary<int, GuestFile> _openFiles = new ConcurrentDictionary<int, GuestFile>();
-        private static readonly ConcurrentDictionary<int, GuestDirectory> _openDirectories = new ConcurrentDictionary<int, GuestDirectory>();
+        private static readonly ConcurrentDictionary<int, GuestFile> _openFiles = new();
+        private static readonly ConcurrentDictionary<int, GuestDirectory> _openDirectories = new();
         public sealed class GuestFile : IDisposable
         {
             public readonly string Path;
@@ -99,7 +96,7 @@ namespace PS3Sharp.FileSystem
                 throw new FileNotFoundException("File not found", filePath);
             }
 
-            FileInfo fileInfo = new FileInfo(filePath);
+            FileInfo fileInfo = new(filePath);
             return (ulong)fileInfo.Length; // size in bytes
         }
 
@@ -110,7 +107,7 @@ namespace PS3Sharp.FileSystem
                 throw new DirectoryNotFoundException($"Directory not found: {directoryPath}");
             }
 
-            DirectoryInfo dir = new DirectoryInfo(directoryPath);
+            DirectoryInfo dir = new(directoryPath);
             return (ulong)dir.GetFiles("*", SearchOption.AllDirectories).Sum(file => file.Length);
         }
 
@@ -130,7 +127,7 @@ namespace PS3Sharp.FileSystem
             }
 
             // Open file
-            GuestFile file = new GuestFile(host_path, fd, ownerThread);
+            GuestFile file = new(host_path, fd, ownerThread);
             _openFiles.TryAdd(fd, file);
 
             return CELL_OK;
@@ -152,7 +149,7 @@ namespace PS3Sharp.FileSystem
             }
 
             // Open directory
-            GuestDirectory directory = new GuestDirectory(host_path, fd, ownerThread);
+            GuestDirectory directory = new(host_path, fd, ownerThread);
             _openDirectories.TryAdd(fd, directory);
 
             return CELL_OK;

@@ -1,12 +1,10 @@
 ﻿using PS3Sharp.Cell;
 using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
-using PS3Sharp.OS.Syscall;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
-
-using static PS3Sharp.OS.LV2.LV2EventPort;
 using static PS3Sharp.Cell.ErrorCode;
+using static PS3Sharp.OS.LV2.LV2EventPort;
 
 namespace PS3Sharp.OS.LV2
 {

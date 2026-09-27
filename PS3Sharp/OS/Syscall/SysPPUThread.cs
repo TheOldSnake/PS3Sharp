@@ -3,7 +3,6 @@ using PS3Sharp.Cell.PPU;
 using PS3Sharp.Cell.PPU.PPUInterpreter;
 using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
-using System.Xml.Linq;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
@@ -72,7 +71,7 @@ namespace PS3Sharp.OS.Syscall
             }
 
             //Create a new PPU thread
-            PPU new_ppu_thread = new PPU(name, entry, arg, stacksize);
+            PPU new_ppu_thread = new(name, entry, arg, stacksize);
 
             ThreadManager.CreateNativePPUThread(new_ppu_thread);
             ThreadManager.RunPPUThread(new_ppu_thread);

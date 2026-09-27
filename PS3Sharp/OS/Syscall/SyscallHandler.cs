@@ -1,9 +1,6 @@
-﻿using OpenTK.Graphics.ES11;
-using PS3Sharp.Cell.PPU;
-using PS3Sharp.Memory_Manager;
+﻿using PS3Sharp.Cell.PPU;
 using PS3Sharp.OS.Modules;
 using PS3Sharp.OS.Syscall;
-using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.Syscall
@@ -333,7 +330,6 @@ namespace PS3Sharp.Syscall
             }
 
             ppu.Return(result);
-
         }
 
         public static ulong Syscallstub(string name)

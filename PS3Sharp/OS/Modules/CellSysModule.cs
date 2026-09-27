@@ -1,6 +1,4 @@
 ﻿using PS3Sharp.Cell.PPU;
-using PS3Sharp.OS.NID;
-using System.Xml.Linq;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 

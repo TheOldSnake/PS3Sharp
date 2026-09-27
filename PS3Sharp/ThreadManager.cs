@@ -1,8 +1,6 @@
 ﻿using PS3Sharp.Cell.PPU;
 using PS3Sharp.Cell.PPU.PPUInterpreter;
-using PS3Sharp.Cell.PPU.PPURecompiler;
 using PS3Sharp.Cell.RSX;
-using PS3Sharp.Memory_Manager;
 using static PS3Sharp.Cell.PPU.PPU;
 using static PS3Sharp.Cell.RSX.RealitySynthesizer;
 
@@ -11,9 +9,9 @@ namespace PS3Sharp
     public static class ThreadManager
     {
         private static uint NextID = 0x1000000;
-        private static readonly List<PPU> _ppuThreads = new List<PPU>();
+        private static readonly List<PPU> _ppuThreads = new();
         private static RealitySynthesizer RSXThread;
-        private static readonly object _threadManagerLock = new object(); //I am not sure if this lock is even needed
+        private static readonly object _threadManagerLock = new(); //I am not sure if this lock is even needed
 
         public static uint GetNewID()
         {

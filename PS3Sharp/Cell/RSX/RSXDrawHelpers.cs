@@ -2,7 +2,6 @@
 using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
 using System.Numerics;
-using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 
 namespace PS3Sharp.Cell.RSX
@@ -155,7 +154,7 @@ namespace PS3Sharp.Cell.RSX
             // uniforms needs to be uploaded again if new shaders use them,
             // we cannot assume that the game will always re upload them via NV308A_COLOR
 
-            foreach (var uniform_pair in CurrentState.AllUniforms)
+            foreach (KeyValuePair<uint, OpenTK.Mathematics.Vector4> uniform_pair in CurrentState.AllUniforms)
             {
                 uint address = uniform_pair.Key;
                 if (FragmentShaderGenerator.IsUniformInUse(address))
@@ -193,7 +192,7 @@ namespace PS3Sharp.Cell.RSX
             // TODO: Optimize this with scratch buffers and caches  
 
             // Build the index list from NV40TCL_VB_INDEX_BATCH_DRAW parameters
-            List<T> indexList = new List<T>();
+            List<T> indexList = new();
             T maxIndex = T.Zero;
 
             while (param.Count > 0)

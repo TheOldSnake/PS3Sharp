@@ -1,9 +1,6 @@
 ﻿using PS3Sharp.Cell.PPU;
 using PS3Sharp.OS.NID;
 using PS3Sharp.OS.Syscall;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace PS3Sharp.OS.Modules
 {
@@ -11,7 +8,7 @@ namespace PS3Sharp.OS.Modules
     {
 
         // Bind Module functions
-        private static readonly Dictionary<uint, Func<PPU, ulong>> _handlers = new Dictionary<uint, Func<PPU, ulong>>() {
+        private static readonly Dictionary<uint, Func<PPU, ulong>> _handlers = new() {
             // SysPrxForUser
             { NIDManager.GetNID("sys_process_exit"), SysPrxForUser.SysProcessExit },
             { NIDManager.GetNID("sys_initialize_tls"), SysPrxForUser.SysInitializeTLS },

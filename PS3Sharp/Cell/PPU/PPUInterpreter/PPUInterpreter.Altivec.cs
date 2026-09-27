@@ -1,7 +1,4 @@
 ﻿using PS3Sharp.Memory_Manager;
-using System.Numerics;
-using System.Runtime.Intrinsics;
-using System.Runtime.Intrinsics.X86;
 using static PS3Sharp.Cell.PPU.PPU;
 
 namespace PS3Sharp.Cell.PPU.PPUInterpreter
@@ -308,9 +305,9 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             PPUVR reg_b = ppu.VRF[instruction.Vb];
             PPUVR reg_c = ppu.VRF[instruction.Vc];
 
-            ReadOnlySpan<byte> a = new ReadOnlySpan<byte>(reg_a.Bytes, 16);
-            ReadOnlySpan<byte> b = new ReadOnlySpan<byte>(reg_b.Bytes, 16);
-            ReadOnlySpan<byte> c = new ReadOnlySpan<byte>(reg_c.Bytes, 16); //vector C controls the locations
+            ReadOnlySpan<byte> a = new(reg_a.Bytes, 16);
+            ReadOnlySpan<byte> b = new(reg_b.Bytes, 16);
+            ReadOnlySpan<byte> c = new(reg_c.Bytes, 16); //vector C controls the locations
             Span<byte> srcVec = stackalloc byte[32];
 
             //flip becasue it's big endian
@@ -416,8 +413,8 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             PPUVR reg_a = ppu.VRF[instruction.Va];
             PPUVR reg_b = ppu.VRF[instruction.Vb];
 
-            ReadOnlySpan<byte> a = new ReadOnlySpan<byte>(reg_a.Bytes, 16);
-            ReadOnlySpan<byte> b = new ReadOnlySpan<byte>(reg_b.Bytes, 16);
+            ReadOnlySpan<byte> a = new(reg_a.Bytes, 16);
+            ReadOnlySpan<byte> b = new(reg_b.Bytes, 16);
             Span<byte> srcVec = stackalloc byte[32];
 
             //flip becasue it's big endian

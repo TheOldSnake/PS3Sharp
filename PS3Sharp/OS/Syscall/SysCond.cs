@@ -1,13 +1,8 @@
-﻿using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+﻿using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
 using PS3Sharp.OS.LV2;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
 
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
@@ -54,7 +49,7 @@ namespace PS3Sharp.OS.Syscall
             SysCondAttribute attribute = attribute_ptr.Read();
 
             // Create and add the cond
-            LV2Cond cond = new LV2Cond(attribute, mutex);
+            LV2Cond cond = new(attribute, mutex);
             AddCond(cond);
 
             // Write the cond id

@@ -1,5 +1,4 @@
-﻿using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+﻿using PS3Sharp.Memory_Manager;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
@@ -110,7 +109,7 @@ namespace PS3Sharp.Cell.RSX
         public static uint FragmentShaderStartAddress { get; set; }     // Address of the fragment shader program
         private static uint CurrentAddress;
 
-        private static List<FragmentInstruction> Buf = new List<FragmentInstruction>();
+        private static List<FragmentInstruction> Buf = new();
         public static string AddressToUniform(uint address) => $"u_{address:x}";
         public static bool IsUniformInUse(uint address) => CurrentUniforms.Contains(address);
 
@@ -168,7 +167,7 @@ namespace PS3Sharp.Cell.RSX
 
         private static Vector4 ReadVector4(uint address)
         {
-            Vector4 v = new Vector4();
+            Vector4 v = new();
             v.X = Unsafe.BitCast<uint, float>(Read32(address + 0));
             v.Y = Unsafe.BitCast<uint, float>(Read32(address + 4));
             v.Z = Unsafe.BitCast<uint, float>(Read32(address + 8));
@@ -183,7 +182,7 @@ namespace PS3Sharp.Cell.RSX
             uint raw2 = Read32(address + 8);
             uint raw3 = Read32(address + 12);
 
-            FragmentInstruction instruction = new FragmentInstruction
+            FragmentInstruction instruction = new()
             {
                 OPDEST_Raw = raw0,
                 SRC0_Raw = raw1,
@@ -578,7 +577,7 @@ namespace PS3Sharp.Cell.RSX
                     const uint sizeOfVector = (4 * sizeof(uint));
 
                     //Check if there's a uniform for this address
-                    var uniformsDict = PS3Sharp.RSX.CurrentState.AllUniforms;
+                    Dictionary<uint, OpenTK.Mathematics.Vector4> uniformsDict = PS3Sharp.RSX.CurrentState.AllUniforms;
                     if (uniformsDict.ContainsKey(CurrentAddress))
                     {
 

@@ -1,6 +1,5 @@
 ﻿using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using System.Diagnostics;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 

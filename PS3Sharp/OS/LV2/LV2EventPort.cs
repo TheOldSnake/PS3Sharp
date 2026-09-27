@@ -62,7 +62,7 @@ namespace PS3Sharp.OS.LV2
         {
             if (_qonnectedQueue != null)
             {
-                SysEventData data = new SysEventData
+                SysEventData data = new()
                 {
                     Source = Name,
                     Data1 = data1,

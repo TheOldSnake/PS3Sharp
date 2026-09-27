@@ -2,7 +2,6 @@
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using static PS3Sharp.Cell.Arguments;

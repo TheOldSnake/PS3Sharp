@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using static PS3Sharp.Cell.PPU.PPUInterpreter.PPUInterpreter;
+﻿using static PS3Sharp.Cell.PPU.PPUInterpreter.PPUInterpreter;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 {

@@ -35,7 +35,7 @@ namespace PS3Sharp
         private static long StringTableLocation;
         public static uint LoadMainElf(string path)
         {
-            BinaryReader reader = new BinaryReader(File.OpenRead(path));
+            BinaryReader reader = new(File.OpenRead(path));
 
             Console.WriteLine($"ELF Size: {reader.BaseStream.Length}");
 
@@ -73,7 +73,7 @@ namespace PS3Sharp
 
         public static List<LoadedPRXSegment> LoadPRXElf(BinaryReader reader)
         {
-            List<LoadedPRXSegment> loadedSegments = new List<LoadedPRXSegment>();
+            List<LoadedPRXSegment> loadedSegments = new();
 
             // Read Main Header 
             ElfHeader mainHeader = ReadElfStruct<ElfHeader>(reader, 0);

@@ -1,15 +1,11 @@
-﻿using OpenTK.Graphics.ES11;
-using PS3Sharp.Cell;
+﻿using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Cell.SPU;
 using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
 using PS3Sharp.OS.LV2;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 namespace PS3Sharp.OS.Syscall
@@ -81,7 +77,7 @@ namespace PS3Sharp.OS.Syscall
             public BigEndian<ulong> Arg4;
         }
 
-        private static readonly ConcurrentDictionary<uint, LV2SPUThreadGroup> _SPUThreadGroupes = new ConcurrentDictionary<uint, LV2SPUThreadGroup>();
+        private static readonly ConcurrentDictionary<uint, LV2SPUThreadGroup> _SPUThreadGroupes = new();
 
         public static void AddSPUThreadGroup(LV2SPUThreadGroup group)
         {
@@ -119,7 +115,7 @@ namespace PS3Sharp.OS.Syscall
             GuestPtr<SysSPUThreadGroupAttribute> attr_ptr = ppu.ReadArg<GuestPtr<SysSPUThreadGroupAttribute>>(ARG3);
 
             // Create the thread group
-            LV2SPUThreadGroup group = new LV2SPUThreadGroup(attr_ptr, num, prio);
+            LV2SPUThreadGroup group = new(attr_ptr, num, prio);
             AddSPUThreadGroup(group);
             MemoryManager.Write<uint>(id_ptr, group.Handle);
 
@@ -153,7 +149,7 @@ namespace PS3Sharp.OS.Syscall
             GuestVoidPtr name_ptr = attribute.NamePtr;
             string thread_name = name_ptr.IsNullPtr ? "Unnamed-SPU" : MemoryManager.ReadString(name_ptr);
 
-            SPU spu = new SPU(thread_name, id, group_id, img, arg);
+            SPU spu = new(thread_name, id, group_id, img, arg);
             threadGroup.AddThread(spu);
 
             MemoryManager.Write<uint>(id_ptr, id);

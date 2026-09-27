@@ -1,13 +1,10 @@
-﻿using OpenTK.Graphics.ES11;
-using OpenTK.Input.Hid;
-using PS3Sharp.Cell;
+﻿using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using static PS3Sharp.Memory_Manager.MemoryManager;
 
 namespace PS3Sharp.Memory_Manager
 {
@@ -39,7 +36,7 @@ namespace PS3Sharp.Memory_Manager
         private static void* GuestMemoryBase;
 
         // Some operations require a lock
-        private static readonly object _managerLock = new object();
+        private static readonly object _managerLock = new();
 
         private static readonly List<MemoryBlock> Allocations = [];
         private static readonly Dictionary<uint, MemoryReservation> Reservations = [];
@@ -300,9 +297,9 @@ namespace PS3Sharp.Memory_Manager
             ulong accessStart = virtualAddress;
             ulong accessEnd = (ulong)(virtualAddress + size);
 
-            foreach (var reservation_thread_pair in Reservations.ToList())
+            foreach (KeyValuePair<uint, MemoryReservation> reservation_thread_pair in Reservations.ToList())
             {
-                var reservation = reservation_thread_pair.Value;
+                MemoryReservation reservation = reservation_thread_pair.Value;
 
                 ulong reservationStart = reservation.VirtualAddress;
                 ulong reservationEnd = reservation.VirtualAddress + reservation.Size;
@@ -475,7 +472,7 @@ namespace PS3Sharp.Memory_Manager
                 // void* memory = NativeMemory.AllocZeroed((nuint)size);
                 void* memory = CommitMemory(virtualAddress, size);
 
-                MemoryBlock block = new MemoryBlock
+                MemoryBlock block = new()
                 {
                     VirtualAddress = virtualAddress,
                     Size = size,
@@ -796,7 +793,7 @@ namespace PS3Sharp.Memory_Manager
         {
             // Direct copy
             byte* nativeDestination = (byte*)GetNativeAddress(destinationVirtualAddress);
-            Span<byte> destSpan = new Span<byte>(nativeDestination, source.Length);
+            Span<byte> destSpan = new(nativeDestination, source.Length);
             source.CopyTo(destSpan);
         }
 
@@ -804,7 +801,7 @@ namespace PS3Sharp.Memory_Manager
         {
             // Direct copy
             byte* nativeSource = (byte*)GetNativeAddress(sourceVirtualAddress);
-            Span<byte> sourceSpan = new Span<byte>(nativeSource, destination.Length);
+            Span<byte> sourceSpan = new(nativeSource, destination.Length);
             sourceSpan.CopyTo(destination);
         }
 
@@ -819,8 +816,8 @@ namespace PS3Sharp.Memory_Manager
             byte* nativeSource = (byte*)GetNativeAddress(sourceVirtualAddress);
             byte* nativeDestination = (byte*)GetNativeAddress(destinationVirtualAddress);
 
-            Span<byte> sourceSpan = new Span<byte>(nativeSource, byteCount);
-            Span<byte> destSpan = new Span<byte>(nativeDestination, byteCount);
+            Span<byte> sourceSpan = new(nativeSource, byteCount);
+            Span<byte> destSpan = new(nativeDestination, byteCount);
 
             sourceSpan.CopyTo(destSpan);
         }

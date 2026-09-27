@@ -27,12 +27,12 @@ namespace PS3Sharp.Cell.RSX
         public bool IsSurface => GLRenderer.AddressIsSurface(Address);
 
         public ScratchBuffer ScratchBuffer { get; } = new ScratchBuffer();
-        public TextureCacheKey CacheKey = new TextureCacheKey();
+        public TextureCacheKey CacheKey = new();
 
         private static ReadOnlySpan<int> _swizzleTable => [(int)All.Alpha, (int)All.Red, (int)All.Green, (int)All.Blue];
         private static readonly string[] _swizzleStringTable = ["a", "r", "g", "b"];
 
-        public static readonly Swizzle DefaultSwizzle = new Swizzle
+        public static readonly Swizzle DefaultSwizzle = new()
         {
             A = _swizzleTable[0],
             R = _swizzleTable[1],

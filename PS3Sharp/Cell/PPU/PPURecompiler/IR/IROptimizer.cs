@@ -7,7 +7,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
     {
         public Dictionary<Value, ulong> ConstantFold(IRContext ctx)
         {
-            Dictionary<Value, ulong> constants = new Dictionary<Value, ulong>();
+            Dictionary<Value, ulong> constants = new();
             List<IRInstruction> code = ctx.GetIRCode();
             List<IRInstruction> foldedCode = new();
             bool removed;
@@ -157,7 +157,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             List<IRInstruction> code = ctx.GetIRCode();
             List<IRInstruction> propagatedCode = new();
-            Dictionary<Value, Value> propagatedValues = new Dictionary<Value, Value>();
+            Dictionary<Value, Value> propagatedValues = new();
 
             // First pass
             FilterPropagation(code, propagatedCode, propagatedValues, knownConstants);

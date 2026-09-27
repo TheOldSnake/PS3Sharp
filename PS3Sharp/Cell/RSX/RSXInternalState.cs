@@ -1,7 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using PS3Sharp.Common;
-using System.Runtime.CompilerServices;
 
 namespace PS3Sharp.Cell.RSX
 {
@@ -41,13 +39,13 @@ namespace PS3Sharp.Cell.RSX
         public Dictionary<uint, Vector4> AllUniforms { get; } = [];   // Dictionary of all uniforms and their values
 
         // Don't use { get; set; } on these structs
-        public Vector2i SurfaceClip = new Vector2i();
+        public Vector2i SurfaceClip = new();
         public bool SurfaceClipDirty { get; set; }
 
-        public Vector4 ViewPortOffset = new Vector4();
+        public Vector4 ViewPortOffset = new();
         public bool ViewPortOffsetDirty { get; set; }
 
-        public Vector4 ViewPortScale = new Vector4();
+        public Vector4 ViewPortScale = new();
         public bool ViewPortScaleDirty { get; set; }
 
 

@@ -1,8 +1,7 @@
-﻿using PS3Sharp.Memory_Manager;
-using System.Runtime.InteropServices;
+﻿using PS3Sharp.Cell;
 using PS3Sharp.Common;
-using PS3Sharp.Cell;
-
+using PS3Sharp.Memory_Manager;
+using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.LV2
@@ -26,7 +25,7 @@ namespace PS3Sharp.OS.LV2
         }
 
         private readonly SysMutexAttribute _attribute;
-        private readonly object _mutex = new object();
+        private readonly object _mutex = new();
         public uint Handle { get; } = MemoryManager.GetHandle();
 
         public SysMutexAttribute Attribute => _attribute;

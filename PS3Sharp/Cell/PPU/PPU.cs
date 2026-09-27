@@ -1,16 +1,11 @@
-﻿using PS3Sharp.Cell.PPU.PPUInterpreter;
-using PS3Sharp.Cell.RSX;
+﻿using PS3Sharp.Cell.RSX;
 using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
 using PS3Sharp.OS.Syscall;
-using System.Numerics;
-using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Xml.Linq;
 using static PS3Sharp.Cell.Arguments;
-using static PS3Sharp.Cell.ErrorCode;
 using static PS3Sharp.Memory_Manager.MemoryManager;
 
 namespace PS3Sharp.Cell.PPU
@@ -37,7 +32,7 @@ namespace PS3Sharp.Cell.PPU
         public readonly uint StackSize;
 
         public int ExitCode;
-        public List<uint> CallStack = new List<uint>();
+        public List<uint> CallStack = new();
         public SysUtil.SysUtilCallback[] SysUtilCallbacks = new SysUtil.SysUtilCallback[4];   // Each thread has its own?
 
         public enum PPUThreadStates
@@ -77,7 +72,7 @@ namespace PS3Sharp.Cell.PPU
         }
 
         public PPUState* State { get; private set; } = (PPUState*)NativeMemory.AllocZeroed((nuint)sizeof(PPUState));
-        public Stack<PPUState> SavedStates = new Stack<PPUState>();
+        public Stack<PPUState> SavedStates = new();
 
         public PPUGPR* GPR => &State->GPR[0];
         public PPUFPR* FPR => &State->FPR[0];
@@ -472,7 +467,7 @@ namespace PS3Sharp.Cell.PPU
 
 
         //Temporary
-        private Queue<Trace> TraceQueue = new Queue<Trace>();
+        private Queue<Trace> TraceQueue = new();
         private bool disposedValue;
         const int TraceMaxCount = 200;
 

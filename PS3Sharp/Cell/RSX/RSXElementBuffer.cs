@@ -13,7 +13,7 @@ namespace PS3Sharp.Cell.RSX
 
         public int TotalElements { get; private set; }
 
-        public ScratchBuffer ScratchBuffer = new ScratchBuffer();
+        public ScratchBuffer ScratchBuffer = new();
 
         // I don't like passing the Queue here
         public uint SetupElementBuffer(Queue<BigEndian<uint>> param)

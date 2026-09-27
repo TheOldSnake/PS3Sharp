@@ -69,7 +69,7 @@ namespace PS3Sharp.OS.Modules
         private static uint _readPositionsAddress;  //An array of 8 ulongs, each entry contains the current block position for the corrosponding port
 
         private static readonly AudioPort[] _audioPorts = new AudioPort[AUDIO_PORT_COUNT];
-        private static readonly Lock _audioThreadLock = new Lock();
+        private static readonly Lock _audioThreadLock = new();
 
         public static ulong CellAudioInit(PPU ppu)
         {
@@ -251,7 +251,7 @@ namespace PS3Sharp.OS.Modules
             GuestPtr<ulong> key_ptr = ppu.ReadArg<GuestPtr<ulong>>(ARG1);
 
             // Create a lv2_event_queue
-            LV2EventQueue eventQueue = new LV2EventQueue(1024, EVENT_QUEUE_KEY, default);
+            LV2EventQueue eventQueue = new(1024, EVENT_QUEUE_KEY, default);
 
             // Register it in SysEvent
             SysEvent.AddEventQueue(eventQueue.Handle, eventQueue);
@@ -278,17 +278,17 @@ namespace PS3Sharp.OS.Modules
         }
 
 
-        static WaveFormat waveFormat = new WaveFormat(48000, 2);
+        static WaveFormat waveFormat = new(48000, 2);
 
-        static BufferedWaveProvider provider = new BufferedWaveProvider(waveFormat)
+        static BufferedWaveProvider provider = new(waveFormat)
         {
             DiscardOnBufferOverflow = true
         };
 
-        static WaveOutEvent output = new WaveOutEvent();
+        static WaveOutEvent output = new();
         static uint AttachedEventID = 0;
 
-        static LV2EventPort.SysEventData AudioEvent = new LV2EventPort.SysEventData
+        static LV2EventPort.SysEventData AudioEvent = new()
         {
             Data1 = EVENT_QUEUE_KEY,
             Data2 = 0,
@@ -308,13 +308,13 @@ namespace PS3Sharp.OS.Modules
 
         public static byte[] GetSamplesWaveData(float[] samples, int samplesCount)
         {
-            var pcm = new byte[samplesCount * 2];
+            byte[] pcm = new byte[samplesCount * 2];
             int sampleIndex = 0,
                 pcmIndex = 0;
 
             while (sampleIndex < samplesCount)
             {
-                var outsample = (short)(samples[sampleIndex] * short.MaxValue);
+                short outsample = (short)(samples[sampleIndex] * short.MaxValue);
                 pcm[pcmIndex] = (byte)(outsample & 0xff);
                 pcm[pcmIndex + 1] = (byte)((outsample >> 8) & 0xff);
 

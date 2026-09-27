@@ -18,7 +18,7 @@ namespace PS3Sharp.Common
         public static implicit operator uint(GuestString ptr) => ptr.Address;
 
         // From address
-        public static implicit operator GuestString(uint address) => new GuestString(address);
+        public static implicit operator GuestString(uint address) => new(address);
 
         // To C# string
         public static implicit operator string(GuestString ptr) => MemoryManager.ReadString(ptr.Address);

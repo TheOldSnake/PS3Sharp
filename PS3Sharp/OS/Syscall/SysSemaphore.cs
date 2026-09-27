@@ -3,9 +3,9 @@ using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
 using PS3Sharp.OS.LV2;
 using System.Collections.Concurrent;
-using static PS3Sharp.OS.LV2.LV2Semaphore;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
+using static PS3Sharp.OS.LV2.LV2Semaphore;
 
 namespace PS3Sharp.OS.Syscall
 {
@@ -43,7 +43,7 @@ namespace PS3Sharp.OS.Syscall
             uint maxCount = ppu.ReadArg<uint>(ARG3);
 
             SysSemaphoreAttribute attribute = semaphore_attribute_ptr.Read();
-            LV2Semaphore semaphore = new LV2Semaphore((int)initialCount, (int)maxCount, attribute);
+            LV2Semaphore semaphore = new((int)initialCount, (int)maxCount, attribute);
             AddSemaphore(semaphore.Handle, semaphore);
 
             MemoryManager.Write<uint>(semaphore_id_ptr, semaphore.Handle);

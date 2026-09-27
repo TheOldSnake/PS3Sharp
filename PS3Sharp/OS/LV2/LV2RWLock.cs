@@ -20,8 +20,8 @@ namespace PS3Sharp.OS.LV2
             public InlineData.InlineArray8<byte> Name;
         }
 
-        private readonly object _rlock = new object(); // Read Lock
-        private readonly object _wlock = new object(); // Write Lock
+        private readonly object _rlock = new(); // Read Lock
+        private readonly object _wlock = new(); // Write Lock
 
         private readonly SysRWLockAttribute _attribute;
         public uint Handle { get; } = MemoryManager.GetHandle();

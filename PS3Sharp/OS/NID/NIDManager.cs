@@ -9,11 +9,11 @@ namespace PS3Sharp.OS.NID
 
         public static Dictionary<uint, string> ParseNIDsFile(string path)
         {
-            var dict = new Dictionary<uint, string>();
+            Dictionary<uint, string> dict = new();
 
-            foreach (var line in File.ReadLines(path))
+            foreach (string line in File.ReadLines(path))
             {
-                var trimmed = line.Trim();
+                string trimmed = line.Trim();
 
                 // Skip empty lines or comments
                 if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith("#"))
@@ -22,7 +22,7 @@ namespace PS3Sharp.OS.NID
                 }
 
                 // Split on space
-                var parts = trimmed.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                string[] parts = trimmed.Split(" ", StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length < 2)
                 {
                     continue;

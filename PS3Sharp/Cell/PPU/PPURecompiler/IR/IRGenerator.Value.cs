@@ -22,7 +22,7 @@
 
             public bool IsValid => Id > 0;
 
-            public static Value Invalid => new Value(-1, ValueType.None);
+            public static Value Invalid => new(-1, ValueType.None);
 
             public Value(int id, ValueType type)
             {

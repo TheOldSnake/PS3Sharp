@@ -1,7 +1,6 @@
 ﻿using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
@@ -164,7 +163,7 @@ namespace PS3Sharp.OS.Modules
         }
 
 
-        public static CellVideoOutConfiguration VideoConfiguration = new CellVideoOutConfiguration
+        public static CellVideoOutConfiguration VideoConfiguration = new()
         {
             ResolutionId = (byte)_defaultResolution,
             Format = 0,

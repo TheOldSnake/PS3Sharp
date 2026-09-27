@@ -1,12 +1,8 @@
-﻿using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+﻿using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
 using PS3Sharp.OS.LV2;
 using System.Collections.Concurrent;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
 
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
@@ -68,7 +64,7 @@ namespace PS3Sharp.OS.Modules
 
                 //Console.WriteLine($"[SysLwMutex] sys_lwmutex_create id: 0x{id:X8}");
 
-                LV2LWMutex mutex = new LV2LWMutex(lwmutex_ptr, attribute);
+                LV2LWMutex mutex = new(lwmutex_ptr, attribute);
                 AddLWMutex(id, mutex);
             }
 

@@ -100,7 +100,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler
 
             // Copy the code
             int length = nativeCode.Length;
-            Span<byte> destSpan = new Span<byte>(dest, length);
+            Span<byte> destSpan = new(dest, length);
             nativeCode.CopyTo(destSpan);
 
             // Set the address

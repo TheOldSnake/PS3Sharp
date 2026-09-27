@@ -1,12 +1,8 @@
 ﻿using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.LV2
@@ -134,7 +130,7 @@ namespace PS3Sharp.OS.LV2
             }
 
             // If it does not exist create one and add it
-            LV2CondWaiter condWaiter = new LV2CondWaiter(threadID);
+            LV2CondWaiter condWaiter = new(threadID);
             bool success = _threadCondWaiters.TryAdd(threadID, condWaiter);
 
             if (!success)

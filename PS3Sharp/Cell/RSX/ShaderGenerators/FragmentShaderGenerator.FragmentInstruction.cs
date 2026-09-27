@@ -31,9 +31,9 @@ namespace PS3Sharp.Cell.RSX
             public bool Saturate => ((OPDEST_Raw >> 31) & 1) == 1;
 
             //SRC common 
-            public SRC SRC0 => new SRC { Raw = SRC0_Raw };
-            public SRC SRC1 => new SRC { Raw = SRC1_Raw };
-            public SRC SRC2 => new SRC { Raw = SRC2_Raw };
+            public SRC SRC0 => new() { Raw = SRC0_Raw };
+            public SRC SRC1 => new() { Raw = SRC1_Raw };
+            public SRC SRC2 => new() { Raw = SRC2_Raw };
 
             public struct SRC
             {

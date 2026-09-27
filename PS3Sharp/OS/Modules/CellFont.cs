@@ -1,14 +1,9 @@
 ﻿using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
-using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 using static PS3Sharp.Cell.Arguments;
-using static PS3Sharp.Cell.ErrorCode;
 using static PS3Sharp.Cell.PPU.PPU;
 
 namespace PS3Sharp.OS.Modules

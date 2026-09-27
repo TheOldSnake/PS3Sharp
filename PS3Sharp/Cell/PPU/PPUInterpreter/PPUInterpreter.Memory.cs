@@ -1,8 +1,4 @@
 ﻿using PS3Sharp.Memory_Manager;
-using PS3Sharp.Syscall;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using static PS3Sharp.Cell.PPU.PPU;
 
 namespace PS3Sharp.Cell.PPU.PPUInterpreter

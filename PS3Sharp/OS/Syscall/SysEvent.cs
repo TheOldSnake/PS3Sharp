@@ -1,24 +1,20 @@
-﻿using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+﻿using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
 using PS3Sharp.OS.LV2;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
-
-using static PS3Sharp.OS.LV2.LV2EventQueue;
-using static PS3Sharp.OS.LV2.LV2EventPort;
-
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
-using System.Runtime.CompilerServices;
+using static PS3Sharp.OS.LV2.LV2EventPort;
+using static PS3Sharp.OS.LV2.LV2EventQueue;
 
 namespace PS3Sharp.OS.Syscall
 {
     public static class SysEvent
     {
-        private static readonly ConcurrentDictionary<uint, LV2EventQueue> _eventQueues = new ConcurrentDictionary<uint, LV2EventQueue>();
-        private static readonly ConcurrentDictionary<uint, LV2EventPort> _eventPorts = new ConcurrentDictionary<uint, LV2EventPort>();
+        private static readonly ConcurrentDictionary<uint, LV2EventQueue> _eventQueues = new();
+        private static readonly ConcurrentDictionary<uint, LV2EventPort> _eventPorts = new();
 
         public static bool GetEventQueueByID(uint id, out LV2EventQueue? eventQueue) => _eventQueues.TryGetValue(id, out eventQueue);
 
@@ -83,7 +79,7 @@ namespace PS3Sharp.OS.Syscall
 
             // Create the queue
             SysEventQueueAttribute attribute = queue_attribute_ptr.Read();
-            LV2EventQueue eventQueue = new LV2EventQueue(size, sys_ipc_key, attribute);
+            LV2EventQueue eventQueue = new(size, sys_ipc_key, attribute);
             AddEventQueue(eventQueue.Handle, eventQueue);
 
             // Write the handle
@@ -194,7 +190,7 @@ namespace PS3Sharp.OS.Syscall
             ulong name = ppu.ReadArg<ulong>(ARG2);
 
             //Create a port
-            LV2EventPort eventPort = new LV2EventPort(name, port_type);
+            LV2EventPort eventPort = new(name, port_type);
             AddEventPort(eventPort.Handle, eventPort);
 
             //Write the handle

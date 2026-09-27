@@ -205,7 +205,7 @@ namespace PS3Sharp
         {
             //Link the program
             GL.LinkProgram(program);
-            GL.GetProgram(program, GetProgramParameterName.LinkStatus, out var code);    // Check for linking errors
+            GL.GetProgram(program, GetProgramParameterName.LinkStatus, out int code);    // Check for linking errors
             if (code != (int)All.True)
             {
                 throw new Exception($"Error occurred whilst linking Program({program})");
@@ -251,7 +251,7 @@ namespace PS3Sharp
             GL.ActiveTexture(TextureUnit.Texture0 + FBOTextureUnit);
 
             // If we created it before we can bind directly 
-            if (Surfaces.TryGetValue(address, out var surface))
+            if (Surfaces.TryGetValue(address, out (int fbo, int texture) surface))
             {
                 GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, surface.fbo);
                 GL.FramebufferTexture2D(FramebufferTarget.DrawFramebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, surface.texture, 0);
@@ -292,7 +292,7 @@ namespace PS3Sharp
         {
             int handle = -1;
 
-            if (Surfaces.TryGetValue(address, out var surface))
+            if (Surfaces.TryGetValue(address, out (int fbo, int texture) surface))
             {
                 handle = surface.texture;
             }

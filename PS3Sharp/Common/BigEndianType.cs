@@ -28,7 +28,7 @@ namespace PS3Sharp.Common
 
         // Converts from the native integer type T to BigEndian<T> automatically
         // (e.g., allows: BigEndian<int> bigEndianValue = 123;)
-        public static implicit operator BigEndian<T>(T value) => new BigEndian<T>
+        public static implicit operator BigEndian<T>(T value) => new()
         {
             _raw = Reverse(value)
         };

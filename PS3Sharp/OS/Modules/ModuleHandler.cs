@@ -1,15 +1,8 @@
-﻿using OpenTK.Graphics.OpenGL;
-using PS3Sharp.Cell.PPU;
+﻿using PS3Sharp.Cell.PPU;
 using PS3Sharp.Cell.PPU.PPUInterpreter;
-using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
-using PS3Sharp.OS.NID;
-using PS3Sharp.OS.Syscall;
-using PS3Sharp.PRXManager;
-using System.Text;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
-using static PS3Sharp.Cell.PPU.PPU;
 
 namespace PS3Sharp.OS.Modules
 {

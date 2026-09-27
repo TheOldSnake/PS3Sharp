@@ -1,6 +1,5 @@
 ﻿using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
-using PS3Sharp.Cell.PPU.PPUInterpreter;
 using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
 using PS3Sharp.OS.NID;
@@ -113,7 +112,7 @@ namespace PS3Sharp.OS.Modules
 
         public static void PatchModuleCallHLE(string moduleName, string functionName, uint nid, uint stubCodeAddress)
         {
-            ModuleStubInfo stubInfo = new ModuleStubInfo(moduleName, functionName, nid, stubCodeAddress);
+            ModuleStubInfo stubInfo = new(moduleName, functionName, nid, stubCodeAddress);
             stubInfo.PatchStartAddress = WriteHLEStub(stubCodeAddress);
             Stubs.Add(stubInfo);
         }
@@ -132,7 +131,7 @@ namespace PS3Sharp.OS.Modules
 
             //Find lwz r2
             int count = 0;
-            PPUInstruction instruction = new PPUInstruction { Raw = MemoryManager.Read<uint>(stubAddress) };
+            PPUInstruction instruction = new() { Raw = MemoryManager.Read<uint>(stubAddress) };
             while (true)
             {
                 if (instruction.Op == Op.LWZ && instruction.Rt == 2)

@@ -1,5 +1,4 @@
 ﻿using PS3Sharp.Cell.PPU;
-using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules

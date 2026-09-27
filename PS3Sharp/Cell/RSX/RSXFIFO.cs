@@ -1163,7 +1163,7 @@ namespace PS3Sharp.Cell.RSX
             }
 
             // save the name and value to be uploaded later
-            var vector = new Vector4(values[0], values[1], values[2], values[3]);
+            Vector4 vector = new(values[0], values[1], values[2], values[3]);
             CurrentState.AllUniforms[address] = vector;
         }
 
@@ -1483,7 +1483,7 @@ namespace PS3Sharp.Cell.RSX
 
                 for (int location = 0; location < CurrentState.VertexBuffers.Length; location++)
                 {
-                    var vertexAttribute = CurrentState.VertexBuffers[location];
+                    RSXVertexBuffer vertexAttribute = CurrentState.VertexBuffers[location];
                     if (vertexAttribute.HasImmediateData)
                     {
                         vertexAttribute.ImmediateData.Clear();

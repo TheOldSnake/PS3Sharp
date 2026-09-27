@@ -193,7 +193,7 @@ namespace PS3Sharp.OS.Modules
 
             // Console.WriteLine($"Flushing RSX!");
 
-            WorkItem rsxFlush = new WorkItem(() =>
+            WorkItem rsxFlush = new(() =>
             {
                 PS3Sharp.RSX.SetPut(PS3Sharp.RSX.AddressToOffset(ctx_current));
                 // Console.WriteLine($"[RSX] Flush Call!");

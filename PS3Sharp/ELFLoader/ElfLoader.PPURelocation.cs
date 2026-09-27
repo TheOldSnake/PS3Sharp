@@ -1,8 +1,4 @@
 ﻿using PS3Sharp.Common;
-using SixLabors.ImageSharp.PixelFormats;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace PS3Sharp.ELFLoader
 {

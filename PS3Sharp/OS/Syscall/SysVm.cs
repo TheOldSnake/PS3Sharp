@@ -1,11 +1,8 @@
 ﻿using PS3Sharp.Cell.PPU;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using static PS3Sharp.Cell.ErrorCode;
-using static PS3Sharp.Cell.Arguments;
 using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
+using static PS3Sharp.Cell.Arguments;
+using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {

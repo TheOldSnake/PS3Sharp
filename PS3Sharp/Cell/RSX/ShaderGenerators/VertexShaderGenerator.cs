@@ -169,7 +169,7 @@ namespace PS3Sharp.Cell.RSX
 
             for (uint i = VertexShaderShaderStart; i < VertexShaderBuffer.Length; i += 4)
             {
-                VertexInstruction instruction = new VertexInstruction
+                VertexInstruction instruction = new()
                 { // Or we can do casts
                     Raw_0 = VertexShaderBuffer[i + 0],
                     Raw_1 = VertexShaderBuffer[i + 1],

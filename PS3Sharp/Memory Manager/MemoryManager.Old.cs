@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
-
-namespace PS3Sharp.Memory_Manager
+﻿namespace PS3Sharp.Memory_Manager
 {
     public static partial class MemoryManager
     {

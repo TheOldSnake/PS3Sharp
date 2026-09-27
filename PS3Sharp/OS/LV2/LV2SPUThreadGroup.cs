@@ -1,10 +1,6 @@
 ﻿using PS3Sharp.Cell.SPU;
 using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Text;
 using static PS3Sharp.OS.Syscall.SysSPU;
 
 namespace PS3Sharp.OS.LV2

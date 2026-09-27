@@ -1,7 +1,5 @@
-﻿using PS3Sharp.Cell.PPU.PPURecompiler.IR;
-using PS3Sharp.Common;
+﻿using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
-using SixLabors.ImageSharp.PixelFormats;
 using System.Diagnostics;
 using System.Numerics;
 using static PS3Sharp.Cell.Arguments;
@@ -12,7 +10,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
     public static unsafe partial class PPUInterpreter
     {
         public const uint NOP = 0x60000000;
-        public static Stopwatch stopwatch = new Stopwatch(); //debug
+        public static Stopwatch stopwatch = new(); //debug
         public static bool Log = false; //debug
         static bool lastBranch;         //debug
         static bool crash = false;

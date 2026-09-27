@@ -1,24 +1,18 @@
-﻿using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+﻿using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
 using PS3Sharp.OS.LV2;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
-
-using static PS3Sharp.OS.LV2.LV2Mutex;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
+using static PS3Sharp.OS.LV2.LV2Mutex;
 
 namespace PS3Sharp.OS.Syscall
 {
     public static class SysMutex
     {
 
-        private static readonly ConcurrentDictionary<uint, LV2Mutex> _mutexes = new ConcurrentDictionary<uint, LV2Mutex>();
+        private static readonly ConcurrentDictionary<uint, LV2Mutex> _mutexes = new();
 
         public static bool GetMutex(uint id, out LV2Mutex? mutex) => _mutexes.TryGetValue(id, out mutex);
 
@@ -47,7 +41,7 @@ namespace PS3Sharp.OS.Syscall
 
             // Create and add the mutex to the dictionary
             SysMutexAttribute attribute = attrib_ptr.Read();
-            LV2Mutex mutex = new LV2Mutex(attribute);
+            LV2Mutex mutex = new(attribute);
             AddMutex(mutex);
 
             // Write the handle

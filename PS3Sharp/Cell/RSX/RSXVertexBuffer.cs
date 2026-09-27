@@ -2,7 +2,6 @@
 using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
 using System.IO.Hashing;
-using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -26,7 +25,7 @@ namespace PS3Sharp.Cell.RSX
 
         // Scratch buffer to hold data
         public ScratchBuffer ScratchBuffer { get; } = new ScratchBuffer();
-        public VertexCacheKey CacheKey = new VertexCacheKey();
+        public VertexCacheKey CacheKey = new();
 
         public struct VertexCacheKey
         {

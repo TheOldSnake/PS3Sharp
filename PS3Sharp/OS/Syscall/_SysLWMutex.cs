@@ -16,7 +16,7 @@ namespace PS3Sharp.OS.Syscall
 
     public static class _SysLWMutex
     {
-        private static readonly ConcurrentDictionary<uint, LV2LWMutex> _lwMutexes = new ConcurrentDictionary<uint, LV2LWMutex>();
+        private static readonly ConcurrentDictionary<uint, LV2LWMutex> _lwMutexes = new();
 
         public static bool GetLWMutex(uint id, out LV2LWMutex lwmutex) => _lwMutexes.TryGetValue(id, out lwmutex);
 
@@ -61,7 +61,7 @@ namespace PS3Sharp.OS.Syscall
             }
 
             // Create the lwmutex
-            LV2LWMutex mutex = new LV2LWMutex(control, attribute);
+            LV2LWMutex mutex = new(control, attribute);
             AddLWMutex(handle, mutex);
 
             // Write the handle

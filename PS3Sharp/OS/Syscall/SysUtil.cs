@@ -8,9 +8,6 @@ using System.Text;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
-using System.Runtime.InteropServices;
-using OpenTK.Graphics.ES11;
-
 namespace PS3Sharp.OS.Syscall
 {
     public static class SysUtil

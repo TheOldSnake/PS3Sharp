@@ -1,6 +1,4 @@
-﻿
-using OpenTK.Graphics.ES20;
-using PS3Sharp.Cell.PPU;
+﻿using PS3Sharp.Cell.PPU;
 using PS3Sharp.Cell.PPU.PPUInterpreter;
 using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;

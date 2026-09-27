@@ -4,8 +4,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using static Iced.Intel.AssemblerRegisters;
 using static PS3Sharp.Cell.PPU.PPU;
-using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAllocator;
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
+using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAllocator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
 {
@@ -40,17 +40,17 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
 
         private void PrintNativeCode(Assembler asm)
         {
-            var stream = new MemoryStream();
+            MemoryStream stream = new();
             asm.Assemble(new StreamCodeWriter(stream), 0);
 
             stream.Position = 0;
-            var reader = new StreamCodeReader(stream);
-            var decoder = Decoder.Create(64, reader);
+            StreamCodeReader reader = new(stream);
+            Decoder decoder = Decoder.Create(64, reader);
             decoder.IP = 0;
 
             while (stream.Position < stream.Length)
             {
-                decoder.Decode(out var instr);
+                decoder.Decode(out Instruction instr);
                 ulong ip = instr.IP;
                 Console.WriteLine($"{instr}");
             }
@@ -58,9 +58,9 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
 
         private Span<byte> AssembleBlock(Assembler asm)
         {
-            var stream = new MemoryStream();
-            var result = asm.Assemble(new StreamCodeWriter(stream), 0);
-            var buffer = stream.GetBuffer();
+            MemoryStream stream = new();
+            AssemblerResult result = asm.Assemble(new StreamCodeWriter(stream), 0);
+            byte[] buffer = stream.GetBuffer();
             return buffer.AsSpan().Slice(0, (int)stream.Position);
         }
 
@@ -76,7 +76,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
             ResetState();
             SetupState(block);
 
-            Assembler asm = new Assembler(64);
+            Assembler asm = new(64);
 
             void* state = ppuThread.State;
             int stackSlots = GetRequiredStackSlots();
@@ -177,7 +177,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
                 asm.mov(MemoryBase, addr);
             }
 
-            foreach (var reg in nonVolatileRegs)
+            foreach (AssemblerRegister64 reg in nonVolatileRegs)
             {
                 asm.push(reg);
             }
@@ -237,7 +237,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
         {
             int lastIndex = -1;
 
-            foreach (var item in _registerMap)
+            foreach (KeyValuePair<Value, Location> item in _registerMap)
             {
                 Location location = item.Value;
                 if (location.IsSpilled)
@@ -253,7 +253,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
         {
             List<AssemblerRegister64> regs = new();
 
-            foreach (var item in _registerMap)
+            foreach (KeyValuePair<Value, Location> item in _registerMap)
             {
                 Location location = item.Value;
 

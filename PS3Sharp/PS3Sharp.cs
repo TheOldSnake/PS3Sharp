@@ -45,7 +45,7 @@ namespace PS3Sharp
         public static PPU CreateMainPPUThread(string eld_dir)
         {
             uint entryPointer = ElfLoader.LoadMainElf(eld_dir);
-            PPU ppu_main = new PPU("main_thread", entryPointer, path_to_executable: eld_dir);
+            PPU ppu_main = new("main_thread", entryPointer, path_to_executable: eld_dir);
             ThreadManager.CreateNativePPUThread(ppu_main);
             return ppu_main;
         }
@@ -66,7 +66,7 @@ namespace PS3Sharp
 
             // Create the PPU thread
             uint main_thread_id = ThreadManager.GetNewID();
-            PPU ppu_main = new PPU("main_thread", code_block.VirtualAddress, main_thread_id, MemoryManager.DEFAULT_STACK_SIZE);
+            PPU ppu_main = new("main_thread", code_block.VirtualAddress, main_thread_id, MemoryManager.DEFAULT_STACK_SIZE);
 
             // Prepare arguments
 
@@ -124,10 +124,10 @@ namespace PS3Sharp
             uint pc = MemoryManager.Read<uint>(entryPointer);
             uint toc = MemoryManager.Read<uint>(entryPointer + 4);
 
-            PPU ppu_main = new PPU("main_thread", (uint)pc, main_thread_id, MemoryManager.DEFAULT_STACK_SIZE);
+            PPU ppu_main = new("main_thread", (uint)pc, main_thread_id, MemoryManager.DEFAULT_STACK_SIZE);
             ppu_main.WriteReg<ulong>(2, toc);
 
-            PPURecompiler ppu_recompiler = new PPURecompiler();
+            PPURecompiler ppu_recompiler = new();
 
             while (true)
             {

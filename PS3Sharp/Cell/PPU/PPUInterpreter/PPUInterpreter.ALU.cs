@@ -1,6 +1,4 @@
 ﻿using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.PPU.PPURotationMasks;
 
 namespace PS3Sharp.Cell.PPU.PPUInterpreter

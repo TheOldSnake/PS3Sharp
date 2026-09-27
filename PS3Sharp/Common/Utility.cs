@@ -1,8 +1,8 @@
-﻿using System.Diagnostics;
-using System.Text;
-using System.IO.Hashing;
+﻿using PS3Sharp.Memory_Manager;
 using SkiaSharp;
-using PS3Sharp.Memory_Manager;
+using System.Diagnostics;
+using System.IO.Hashing;
+using System.Text;
 
 namespace PS3Sharp.Common
 {
@@ -92,7 +92,7 @@ namespace PS3Sharp.Common
 
         public static void DumpMemoryAsImage(uint address, int width, int height, string path)
         { // As BRGA8888
-            var bitmap = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
+            SKBitmap bitmap = new(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
 
             unsafe
             {
@@ -115,8 +115,8 @@ namespace PS3Sharp.Common
                 }
             }
 
-            var image = SKImage.FromBitmap(bitmap);
-            var encoded = image.Encode(SKEncodedImageFormat.Png, 100);
+            SKImage image = SKImage.FromBitmap(bitmap);
+            SKData encoded = image.Encode(SKEncodedImageFormat.Png, 100);
             File.WriteAllBytes(path, encoded.ToArray());
         }
     }

@@ -37,7 +37,7 @@ namespace PS3Sharp.OS.LV2
         public const uint SYS_SYNC_PRIORITY_INHERIT = 0x3;      // Basic Priority Inheritance Protocol
         public const uint SYS_SYNC_RETRY = 0x4;                 // Not selected while unlocking
 
-        private readonly object _mutex = new object();
+        private readonly object _mutex = new();
 
         public readonly GuestPtr<LWMutex> InstancePtr;
         private readonly LWMutexAttrib _attributes;

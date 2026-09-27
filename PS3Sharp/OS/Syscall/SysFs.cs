@@ -14,7 +14,7 @@ namespace PS3Sharp.OS.Syscall
     public static class SysFs
     {
         // This struct is explicitly aligned to 4 bytes
-        [StructLayout(LayoutKind.Sequential, Pack = 4)] 
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct CellFsStat : IPS3Struct
         {
             public BigEndian<int> Mode;          // s32
@@ -88,7 +88,7 @@ namespace PS3Sharp.OS.Syscall
         public const uint FD_EOF = 4;
 
         // For the console
-        private static CellFsStat ConsoleFsStat = new CellFsStat
+        private static CellFsStat ConsoleFsStat = new()
         {
             Mode = (int)(CELL_FS_S_IRUSR | CELL_FS_S_IWUSR | CELL_FS_S_IXUSR |
                          CELL_FS_S_IRGRP | CELL_FS_S_IWGRP | CELL_FS_S_IXGRP |

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace PS3Sharp.Cell.RSX
+﻿namespace PS3Sharp.Cell.RSX
 {
     public struct RSXCommand
     {

@@ -1,6 +1,5 @@
 ﻿using PS3Sharp.Common;
 using PS3Sharp.Syscall;
-using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.PPU.PPU;
 
 namespace PS3Sharp.Cell.PPU.PPUInterpreter

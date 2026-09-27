@@ -41,7 +41,7 @@ namespace PS3Sharp.OS.Syscall
             GuestVoidPtr attributes_ptr = ppu.ReadArg<GuestVoidPtr>(ARG1);
             ulong initialValue = ppu.ReadArg<ulong>(ARG2);
 
-            LV2EventFlag eventFlag = new LV2EventFlag(initialValue);
+            LV2EventFlag eventFlag = new(initialValue);
             AddEventFlag(eventFlag.Handle, eventFlag);
 
             MemoryManager.Write<uint>(id_ptr, eventFlag.Handle);

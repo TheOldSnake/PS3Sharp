@@ -2,7 +2,6 @@
 using PS3Sharp.Memory_Manager;
 using PS3Sharp.OS.Modules;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -74,10 +73,10 @@ namespace PS3Sharp.Cell.RSX
         public Thread? NativeThread { get; set; }
         public RSXThreadStates RsxThreadState = RSXThreadStates.Stopped;
 
-        private readonly ConcurrentQueue<WorkItem> CommandQueue = new ConcurrentQueue<WorkItem>(); // External commands from PPU thread
+        private readonly ConcurrentQueue<WorkItem> CommandQueue = new(); // External commands from PPU thread
         public static RealitySynthesizer Instance { get; } = new RealitySynthesizer();
 
-        private Stack<uint> CallStack = new Stack<uint>();
+        private Stack<uint> CallStack = new();
         private ulong LastVblank;
         public static ulong LastFlipTime;
 
@@ -286,7 +285,7 @@ namespace PS3Sharp.Cell.RSX
             }
 
             //Run any pending commands
-            while (CommandQueue.TryDequeue(out var command))
+            while (CommandQueue.TryDequeue(out WorkItem? command))
             {
                 command.Work();
                 command.Done.Set(); //Signal incase the main thread is waiting
@@ -318,7 +317,7 @@ namespace PS3Sharp.Cell.RSX
                 {
                     uint currentAddress = CellGcmSys.IoToEa(ctrl->Get);
                     uint instruction = MemoryManager.ReadRSXInstruction(currentAddress);
-                    RSXCommand CurrentCommand = new RSXCommand { Raw = instruction };
+                    RSXCommand CurrentCommand = new() { Raw = instruction };
 
                     //Console.WriteLine($"[0x{currentAddress:X}] cmd: 0x{instruction:X} get: [0x{ctrl.Get:X}]");
 

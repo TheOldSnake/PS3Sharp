@@ -5,12 +5,10 @@ using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
 using PS3Sharp.OS.Modules;
 using PS3Sharp.OS.NID;
-using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using static PS3Sharp.ElfLoader;
-using static PS3Sharp.PRXManager.PRXManager;
 
 namespace PS3Sharp.PRXManager
 {
@@ -158,7 +156,7 @@ namespace PS3Sharp.PRXManager
                 throw new FileNotFoundException($"Can't find file: {path}");
             }
 
-            BinaryReader reader = new BinaryReader(File.OpenRead(path));
+            BinaryReader reader = new(File.OpenRead(path));
 
             // Load the loadable segments
             List<LoadedPRXSegment> loadedSegments = ElfLoader.LoadPRXElf(reader);

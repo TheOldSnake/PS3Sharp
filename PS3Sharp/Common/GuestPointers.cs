@@ -1,6 +1,5 @@
 ﻿using PS3Sharp.Cell;
 using PS3Sharp.Memory_Manager;
-using System.Net;
 using System.Runtime.CompilerServices;
 
 namespace PS3Sharp.Common
@@ -30,10 +29,10 @@ namespace PS3Sharp.Common
 
         // Implicit conversions
         public static implicit operator uint(GuestPtr<T> ptr) => ptr.Address;
-        public static implicit operator GuestPtr<T>(uint address) => new GuestPtr<T>(address);
-        public static implicit operator GuestPtr<T>(BigEndian<uint> address) => new GuestPtr<T>(address);
-        public static implicit operator GuestPtr<T>(BigEndianGuestPtr<T> ptr) => new GuestPtr<T>(ptr.Address);
-        public static implicit operator BigEndianGuestPtr<T>(GuestPtr<T> ptr) => new BigEndianGuestPtr<T>(ptr.Address);
+        public static implicit operator GuestPtr<T>(uint address) => new(address);
+        public static implicit operator GuestPtr<T>(BigEndian<uint> address) => new(address);
+        public static implicit operator GuestPtr<T>(BigEndianGuestPtr<T> ptr) => new(ptr.Address);
+        public static implicit operator BigEndianGuestPtr<T>(GuestPtr<T> ptr) => new(ptr.Address);
 
         // Formatting
         public override string ToString() => Address.ToString();
@@ -68,10 +67,10 @@ namespace PS3Sharp.Common
 
         // Implicit conversions
         public static implicit operator uint(GuestVoidPtr ptr) => ptr.Address;
-        public static implicit operator GuestVoidPtr(uint address) => new GuestVoidPtr(address);
-        public static implicit operator GuestVoidPtr(BigEndian<uint> address) => new GuestVoidPtr(address);
-        public static implicit operator GuestVoidPtr(BigEndianGuestVoidPtr ptr) => new GuestVoidPtr(ptr.Address);
-        public static implicit operator BigEndianGuestVoidPtr(GuestVoidPtr ptr) => new BigEndianGuestVoidPtr(ptr.Address);
+        public static implicit operator GuestVoidPtr(uint address) => new(address);
+        public static implicit operator GuestVoidPtr(BigEndian<uint> address) => new(address);
+        public static implicit operator GuestVoidPtr(BigEndianGuestVoidPtr ptr) => new(ptr.Address);
+        public static implicit operator BigEndianGuestVoidPtr(GuestVoidPtr ptr) => new(ptr.Address);
 
         // Formatting
         public override string ToString() => Address.ToString();
@@ -115,8 +114,8 @@ namespace PS3Sharp.Common
 
         // Implicit conversions
         public static implicit operator uint(BigEndianGuestPtr<T> ptr) => ptr.Address;
-        public static implicit operator BigEndianGuestPtr<T>(uint address) => new BigEndianGuestPtr<T>(address);
-        public static implicit operator BigEndianGuestPtr<T>(BigEndian<uint> address) => new BigEndianGuestPtr<T>(address);
+        public static implicit operator BigEndianGuestPtr<T>(uint address) => new(address);
+        public static implicit operator BigEndianGuestPtr<T>(BigEndian<uint> address) => new(address);
 
         // Formatting
         public override string ToString() => Address.ToString();
@@ -159,8 +158,8 @@ namespace PS3Sharp.Common
 
         // Implicit conversions
         public static implicit operator uint(BigEndianGuestVoidPtr ptr) => ptr.Address;
-        public static implicit operator BigEndianGuestVoidPtr(uint address) => new BigEndianGuestVoidPtr(address);
-        public static implicit operator BigEndianGuestVoidPtr(BigEndian<uint> address) => new BigEndianGuestVoidPtr(address);
+        public static implicit operator BigEndianGuestVoidPtr(uint address) => new(address);
+        public static implicit operator BigEndianGuestVoidPtr(BigEndian<uint> address) => new(address);
 
         // Formatting
         public override string ToString() => Address.ToString();

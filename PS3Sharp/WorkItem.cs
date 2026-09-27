@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace PS3Sharp
+﻿namespace PS3Sharp
 {
     public sealed class WorkItem
     {

@@ -1,11 +1,7 @@
 ﻿using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
 using PS3Sharp.OS.Syscall;
-using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
-using System.Text;
 
 namespace PS3Sharp.Cell.SPU
 {
@@ -115,7 +111,7 @@ namespace PS3Sharp.Cell.SPU
             uint src_value = segment.Src;
             uint ls_offset = segment.LSAddress;
 
-            Span<byte> dest = new Span<byte>(LS + ls_offset, size);
+            Span<byte> dest = new(LS + ls_offset, size);
 
             switch (segment.Type)
             {

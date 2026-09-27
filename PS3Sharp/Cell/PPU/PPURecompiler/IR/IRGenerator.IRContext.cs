@@ -1,6 +1,4 @@
-﻿using NAudio.SoundFont;
-using System.Net;
-using static PS3Sharp.Cell.PPU.PPU;
+﻿using static PS3Sharp.Cell.PPU.PPU;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 {

@@ -18,7 +18,7 @@ namespace PS3Sharp
         public static void InitializeWindow()
         {
             GLFWProvider.CheckForMainThread = false;
-            var nativeSettings = new NativeWindowSettings()
+            NativeWindowSettings nativeSettings = new()
             {
                 APIVersion = Version.Parse("4.6.0"),
                 ClientSize = new Vector2i(1280, 720),
@@ -40,7 +40,7 @@ namespace PS3Sharp
         public static Vector2i GetCenterOfScreen(Vector2i size)
         {
             //Get screen resolution 
-            var videoMode = Monitors.GetPrimaryMonitor().CurrentVideoMode;
+            VideoMode videoMode = Monitors.GetPrimaryMonitor().CurrentVideoMode;
             int width = videoMode.Width;
             int height = videoMode.Height;
             int newX = (width - size.X) / 2;

@@ -1,5 +1,4 @@
 ﻿using Iced.Intel;
-using PS3Sharp.Memory_Manager;
 using System.Buffers.Binary;
 using static Iced.Intel.AssemblerRegisters;
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
@@ -39,7 +38,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
 
             void BorrowAndWrite()
             {
-                var reg = BorrowRegister(asm);
+                AssemblerRegister64 reg = BorrowRegister(asm);
                 asm.mov(reg, value);
                 asm.mov(addr, reg);
                 ReturnBorrowedRegister(asm, reg);

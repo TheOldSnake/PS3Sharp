@@ -6,7 +6,6 @@ using PS3Sharp.OS.Syscall;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.Arguments;

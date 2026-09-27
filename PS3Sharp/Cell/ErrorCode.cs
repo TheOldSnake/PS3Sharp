@@ -1,6 +1,4 @@
-﻿using PS3Sharp.OS.Modules;
-
-namespace PS3Sharp.Cell
+﻿namespace PS3Sharp.Cell
 {
     public static class ErrorCode
     {

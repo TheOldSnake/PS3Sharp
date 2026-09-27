@@ -1,9 +1,8 @@
-﻿using OpenTK.Graphics.ES11;
-using PS3Sharp.Cell.PPU;
+﻿using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using static PS3Sharp.Cell.ErrorCode;
-using static PS3Sharp.Cell.Arguments;
 using PS3Sharp.Memory_Manager;
+using static PS3Sharp.Cell.Arguments;
+using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {

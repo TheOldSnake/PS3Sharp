@@ -2,12 +2,9 @@
 using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
-using static PS3Sharp.OS.Modules.CellPad;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PS3Sharp.OS.Modules
 {
@@ -245,7 +242,7 @@ namespace PS3Sharp.OS.Modules
         // Left X, Left Y, Right X, Right Y
         private static readonly int[] XInputAxis = [0, 1, 2, 3];
 
-        private static readonly Dictionary<uint, uint> XInputDictionary = new Dictionary<uint, uint>() {
+        private static readonly Dictionary<uint, uint> XInputDictionary = new() {
                {0, CELL_PAD_CTRL_CROSS},       // X
                {1, CELL_PAD_CTRL_CIRCLE},      // Circle
                {2, CELL_PAD_CTRL_SQUARE},      // Square

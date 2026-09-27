@@ -1,7 +1,6 @@
 ﻿using Iced.Intel;
 using static Iced.Intel.AssemblerRegisters;
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
-using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAllocator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator
 {
@@ -100,7 +99,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator
         {
 
             // Initial list of all registers
-            List<AssemblerRegister64> regs = new List<AssemblerRegister64>(StaticRegisterPool64);
+            List<AssemblerRegister64> regs = new(StaticRegisterPool64);
 
             // Remove registers that are reserved from the pool
             regs.Remove(PPUStatePointer);
@@ -320,7 +319,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator
         private void PrintRegisterMapping(Dictionary<Value, Location> allocatedRegs)
         {
             Console.WriteLine($"Mapped Registers:");
-            foreach (var item in allocatedRegs)
+            foreach (KeyValuePair<Value, Location> item in allocatedRegs)
             {
                 int id = item.Key.Id;
                 Location l = item.Value;
