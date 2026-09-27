@@ -7,15 +7,14 @@ using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler {
-    public unsafe sealed class PPURecompiler : IDisposable {     
-        private const int VirtualAllocSize = 4 * 1024;    // 4 kb
-
-        private readonly List<(nint Address, ulong Size)> AllocatedPages = [];
-
+    public unsafe sealed class PPURecompiler : IDisposable {
         public struct X64Block {
             public delegate* unmanaged[Stdcall]<void> Code;
             public int IsSyscallExit;
         }
+
+        private const int VirtualAllocSize = 4 * 1024;    // 4 kb
+        private readonly List<(nint Address, ulong Size)> AllocatedPages = [];
 
         private const int Bits = 16;
         private const int Size = 1 << Bits;
@@ -29,6 +28,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
         private nint CurrentPageStartAddress;
         private nint CurrentPageEndAddress;
         private bool disposedValue;
+
+        public static ulong NumberOfCompiledBlocks = 0;
+        public static ulong NumberOfExecutedBlocks = 0;
+        public static ulong TotalAllocatedPages = 0;
 
         private X64Block* GetBlock(uint virtualAddress) {
             uint index = virtualAddress >> 2;
@@ -58,9 +61,6 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
             return &page[l2];
         }
 
-        public static ulong NumberOfCompiledBlocks = 0;
-        public static ulong NumberOfExecutedBlocks = 0;
-        public static ulong TotalAllocatedPages = 0;
         public void RunPPU(PPU ppu) {
 
             X64Block* block = GetOrCreateBlock(ppu.State->PC);
