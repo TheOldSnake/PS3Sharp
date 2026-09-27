@@ -159,7 +159,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler
                 // set large fields to null
 
                 // Free executable pages
-                foreach (var allocation in AllocatedPages)
+                foreach ((nint Address, ulong Size) allocation in AllocatedPages)
                 {
                     int ok = WinAPI.VirtualFree(allocation.Address, 0, WinAPI.MEM_RELEASE);
 
@@ -170,7 +170,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler
                 }
 
                 // Free block structs
-                foreach (var block in _blocks)
+                foreach (X64Block* block in _blocks)
                 {
                     if (block != null)
                     {

@@ -328,7 +328,7 @@ namespace PS3Sharp.Syscall
 
                     Console.WriteLine($"[{ppu.ThreadName}] unhandled syscall : 0x{sys_id:X3} LEV = 0x{lev:X8}");
                     result = lev == 1 ? lev : CELL_OK;
-                    // break;
+                     break;
                     throw new Exception($"unhandled syscall : 0x{sys_id:X3} LEV = 0x{lev:X8}");
             }
 

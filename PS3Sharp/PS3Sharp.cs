@@ -34,8 +34,8 @@ namespace PS3Sharp
 
             MemoryManager.Initialize();
 
-            //RunSimpleElf(@"C:\Users\Old Snake\Desktop\Projects\Emudev\PS3\helloworld.elf"); // runs on recompiler
-            //return;
+            RunSimpleElf(@"C:\Users\Old Snake\Desktop\Projects\Emudev\PS3\helloworld.elf"); // runs on recompiler
+            return;
 
             PPU ppu_main = CreateMainPPUThread(ELFDir);
             PRXManager.PRXManager.InitializeLibraries(ppu_main);
