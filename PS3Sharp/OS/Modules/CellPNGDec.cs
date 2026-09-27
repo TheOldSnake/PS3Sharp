@@ -12,8 +12,10 @@ using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
-namespace PS3Sharp.OS.Modules {
-    public static class CellPNGDec { //We can probably LLE this
+namespace PS3Sharp.OS.Modules
+{
+    public static class CellPNGDec
+    { //We can probably LLE this
 
         public const uint PNG_CODEC_VERSION = 0x00420000;
         public const uint CELL_PNGDEC_FILE = 0;
@@ -26,11 +28,13 @@ namespace PS3Sharp.OS.Modules {
         public const int CELL_PNGDEC_RGBA = 10;
         public const int CELL_PNGDEC_ARGB = 20;
 
-        public struct CellPngDecThreadOutParam : IPS3Struct {
+        public struct CellPngDecThreadOutParam : IPS3Struct
+        {
             public BigEndian<uint> CodecVersion;
         }
 
-        public struct CellPngDecSrc : IPS3Struct {
+        public struct CellPngDecSrc : IPS3Struct
+        {
             public BigEndian<uint> SrcSelect;
             public BigEndian<uint> Filename_ptr;
             public BigEndian<long> FileOffset;
@@ -40,7 +44,8 @@ namespace PS3Sharp.OS.Modules {
             public BigEndian<uint> spu_thread_enable; //?
         }
 
-        public struct CellPngDecInfo : IPS3Struct {
+        public struct CellPngDecInfo : IPS3Struct
+        {
             public BigEndian<uint> Width;
             public BigEndian<uint> Height;
             public BigEndian<uint> NumberOfComponents;
@@ -50,7 +55,8 @@ namespace PS3Sharp.OS.Modules {
             public BigEndian<uint> ChunkInfo;
         }
 
-        public struct CellPngDecInParam : IPS3Struct {
+        public struct CellPngDecInParam : IPS3Struct
+        {
             public BigEndian<uint> CommandPtr;
             public BigEndian<uint> OutputMode;
             public BigEndian<int> OutputColorSpace;
@@ -60,7 +66,8 @@ namespace PS3Sharp.OS.Modules {
             public BigEndian<uint> OutputColorAlpha;
         }
 
-        public struct CellPngDecOutParam : IPS3Struct {
+        public struct CellPngDecOutParam : IPS3Struct
+        {
             public BigEndian<ulong> OutputWidthByte;
             public BigEndian<uint> OutputWidth;
             public BigEndian<uint> OutputHeight;
@@ -71,14 +78,16 @@ namespace PS3Sharp.OS.Modules {
             public BigEndian<uint> UseMemorySpace;
         }
 
-        public struct CellPngDecDataOutInfo : IPS3Struct {
+        public struct CellPngDecDataOutInfo : IPS3Struct
+        {
             public BigEndian<uint> ChunkInformation;
             public BigEndian<uint> NumText;
             public BigEndian<uint> NumUnknownChunk;
             public BigEndian<int> Status;
         }
 
-        public struct CellPngDecDataCtrlParam : IPS3Struct {
+        public struct CellPngDecDataCtrlParam : IPS3Struct
+        {
             public BigEndian<ulong> OutputBytesPerLine;
         }
 
@@ -89,18 +98,24 @@ namespace PS3Sharp.OS.Modules {
 
         private static Image GetImage(ReadOnlySpan<byte> pngData) => Image.Load(pngData);
 
-        public static void EnsureImageIsSet(string function) {
-            if (_currentImage == null) {
+        public static void EnsureImageIsSet(string function)
+        {
+            if (_currentImage == null)
+            {
                 throw new NullReferenceException($"[CellPNGDec] {function}: _currentImage is null");
             }
         }
 
-        public static void SwizzleRGBAtoARGB(ref Image<Rgba32> rgba_img) {
-            rgba_img.ProcessPixelRows(accessor => {
-                for (int y = 0; y < accessor.Height; y++) {
+        public static void SwizzleRGBAtoARGB(ref Image<Rgba32> rgba_img)
+        {
+            rgba_img.ProcessPixelRows(accessor =>
+            {
+                for (int y = 0; y < accessor.Height; y++)
+                {
                     Span<Rgba32> row = accessor.GetRowSpan(y);
 
-                    for (int x = 0; x < row.Length; x++) {
+                    for (int x = 0; x < row.Length; x++)
+                    {
                         ref Rgba32 pixel = ref row[x];
                         pixel = new Rgba32(pixel.A, pixel.R, pixel.G, pixel.B);
                     }
@@ -108,19 +123,22 @@ namespace PS3Sharp.OS.Modules {
             });
         }
 
-        private static ReadOnlySpan<byte> GetCurrentSourceData(PPU ppu) {
-            if ((long)_currentSource.FileOffset > (uint)_currentSource.FileSize) {
+        private static ReadOnlySpan<byte> GetCurrentSourceData(PPU ppu)
+        {
+            if ((long)_currentSource.FileOffset > (uint)_currentSource.FileSize)
+            {
                 throw new Exception($"Invalid offset/size");
             }
 
-            if (_currentSource.SrcSelect == CELL_PNGDEC_FILE) {
+            if (_currentSource.SrcSelect == CELL_PNGDEC_FILE)
+            {
                 string guestPath = MemoryManager.ReadString(_currentSource.Filename_ptr);
-                string hostPath = SysFs.GetAbsoluteHostPath(guestPath); 
+                string hostPath = SysFs.GetAbsoluteHostPath(guestPath);
 
                 FileStream fileStream = File.OpenRead(hostPath);
                 fileStream.Seek(0, SeekOrigin.Begin);
 
-                long file_size = _currentSource.FileSize > 0? _currentSource.FileSize : fileStream.Length; //not sure about this
+                long file_size = _currentSource.FileSize > 0 ? _currentSource.FileSize : fileStream.Length; //not sure about this
 
                 long offset = _currentSource.FileOffset;
                 long length = (uint)file_size - offset;
@@ -130,18 +148,22 @@ namespace PS3Sharp.OS.Modules {
                 //Console.WriteLine($"CellPNGDec: Read: {hostPath} - _currentSource.FileSize = {_currentSource.FileSize} offset = {offset} size = {data.Length}");
                 return data;
 
-            } else {
+            }
+            else
+            {
                 uint source = _currentSource.StreamPtr;
                 uint size = _currentSource.StreamSize;
 
-                unsafe {
+                unsafe
+                {
                     // Return a copy of the data
                     return MemoryManager.CreateSpan<byte>(source, (int)size).ToArray();
                 }
             }
         }
 
-        public static ulong CellPngDecCreate(PPU ppu) {
+        public static ulong CellPngDecCreate(PPU ppu)
+        {
             GuestPtr<uint> handle_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             uint thread_in_param_ptr = ppu.ReadArg<uint>(ARG1);
             GuestPtr<CellPngDecThreadOutParam> thread_out_param_ptr = ppu.ReadArg<GuestPtr<CellPngDecThreadOutParam>>(ARG2);
@@ -152,7 +174,8 @@ namespace PS3Sharp.OS.Modules {
             MemoryManager.Write<uint>(handle_ptr, _decoderCurrentHandle);
 
             //Write the codec version
-            unsafe {
+            unsafe
+            {
                 CellPngDecThreadOutParam* out_param = thread_out_param_ptr.AsNativePtr();
                 out_param->CodecVersion = PNG_CODEC_VERSION;
             }
@@ -161,13 +184,15 @@ namespace PS3Sharp.OS.Modules {
             return CELL_OK;
         }
 
-        public static ulong CellPngDecOpen(PPU ppu) {
+        public static ulong CellPngDecOpen(PPU ppu)
+        {
             uint handle = ppu.ReadArg<uint>(ARG0);
             GuestPtr<uint> sub_handle_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
             GuestPtr<CellPngDecSrc> src_ptr = ppu.ReadArg<GuestPtr<CellPngDecSrc>>(ARG2);
             GuestVoidPtr open_info_ptr = ppu.ReadArg<GuestVoidPtr>(ARG3);
 
-            if (handle != _decoderCurrentHandle) {
+            if (handle != _decoderCurrentHandle)
+            {
                 throw new Exception($"[CellPNGDec] Got a different handle: 0x{handle:X8}");
             }
 
@@ -181,7 +206,8 @@ namespace PS3Sharp.OS.Modules {
             return CELL_OK;
         }
 
-        public static ulong CellPngDecReadHeader(PPU ppu) {
+        public static ulong CellPngDecReadHeader(PPU ppu)
+        {
             EnsureImageIsSet("cellPngDecReadHeader");
 
             uint handle = ppu.ReadArg<uint>(ARG0);
@@ -189,7 +215,8 @@ namespace PS3Sharp.OS.Modules {
             GuestPtr<CellPngDecInfo> info_ptr = ppu.ReadArg<GuestPtr<CellPngDecInfo>>(ARG2);
 
             //Fill the CellPngDecInfo data from the ImageSharp.Image instance
-            unsafe {
+            unsafe
+            {
                 CellPngDecInfo* info = info_ptr.AsNativePtr();
                 info->Width = (uint)_currentImage.Width;
                 info->Height = (uint)_currentImage.Height;
@@ -204,7 +231,8 @@ namespace PS3Sharp.OS.Modules {
             return CELL_OK;
         }
 
-        public static ulong CellPngDecSetParameter(PPU ppu) {
+        public static ulong CellPngDecSetParameter(PPU ppu)
+        {
             EnsureImageIsSet("cellPngDecReadHeader");
 
             uint handle = ppu.ReadArg<uint>(ARG0);
@@ -213,7 +241,8 @@ namespace PS3Sharp.OS.Modules {
             GuestPtr<CellPngDecOutParam> out_param_ptr = ppu.ReadArg<GuestPtr<CellPngDecOutParam>>(ARG3);
 
             //Fill the CellPngDecOutParam data from the ImageSharp.Image instance
-            unsafe {
+            unsafe
+            {
                 CellPngDecInParam* in_param = in_param_ptr.AsNativePtr();
                 CellPngDecOutParam* out_param = out_param_ptr.AsNativePtr();
 
@@ -234,13 +263,14 @@ namespace PS3Sharp.OS.Modules {
             return CELL_OK;
         }
 
-        public static ulong CellPngDecDecodeData(PPU ppu) {
+        public static ulong CellPngDecDecodeData(PPU ppu)
+        {
             EnsureImageIsSet("cellPngDecDecodeData");
 
             uint handle = ppu.ReadArg<uint>(ARG0);
             uint sub_handle = ppu.ReadArg<uint>(ARG1);
-            GuestVoidPtr data_buffer_ptr = ppu.ReadArg<GuestVoidPtr>(ARG2); 
-            GuestPtr<CellPngDecDataCtrlParam> data_ctrl_param_ptr = ppu.ReadArg<GuestPtr<CellPngDecDataCtrlParam>>(ARG3); 
+            GuestVoidPtr data_buffer_ptr = ppu.ReadArg<GuestVoidPtr>(ARG2);
+            GuestPtr<CellPngDecDataCtrlParam> data_ctrl_param_ptr = ppu.ReadArg<GuestPtr<CellPngDecDataCtrlParam>>(ARG3);
             GuestPtr<CellPngDecDataOutInfo> data_out_info_ptr = ppu.ReadArg<GuestPtr<CellPngDecDataOutInfo>>(ARG4);
 
             CellPngDecDataCtrlParam data_ctrl_param = MemoryManager.ReadStruct<CellPngDecDataCtrlParam>(data_ctrl_param_ptr);
@@ -258,12 +288,14 @@ namespace PS3Sharp.OS.Modules {
             // Console.WriteLine($"[CellPNGDec] cellPngDecDecodeData: img_h = {_currentImage.Height}");
             // Console.WriteLine($"[CellPNGDec] cellPngDecDecodeData: data_ctrl_param.OutputBytesPerLine = {data_ctrl_param.OutputBytesPerLine}");
 
-            using (MemoryManager.AcquireTemporaryLock()) {
+            using (MemoryManager.AcquireTemporaryLock())
+            {
                 // Create a temporary buffer
                 Span<byte> buffer = new byte[lengthInBytes];
 
                 // Decode the data
-                switch (_currentOutParam.OutputColorSpace) {
+                switch (_currentOutParam.OutputColorSpace)
+                {
                     case CELL_PNGDEC_RGB:
                         DecodeImage<Rgb24>((int)outputBytesPerLine, buffer);
                         break;
@@ -271,7 +303,7 @@ namespace PS3Sharp.OS.Modules {
                     case CELL_PNGDEC_RGBA:
                         DecodeImage<Rgba32>((int)outputBytesPerLine, buffer);
                         break;
-                        
+
                     case CELL_PNGDEC_ARGB:
                         DecodeImage<Argb32>((int)outputBytesPerLine, buffer);
                         break;
@@ -284,17 +316,19 @@ namespace PS3Sharp.OS.Modules {
                 MemoryManager.CopyBufferToVirtualMemory(buffer, data_buffer_ptr);
 
                 // Set staus to finish
-                unsafe {
+                unsafe
+                {
                     CellPngDecDataOutInfo* data_out_info = data_out_info_ptr.AsNativePtr();
                     data_out_info->Status = 0;
                 }
             }
- 
+
             //Console.WriteLine($"[CellPNGDec] cellPngDecDecodeData");
             return CELL_OK;
         }
 
-        public static void DecodeImage<T>(int bytesPerLine, Span<byte> destination) where T : unmanaged, IPixel<T> {
+        public static void DecodeImage<T>(int bytesPerLine, Span<byte> destination) where T : unmanaged, IPixel<T>
+        {
             destination.Clear();
             Span<T> destinationPixels = MemoryMarshal.Cast<byte, T>(destination);
 
@@ -307,14 +341,16 @@ namespace PS3Sharp.OS.Modules {
             // 1: if the destination image memory has a larger row width, the extra width of each row remains untouced
             // 2: if the destination image memory has a smaller row width, each source row is trimmed (this case is bugged)
 
-            for (int y = 0; y < srcImg.Height; y++) {
+            for (int y = 0; y < srcImg.Height; y++)
+            {
                 Span<T> srcRow = srcImg.DangerousGetPixelRowMemory(y).Span;
                 Span<T> destRow = destinationPixels.Slice(y * destinationWidth, destinationWidth);
                 destRow.Clear();
 
-               // Console.WriteLine($"Y = {y} srcRow length = {srcRow.Length} destinationWidth = {destinationWidth} destRow length = {destRow.Length}");
+                // Console.WriteLine($"Y = {y} srcRow length = {srcRow.Length} destinationWidth = {destinationWidth} destRow length = {destRow.Length}");
 
-                if (srcRow.Length > destRow.Length) {
+                if (srcRow.Length > destRow.Length)
+                {
                     srcRow = srcRow.Slice(0, destRow.Length);
                 }
 
@@ -324,7 +360,8 @@ namespace PS3Sharp.OS.Modules {
             //DumpDecodedImage(srcImg);
         }
 
-        public static ulong CellPngDecClose(PPU ppu) {
+        public static ulong CellPngDecClose(PPU ppu)
+        {
             // Reset
             _currentOutParam = default;
             _currentImage = null;
@@ -334,7 +371,8 @@ namespace PS3Sharp.OS.Modules {
             return CELL_OK;
         }
 
-        public static ulong CellPngDecDestroy(PPU ppu) {
+        public static ulong CellPngDecDestroy(PPU ppu)
+        {
             //Reset
             _currentOutParam = default;
             _currentImage = null;
@@ -345,7 +383,8 @@ namespace PS3Sharp.OS.Modules {
         }
 
         static int dumps = 0;
-        public static void DumpDecodedImage(Image image) {
+        public static void DumpDecodedImage(Image image)
+        {
             image.Save($@"pngdumps\{dumps}.png");
             dumps++;
         }

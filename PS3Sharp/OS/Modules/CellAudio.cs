@@ -9,8 +9,10 @@ using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
-namespace PS3Sharp.OS.Modules {
-    public static class CellAudio {
+namespace PS3Sharp.OS.Modules
+{
+    public static class CellAudio
+    {
         public const uint AUDIO_PORT_COUNT = 8;
         public const uint AUDIO_MAX_BLOCK_COUNT = 32;
         public const uint AUDIO_MAX_CHANNELS_COUNT = 8;
@@ -24,12 +26,13 @@ namespace PS3Sharp.OS.Modules {
 
         public const uint CELL_AUDIO_STATUS_CLOSE = 0x1010;
         public const uint CELL_AUDIO_STATUS_READY = 1;
-        public const uint CELL_AUDIO_STATUS_RUN   = 2;
+        public const uint CELL_AUDIO_STATUS_RUN = 2;
 
         public const ulong EVENT_QUEUE_KEY = 0x1234A1BE1234A1BE; //?
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct CellAudioPortConfig : IPS3Struct {
+        public struct CellAudioPortConfig : IPS3Struct
+        {
             public BigEndian<uint> ReadAddress;
             public BigEndian<uint> Status;
             public BigEndian<ulong> NumberOfChannels;
@@ -39,7 +42,8 @@ namespace PS3Sharp.OS.Modules {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct CellAudioPortParam : IPS3Struct {
+        public struct CellAudioPortParam : IPS3Struct
+        {
             public BigEndian<ulong> NumberOfChannels;
             public BigEndian<ulong> NumberOfBlocks;
             public BigEndian<ulong> Attributes;
@@ -47,7 +51,8 @@ namespace PS3Sharp.OS.Modules {
         }
 
 
-        public sealed class AudioPort { // todo
+        public sealed class AudioPort
+        { // todo
             public uint Number;
             public uint Status;
             public ulong NumberOfChannels;
@@ -66,18 +71,22 @@ namespace PS3Sharp.OS.Modules {
         private static readonly AudioPort[] _audioPorts = new AudioPort[AUDIO_PORT_COUNT];
         private static readonly Lock _audioThreadLock = new Lock();
 
-        public static ulong CellAudioInit(PPU ppu) {
+        public static ulong CellAudioInit(PPU ppu)
+        {
             Console.WriteLine("[CellAudio] cellAudioInit");
 
-            if (_initialized) {
+            if (_initialized)
+            {
                 return CELL_AUDIO_ERROR_ALREADY_INIT;
             }
 
             _initialized = true;
             _readPositionsAddress = MemoryManager.AllocateVirtualMemory(AUDIO_PORT_COUNT * sizeof(ulong)).VirtualAddress;
-       
-            for (uint i = 0; i < _audioPorts.Length; i++) {
-                _audioPorts[i] = new AudioPort {
+
+            for (uint i = 0; i < _audioPorts.Length; i++)
+            {
+                _audioPorts[i] = new AudioPort
+                {
                     Number = i,
                     Status = CELL_AUDIO_STATUS_CLOSE
                 };
@@ -85,13 +94,15 @@ namespace PS3Sharp.OS.Modules {
 
             InitNAudio();
 
-          //  Thread audioThread = new Thread(() => AudioThreadMain());
-          //  audioThread.Start();
-            return CELL_OK; 
+            //  Thread audioThread = new Thread(() => AudioThreadMain());
+            //  audioThread.Start();
+            return CELL_OK;
         }
 
-        public static ulong CellAudioPortOpen(PPU ppu) {
-            if (!_initialized) {
+        public static ulong CellAudioPortOpen(PPU ppu)
+        {
+            if (!_initialized)
+            {
                 return CELL_AUDIO_ERROR_NOT_INIT;
             }
 
@@ -101,22 +112,26 @@ namespace PS3Sharp.OS.Modules {
 
             // Find a closed port to open
             AudioPort? port = null;
-            for(int i = 0; i < _audioPorts.Length; i++) {
-                if (_audioPorts[i].Status == CELL_AUDIO_STATUS_CLOSE) {
+            for (int i = 0; i < _audioPorts.Length; i++)
+            {
+                if (_audioPorts[i].Status == CELL_AUDIO_STATUS_CLOSE)
+                {
                     port = _audioPorts[i];
                     break;
                 }
             }
 
             // If all ports are open return an error
-            if (port == null) {
+            if (port == null)
+            {
                 return CELL_AUDIO_ERROR_PORT_FULL;
             }
 
             // Otherwise open the port and set the requested parameters
             port.Status = CELL_AUDIO_STATUS_READY;
 
-            unsafe {
+            unsafe
+            {
                 CellAudioPortParam* param = param_ptr.AsNativePtr();
                 port.NumberOfChannels = param->NumberOfChannels;
                 port.NumberOfBlocks = param->NumberOfBlocks;
@@ -135,14 +150,16 @@ namespace PS3Sharp.OS.Modules {
             MemoryManager.Write<uint>(portNumber_ptr, port.Number);
 
             Console.WriteLine($"[CellAudio] cellAudioPortOpen opened port = {port.Number}");
-            return CELL_OK; 
+            return CELL_OK;
         }
 
-        public static ulong CellAudioGetPortConfig(PPU ppu) {
+        public static ulong CellAudioGetPortConfig(PPU ppu)
+        {
             uint port_number = ppu.ReadArg<uint>(ARG0);
             GuestPtr<CellAudioPortConfig> config_ptr = ppu.ReadArg<GuestPtr<CellAudioPortConfig>>(ARG1);
 
-            if (port_number >= AUDIO_PORT_COUNT) {
+            if (port_number >= AUDIO_PORT_COUNT)
+            {
                 Console.WriteLine($"[CellAudio] CELL_AUDIO_ERROR_PARAM port = {port_number}");
                 return CELL_AUDIO_ERROR_PARAM;
             }
@@ -150,10 +167,12 @@ namespace PS3Sharp.OS.Modules {
 
 
             // always lock this first, then lock memory
-            lock (_audioThreadLock) {
+            lock (_audioThreadLock)
+            {
                 AudioPort port = _audioPorts[port_number];
 
-                unsafe {
+                unsafe
+                {
                     CellAudioPortConfig* config = config_ptr.AsNativePtr();
                     config->ReadAddress = _readPositionsAddress + (port_number * sizeof(ulong));
                     config->Status = port.Status;
@@ -165,19 +184,22 @@ namespace PS3Sharp.OS.Modules {
             }
 
             Console.WriteLine($"[CellAudio] cellAudioGetPortConfig port = {port_number}");
-            return CELL_OK; 
+            return CELL_OK;
         }
 
-        public static ulong CellAudioPortStart(PPU ppu) {
+        public static ulong CellAudioPortStart(PPU ppu)
+        {
             uint port_number = ppu.ReadArg<uint>(ARG0);
 
-            if (port_number >= AUDIO_PORT_COUNT) {
+            if (port_number >= AUDIO_PORT_COUNT)
+            {
                 Console.WriteLine($"[CellAudio] CELL_AUDIO_ERROR_PARAM port = {port_number}");
                 return CELL_AUDIO_ERROR_PARAM;
             }
 
             // lock
-            lock (_audioThreadLock) {
+            lock (_audioThreadLock)
+            {
                 AudioPort port = _audioPorts[port_number];
                 port.Status = CELL_AUDIO_STATUS_RUN;
             }
@@ -186,36 +208,44 @@ namespace PS3Sharp.OS.Modules {
             return CELL_OK;
         }
 
-        public static ulong CellAudioPortStop(PPU ppu) {
+        public static ulong CellAudioPortStop(PPU ppu)
+        {
             uint port_number = ppu.ReadArg<uint>(ARG0);
             Console.WriteLine($"[CellAudio] cellAudioPortStop port = {port_number}");
 
-            if (port_number >= AUDIO_PORT_COUNT) {
+            if (port_number >= AUDIO_PORT_COUNT)
+            {
                 Console.WriteLine($"[CellAudio] CELL_AUDIO_ERROR_PARAM port = {port_number}");
                 return CELL_AUDIO_ERROR_PARAM;
             }
 
 
-            lock (_audioThreadLock) {
+            lock (_audioThreadLock)
+            {
                 AudioPort port = _audioPorts[port_number];
 
-                if (port.Status == CELL_AUDIO_STATUS_RUN) {
+                if (port.Status == CELL_AUDIO_STATUS_RUN)
+                {
                     port.Status = CELL_AUDIO_STATUS_READY;
                     return CELL_OK;
-                } else {
+                }
+                else
+                {
                     return CELL_AUDIO_ERROR_PORT_NOT_RUN;
 
                 }
             }
         }
 
-        public static ulong CellAudioQuit(PPU ppu) {
+        public static ulong CellAudioQuit(PPU ppu)
+        {
             // TODO
             Console.WriteLine("[CellAudio] cellAudioQuit");
             return CELL_OK;
         }
 
-        public static ulong CellAudioCreateNotifyEventQueue(PPU ppu) {
+        public static ulong CellAudioCreateNotifyEventQueue(PPU ppu)
+        {
             // TODO
             GuestPtr<uint> equeue_id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             GuestPtr<ulong> key_ptr = ppu.ReadArg<GuestPtr<ulong>>(ARG1);
@@ -230,7 +260,8 @@ namespace PS3Sharp.OS.Modules {
             MemoryManager.Write<uint>(equeue_id_ptr, eventQueue.Handle);
             MemoryManager.Write<ulong>(key_ptr, EVENT_QUEUE_KEY);
 
-            lock (_audioThreadLock) {
+            lock (_audioThreadLock)
+            {
                 AttachedEventID = eventQueue.Handle;
             }
 
@@ -238,9 +269,10 @@ namespace PS3Sharp.OS.Modules {
             return CELL_OK;
         }
 
-        public static ulong CellAudioSetNotifyEventQueue(PPU ppu) {
+        public static ulong CellAudioSetNotifyEventQueue(PPU ppu)
+        {
             // TODO
-            ulong key = ppu.ReadArg<ulong>(ARG0); 
+            ulong key = ppu.ReadArg<ulong>(ARG0);
             Console.WriteLine("[CellAudio] cellAudioSetNotifyEventQueue");
             return CELL_OK;
         }
@@ -248,34 +280,40 @@ namespace PS3Sharp.OS.Modules {
 
         static WaveFormat waveFormat = new WaveFormat(48000, 2);
 
-        static BufferedWaveProvider provider = new BufferedWaveProvider(waveFormat) {
+        static BufferedWaveProvider provider = new BufferedWaveProvider(waveFormat)
+        {
             DiscardOnBufferOverflow = true
         };
 
         static WaveOutEvent output = new WaveOutEvent();
         static uint AttachedEventID = 0;
 
-        static LV2EventPort.SysEventData AudioEvent = new LV2EventPort.SysEventData {
+        static LV2EventPort.SysEventData AudioEvent = new LV2EventPort.SysEventData
+        {
             Data1 = EVENT_QUEUE_KEY,
             Data2 = 0,
             Data3 = 0,
         };
 
-        private static void InitNAudio() {
+        private static void InitNAudio()
+        {
             output.Init(provider);
             output.Play();
         }
 
-        private static void PlayAudio(byte[] samples) {
+        private static void PlayAudio(byte[] samples)
+        {
             provider.AddSamples(samples, 0, samples.Length);
         }
 
-        public static byte[] GetSamplesWaveData(float[] samples, int samplesCount) {
+        public static byte[] GetSamplesWaveData(float[] samples, int samplesCount)
+        {
             var pcm = new byte[samplesCount * 2];
             int sampleIndex = 0,
                 pcmIndex = 0;
 
-            while (sampleIndex < samplesCount) {
+            while (sampleIndex < samplesCount)
+            {
                 var outsample = (short)(samples[sampleIndex] * short.MaxValue);
                 pcm[pcmIndex] = (byte)(outsample & 0xff);
                 pcm[pcmIndex + 1] = (byte)((outsample >> 8) & 0xff);
@@ -287,14 +325,19 @@ namespace PS3Sharp.OS.Modules {
             return pcm;
         }
 
-        private static void AudioThreadMain() {
-            while (true) {
-                lock (_audioThreadLock) {
-                    for (int i = 0; i < AUDIO_MAX_CHANNELS_COUNT; i++) {
+        private static void AudioThreadMain()
+        {
+            while (true)
+            {
+                lock (_audioThreadLock)
+                {
+                    for (int i = 0; i < AUDIO_MAX_CHANNELS_COUNT; i++)
+                    {
                         AudioPort port = _audioPorts[i];
 
                         // Skip ports that are not running
-                        if (port.Status != CELL_AUDIO_STATUS_RUN) {
+                        if (port.Status != CELL_AUDIO_STATUS_RUN)
+                        {
                             continue;
                         }
 
@@ -310,11 +353,15 @@ namespace PS3Sharp.OS.Modules {
                 }
 
                 // Send audio event
-                if (AttachedEventID > 0) {
-                    if (SysEvent.GetEventQueueByID(AttachedEventID, out LV2EventQueue? eventQueue)) {
+                if (AttachedEventID > 0)
+                {
+                    if (SysEvent.GetEventQueueByID(AttachedEventID, out LV2EventQueue? eventQueue))
+                    {
                         eventQueue.Send(AudioEvent);
 
-                    } else {
+                    }
+                    else
+                    {
                         throw new Exception($"[AudioThread] Can't find AttachedEventID = 0x{AttachedEventID:X}");
                     }
                 }
@@ -324,7 +371,8 @@ namespace PS3Sharp.OS.Modules {
             }
         }
 
-        private static void FillSampleBuffer(AudioPort port) {
+        private static void FillSampleBuffer(AudioPort port)
+        {
             uint samplesPerBlock = port.TotalSamplesPerBlock;
             uint bufferIndex = 0;
 
@@ -334,7 +382,8 @@ namespace PS3Sharp.OS.Modules {
             byte[] sampleBuffer = port.SampleBuffer;
 
             // Sample one block
-            for (int i = 0; i < samplesPerBlock; i++) {
+            for (int i = 0; i < samplesPerBlock; i++)
+            {
                 // Read a float sample from memory
                 float floatSample = MemoryManager.Read<float>(sampleAddress);
                 sampleAddress += sizeof(float);

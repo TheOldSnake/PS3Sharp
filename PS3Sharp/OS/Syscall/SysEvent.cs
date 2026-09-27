@@ -13,57 +13,69 @@ using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 using System.Runtime.CompilerServices;
 
-namespace PS3Sharp.OS.Syscall {
-    public static class SysEvent {
+namespace PS3Sharp.OS.Syscall
+{
+    public static class SysEvent
+    {
         private static readonly ConcurrentDictionary<uint, LV2EventQueue> _eventQueues = new ConcurrentDictionary<uint, LV2EventQueue>();
         private static readonly ConcurrentDictionary<uint, LV2EventPort> _eventPorts = new ConcurrentDictionary<uint, LV2EventPort>();
 
         public static bool GetEventQueueByID(uint id, out LV2EventQueue? eventQueue) => _eventQueues.TryGetValue(id, out eventQueue);
 
-        public static void AddEventQueue(uint handle, LV2EventQueue eventQueue) {
+        public static void AddEventQueue(uint handle, LV2EventQueue eventQueue)
+        {
             bool ok = _eventQueues.TryAdd(handle, eventQueue);
 
-            if (!ok) {
+            if (!ok)
+            {
                 throw new Exception($"[SysEvent] Could not add event queue to dictionary");
             }
         }
 
-        public static void RemoveEventQueue(uint handle) {
+        public static void RemoveEventQueue(uint handle)
+        {
             bool ok = _eventQueues.TryRemove(handle, out _);
 
-            if (!ok) {
+            if (!ok)
+            {
                 throw new Exception($"[SysEvent] Could not remove event queue from dictionary");
             }
         }
 
         public static bool GetEventPortByID(uint id, out LV2EventPort? evenPort) => _eventPorts.TryGetValue(id, out evenPort);
 
-        public static void AddEventPort(uint handle, LV2EventPort eventPort) {
+        public static void AddEventPort(uint handle, LV2EventPort eventPort)
+        {
             bool ok = _eventPorts.TryAdd(handle, eventPort);
 
-            if (!ok) {
+            if (!ok)
+            {
                 throw new Exception($"[SysEvent] Could not add event port to dictionary");
             }
         }
 
-        public static void RemoveEventPort(uint handle) {
+        public static void RemoveEventPort(uint handle)
+        {
             bool ok = _eventPorts.TryRemove(handle, out _);
 
-            if (!ok) {
+            if (!ok)
+            {
                 throw new Exception($"[SysEvent] Could not remove event port from dictionary");
             }
         }
 
-        public static bool GetEventQueueBindingByIPCkey(ulong ipc_key, out LV2EventQueue? eventQueue) {
+        public static bool GetEventQueueBindingByIPCkey(ulong ipc_key, out LV2EventQueue? eventQueue)
+        {
             //Search for the queue -- we should probably use another dictionary to look up using ipc_key directly
             eventQueue = _eventQueues.FirstOrDefault(eventQueue => eventQueue.Value.IPCKey == ipc_key).Value;
             return eventQueue != null;
         }
 
-     
+
         // sys_event_queue syscalls
 
-        public static ulong SysEventQueueCreate(PPU ppu) {
+        public static ulong SysEventQueueCreate(PPU ppu)
+        {
             GuestPtr<uint> queue_id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             GuestPtr<SysEventQueueAttribute> queue_attribute_ptr = ppu.ReadArg<GuestPtr<SysEventQueueAttribute>>(ARG1);
             ulong sys_ipc_key = ppu.ReadArg<ulong>(ARG2);   //used to connect by sys_event_port?
@@ -81,18 +93,21 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysEventQueueReceive(PPU ppu) {
+        public static ulong SysEventQueueReceive(PPU ppu)
+        {
             uint queue_id = ppu.ReadArg<uint>(ARG0);
             GuestVoidPtr event_ptr = ppu.ReadArg<GuestVoidPtr>(ARG1); //?
             ulong us_timeout = ppu.ReadArg<ulong>(ARG2);
 
             Console.WriteLine($"[{ppu.ThreadName}] sys_event_queue_receive - waiting for event queue id 0x{queue_id:X8} timeout = {us_timeout}us");
 
-            if (!GetEventQueueByID(queue_id, out LV2EventQueue? eventQueue)) {
+            if (!GetEventQueueByID(queue_id, out LV2EventQueue? eventQueue))
+            {
                 return CELL_ESRCH;
             }
 
-            if (eventQueue.IsSPUQueue) {
+            if (eventQueue.IsSPUQueue)
+            {
                 return CELL_EINVAL;
             }
 
@@ -100,11 +115,12 @@ namespace PS3Sharp.OS.Syscall {
             //if (queue_id == 0x0000017B) {
             //    return CELL_OK;
             //}
-            
+
             // Try to receive
             ulong errorCode = eventQueue.Receive(us_timeout, out SysEventData sysEventData);
 
-            if (errorCode == CELL_OK) {
+            if (errorCode == CELL_OK)
+            {
                 // Write the data to GPR[4] - GPR[7]
                 // (converted to little endian automatically)
                 ppu.WriteReg<ulong>(4, sysEventData.Source);
@@ -117,7 +133,8 @@ namespace PS3Sharp.OS.Syscall {
             return errorCode;
         }
 
-        public static ulong SysEventQueueDestroy(PPU ppu) {
+        public static ulong SysEventQueueDestroy(PPU ppu)
+        {
             uint queue_id = ppu.ReadArg<uint>(ARG0);
             int mode = ppu.ReadArg<int>(ARG1);      //?
 
@@ -127,7 +144,8 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysEventQueueTryReceive(PPU ppu) {
+        public static ulong SysEventQueueTryReceive(PPU ppu)
+        {
             uint queue_id = ppu.ReadArg<uint>(ARG0);
             GuestPtr<SysEventData> event_array_ptr = ppu.ReadArg<GuestPtr<SysEventData>>(ARG1);
             int number_of_events = ppu.ReadArg<int>(ARG2);
@@ -135,7 +153,8 @@ namespace PS3Sharp.OS.Syscall {
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_queue_tryreceive -- queue id = 0x{queue_id:X8}");
 
-            if (!GetEventQueueByID(queue_id, out LV2EventQueue? eventQueue)) {
+            if (!GetEventQueueByID(queue_id, out LV2EventQueue? eventQueue))
+            {
                 return CELL_ESRCH;
             }
 
@@ -151,12 +170,14 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysEventQueueDrain(PPU ppu) {
+        public static ulong SysEventQueueDrain(PPU ppu)
+        {
             uint queue_id = ppu.ReadArg<uint>(ARG0);
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_queue_drain -- queue id = 0x{queue_id:X8}");
 
-            if (!GetEventQueueByID(queue_id, out LV2EventQueue? eventQueue)) {
+            if (!GetEventQueueByID(queue_id, out LV2EventQueue? eventQueue))
+            {
                 return CELL_ESRCH;
             }
 
@@ -166,7 +187,8 @@ namespace PS3Sharp.OS.Syscall {
 
         //sys_event_port syscalls
 
-        public static ulong SysEventPortCreate(PPU ppu) {
+        public static ulong SysEventPortCreate(PPU ppu)
+        {
             GuestPtr<uint> eport_id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             int port_type = ppu.ReadArg<int>(ARG1);
             ulong name = ppu.ReadArg<ulong>(ARG2);
@@ -182,16 +204,18 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysEventPortDestroy(PPU ppu) {
+        public static ulong SysEventPortDestroy(PPU ppu)
+        {
             uint eport_id = ppu.ReadArg<uint>(ARG0);
-            
-            RemoveEventPort(eport_id); 
+
+            RemoveEventPort(eport_id);
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_port_destroy -- eport_id = 0x{eport_id:X8}");
             return CELL_OK;
         }
 
-        public static ulong SysEventPortConnectLocal(PPU ppu) {
+        public static ulong SysEventPortConnectLocal(PPU ppu)
+        {
             uint event_port_id = ppu.ReadArg<uint>(ARG0);
             uint queue_id = ppu.ReadArg<uint>(ARG1);
 
@@ -200,7 +224,8 @@ namespace PS3Sharp.OS.Syscall {
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_port_connect_local -- eport_id = 0x{event_port_id:X8} -> event_queue_id = 0x{queue_id:X8}");
 
-            if (!foundPort || !foundEventQueue) {
+            if (!foundPort || !foundEventQueue)
+            {
                 return CELL_ESRCH;
             }
 
@@ -209,7 +234,8 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysEventPortConnectIPC(PPU ppu) {
+        public static ulong SysEventPortConnectIPC(PPU ppu)
+        {
             uint event_port_id = ppu.ReadArg<uint>(ARG0);
             ulong ipc_key = ppu.ReadArg<ulong>(ARG1);
 
@@ -218,7 +244,8 @@ namespace PS3Sharp.OS.Syscall {
 
             //Console.WriteLine($"[{ppu.ThreadName}]  sys_event_port_connect_ipc -- eport_id = 0x{event_port_id:X8} -> event_queue_id = 0x{ipc_key:X8}");
 
-            if (!foundPort || !foundEventQueue) {
+            if (!foundPort || !foundEventQueue)
+            {
                 return CELL_ESRCH;
             }
 
@@ -227,12 +254,14 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysEventPortDisconnect(PPU ppu) {
+        public static ulong SysEventPortDisconnect(PPU ppu)
+        {
             uint event_port_id = ppu.ReadArg<uint>(ARG0);
 
             //Console.WriteLine($"[{ppu.ThreadName}]  sys_event_port_disconnect -- eport_id = 0x{event_port_id:X8}");
 
-            if (!GetEventPortByID(event_port_id, out LV2EventPort? eventPort)) {
+            if (!GetEventPortByID(event_port_id, out LV2EventPort? eventPort))
+            {
                 return CELL_ESRCH;
             }
 
@@ -241,13 +270,15 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysEventPortSend(PPU ppu) {
+        public static ulong SysEventPortSend(PPU ppu)
+        {
             uint event_port_id = ppu.ReadArg<uint>(ARG0);
             ulong data1 = ppu.ReadArg<ulong>(ARG1);
             ulong data2 = ppu.ReadArg<ulong>(ARG2);
             ulong data3 = ppu.ReadArg<ulong>(ARG3);
 
-            if (!GetEventPortByID(event_port_id, out LV2EventPort? eventPort)) {
+            if (!GetEventPortByID(event_port_id, out LV2EventPort? eventPort))
+            {
                 return CELL_ESRCH;
             }
 

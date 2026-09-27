@@ -7,8 +7,10 @@ using static PS3Sharp.Cell.PPU.PPU;
 using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAllocator;
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
-    public unsafe sealed partial class X64Generator {
+namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
+{
+    public unsafe sealed partial class X64Generator
+    {
         private RegisterAllocator.RegisterAllocator _registerAllocator = new();
 
         private List<AssemblerRegister64> _borrowPool { get; set; }                  // List of all borrowable registers for this block, based on the allocator
@@ -36,7 +38,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
         private bool TryGetConst(Value value, out ulong result) => _knownConstants.TryGetValue(value, out result);
         private Location GetLocation(Value value) => _registerMap[value];
 
-        private void PrintNativeCode(Assembler asm) {
+        private void PrintNativeCode(Assembler asm)
+        {
             var stream = new MemoryStream();
             asm.Assemble(new StreamCodeWriter(stream), 0);
 
@@ -45,42 +48,47 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             var decoder = Decoder.Create(64, reader);
             decoder.IP = 0;
 
-            while (stream.Position < stream.Length) {
+            while (stream.Position < stream.Length)
+            {
                 decoder.Decode(out var instr);
                 ulong ip = instr.IP;
                 Console.WriteLine($"{instr}");
             }
         }
 
-        private Span<byte> AssembleBlock(Assembler asm) {
+        private Span<byte> AssembleBlock(Assembler asm)
+        {
             var stream = new MemoryStream();
             var result = asm.Assemble(new StreamCodeWriter(stream), 0);
             var buffer = stream.GetBuffer();
             return buffer.AsSpan().Slice(0, (int)stream.Position);
-        } 
+        }
 
-        private void SetupState(IRBlock block) {
+        private void SetupState(IRBlock block)
+        {
             _registerMap = _registerAllocator.AllocateHostRegisters(block.IRCode, block.Constants);
             _borrowPool = _registerAllocator.CreateRegisterPool(block.IRCode);
             _knownConstants = block.Constants;
         }
 
-        public Span<byte> GenerateNativeCode(IRBlock block, PPU ppuThread) {
+        public Span<byte> GenerateNativeCode(IRBlock block, PPU ppuThread)
+        {
             ResetState();
             SetupState(block);
 
             Assembler asm = new Assembler(64);
-            
+
             void* state = ppuThread.State;
             int stackSlots = GetRequiredStackSlots();
             List<AssemblerRegister64> allocatedNonVolatileRegisters = GetNonVolatileMappedRegisters();
-           
+
             bool hasCalls = HasCalls(block.IRCode);
             bool hasMemoryOp = HasMemoryOp(block.IRCode);
 
             EmitBlockEntry(asm, stackSlots, state, allocatedNonVolatileRegisters, hasMemoryOp);
 
-            for (int i = 0; i < block.IRCode.Count; i++) {
+            for (int i = 0; i < block.IRCode.Count; i++)
+            {
                 IRToX64(asm, block.IRCode[i]);
             }
 
@@ -89,7 +97,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             return AssembleBlock(asm);
         }
 
-        private void ResetState() {
+        private void ResetState()
+        {
             _currentStackOffset = 0;
             _borrowedRegisters.Clear();
             _inUseVolatileRegisters.Clear();
@@ -98,12 +107,15 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             _knownConstants = null;
         }
 
-        private AssemblerRegister64 BorrowRegister(Assembler asm) {
-            for (int i = 0; i < _borrowPool.Count; i++) {
+        private AssemblerRegister64 BorrowRegister(Assembler asm)
+        {
+            for (int i = 0; i < _borrowPool.Count; i++)
+            {
                 AssemblerRegister64 reg = _borrowPool[i];
 
                 // Borrow a register that was not borrowed before and is not reserved by the current instruction
-                if (!_borrowedRegisters.Contains(reg) && !_reservedRegisters.Contains(reg)) {
+                if (!_borrowedRegisters.Contains(reg) && !_reservedRegisters.Contains(reg))
+                {
                     _borrowedRegisters.Push(reg);
                     asm.push(reg);
 
@@ -118,11 +130,13 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             throw new Exception($"[x64 Generator] Too many borrows");
         }
 
-        private void ReturnBorrowedRegister(Assembler asm, AssemblerRegister64 tmp) {
+        private void ReturnBorrowedRegister(Assembler asm, AssemblerRegister64 tmp)
+        {
             // Ensure that the register was borrowed and that is is the most recent borrow
             bool validReturn = _borrowedRegisters.Contains(tmp) && _borrowedRegisters.Peek() == tmp;
 
-            if (!validReturn) {
+            if (!validReturn)
+            {
                 throw new Exception($"[x64 Generator] Invalid return for register: {tmp.Value}");
             }
 
@@ -132,7 +146,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             _currentStackOffset -= 8;
         }
 
-        private void EmitBlockEntry(Assembler asm, int spillSlotCount, void* ppuState, List<AssemblerRegister64> nonVolatileRegs, bool hasMemoryOp) {
+        private void EmitBlockEntry(Assembler asm, int spillSlotCount, void* ppuState, List<AssemblerRegister64> nonVolatileRegs, bool hasMemoryOp)
+        {
 
             // Size of spill array
             int spillBytes = spillSlotCount * 8;
@@ -140,17 +155,21 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             // Stack bytes to push 
             int pushedBytes = 8 * (2 + nonVolatileRegs.Count);
 
-            if (IsNonVolatile(PPUState)) {
+            if (IsNonVolatile(PPUState))
+            {
                 asm.push(PPUState);
             }
 
-            if (IsNonVolatile(SpillArray)) {
+            if (IsNonVolatile(SpillArray))
+            {
                 asm.push(SpillArray);
             }
 
-            if (hasMemoryOp) {
+            if (hasMemoryOp)
+            {
 
-                if (IsNonVolatile(MemoryBase)) {
+                if (IsNonVolatile(MemoryBase))
+                {
                     asm.push(MemoryBase);
                 }
 
@@ -158,11 +177,13 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 asm.mov(MemoryBase, addr);
             }
 
-            foreach (var reg in nonVolatileRegs) {
+            foreach (var reg in nonVolatileRegs)
+            {
                 asm.push(reg);
             }
 
-            if (spillBytes > 0) {
+            if (spillBytes > 0)
+            {
                 asm.sub(Stack, spillBytes);                     // Allocate array for spill slots
                 asm.mov(SpillArray, Stack);                     // SpillArray Points at array[0]
             }
@@ -173,44 +194,54 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             _currentStackOffset = 8 + pushedBytes + spillBytes;
         }
 
-        private void EmitBlockExit(Assembler asm, List<AssemblerRegister64> nonVolatileRegs, int spillSlotCount, bool hasMemoryOp) {
+        private void EmitBlockExit(Assembler asm, List<AssemblerRegister64> nonVolatileRegs, int spillSlotCount, bool hasMemoryOp)
+        {
             // Reverse everything
 
             // Deallocate spill slots
             int spillBytes = spillSlotCount * 8;
 
-            if (spillBytes > 0) {
+            if (spillBytes > 0)
+            {
                 asm.add(Stack, spillBytes);
             }
 
             // Pop pushed registers in reverse order
-            for (int i = nonVolatileRegs.Count - 1; i >= 0; i--) {
+            for (int i = nonVolatileRegs.Count - 1; i >= 0; i--)
+            {
                 asm.pop(nonVolatileRegs[i]);
             }
 
-            if (hasMemoryOp) {
-                if (IsNonVolatile(MemoryBase)) {
+            if (hasMemoryOp)
+            {
+                if (IsNonVolatile(MemoryBase))
+                {
                     asm.pop(MemoryBase);
                 }
             }
 
-            if (IsNonVolatile(SpillArray)) {
+            if (IsNonVolatile(SpillArray))
+            {
                 asm.pop(SpillArray);
             }
 
-            if (IsNonVolatile(PPUState)) {
+            if (IsNonVolatile(PPUState))
+            {
                 asm.pop(PPUState);
             }
 
             asm.ret();
         }
 
-        private int GetRequiredStackSlots() {
+        private int GetRequiredStackSlots()
+        {
             int lastIndex = -1;
 
-            foreach (var item in _registerMap) { 
+            foreach (var item in _registerMap)
+            {
                 Location location = item.Value;
-                if (location.IsSpilled) {
+                if (location.IsSpilled)
+                {
                     lastIndex = Math.Max(lastIndex, location.SpillSlot);
                 }
             }
@@ -218,21 +249,26 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             return lastIndex + 1;
         }
 
-        private List<AssemblerRegister64> GetNonVolatileMappedRegisters() {
+        private List<AssemblerRegister64> GetNonVolatileMappedRegisters()
+        {
             List<AssemblerRegister64> regs = new();
 
-            foreach (var item in _registerMap) {
+            foreach (var item in _registerMap)
+            {
                 Location location = item.Value;
 
-                if (!location.Value.IsValid) {
+                if (!location.Value.IsValid)
+                {
                     continue;
                 }
 
                 // Check if the register needs to be saved
-                if (!location.IsSpilled && IsVolatile(location.GetRegister())) {
+                if (!location.IsSpilled && IsVolatile(location.GetRegister()))
+                {
 
                     // Ensure that we did not save already
-                    if (!regs.Contains(location.GetRegister())) {
+                    if (!regs.Contains(location.GetRegister()))
+                    {
                         regs.Add(location.GetRegister());
                     }
                 }
@@ -241,56 +277,67 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             return regs;
         }
 
-     
-        private int GetPCOffset() {
+
+        private int GetPCOffset()
+        {
             int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPU.PPUState.PC));
             return offset;
         }
 
-        private int GetLROffset() {
+        private int GetLROffset()
+        {
             int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPU.PPUState.LR));
             return offset;
         }
 
-        private int GetCROffset() {
+        private int GetCROffset()
+        {
             int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPU.PPUState.CR));
             return offset;
         }
 
-        private int GetCTROffset() {
+        private int GetCTROffset()
+        {
             int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPU.PPUState.CTR));
             return offset;
         }
 
-        private int GetXEROffset() {
+        private int GetXEROffset()
+        {
             int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPU.PPUState.XER));
             return offset;
         }
 
-        private int GetGPROffset(int index) {
+        private int GetGPROffset(int index)
+        {
             int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPU.PPUState.GPR)) + (index * Unsafe.SizeOf<PPUGPR>());
             return offset;
         }
 
-        private int SpillOffset(Location location) {
+        private int SpillOffset(Location location)
+        {
             return location.SpillSlot * 8;
         }
 
-       
-        private bool ValueIsRegister(Value value) {
+
+        private bool ValueIsRegister(Value value)
+        {
             // Returns true if value is a valid non constant
-            if (!value.IsValid) {
+            if (!value.IsValid)
+            {
                 return false;
             }
 
-            if (IsConst(value)) {
+            if (IsConst(value))
+            {
                 return false;
             }
 
             return true;
         }
-       
-        private void LoadOperands(Assembler asm, IRInstruction instruction) {
+
+        private void LoadOperands(Assembler asm, IRInstruction instruction)
+        {
             // Ensure that all valid operands are present in hardware registers
             // This is slightly inefficient, but it simplifies the handlers a lot
 
@@ -300,81 +347,99 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             // First pass reserves permenant registers (so they don't get borrowed)
             Location location;
 
-            foreach (Value value in values) {
-                if (ValueIsRegister(value)) {
+            foreach (Value value in values)
+            {
+                if (ValueIsRegister(value))
+                {
                     location = GetLocation(value);
 
-                    if (!location.IsSpilled) {
+                    if (!location.IsSpilled)
+                    {
                         ReserveRegister(asm, location);
-                        MarkActiveVolatile(asm, location);   
+                        MarkActiveVolatile(asm, location);
                     }
                 }
             }
 
             // Second pass loads spilled registers from stack
-            foreach (Value value in values) {
-                if (ValueIsRegister(value)) {
+            foreach (Value value in values)
+            {
+                if (ValueIsRegister(value))
+                {
                     location = GetLocation(value);
 
-                    if (location.IsSpilled) {
+                    if (location.IsSpilled)
+                    {
                         LoadOperand(asm, location);
                     }
                 }
             }
         }
 
-        private void ReserveRegister(Assembler asm, Location location) {
+        private void ReserveRegister(Assembler asm, Location location)
+        {
             AssemblerRegister64 reg = location.GetRegister();
-            if (!_reservedRegisters.Contains(reg)) {
+            if (!_reservedRegisters.Contains(reg))
+            {
                 _reservedRegisters.Add(reg);
             }
         }
 
-        private void MarkActiveVolatile(Assembler asm, Location location) {
+        private void MarkActiveVolatile(Assembler asm, Location location)
+        {
             // permenant mapped volatile register need to be added to this list
             // to be able to save them before calls
 
             AssemblerRegister64 reg = location.GetRegister();
 
-            if (IsVolatile(reg)) {
+            if (IsVolatile(reg))
+            {
 
-                if (!_inUseVolatileRegisters.Contains(reg)) {
+                if (!_inUseVolatileRegisters.Contains(reg))
+                {
                     _inUseVolatileRegisters.Add(reg);
                 }
             }
         }
 
-        private void LoadOperand(Assembler asm, Location location) {
+        private void LoadOperand(Assembler asm, Location location)
+        {
             AssemblerRegister64 temp = BorrowRegister(asm);
             asm.mov(temp, __qword_ptr[rbp + SpillOffset(location)]);
             location.AssignRegister(temp);
         }
 
-        private void FreeOperands(Assembler asm, IRInstruction instruction) {
+        private void FreeOperands(Assembler asm, IRInstruction instruction)
+        {
             Value[] values = [instruction.Destination, instruction.Operand1, instruction.Operand2, instruction.Operand3];
 
             // Reverse the order
             values = values.Distinct().Reverse().ToArray();
 
             // One pass is enough here
-            foreach (Value value in values) {
-                if (ValueIsRegister(value)) {
+            foreach (Value value in values)
+            {
+                if (ValueIsRegister(value))
+                {
                     Location location = GetLocation(value);
 
-                    if (location.IsSpilled) {
+                    if (location.IsSpilled)
+                    {
                         WriteBackOperand(asm, location);
-                    } 
+                    }
                 }
             }
 
             UnreserveAllRegisters();
         }
 
-        private void UnreserveAllRegisters() {
+        private void UnreserveAllRegisters()
+        {
             _reservedRegisters.Clear();
         }
 
-        private void WriteBackOperand(Assembler asm, Location location) {
+        private void WriteBackOperand(Assembler asm, Location location)
+        {
             // Write back
             AssemblerRegister64 temp = location.GetRegister();
             asm.mov(__qword_ptr[rbp + SpillOffset(location)], temp);
@@ -384,7 +449,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             location.UnassignRegister();
         }
 
-        private void PrepareForCall(Assembler asm, AssemblerRegister64 skippedRegister) {
+        private void PrepareForCall(Assembler asm, AssemblerRegister64 skippedRegister)
+        {
             // Note, on Windows x64:
 
             /*
@@ -396,8 +462,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             // Push all currently active volatile registers
 
-            for (int i = 0; i < _inUseVolatileRegisters.Count; i++) {
-                if (_inUseVolatileRegisters[i] != skippedRegister) {
+            for (int i = 0; i < _inUseVolatileRegisters.Count; i++)
+            {
+                if (_inUseVolatileRegisters[i] != skippedRegister)
+                {
                     asm.push(_inUseVolatileRegisters[i]);
                     _currentStackOffset += 8;
                 }
@@ -408,29 +476,35 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             // todo: align stack and shadow space
         }
 
-        private void ReturnFromCall(Assembler asm, AssemblerRegister64 skippedRegister) {
+        private void ReturnFromCall(Assembler asm, AssemblerRegister64 skippedRegister)
+        {
             // todo: undo shadow space first
 
             // Then:
             // Pop all currently active volatile registers in reverse 
 
-            for (int i = _inUseVolatileRegisters.Count - 1; i >= 0; i--) {
+            for (int i = _inUseVolatileRegisters.Count - 1; i >= 0; i--)
+            {
 
-                if (_inUseVolatileRegisters[i] != skippedRegister) {
+                if (_inUseVolatileRegisters[i] != skippedRegister)
+                {
                     asm.pop(_inUseVolatileRegisters[i]);
                     _currentStackOffset -= 8;
                 }
             }
         }
 
-        private void IRToX64(Assembler asm, IRInstruction instruction) {
-            if (instruction.Opcode == IRInstruction.Op.Ret) {
+        private void IRToX64(Assembler asm, IRInstruction instruction)
+        {
+            if (instruction.Opcode == IRInstruction.Op.Ret)
+            {
                 return;
             }
 
             LoadOperands(asm, instruction);
-          
-            switch (instruction.Opcode) {
+
+            switch (instruction.Opcode)
+            {
                 case IRInstruction.Op.PCStore:
                     PCStore(asm, instruction);
                     break;
@@ -467,7 +541,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                     XERStore(asm, instruction);
                     break;
 
-                case IRInstruction.Op.GPRLoad: 
+                case IRInstruction.Op.GPRLoad:
                     GPRLoad(asm, instruction);
                     break;
 
@@ -638,7 +712,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
                 case IRInstruction.Op.Truncate:
                     Truncate(asm, instruction);
                     break;
-    
+
                 default:
                     throw new Exception($"TODO: IR [{instruction.Opcode}] -> x64");
             }
@@ -646,68 +720,69 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             FreeOperands(asm, instruction);
         }
 
-  
+
         // unused
 
-        private bool ImmediateRequiresRegister(ulong imm) {
+        private bool ImmediateRequiresRegister(ulong imm)
+        {
             ulong high = imm >> 32;
             return (high != 0 && high != 0xFFFFFFFF);
         }
 
-     /*   private static void MovLocation(Assembler asm, AssemblerRegister64 destReg, Location location, Dictionary<Value, ulong> knownConstants) {
-            bool isConst = knownConstants.ContainsKey(location.Value);
+        /*   private static void MovLocation(Assembler asm, AssemblerRegister64 destReg, Location location, Dictionary<Value, ulong> knownConstants) {
+               bool isConst = knownConstants.ContainsKey(location.Value);
 
-            if (isConst) {
-                asm.mov(destReg, knownConstants[location.Value]);
+               if (isConst) {
+                   asm.mov(destReg, knownConstants[location.Value]);
 
-            } else {
-                if (!location.IsSpilled) {
-                    asm.mov(destReg, location.Register!.Value);
+               } else {
+                   if (!location.IsSpilled) {
+                       asm.mov(destReg, location.Register!.Value);
 
-                } else {
-                    int spillOffset = SpillOffset(location);
-                    asm.mov(destReg, __qword_ptr[rbp + spillOffset]);
-                }
-            }
-        }
+                   } else {
+                       int spillOffset = SpillOffset(location);
+                       asm.mov(destReg, __qword_ptr[rbp + spillOffset]);
+                   }
+               }
+           }
 
-        private static void AddLocation(Assembler asm, AssemblerRegister64 destReg, Location location, Dictionary<Value, ulong> knownConstants) {
-            bool isConst = knownConstants.ContainsKey(location.Value);
+           private static void AddLocation(Assembler asm, AssemblerRegister64 destReg, Location location, Dictionary<Value, ulong> knownConstants) {
+               bool isConst = knownConstants.ContainsKey(location.Value);
 
-            if (isConst) {
-                AddConst(asm, destReg, knownConstants[location.Value]);
+               if (isConst) {
+                   AddConst(asm, destReg, knownConstants[location.Value]);
 
-            } else {
-                if (!location.IsSpilled) {
-                    asm.add(destReg, location.Register!.Value);
+               } else {
+                   if (!location.IsSpilled) {
+                       asm.add(destReg, location.Register!.Value);
 
-                } else {
-                    int spillOffset = SpillOffset(location);
-                    asm.add(destReg, __qword_ptr[rbp + spillOffset]);
-                }
-            }
-        }
+                   } else {
+                       int spillOffset = SpillOffset(location);
+                       asm.add(destReg, __qword_ptr[rbp + spillOffset]);
+                   }
+               }
+           }
 
-        private static void AddConst(Assembler asm, AssemblerRegister64 destReg, ulong constant) {
-            if (ImmediateRequiresRegister(constant)) {
-                (AssemblerRegister64 temp, bool preserve) = BorrowRegister();
+           private static void AddConst(Assembler asm, AssemblerRegister64 destReg, ulong constant) {
+               if (ImmediateRequiresRegister(constant)) {
+                   (AssemblerRegister64 temp, bool preserve) = BorrowRegister();
 
-                if (preserve) {
-                    asm.push(temp);
-                }
+                   if (preserve) {
+                       asm.push(temp);
+                   }
 
-                asm.mov(temp, constant);
-                asm.add(destReg, temp);
+                   asm.mov(temp, constant);
+                   asm.add(destReg, temp);
 
-                if (preserve) {
-                    asm.pop(temp);
-                }
+                   if (preserve) {
+                       asm.pop(temp);
+                   }
 
-            } else {
-                // Safe to cast
-                asm.add(destReg, (int)constant);
-            }
-        }*/
+               } else {
+                   // Safe to cast
+                   asm.add(destReg, (int)constant);
+               }
+           }*/
 
     }
 }

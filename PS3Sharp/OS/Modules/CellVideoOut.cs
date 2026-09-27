@@ -6,10 +6,13 @@ using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
-namespace PS3Sharp.OS.Modules {   
-    public static class CellVideoOut {
+namespace PS3Sharp.OS.Modules
+{
+    public static class CellVideoOut
+    {
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct CellVideoOutConfiguration : IPS3Struct {
+        public struct CellVideoOutConfiguration : IPS3Struct
+        {
             public byte ResolutionId;
             public byte Format;
             public byte Aspect;
@@ -18,15 +21,17 @@ namespace PS3Sharp.OS.Modules {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct CellVideoResolution : IPS3Struct {
+        public struct CellVideoResolution : IPS3Struct
+        {
             public BigEndian<ushort> Width;               /* Screen width in pixels. */
             public BigEndian<ushort> Height;              /* Screen height in pixels. */
         }
 
         private const VideoResolution _defaultResolution = VideoResolution.Resolution720;
 
-        public enum VideoResolution {
-            Undefined = 0,                        
+        public enum VideoResolution
+        {
+            Undefined = 0,
             Resolution1080 = 1,                   // 1920 x 1080
             Resolution720 = 2,                    // 1280 x 720
             Resolution480 = 4,                    // 640 x 480
@@ -81,7 +86,8 @@ namespace PS3Sharp.OS.Modules {
         public const ushort CELL_VIDEO_OUT_REFRESH_RATE_30HZ = 0x0008;
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct CellVideoDisplayMode : IPS3Struct {
+        public struct CellVideoDisplayMode : IPS3Struct
+        {
             public byte ResolutionID;
             public byte ScanMode;
             public byte Conversion;
@@ -99,7 +105,8 @@ namespace PS3Sharp.OS.Modules {
         public const byte CELL_VIDEO_OUT_COLOR_SPACE_XVYCC = 0x04;
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct CellVideoState : IPS3Struct {
+        public struct CellVideoState : IPS3Struct
+        {
             public byte State;
             public byte ColorSpace;
             public InlineData.InlineArray6<byte> Padding;
@@ -108,7 +115,8 @@ namespace PS3Sharp.OS.Modules {
 
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct CellVideoOutColorInfo {
+        public struct CellVideoOutColorInfo
+        {
             public BigEndian<ushort> RedX;
             public BigEndian<ushort> RedY;
             public BigEndian<ushort> GreenX;
@@ -121,7 +129,8 @@ namespace PS3Sharp.OS.Modules {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct CellVideoOutDisplayMode {
+        public struct CellVideoOutDisplayMode
+        {
             public byte ResolutionId;
             public byte ScanMode;
             public byte Conversion;
@@ -141,7 +150,8 @@ namespace PS3Sharp.OS.Modules {
         public const byte CELL_VIDEO_OUT_PORT_DSUB = 0x86;
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct CellVideoOutDeviceInfo : IPS3Struct {
+        public struct CellVideoOutDeviceInfo : IPS3Struct
+        {
             public byte PortType;
             public byte ColorSpace;
             public BigEndian<ushort> Latency;
@@ -153,8 +163,9 @@ namespace PS3Sharp.OS.Modules {
             public InlineData.InlineArray32<CellVideoOutDisplayMode> AvailableModes;
         }
 
-        
-        public static CellVideoOutConfiguration VideoConfiguration = new CellVideoOutConfiguration {
+
+        public static CellVideoOutConfiguration VideoConfiguration = new CellVideoOutConfiguration
+        {
             ResolutionId = (byte)_defaultResolution,
             Format = 0,
             Aspect = CELL_VIDEO_OUT_ASPECT_16_9,
@@ -162,7 +173,8 @@ namespace PS3Sharp.OS.Modules {
         };
 
 
-        public static ulong CellVideoOutGetResolutionAvailability(PPU ppu) {
+        public static ulong CellVideoOutGetResolutionAvailability(PPU ppu)
+        {
             //TODO
             uint video_out = ppu.ReadArg<uint>(ARG0);
             uint resolutionID = ppu.ReadArg<uint>(ARG1);
@@ -174,14 +186,16 @@ namespace PS3Sharp.OS.Modules {
             return 1; //seems that 1 means resolution is available
         }
 
-        public static ulong CellVideoOutConfigure(PPU ppu) {
+        public static ulong CellVideoOutConfigure(PPU ppu)
+        {
             //TODO
             uint video_out = ppu.ReadArg<uint>(ARG0);
             GuestPtr<CellVideoOutConfiguration> config_ptr = ppu.ReadArg<GuestPtr<CellVideoOutConfiguration>>(ARG1);
             uint option_ptr = ppu.ReadArg<uint>(ARG2);
             uint wait_for_event = ppu.ReadArg<uint>(ARG3);
 
-            unsafe {
+            unsafe
+            {
                 CellVideoOutConfiguration* config = config_ptr.AsNativePtr();
                 VideoConfiguration.ResolutionId = config->ResolutionId;
                 VideoConfiguration.Format = config->Format;
@@ -194,7 +208,8 @@ namespace PS3Sharp.OS.Modules {
             return CELL_OK;
         }
 
-        public static ulong CellVideoOutGetResolution(PPU ppu) {
+        public static ulong CellVideoOutGetResolution(PPU ppu)
+        {
             uint resolutionID = ppu.ReadArg<uint>(ARG0);
             GuestPtr<CellVideoResolution> resPtr = ppu.ReadArg<GuestPtr<CellVideoResolution>>(ARG1);
 
@@ -202,12 +217,16 @@ namespace PS3Sharp.OS.Modules {
 
             (ushort width, ushort height) = VideoResolutionSizes[resolutionID];
 
-            unsafe {
+            unsafe
+            {
                 CellVideoResolution* videoResolutionStruct = resPtr.AsNativePtr();
-                if (width > 0 && height > 0) {
+                if (width > 0 && height > 0)
+                {
                     videoResolutionStruct->Width = width;
                     videoResolutionStruct->Height = height;
-                } else {
+                }
+                else
+                {
                     Console.WriteLine($"[CellVideoOut] Undefined Resolution -- Returning 1280x720");
                     videoResolutionStruct->Width = 1280;
                     videoResolutionStruct->Height = 720;
@@ -217,7 +236,8 @@ namespace PS3Sharp.OS.Modules {
             return CELL_OK;
         }
 
-        public static ulong CellVideoOutGetState(PPU ppu) {
+        public static ulong CellVideoOutGetState(PPU ppu)
+        {
             //TODO
             uint video_out = ppu.ReadArg<uint>(ARG0);
             uint deviceIndex = ppu.ReadArg<uint>(ARG1);
@@ -225,7 +245,8 @@ namespace PS3Sharp.OS.Modules {
 
             byte resID;
 
-            unsafe {
+            unsafe
+            {
                 CellVideoState* state = state_ptr.AsNativePtr();
                 state->State = CELL_VIDEO_OUT_OUTPUT_STATE_ENABLED;
                 state->ColorSpace = CELL_VIDEO_OUT_COLOR_SPACE_RGB;
@@ -244,21 +265,24 @@ namespace PS3Sharp.OS.Modules {
             return CELL_OK;
         }
 
-        public static ulong CellVideoOutGetNumberOfDevice(PPU ppu) {
+        public static ulong CellVideoOutGetNumberOfDevice(PPU ppu)
+        {
             //TODO
             uint video_out = ppu.ReadArg<uint>(ARG0);
             Console.WriteLine($"[CellSysutil] cellVideoOutGetNumberOfDevice video_out = {video_out}");
             return 1;
         }
 
-        public static ulong CellVideoOutGetDeviceInfo(PPU ppu) {
+        public static ulong CellVideoOutGetDeviceInfo(PPU ppu)
+        {
             //TODO
             uint video_out = ppu.ReadArg<uint>(ARG0);
             uint deviceIndex = ppu.ReadArg<uint>(ARG1);
 
             GuestPtr<CellVideoOutDeviceInfo> info_ptr = ppu.ReadArg<GuestPtr<CellVideoOutDeviceInfo>>(ARG2);
 
-            unsafe {
+            unsafe
+            {
                 CellVideoOutDeviceInfo* info = info_ptr.AsNativePtr();
                 info->PortType = CELL_VIDEO_OUT_PORT_HDMI;
                 info->State = CELL_VIDEO_OUT_OUTPUT_STATE_ENABLED;

@@ -3,51 +3,53 @@ using static Iced.Intel.AssemblerRegisters;
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAllocator;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
-    public sealed partial class RegisterAllocator {
+namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator
+{
+    public sealed partial class RegisterAllocator
+    {
 
         // Register pools
-		private readonly AssemblerRegister64[] StaticRegisterPool64 = [
-		   rax,
-		   rcx,
-		   rdx,
-		   rbx,
-		   rsp,
-		   rbp,
-		   rsi,
-		   rdi,
-		   r8,
-		   r9,
-		   r10,
-		   r11,
-		   r12,
-		   r13,
-		   r14,
-		   r15,
-		];
+        private readonly AssemblerRegister64[] StaticRegisterPool64 = [
+           rax,
+           rcx,
+           rdx,
+           rbx,
+           rsp,
+           rbp,
+           rsi,
+           rdi,
+           r8,
+           r9,
+           r10,
+           r11,
+           r12,
+           r13,
+           r14,
+           r15,
+        ];
 
-		private readonly AssemblerRegister64[] StaticNonVolatileRegisterPool64 = [
-			rbx,
-			rbp,
-			rsi,
-			rdi,
-			r12,
-			r13,
-			r14,
-			r15,
-		];
+        private readonly AssemblerRegister64[] StaticNonVolatileRegisterPool64 = [
+            rbx,
+            rbp,
+            rsi,
+            rdi,
+            r12,
+            r13,
+            r14,
+            r15,
+        ];
 
-		private readonly AssemblerRegister64[] StaticVolatileRegisterPool64 = [
-			rax,
-			rcx,
-			rdx,
-			r8,
-			r9,
-			r10,
-			r11,
-		];
+        private readonly AssemblerRegister64[] StaticVolatileRegisterPool64 = [
+            rax,
+            rcx,
+            rdx,
+            r8,
+            r9,
+            r10,
+            r11,
+        ];
 
-		public AssemblerRegister64 PPUStatePointer => rbx;
+        public AssemblerRegister64 PPUStatePointer => rbx;
         public AssemblerRegister64 StackPointer => rsp;
         public AssemblerRegister64 SpillArrayPointer => rbp;
         public AssemblerRegister64 MemoryBasePointer => r8;
@@ -60,37 +62,42 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
         private bool _canAllocate => CurrentRegisterPool.Count > 0;
         private int _spillIndex = 0;
 
-		public bool IsVolatile(AssemblerRegister64 reg) => StaticVolatileRegisterPool64.Contains(reg);
-		public bool IsNonVolatile(AssemblerRegister64 reg) => StaticNonVolatileRegisterPool64.Contains(reg);
+        public bool IsVolatile(AssemblerRegister64 reg) => StaticVolatileRegisterPool64.Contains(reg);
+        public bool IsNonVolatile(AssemblerRegister64 reg) => StaticNonVolatileRegisterPool64.Contains(reg);
 
-		private AssemblerRegister64 RequestRegister64() {
+        private AssemblerRegister64 RequestRegister64()
+        {
             AssemblerRegister64 reg = CurrentRegisterPool[0];
             CurrentRegisterPool.Remove(reg);
             return reg;
         }
 
-        private void FreeRegister64(AssemblerRegister64 reg) {
+        private void FreeRegister64(AssemblerRegister64 reg)
+        {
             CurrentRegisterPool.Add(reg);
         }
 
-        public void ResetAllocatorState() {
+        public void ResetAllocatorState()
+        {
             _spillIndex = 0;
             CurrentRegisterPool.Clear();
         }
 
-        private static bool RequiresReservedRaxRdx(IRInstruction instruction) {
+        private static bool RequiresReservedRaxRdx(IRInstruction instruction)
+        {
             bool isSpecialMulDiv =
-                instruction.Opcode == IRInstruction.Op.IMulHD       ||
-                instruction.Opcode == IRInstruction.Op.MulHD        ||
+                instruction.Opcode == IRInstruction.Op.IMulHD ||
+                instruction.Opcode == IRInstruction.Op.MulHD ||
                 instruction.Opcode == IRInstruction.Op.CheckedIDivD ||
-                instruction.Opcode == IRInstruction.Op.CheckedDivD  ||
+                instruction.Opcode == IRInstruction.Op.CheckedDivD ||
                 instruction.Opcode == IRInstruction.Op.CheckedIDivW ||
                 instruction.Opcode == IRInstruction.Op.CheckedDivW;
 
             return isSpecialMulDiv;
         }
 
-        public List<AssemblerRegister64> CreateRegisterPool(List<IRInstruction> code) {
+        public List<AssemblerRegister64> CreateRegisterPool(List<IRInstruction> code)
+        {
 
             // Initial list of all registers
             List<AssemblerRegister64> regs = new List<AssemblerRegister64>(StaticRegisterPool64);
@@ -100,7 +107,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             regs.Remove(StackPointer);
             regs.Remove(SpillArrayPointer);
 
-            if (HasMemoryOp(code)) {
+            if (HasMemoryOp(code))
+            {
                 regs.Remove(MemoryBasePointer);
             }
 
@@ -109,14 +117,17 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             // we reserve them by removing them from the pool
             bool shouldReserve = false;
 
-            for (int i = 0; i < code.Count; i++) {
-                if (RequiresReservedRaxRdx(code[i])) {
-                    shouldReserve = true; 
+            for (int i = 0; i < code.Count; i++)
+            {
+                if (RequiresReservedRaxRdx(code[i]))
+                {
+                    shouldReserve = true;
                     break;
                 }
             }
 
-            if (shouldReserve) {
+            if (shouldReserve)
+            {
                 regs.Remove(rax);
                 regs.Remove(rdx);
             }
@@ -124,9 +135,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             return regs;
         }
 
-        public Dictionary<Value, Location> AllocateHostRegisters(List<IRInstruction> code, Dictionary<Value, ulong> knownConstants) {
+        public Dictionary<Value, Location> AllocateHostRegisters(List<IRInstruction> code, Dictionary<Value, ulong> knownConstants)
+        {
             // Reset
-            
+
             ResetAllocatorState();
             CurrentRegisterPool = CreateRegisterPool(code);
 
@@ -138,17 +150,20 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             return allocatedRegs;
         }
 
-        private void AssignHostRegs(Dictionary<Value, Location> locations, List<Liveness> intervals) {
+        private void AssignHostRegs(Dictionary<Value, Location> locations, List<Liveness> intervals)
+        {
             // Values that currently occupy host registers.
             List<Location> currentActiveIntervals = new();
 
-            foreach (Liveness currentInterval in intervals) {
+            foreach (Liveness currentInterval in intervals)
+            {
 
                 // Remove intervals whose lifetime has ended
                 RemoveExpiredIntervals(currentActiveIntervals, currentInterval);
 
                 // Try to allocate a free register from the pool
-                if (TryAllocateRegisterFromPool(locations, currentActiveIntervals, currentInterval)) {
+                if (TryAllocateRegisterFromPool(locations, currentActiveIntervals, currentInterval))
+                {
                     continue;
                 }
 
@@ -157,10 +172,13 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
 
                 // We give the register to the value that lives the longest 
                 // If the current value dies earlier than the victim, just spill the current value.
-                if (currentInterval.LastUse < victim.Liveness.LastUse) {
+                if (currentInterval.LastUse < victim.Liveness.LastUse)
+                {
                     Spill(locations, currentInterval);
 
-                } else {
+                }
+                else
+                {
                     // if the current value lives longer
                     // Evict the victim and give its register to the current value
                     EvictAndSpill(locations, currentActiveIntervals, currentInterval, victim);
@@ -168,12 +186,15 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             }
         }
 
-        private void RemoveExpiredIntervals(List<Location> active, Liveness currentInterval) {
+        private void RemoveExpiredIntervals(List<Location> active, Liveness currentInterval)
+        {
             // Remove intervals whose lifetime has ended
-            for (int i = active.Count - 1; i >= 0; i--) {
+            for (int i = active.Count - 1; i >= 0; i--)
+            {
                 Location location = active[i];
 
-                if (location.Liveness.LastUse < currentInterval.FirstUse) {
+                if (location.Liveness.LastUse < currentInterval.FirstUse)
+                {
                     active.RemoveAt(i);
                     AssemblerRegister64 reg = location.GetRegister();
                     FreeRegister64(reg);
@@ -181,8 +202,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             }
         }
 
-        private bool TryAllocateRegisterFromPool(Dictionary<Value, Location> locations, List<Location> currentActiveIntervals, Liveness currentInterval) {
-            if (!_canAllocate) {
+        private bool TryAllocateRegisterFromPool(Dictionary<Value, Location> locations, List<Location> currentActiveIntervals, Liveness currentInterval)
+        {
+            if (!_canAllocate)
+            {
                 return false;
             }
 
@@ -196,15 +219,18 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             return true;
         }
 
-        private void Spill(Dictionary<Value, Location> locations, Liveness current) {
-            Location location = new(current) {
+        private void Spill(Dictionary<Value, Location> locations, Liveness current)
+        {
+            Location location = new(current)
+            {
                 SpillSlot = _spillIndex++
             };
 
             locations[current.Value] = location;
         }
 
-        private void EvictAndSpill(Dictionary<Value, Location> locations, List<Location> currentActiveIntervals, Liveness currentInterval, Location victim) {
+        private void EvictAndSpill(Dictionary<Value, Location> locations, List<Location> currentActiveIntervals, Liveness currentInterval, Location victim)
+        {
             AssemblerRegister64 victimRegister = victim.GetRegister();
 
             // Spill victim
@@ -222,10 +248,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             currentActiveIntervals.Add(location);
         }
 
-        private List<Liveness> BuildLivenessList(List<IRInstruction> code, Dictionary<Value, ulong> knownConstants) {
+        private List<Liveness> BuildLivenessList(List<IRInstruction> code, Dictionary<Value, ulong> knownConstants)
+        {
             List<Liveness> livenessList = new();
 
-            for (int i = 0; i < code.Count; i++) {
+            for (int i = 0; i < code.Count; i++)
+            {
                 IRInstruction instruction = code[i];
                 AddLiveness(code, instruction.Destination, i, livenessList, knownConstants);
                 AddLiveness(code, instruction.Operand1, i, livenessList, knownConstants);
@@ -237,27 +265,33 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             return livenessList;
         }
 
-       private void AddLiveness(List<IRInstruction> code, Value value, int currentIndex, List<Liveness> livenessList, Dictionary<Value, ulong> knownConstants) {
-            if (!value.IsValid) {
+        private void AddLiveness(List<IRInstruction> code, Value value, int currentIndex, List<Liveness> livenessList, Dictionary<Value, ulong> knownConstants)
+        {
+            if (!value.IsValid)
+            {
                 return;
             }
 
-            if (knownConstants.ContainsKey(value)) {
+            if (knownConstants.ContainsKey(value))
+            {
                 return;
             }
 
-            if (livenessList.Any(x => x.Value == value)) {
+            if (livenessList.Any(x => x.Value == value))
+            {
                 return;
             }
 
-            Liveness liveness = new() {
+            Liveness liveness = new()
+            {
                 Value = value,
                 FirstUse = currentIndex
             };
 
             // Find last use, backwards search
 
-            for (int i = code.Count - 1; i >= 0; i--) {
+            for (int i = code.Count - 1; i >= 0; i--)
+            {
                 IRInstruction instruction = code[i];
 
                 bool found =
@@ -268,12 +302,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
                     (instruction.Operand3.IsValid && instruction.Operand3 == liveness.Value);
 
 
-                if (found) {
+                if (found)
+                {
                     liveness.LastUse = i;
                     break;
                 }
 
-                if (i == currentIndex) {
+                if (i == currentIndex)
+                {
                     liveness.LastUse = i;
                 }
             }
@@ -281,9 +317,11 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
             livenessList.Add(liveness);
         }
 
-        private void PrintRegisterMapping(Dictionary<Value, Location> allocatedRegs) {
+        private void PrintRegisterMapping(Dictionary<Value, Location> allocatedRegs)
+        {
             Console.WriteLine($"Mapped Registers:");
-            foreach (var item in allocatedRegs) {
+            foreach (var item in allocatedRegs)
+            {
                 int id = item.Key.Id;
                 Location l = item.Value;
 

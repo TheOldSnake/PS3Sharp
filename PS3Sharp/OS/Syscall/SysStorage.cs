@@ -10,9 +10,12 @@ using PS3Sharp.Memory_Manager;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
-namespace PS3Sharp.OS.Syscall {
-    public static class SysStorage {
-        public enum Devices : ulong {
+namespace PS3Sharp.OS.Syscall
+{
+    public static class SysStorage
+    {
+        public enum Devices : ulong
+        {
             ATA_HDD = 0x101000000000007UL,
             BDVD_DRIVE = 0x101000000000006UL,
 
@@ -36,31 +39,36 @@ namespace PS3Sharp.OS.Syscall {
 
         private static readonly ConcurrentDictionary<uint, StorageDevice> _openDevices = new();
 
-        public sealed class StorageDevice {
+        public sealed class StorageDevice
+        {
             public readonly Devices Type;
             public readonly byte[] Data;
 
-            public StorageDevice(Devices type, int size) {
+            public StorageDevice(Devices type, int size)
+            {
                 Type = type;
                 Data = new byte[size];
             }
 
-            public Span<byte> CreateSpan(int start, int size) { 
+            public Span<byte> CreateSpan(int start, int size)
+            {
                 return new Span<byte>(Data, start, size);
             }
         }
 
-        public struct StorageDeviceInfo : IPS3Struct {
-            public InlineData.InlineArray32<byte> Name;        
-            public BigEndian<uint> Zero;       
-            public BigEndian<uint> Zero2;       
+        public struct StorageDeviceInfo : IPS3Struct
+        {
+            public InlineData.InlineArray32<byte> Name;
+            public BigEndian<uint> Zero;
+            public BigEndian<uint> Zero2;
             public BigEndian<ulong> SectorCount;
-            public BigEndian<uint> SectorSize; 
-            public BigEndian<uint> One;          
-            public InlineData.InlineArray8<byte> Flags;          
+            public BigEndian<uint> SectorSize;
+            public BigEndian<uint> One;
+            public InlineData.InlineArray8<byte> Flags;
         };
 
-        public static ulong SysStorageGetDeviceInfo(PPU ppu) {
+        public static ulong SysStorageGetDeviceInfo(PPU ppu)
+        {
             return CELL_OK;
             ulong device = ppu.ReadArg<ulong>(ARG0);
             GuestPtr<StorageDeviceInfo> info_ptr = ppu.ReadArg<GuestPtr<StorageDeviceInfo>>(ARG1);
@@ -69,7 +77,8 @@ namespace PS3Sharp.OS.Syscall {
             ulong dev_num = (device >> 32) & 0xFF;
 
             //Console.WriteLine($"Storage = {storage:X} num = {dev_num}");
-            switch (storage) {
+            switch (storage)
+            {
                 case Devices.ATA_HDD:
                     throw new NotImplementedException("todo: ATA_HDD");
                     break;
@@ -97,12 +106,15 @@ namespace PS3Sharp.OS.Syscall {
         }
 
 
-        public static ulong GetUSBMassStorageInfo(GuestPtr<StorageDeviceInfo> info_ptr, ulong dev_num) {
-            if(dev_num > 0) { 
+        public static ulong GetUSBMassStorageInfo(GuestPtr<StorageDeviceInfo> info_ptr, ulong dev_num)
+        {
+            if (dev_num > 0)
+            {
                 return 0xFFFFFFFFFFFFFFFB; // -5
             }
 
-            unsafe {
+            unsafe
+            {
                 StorageDeviceInfo* info = info_ptr.AsNativePtr();
 
                 Span<byte> name_string = Encoding.UTF8.GetBytes("unnamed");
@@ -119,7 +131,8 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysStorageOpen(PPU ppu) {
+        public static ulong SysStorageOpen(PPU ppu)
+        {
             return CELL_OK;
             ulong dev = ppu.ReadArg<ulong>(ARG0);
             ulong mode = ppu.ReadArg<ulong>(ARG1);
@@ -130,7 +143,8 @@ namespace PS3Sharp.OS.Syscall {
 
             int size = 0;
 
-            switch (storage) {
+            switch (storage)
+            {
                 case Devices.USB_MASS_STORAGE_1_BASE:
                 case Devices.USB_MASS_STORAGE_1_BASE + 1:
                 case Devices.USB_MASS_STORAGE_1_BASE + 2:
@@ -150,7 +164,8 @@ namespace PS3Sharp.OS.Syscall {
                     break;
             }
 
-            if (size > 0) {
+            if (size > 0)
+            {
                 uint fd = MemoryManager.GetHandle();
 
                 _openDevices.TryAdd(
@@ -163,7 +178,8 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysStorageRead(PPU ppu) {
+        public static ulong SysStorageRead(PPU ppu)
+        {
             return CELL_OK;
 
             uint fd = ppu.ReadArg<uint>(ARG0);
@@ -175,20 +191,24 @@ namespace PS3Sharp.OS.Syscall {
             ulong flags = ppu.ReadArg<ulong>(ARG6);
 
 
-            if (_openDevices.TryGetValue(fd, out StorageDevice? storageDevice)) {
+            if (_openDevices.TryGetValue(fd, out StorageDevice? storageDevice))
+            {
                 int offset = (int)(start_sector * 0x200);
                 int size = (int)(num_sectors * 0x200);
 
-                unsafe {
+                unsafe
+                {
                     Span<byte> data = storageDevice.CreateSpan(offset, size);
                     Span<byte> dest = MemoryManager.CreateSpan<byte>(buf, size);
                     dest.Clear();
                     data.CopyTo(dest);
                 }
 
-  
+
                 //Console.WriteLine($"SysStorageRead: start_sector = {start_sector} num_sectors = {num_sectors}");
-            } else {
+            }
+            else
+            {
                 return CELL_ESRCH;
                 //throw new Exception($"SysStorageRead: Device was not open");
             }
@@ -197,7 +217,8 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysStorageClose(PPU ppu) {
+        public static ulong SysStorageClose(PPU ppu)
+        {
             return CELL_OK;
             uint fd = ppu.ReadArg<uint>(ARG0);
             _openDevices.TryRemove(fd, out _);

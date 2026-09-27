@@ -1,11 +1,14 @@
 ﻿using PS3Sharp.Memory_Manager;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
-    public sealed partial class IRGenerator {
+namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
+{
+    public sealed partial class IRGenerator
+    {
         private IRContext _irContext;
         private readonly IROptimizer _irOptimizer = new();
 
-        public IRBlock GenerateIRBlock(uint address) {
+        public IRBlock GenerateIRBlock(uint address)
+        {
             // Console.WriteLine($"Generating IR - address = 0x{address:X8}");
 
             // Create new context
@@ -13,18 +16,22 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             _irContext.Initialize(address);
 
             PPUInstruction instruction;
-            while (true) {
-                 instruction = new PPUInstruction {
+            while (true)
+            {
+                instruction = new PPUInstruction
+                {
                     Raw = MemoryManager.ReadPPUInstruction(_irContext.CurrentPC)
                 };
 
                 _irContext.CurrentPC += 4;
 
-                if (instruction.Raw != PPUInterpreter.PPUInterpreter.NOP) {
+                if (instruction.Raw != PPUInterpreter.PPUInterpreter.NOP)
+                {
                     GenerateIR(instruction);
                 }
 
-                if (IsBranch(instruction) || IsSyscall(instruction)) {
+                if (IsBranch(instruction) || IsSyscall(instruction))
+                {
                     _irContext.TerminateBlock();
                     break;
                 }
@@ -40,10 +47,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             return block;
         }
 
-        private void GenerateIR(PPUInstruction instruction) {
+        private void GenerateIR(PPUInstruction instruction)
+        {
             // PPC -> IR Decoder 
-            switch (instruction.Op) {
-                
+            switch (instruction.Op)
+            {
+
                 case Op.CMPI:
                     CMPI(instruction);
                     break;
@@ -117,11 +126,11 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
                     IR_G13(instruction);
                     break;
 
-                case Op.RLWIMI: 
+                case Op.RLWIMI:
                     RLWIMI(instruction);
                     break;
 
-                case Op.RLWINM: 
+                case Op.RLWINM:
                     RLWINM(instruction);
                     break;
 
@@ -165,52 +174,52 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
                     STBU(instruction);
                     break;
 
-                case Op.LHZ: 
+                case Op.LHZ:
                     LHZ(instruction);
                     break;
 
-                case Op.LHZU: 
+                case Op.LHZU:
                     LHZU(instruction);
                     break;
 
-                case Op.LHA: 
+                case Op.LHA:
                     LHA(instruction);
                     break;
 
-                case Op.LHAU: 
+                case Op.LHAU:
                     LHAU(instruction);
                     break;
 
-                case Op.STH: 
+                case Op.STH:
                     STH(instruction);
                     break;
 
-                case Op.STHU: 
+                case Op.STHU:
                     STHU(instruction);
                     break;
 
-                case Op.LMW: 
+                case Op.LMW:
                     LMW(instruction);
                     break;
 
-                case Op.LD: 
-                    LD(instruction); 
+                case Op.LD:
+                    LD(instruction);
                     break;
 
-                case Op.STD: 
+                case Op.STD:
                     STD(instruction);
                     break;
 
-    
+
                 // Float load/store
-                case Op.LFS: 
-                case Op.LFSU:  
-                case Op.LFD: 
+                case Op.LFS:
+                case Op.LFSU:
+                case Op.LFD:
                 case Op.LFDU:
                 case Op.STFS:
-                case Op.STFSU: 
+                case Op.STFSU:
                 case Op.STFD:
-                case Op.STFDU: 
+                case Op.STFDU:
 
                 default:
                     InterpreterFallback(instruction);
@@ -218,8 +227,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             }
         }
 
-        private void IR_G1F(PPUInstruction instruction) {
-            switch (instruction.G1F) {
+        private void IR_G1F(PPUInstruction instruction)
+        {
+            switch (instruction.G1F)
+            {
 
                 case G1F.Sync:
                     //Nop
@@ -539,8 +550,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             }
         }
 
-        private void IR_G13(PPUInstruction instruction) {
-            switch (instruction.G13) {
+        private void IR_G13(PPUInstruction instruction)
+        {
+            switch (instruction.G13)
+            {
                 case G13.ISYNC:
                     // Nop
                     break;
@@ -597,13 +610,15 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
         }
 
 
-        private void IRRotateLeft(PPUInstruction instruction) {
+        private void IRRotateLeft(PPUInstruction instruction)
+        {
             // Rotate instructions
 
             // bits 27 - 30 in BE
             uint field = (instruction.Raw >> 1) & 0xF;
 
-            switch (field) {
+            switch (field)
+            {
                 case 0:
                 case 1:
                     RLDICL(instruction);
@@ -637,7 +652,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             }
         }
 
-        private void PrintIR(Dictionary<Value, ulong> constants = null) {
+        private void PrintIR(Dictionary<Value, ulong> constants = null)
+        {
             List<IRInstruction> code = _irContext.GetIRCode();
 
             //if (constants != null) {
@@ -649,7 +665,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             //    }
             //}
 
-            for (int i = 0; i < code.Count; i++) {
+            for (int i = 0; i < code.Count; i++)
+            {
                 IRInstruction instruction = code[i];
                 Value dest = instruction.Destination;
                 Value op1 = instruction.Operand1;
@@ -662,58 +679,69 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
                 string operand3 = op3.IsValid ? $"v{op3.Id}" : string.Empty;
                 string constant1 = $"0x{instruction.Immediate1:X}";
 
-                if (constants != null) {
+                if (constants != null)
+                {
                     bool destConst = constants.ContainsKey(dest);
                     bool op1Const = constants.ContainsKey(op1);
                     bool op2Const = constants.ContainsKey(op2);
                     bool op3Const = constants.ContainsKey(op3);
 
-                    if (destConst) {
+                    if (destConst)
+                    {
                         destination = $"__0x{constants[dest]:X}";
                     }
 
-                    if (op1Const) {
+                    if (op1Const)
+                    {
                         operand1 = $"__0x{constants[op1]:X}";
                     }
 
-                    if (op2Const) {
+                    if (op2Const)
+                    {
                         operand2 = $"__0x{constants[op2]:X}";
                     }
 
-                    if (op3Const) {
+                    if (op3Const)
+                    {
                         operand3 = $"__0x{constants[op3]:X}";
                     }
                 }
 
-                if (instruction.Opcode == IRInstruction.Op.Ret) {
+                if (instruction.Opcode == IRInstruction.Op.Ret)
+                {
                     Console.WriteLine($"{instruction.Opcode}");
                     continue;
                 }
 
-                if (instruction.Opcode == IRInstruction.Op.InterpreterFallback) {
+                if (instruction.Opcode == IRInstruction.Op.InterpreterFallback)
+                {
                     Console.WriteLine($"{instruction.Opcode}: {constant1}");
                     continue;
                 }
 
-                if (instruction.Opcode == IRInstruction.Op.Constant) {
+                if (instruction.Opcode == IRInstruction.Op.Constant)
+                {
                     string initial = instruction.Destination.Id < _irContext.InitialValueCount ? " # Initial Const" : string.Empty;
                     Console.WriteLine($"{instruction.Opcode} {destination}, {constant1} {initial}");
                     continue;
                 }
 
-                if (instruction.Opcode == IRInstruction.Op.GPRLoad) {
+                if (instruction.Opcode == IRInstruction.Op.GPRLoad)
+                {
                     Console.WriteLine($"{instruction.Opcode} {destination}, {constant1}");
                     continue;
                 }
 
-                if (instruction.Opcode == IRInstruction.Op.GPRStore) {
+                if (instruction.Opcode == IRInstruction.Op.GPRStore)
+                {
                     Console.WriteLine($"{instruction.Opcode} {destination}, {constant1}");
                     continue;
                 }
 
-                if (instruction.Opcode == IRInstruction.Op.PCStore || 
-                    instruction.Opcode == IRInstruction.Op.LRLoad || 
-                    instruction.Opcode == IRInstruction.Op.LRStore) {
+                if (instruction.Opcode == IRInstruction.Op.PCStore ||
+                    instruction.Opcode == IRInstruction.Op.LRLoad ||
+                    instruction.Opcode == IRInstruction.Op.LRStore)
+                {
                     Console.WriteLine($"{instruction.Opcode} {destination}");
                     continue;
                 }

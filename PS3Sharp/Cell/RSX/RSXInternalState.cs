@@ -3,8 +3,10 @@ using OpenTK.Mathematics;
 using PS3Sharp.Common;
 using System.Runtime.CompilerServices;
 
-namespace PS3Sharp.Cell.RSX {
-    public sealed partial class RSXInternalState {
+namespace PS3Sharp.Cell.RSX
+{
+    public sealed partial class RSXInternalState
+    {
         public uint CurrentSemaphoreOffset { get; set; }
         public uint CurrentSemaphoreLocation { get; set; }
         public RSXVertexBuffer[] VertexBuffers { get; } = new RSXVertexBuffer[16];
@@ -39,13 +41,13 @@ namespace PS3Sharp.Cell.RSX {
         public Dictionary<uint, Vector4> AllUniforms { get; } = [];   // Dictionary of all uniforms and their values
 
         // Don't use { get; set; } on these structs
-        public Vector2i SurfaceClip = new Vector2i();       
+        public Vector2i SurfaceClip = new Vector2i();
         public bool SurfaceClipDirty { get; set; }
 
-        public Vector4 ViewPortOffset = new Vector4();       
+        public Vector4 ViewPortOffset = new Vector4();
         public bool ViewPortOffsetDirty { get; set; }
 
-        public Vector4 ViewPortScale = new Vector4();    
+        public Vector4 ViewPortScale = new Vector4();
         public bool ViewPortScaleDirty { get; set; }
 
 

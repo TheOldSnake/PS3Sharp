@@ -5,8 +5,10 @@ using PS3Sharp.OS.Syscall;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
-namespace PS3Sharp.OS.Modules {
-    public static class CellFs {
+namespace PS3Sharp.OS.Modules
+{
+    public static class CellFs
+    {
         public static ulong CellFsAioInit(PPU ppu) => SysFs.SysFsAioInit(ppu);
         public static ulong CellFsStat(PPU ppu) => SysFs.SysFsStat(ppu);
         public static ulong CellFsFstat(PPU ppu) => SysFs.SysFsFstat(ppu);
@@ -20,7 +22,8 @@ namespace PS3Sharp.OS.Modules {
         public static ulong CellFsOpenDir(PPU ppu) => SysFs.SysFsOpenDir(ppu);
         public static ulong CellFsCloseDir(PPU ppu) => SysFs.SysFsCloseDir(ppu);
 
-        public static ulong CellFsGetFreeSize(PPU ppu) {
+        public static ulong CellFsGetFreeSize(PPU ppu)
+        {
             GuestVoidPtr path_ptr = ppu.ReadArg<GuestVoidPtr>(ARG0);
             GuestPtr<uint> block_size_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
             GuestPtr<ulong> block_cnt_ptr = ppu.ReadArg<GuestPtr<ulong>>(ARG2);

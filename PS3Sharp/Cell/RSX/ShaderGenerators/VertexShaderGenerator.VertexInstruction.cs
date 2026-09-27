@@ -1,13 +1,16 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace PS3Sharp.Cell.RSX {
-    public static partial class VertexShaderGenerator {
+namespace PS3Sharp.Cell.RSX
+{
+    public static partial class VertexShaderGenerator
+    {
 
         // Based on nv40_vertprog.h in PSL1GHT
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-       public struct VertexInstruction {
-            public uint Raw_0;  
+        public struct VertexInstruction
+        {
+            public uint Raw_0;
             public uint Raw_1;
             public uint Raw_2;
             public uint Raw_3;
@@ -18,7 +21,7 @@ namespace PS3Sharp.Cell.RSX {
             public uint Addr_Reg_Swizzle => (Raw_0 >> 00) & 0x3;
 
             // Condition register swizzle
-            public uint Cond_Swizzle_W => (Raw_0 >> 02) & 0x3;  
+            public uint Cond_Swizzle_W => (Raw_0 >> 02) & 0x3;
             public uint Cond_Swizzle_Z => (Raw_0 >> 04) & 0x3;
             public uint Cond_Swizzle_Y => (Raw_0 >> 06) & 0x3;
             public uint Cond_Swizzle_X => (Raw_0 >> 08) & 0x3;
@@ -69,7 +72,8 @@ namespace PS3Sharp.Cell.RSX {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct VertexSrc {
+        public struct VertexSrc
+        {
             public uint Raw;
             public uint Type => Raw & 0x3;
             public uint TempID => (Raw >> 2) & 0x1F;

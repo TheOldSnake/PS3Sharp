@@ -11,11 +11,14 @@ using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 using static PS3Sharp.Cell.PPU.PPU;
 
-namespace PS3Sharp.OS.Modules {
-    public static class CellFont {
+namespace PS3Sharp.OS.Modules
+{
+    public static class CellFont
+    {
         //We LLE CellFont, this sealed class is purely for debugging purposes
 
-        public struct CellFont_ : IPS3Struct {
+        public struct CellFont_ : IPS3Struct
+        {
             public BigEndian<float> scale_x;
             public BigEndian<float> scale_y;
             public BigEndian<float> slant;
@@ -26,7 +29,8 @@ namespace PS3Sharp.OS.Modules {
             //struct stbtt_fontinfo* stbfont;
         }
 
-        public struct CellFontGlyphMetrics : IPS3Struct {
+        public struct CellFontGlyphMetrics : IPS3Struct
+        {
             public BigEndian<float> width;
             public BigEndian<float> height;
 
@@ -40,7 +44,8 @@ namespace PS3Sharp.OS.Modules {
         }
 
 
-        public struct CellFontRenderSurface : IPS3Struct {
+        public struct CellFontRenderSurface : IPS3Struct
+        {
             public BigEndianGuestVoidPtr buffer;
             public BigEndian<int> widthByte;
             public BigEndian<int> pixelSizeByte;
@@ -55,7 +60,8 @@ namespace PS3Sharp.OS.Modules {
         }
 
 
-        public struct CellFontImageTransInfo : IPS3Struct {
+        public struct CellFontImageTransInfo : IPS3Struct
+        {
             public BigEndianGuestVoidPtr image;
             public BigEndian<uint> imageWidthByte;
             public BigEndian<uint> imageWidth;
@@ -64,16 +70,19 @@ namespace PS3Sharp.OS.Modules {
             public BigEndian<uint> surfWidthByte;
         }
 
-        private static void PrintCellFontData(GuestPtr<CellFont_> font_ptr) {
+        private static void PrintCellFontData(GuestPtr<CellFont_> font_ptr)
+        {
             CellFont_ font;
-           
-            unsafe {
+
+            unsafe
+            {
                 font = *font_ptr.AsNativePtr();
             }
 
             uint[] data = new uint[Unsafe.SizeOf<CellFont_>() / 4];
 
-            for (uint i = 0; i < data.Length; i++) {
+            for (uint i = 0; i < data.Length; i++)
+            {
                 data[i] = MemoryManager.Read<uint>(font_ptr + (i * 4));
             }
 
@@ -86,16 +95,19 @@ namespace PS3Sharp.OS.Modules {
             Console.WriteLine($"origin        = {font.origin:X8}               = 0x{data[5]:X8}");
         }
 
-        private static void PrintCellFontGlyphMetricsData(GuestPtr<CellFontGlyphMetrics> metrics_ptr) {
+        private static void PrintCellFontGlyphMetricsData(GuestPtr<CellFontGlyphMetrics> metrics_ptr)
+        {
             CellFontGlyphMetrics metrics;
 
-            unsafe {
+            unsafe
+            {
                 metrics = *metrics_ptr.AsNativePtr();
             }
 
             uint[] data = new uint[Unsafe.SizeOf<CellFontGlyphMetrics>() / 4];
 
-            for (uint i = 0; i < data.Length; i++) {
+            for (uint i = 0; i < data.Length; i++)
+            {
                 data[i] = MemoryManager.Read<uint>(metrics_ptr + (i * 4));
             }
 
@@ -113,10 +125,12 @@ namespace PS3Sharp.OS.Modules {
             Console.WriteLine($"v_advance   = {metrics.v_advance: 00.000000}   = 0x{data[7]:X8}");
         }
 
-        private static void PrintCellFontRenderSurfaceData(GuestPtr<CellFontRenderSurface> surface_ptr) {
+        private static void PrintCellFontRenderSurfaceData(GuestPtr<CellFontRenderSurface> surface_ptr)
+        {
             CellFontRenderSurface surface;
 
-            unsafe {
+            unsafe
+            {
                 surface = *surface_ptr.AsNativePtr();
             }
 
@@ -143,10 +157,12 @@ namespace PS3Sharp.OS.Modules {
             //}
         }
 
-        private static void PrintCellFontImageTransInfoData(GuestPtr<CellFontImageTransInfo> image_trans_info_ptr) {
+        private static void PrintCellFontImageTransInfoData(GuestPtr<CellFontImageTransInfo> image_trans_info_ptr)
+        {
             CellFontImageTransInfo image_trans_info;
 
-            unsafe {
+            unsafe
+            {
                 image_trans_info = *image_trans_info_ptr.AsNativePtr();
             }
 
@@ -176,7 +192,8 @@ namespace PS3Sharp.OS.Modules {
             //}
         }
 
-        public static void Log_CellFontGetCharGlyphMetrics(PPUGPR[] gprs) {
+        public static void Log_CellFontGetCharGlyphMetrics(PPUGPR[] gprs)
+        {
             GuestPtr<CellFont_> font_ptr = gprs[ARG0].Value32;
             uint code = gprs[ARG1].Value32;
             GuestPtr<CellFontGlyphMetrics> metrics_ptr = gprs[ARG2].Value32;
@@ -190,7 +207,8 @@ namespace PS3Sharp.OS.Modules {
             throw new Exception("Done");
         }
 
-        public static void Log_CellFontRenderCharGlyphImage(PPUGPR[] gprs, PPUFPR[] fprs) {
+        public static void Log_CellFontRenderCharGlyphImage(PPUGPR[] gprs, PPUFPR[] fprs)
+        {
             GuestPtr<CellFont_> font_ptr = gprs[ARG0].Value32;
             uint code = gprs[ARG1].Value32;
             GuestPtr<CellFontRenderSurface> surface_ptr = gprs[ARG2].Value32;

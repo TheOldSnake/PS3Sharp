@@ -9,8 +9,10 @@ using static PS3Sharp.Cell.ErrorCode;
 using static PS3Sharp.OS.Modules.CellPad;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace PS3Sharp.OS.Modules {
-    public static class CellPad {
+namespace PS3Sharp.OS.Modules
+{
+    public static class CellPad
+    {
         public const uint CELL_PAD_ERROR_NO_DEVICE = 0x80121107;
         public const uint CELL_PAD_MAX_PORT_NUM = 7;
         public const uint CELL_PAD_MAX_CODES = 64;
@@ -18,26 +20,27 @@ namespace PS3Sharp.OS.Modules {
         // Button bit positions
         // Index 2
         public const uint CELL_PAD_CTRL_SELECT = 0;
-        public const uint CELL_PAD_CTRL_L3     = 1;
-        public const uint CELL_PAD_CTRL_R3     = 2;
-        public const uint CELL_PAD_CTRL_START  = 3;
-        public const uint CELL_PAD_CTRL_UP     = 4;
-        public const uint CELL_PAD_CTRL_RIGHT  = 5;
-        public const uint CELL_PAD_CTRL_DOWN   = 6;
-        public const uint CELL_PAD_CTRL_LEFT   = 7;
+        public const uint CELL_PAD_CTRL_L3 = 1;
+        public const uint CELL_PAD_CTRL_R3 = 2;
+        public const uint CELL_PAD_CTRL_START = 3;
+        public const uint CELL_PAD_CTRL_UP = 4;
+        public const uint CELL_PAD_CTRL_RIGHT = 5;
+        public const uint CELL_PAD_CTRL_DOWN = 6;
+        public const uint CELL_PAD_CTRL_LEFT = 7;
 
         // Index 3
-        public const uint CELL_PAD_CTRL_L2       = 0 + 16;
-        public const uint CELL_PAD_CTRL_R2       = 1 + 16;
-        public const uint CELL_PAD_CTRL_L1       = 2 + 16;
-        public const uint CELL_PAD_CTRL_R1       = 3 + 16;
+        public const uint CELL_PAD_CTRL_L2 = 0 + 16;
+        public const uint CELL_PAD_CTRL_R2 = 1 + 16;
+        public const uint CELL_PAD_CTRL_L1 = 2 + 16;
+        public const uint CELL_PAD_CTRL_R1 = 3 + 16;
         public const uint CELL_PAD_CTRL_TRIANGLE = 4 + 16;
-        public const uint CELL_PAD_CTRL_CIRCLE   = 5 + 16;
-        public const uint CELL_PAD_CTRL_CROSS    = 6 + 16;
-        public const uint CELL_PAD_CTRL_SQUARE   = 7 + 16;
+        public const uint CELL_PAD_CTRL_CIRCLE = 5 + 16;
+        public const uint CELL_PAD_CTRL_CROSS = 6 + 16;
+        public const uint CELL_PAD_CTRL_SQUARE = 7 + 16;
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct CellPadInfo2 : IPS3Struct {
+        public struct CellPadInfo2 : IPS3Struct
+        {
             public BigEndian<uint> MaxConnect;
             public BigEndian<uint> NowConnect;
             public BigEndian<uint> SystemInfo;
@@ -49,30 +52,36 @@ namespace PS3Sharp.OS.Modules {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct CellPadData : IPS3Struct {
+        public struct CellPadData : IPS3Struct
+        {
             public BigEndian<int> Len;
             public InlineData.InlineArray64<BigEndian<ushort>> Buttons; // This probably stores the button states for all connected controllers
         }
 
-        public static ulong CellPadInit(PPU ppu) {
+        public static ulong CellPadInit(PPU ppu)
+        {
             //Console.WriteLine($"[CellPad] cellPadInit");
             return CELL_OK;
         }
 
-        public static ulong CellPadSetPortSetting(PPU ppu) {
+        public static ulong CellPadSetPortSetting(PPU ppu)
+        {
             //Console.WriteLine($"[CellPad] cellPadSetPortSetting");
             return CELL_OK;
         }
 
-        public static ulong CellPadGetData(PPU ppu) {
+        public static ulong CellPadGetData(PPU ppu)
+        {
             uint port = ppu.ReadArg<uint>(ARG0);
             GuestPtr<CellPadData> data_ptr = ppu.ReadArg<GuestPtr<CellPadData>>(ARG1);
 
-            if (port != 0 || WindowManager.GetJoystickState() == null) {
+            if (port != 0 || WindowManager.GetJoystickState() == null)
+            {
                 return CELL_PAD_ERROR_NO_DEVICE;
             }
 
-            unsafe {
+            unsafe
+            {
                 CellPadData* data = data_ptr.AsNativePtr();
                 data->Len = 24;
 
@@ -84,33 +93,38 @@ namespace PS3Sharp.OS.Modules {
                 data->Buttons[1] = (ushort)v;
             }
 
-    
+
             return CELL_OK;
         }
 
-        public static ulong CellPadGetInfo(PPU ppu) {
+        public static ulong CellPadGetInfo(PPU ppu)
+        {
             return CELL_OK;
         }
 
 
-        public static ulong CellPadGetInfo2(PPU ppu) {
+        public static ulong CellPadGetInfo2(PPU ppu)
+        {
             GuestPtr<CellPadInfo2> info_ptr = ppu.ReadArg<GuestPtr<CellPadInfo2>>(ARG0);
             uint nowConnected = WindowManager.GetJoystickState() == null ? 0U : 1U;
 
-            unsafe {
+            unsafe
+            {
                 CellPadInfo2* info = info_ptr.AsNativePtr();
                 info->MaxConnect = CELL_PAD_MAX_PORT_NUM;
                 info->NowConnect = nowConnected; // Must set to 1 if we are emulating a controller
                 info->SystemInfo = 0;
 
-                for (int i = 0; i < CELL_PAD_MAX_PORT_NUM; i++) {
+                for (int i = 0; i < CELL_PAD_MAX_PORT_NUM; i++)
+                {
                     info->PortStatus[i] = 0; //Not connected
                     info->PortSetting[i] = 0;
                     info->DeviceCapability[i] = 0;
                     info->DeviceType[i] = 0;
                 }
 
-                if (nowConnected == 1) {
+                if (nowConnected == 1)
+                {
                     // Set the state of 1 controller
                     info->PortStatus[0] = 1;             // Connected
                     info->PortSetting[0] = 0x6;
@@ -123,17 +137,21 @@ namespace PS3Sharp.OS.Modules {
             return CELL_OK;
         }
 
-        private static unsafe void WriteButtons(GuestPtr<CellPadData> cellPadData_ptr) {
+        private static unsafe void WriteButtons(GuestPtr<CellPadData> cellPadData_ptr)
+        {
             // Loop over the controller's buttons, write to cellPadData
 
             JoystickState? controllerState = WindowManager.GetJoystickState();
 
-            if(controllerState == null) {
+            if (controllerState == null)
+            {
                 return;
             }
 
-            for (uint i = 0; i < controllerState.ButtonCount; i++) {
-                if (XInputDictionary.TryGetValue(i, out uint value)) {
+            for (uint i = 0; i < controllerState.ButtonCount; i++)
+            {
+                if (XInputDictionary.TryGetValue(i, out uint value))
+                {
                     bool pressed = controllerState.IsButtonDown((int)i);
                     SetButton(value, pressed, cellPadData_ptr);
                 }
@@ -147,7 +165,8 @@ namespace PS3Sharp.OS.Modules {
             // Write Left/Right stick positions
             (byte leftX, byte leftY, byte rightX, byte rightY) = GetStickPosition(controllerState, XInputAxis);
 
-            unsafe {
+            unsafe
+            {
                 CellPadData* cellPadData = cellPadData_ptr.AsNativePtr();
                 cellPadData->Buttons[4] = rightX;
                 cellPadData->Buttons[5] = rightY;
@@ -156,25 +175,31 @@ namespace PS3Sharp.OS.Modules {
             }
         }
 
-        private static void SetButton(uint buttonBit, bool isPressed, GuestPtr<CellPadData> cellPadData_ptr) {
+        private static void SetButton(uint buttonBit, bool isPressed, GuestPtr<CellPadData> cellPadData_ptr)
+        {
             // Buttons are stored in index 2 and 3
             bool isIndex3 = buttonBit >= 16;
             int idx = 2;
 
-            if (isIndex3) {
+            if (isIndex3)
+            {
                 idx = 3;
                 buttonBit -= 16;
             }
 
-            unsafe {
+            unsafe
+            {
                 CellPadData* cellPadData = cellPadData_ptr.AsNativePtr();
                 ushort currentState = cellPadData->Buttons[idx];
                 int bitValue = 1 << (int)buttonBit;
 
-                if (isPressed) {
+                if (isPressed)
+                {
                     // Set 
                     currentState |= (ushort)(bitValue);
-                } else {
+                }
+                else
+                {
                     // Clear
                     currentState &= (ushort)(~bitValue);
                 }
@@ -183,16 +208,18 @@ namespace PS3Sharp.OS.Modules {
             }
         }
 
-        private static (bool, bool) GetL2R2(JoystickState controller) {
+        private static (bool, bool) GetL2R2(JoystickState controller)
+        {
             float l2 = controller.GetAxis(4);
             float r2 = controller.GetAxis(5);
-         
+
             // PS3's L2/R2 are not triggers
             // just report pressed for any level > -1
             return (l2 > -1.0f, r2 > -1.0f);
         }
 
-        private static (byte, byte, byte, byte) GetStickPosition(JoystickState controller, int[] axis) {
+        private static (byte, byte, byte, byte) GetStickPosition(JoystickState controller, int[] axis)
+        {
             float leftX = controller.GetAxis(axis[0]);
             float leftY = controller.GetAxis(axis[1]);
             float rightX = controller.GetAxis(axis[2]);
@@ -207,7 +234,8 @@ namespace PS3Sharp.OS.Modules {
             return (leftX_normalized, leftY_normalized, rightX_normalized, rightY_normalized);
         }
 
-        private static byte NormalizeAxis(float value) {
+        private static byte NormalizeAxis(float value)
+        {
             // Convert [-1, 1] to [0, 255]
             return (byte)((value + 1f) * 0.5f * 0xFF);
         }

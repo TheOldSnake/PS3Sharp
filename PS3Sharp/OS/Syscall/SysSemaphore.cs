@@ -7,29 +7,36 @@ using static PS3Sharp.OS.LV2.LV2Semaphore;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
-namespace PS3Sharp.OS.Syscall {
-    public static class SysSemaphore {
+namespace PS3Sharp.OS.Syscall
+{
+    public static class SysSemaphore
+    {
         private static ConcurrentDictionary<uint, LV2Semaphore> _semaphores = [];
 
         public static bool GetSemaphore(uint id, out LV2Semaphore? semaphore) => _semaphores.TryGetValue(id, out semaphore);
 
-        public static void AddSemaphore(uint id, LV2Semaphore semaphore) {
+        public static void AddSemaphore(uint id, LV2Semaphore semaphore)
+        {
             bool success = _semaphores.TryAdd(id, semaphore);
 
-            if (!success) {
+            if (!success)
+            {
                 throw new Exception($"[SysSemaphore] Could not add semaphore to dictionary");
             }
         }
 
-        public static void RemoveSemaphore(uint id) {
+        public static void RemoveSemaphore(uint id)
+        {
             bool success = _semaphores.TryRemove(id, out _);
 
-            if (!success) {
+            if (!success)
+            {
                 throw new Exception($"[SysSemaphore] Could not remove semaphore from dictionary");
             }
         }
 
-        public static ulong SysSemaphoreCreate(PPU ppu) {
+        public static ulong SysSemaphoreCreate(PPU ppu)
+        {
             GuestPtr<uint> semaphore_id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             GuestPtr<SysSemaphoreAttribute> semaphore_attribute_ptr = ppu.ReadArg<GuestPtr<SysSemaphoreAttribute>>(ARG1);
             uint initialCount = ppu.ReadArg<uint>(ARG2);
@@ -43,7 +50,8 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysSemaphoreDestroy(PPU ppu) {
+        public static ulong SysSemaphoreDestroy(PPU ppu)
+        {
             uint handle = ppu.ReadArg<uint>(ARG0);
 
             RemoveSemaphore(handle);
@@ -51,49 +59,61 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysSemaphoreWait(PPU ppu) {
+        public static ulong SysSemaphoreWait(PPU ppu)
+        {
             uint handle = ppu.ReadArg<uint>(ARG0);
             ulong timeout_us = ppu.ReadArg<ulong>(ARG1);
 
-           // Console.WriteLine($"[{ppu.ThreadName}] [SysSemaphore] SysSemaphoreWait id = 0x{handle:X8} timeout = {timeout_us}us");
+            // Console.WriteLine($"[{ppu.ThreadName}] [SysSemaphore] SysSemaphoreWait id = 0x{handle:X8} timeout = {timeout_us}us");
 
             ulong result;
-            if (GetSemaphore(handle, out LV2Semaphore? semaphore)) {
+            if (GetSemaphore(handle, out LV2Semaphore? semaphore))
+            {
                 result = semaphore.Wait(timeout_us);
 
-            } else {
+            }
+            else
+            {
                 result = CELL_ESRCH;
             }
 
-          //  Console.WriteLine($"[{ppu.ThreadName}] [SysSemaphore] SysSemaphoreWait result = {CellErrorNames[result]}");
+            //  Console.WriteLine($"[{ppu.ThreadName}] [SysSemaphore] SysSemaphoreWait result = {CellErrorNames[result]}");
 
             return result;
         }
 
-        public static ulong SysSemaphoreTryWait(PPU ppu) {
+        public static ulong SysSemaphoreTryWait(PPU ppu)
+        {
             uint handle = ppu.ReadArg<uint>(ARG0);
 
-            if (GetSemaphore(handle, out LV2Semaphore? semaphore)) {
+            if (GetSemaphore(handle, out LV2Semaphore? semaphore))
+            {
                 return semaphore.TryWait();
 
-            } else {
+            }
+            else
+            {
                 return CELL_ESRCH;
             }
         }
 
-        public static ulong SysSemaphorePost(PPU ppu) {
+        public static ulong SysSemaphorePost(PPU ppu)
+        {
             uint handle = ppu.ReadArg<uint>(ARG0);
             uint count = ppu.ReadArg<uint>(ARG1);
 
             ulong result;
-            if (GetSemaphore(handle, out LV2Semaphore? semaphore)) {
+            if (GetSemaphore(handle, out LV2Semaphore? semaphore))
+            {
                 result = semaphore.Release((int)count);
 
-            } else {
+            }
+            else
+            {
                 result = CELL_ESRCH;
             }
 
-          //  Console.WriteLine($"[{ppu.ThreadName}] [SysSemaphore] SysSemaphorePost id = 0x{handle:X8} count = {count} result = {CellErrorNames[result]}");
+            //  Console.WriteLine($"[{ppu.ThreadName}] [SysSemaphore] SysSemaphorePost id = 0x{handle:X8} count = {count} result = {CellErrorNames[result]}");
             return result;
         }
     }

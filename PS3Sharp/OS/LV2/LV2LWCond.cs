@@ -6,20 +6,24 @@ using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.ErrorCode;
 using static PS3Sharp.OS.LV2.LV2LWMutex;
 
-namespace PS3Sharp.OS.LV2 {
+namespace PS3Sharp.OS.LV2
+{
 
     // This implementation is under the assumption that this is very similar to LV2Cond,
     // But it uses LWMutex instead of Mutex
 
     // This is incomplete 
-    public sealed class LV2LWCond {    
+    public sealed class LV2LWCond
+    {
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct SysLWCondAttribute : IPS3Struct {
+        public struct SysLWCondAttribute : IPS3Struct
+        {
             public InlineData.InlineArray8<byte> Name;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct SysLWCond : IPS3Struct {
+        public struct SysLWCond : IPS3Struct
+        {
             public BigEndianGuestPtr<LV2LWMutex.LWMutex> LWMutex;   // why is this needed ?
             public BigEndian<uint> LWCondQueue;
         }
@@ -30,42 +34,51 @@ namespace PS3Sharp.OS.LV2 {
         private readonly GuestPtr<SysLWCond> _instancePtr;
         private readonly SysLWCondAttribute _attribute;
 
-        public LV2LWCond(GuestPtr<SysLWCond> ptr, SysLWCondAttribute attribute) {
+        public LV2LWCond(GuestPtr<SysLWCond> ptr, SysLWCondAttribute attribute)
+        {
             _instancePtr = ptr;
             _attribute = attribute;
         }
 
-        public LV2LWMutex GetLWMutex() {
+        public LV2LWMutex GetLWMutex()
+        {
             // this is assuming that the mutex is stored here
             // but we already get a mutex ID in like every syscall of this sealed class.. ?
 
             uint id;
-            unsafe {
+            unsafe
+            {
                 SysLWCond* cond = _instancePtr.AsNativePtr();
                 GuestPtr<LV2LWMutex.LWMutex> lwmutexPtr = cond->LWMutex;
                 LV2LWMutex.LWMutex* lwmutex = lwmutexPtr.AsNativePtr();
-                id = lwmutex->SleepQueue;        
+                id = lwmutex->SleepQueue;
             }
 
-            if (SysLwMutex.GetLWMutex(id, out LV2LWMutex? mutex)) {
+            if (SysLwMutex.GetLWMutex(id, out LV2LWMutex? mutex))
+            {
                 return mutex;
 
-            } else {
+            }
+            else
+            {
                 throw new Exception($"[SysLWCond] Can't fine LWMutex");
             }
         }
 
-        public ulong Wait(uint callerThreadID, ulong us_timeout = 0) {
+        public ulong Wait(uint callerThreadID, ulong us_timeout = 0)
+        {
             LV2LWMutex lwmutex = GetLWMutex();
 
-            if (!lwmutex.IsEntered()) {
+            if (!lwmutex.IsEntered())
+            {
                 return 0xFFFFFFFFFFFFFFFF; // -1
             }
 
             // Add the thread to the wait list
             LV2CondWaiter waiter = GetThreadCondWaiter(callerThreadID);
 
-            lock (Waiters) {
+            lock (Waiters)
+            {
                 Waiters.Add(waiter);
             }
 
@@ -73,17 +86,23 @@ namespace PS3Sharp.OS.LV2 {
             lwmutex.Unlock(callerThreadID);
 
             bool ok;
-            try {
+            try
+            {
 
                 // Wait for a signal
-                if (us_timeout > 0) {
+                if (us_timeout > 0)
+                {
                     ok = waiter.Event.Wait(TimeSpan.FromMicroseconds(us_timeout));
-                } else {
+                }
+                else
+                {
                     waiter.Event.Wait();
                     ok = true;
                 }
 
-            } finally {
+            }
+            finally
+            {
 
                 // Reset the event
                 waiter.Event.Reset();
@@ -92,7 +111,8 @@ namespace PS3Sharp.OS.LV2 {
                 lwmutex.Lock(callerThreadID, 0);
 
                 // Remove the waiter from the list
-                lock (Waiters) {
+                lock (Waiters)
+                {
                     Waiters.Remove(waiter);
                 }
             }
@@ -102,8 +122,10 @@ namespace PS3Sharp.OS.LV2 {
 
         }
 
-        public ulong Signal() {
-            lock (Waiters) {
+        public ulong Signal()
+        {
+            lock (Waiters)
+            {
                 LV2CondWaiter? waiter = Waiters.FirstOrDefault();
                 waiter?.Event.Set();
             }
@@ -111,9 +133,12 @@ namespace PS3Sharp.OS.LV2 {
             return CELL_OK;
         }
 
-        public ulong SignalAll() {
-            lock (Waiters) {
-                foreach (LV2CondWaiter? waiter in Waiters) {
+        public ulong SignalAll()
+        {
+            lock (Waiters)
+            {
+                foreach (LV2CondWaiter? waiter in Waiters)
+                {
                     waiter.Event.Set();
                 }
             }
@@ -121,9 +146,11 @@ namespace PS3Sharp.OS.LV2 {
             return CELL_OK;
         }
 
-        private LV2CondWaiter GetThreadCondWaiter(uint threadID) {
+        private LV2CondWaiter GetThreadCondWaiter(uint threadID)
+        {
             // Look up the condWaiter instance in the dictionary
-            if (_threadCondWaiters.TryGetValue(threadID, out LV2CondWaiter waiter)) {
+            if (_threadCondWaiters.TryGetValue(threadID, out LV2CondWaiter waiter))
+            {
                 return waiter;
             }
 
@@ -131,7 +158,8 @@ namespace PS3Sharp.OS.LV2 {
             LV2CondWaiter condWaiter = new LV2CondWaiter(threadID);
             bool success = _threadCondWaiters.TryAdd(threadID, condWaiter);
 
-            if (!success) {
+            if (!success)
+            {
                 throw new Exception($"[LV2Cond] Could not add a CondWaiter instance to the dictionary");
             }
 

@@ -4,16 +4,20 @@ using System.Diagnostics;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
-namespace PS3Sharp.OS.Syscall {
-    public static class SysTimer {
-        public static uint SysTimerUSleep(PPU ppu) {
+namespace PS3Sharp.OS.Syscall
+{
+    public static class SysTimer
+    {
+        public static uint SysTimerUSleep(PPU ppu)
+        {
             ulong time_us = ppu.ReadArg<ulong>(ARG0);
             // SleepMicroseconds((long)time_us);
 
             ulong start = Utility.ReadTime_Microseconds();
             ulong duration = time_us;
 
-            while ((Utility.ReadTime_Microseconds() - start) < duration) {
+            while ((Utility.ReadTime_Microseconds() - start) < duration)
+            {
                 Thread.Yield();
             }
 
@@ -21,7 +25,8 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static uint SysTimerSleep(PPU ppu) {
+        public static uint SysTimerSleep(PPU ppu)
+        {
             ulong time_s = ppu.ReadArg<ulong>(ARG0);
             //int time_ms = (int)time_s * 1000;
             //Thread.Sleep(time_ms);
@@ -29,7 +34,8 @@ namespace PS3Sharp.OS.Syscall {
             ulong start = Utility.ReadTime_Microseconds();
             ulong duration = time_s * 1_000_000;
 
-            while ((Utility.ReadTime_Microseconds() - start) < duration) {
+            while ((Utility.ReadTime_Microseconds() - start) < duration)
+            {
                 Thread.Yield();
             }
 

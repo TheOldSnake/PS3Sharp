@@ -1,11 +1,14 @@
 ﻿using PS3Sharp.Memory_Manager;
 using System.Text;
 
-namespace PS3Sharp.Common {
-    public struct GuestString { 
+namespace PS3Sharp.Common
+{
+    public struct GuestString
+    {
         public readonly uint Address;   // char* -- native endianness
         public bool IsNullString => Address == 0;
-        public GuestString(uint address) {
+        public GuestString(uint address)
+        {
             Address = address;
         }
 

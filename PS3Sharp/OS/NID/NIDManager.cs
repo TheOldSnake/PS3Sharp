@@ -1,24 +1,30 @@
 ﻿using System.Globalization;
 
-namespace PS3Sharp.OS.NID {
-    public static class NIDManager {
+namespace PS3Sharp.OS.NID
+{
+    public static class NIDManager
+    {
         public static Dictionary<uint, string> NIDList = ParseNIDsFile(@"OS\NID\NIDs.txt");
         public static bool NIDInitialized;
 
-        public static Dictionary<uint, string> ParseNIDsFile(string path) {
+        public static Dictionary<uint, string> ParseNIDsFile(string path)
+        {
             var dict = new Dictionary<uint, string>();
 
-            foreach (var line in File.ReadLines(path)) {
+            foreach (var line in File.ReadLines(path))
+            {
                 var trimmed = line.Trim();
 
                 // Skip empty lines or comments
-                if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith("#")) {
+                if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith("#"))
+                {
                     continue;
                 }
-                    
+
                 // Split on space
                 var parts = trimmed.Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length < 2) {
+                if (parts.Length < 2)
+                {
                     continue;
                 }
 
@@ -36,14 +42,18 @@ namespace PS3Sharp.OS.NID {
             return dict;
         }
 
-        public static uint GetNID(string name) {
-            if (NIDList == null) {
+        public static uint GetNID(string name)
+        {
+            if (NIDList == null)
+            {
                 throw new Exception($"NID file was not parsed");
             }
 
             // Search 
-            foreach (KeyValuePair<uint, string> pair in NIDList) {
-                if (pair.Value == name) {
+            foreach (KeyValuePair<uint, string> pair in NIDList)
+            {
+                if (pair.Value == name)
+                {
                     return pair.Key;
                 }
             }

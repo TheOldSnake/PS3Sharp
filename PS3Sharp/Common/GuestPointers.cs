@@ -3,7 +3,8 @@ using PS3Sharp.Memory_Manager;
 using System.Net;
 using System.Runtime.CompilerServices;
 
-namespace PS3Sharp.Common {
+namespace PS3Sharp.Common
+{
 
     /// <summary>
     /// Represents a typed pointer (T*) to memory in the emulated guest address space.
@@ -18,10 +19,12 @@ namespace PS3Sharp.Common {
     /// This type can be converted to/from BigEndianGuestPtr implicitly.
     /// </remarks>
 
-    public readonly struct GuestPtr<T> : IFormattable, ISpanFormattable where T : unmanaged { 
+    public readonly struct GuestPtr<T> : IFormattable, ISpanFormattable where T : unmanaged
+    {
         public readonly uint Address;
         public bool IsNullPtr => Address == 0;
-        public GuestPtr(uint address) {
+        public GuestPtr(uint address)
+        {
             Address = address;
         }
 
@@ -36,28 +39,30 @@ namespace PS3Sharp.Common {
         public override string ToString() => Address.ToString();
         public string ToString(string? format, IFormatProvider? formatProvider) => Address.ToString(format, formatProvider);
         public bool TryFormat(
-            Span<char> destination, 
-            out int charsWritten, 
-            ReadOnlySpan<char> format, 
-            IFormatProvider? provider) 
+            Span<char> destination,
+            out int charsWritten,
+            ReadOnlySpan<char> format,
+            IFormatProvider? provider)
             => Address.TryFormat(destination, out charsWritten, format, provider);
     }
 
-        /// <summary>
-        /// Represents a void pointer (void*) to memory in the emulated guest address space.
-        /// </summary>
-        /// <remarks>
-        /// This is not a native pointer. It stores a virtual address that must be
-        /// resolved through the memory manager.<br/>
-        /// Important: The address is stored in Little Endian byte order. Therefore,
-        /// this type should never be stored inside PS3 structs where Big Endian
-        /// byte order is required.<br/>
-        /// This type can be converted to/from BigEndianGuestVoidPtr implicitly.
-        /// </remarks>
-        public readonly struct GuestVoidPtr : IFormattable, ISpanFormattable {    
-        public readonly uint Address;           
+    /// <summary>
+    /// Represents a void pointer (void*) to memory in the emulated guest address space.
+    /// </summary>
+    /// <remarks>
+    /// This is not a native pointer. It stores a virtual address that must be
+    /// resolved through the memory manager.<br/>
+    /// Important: The address is stored in Little Endian byte order. Therefore,
+    /// this type should never be stored inside PS3 structs where Big Endian
+    /// byte order is required.<br/>
+    /// This type can be converted to/from BigEndianGuestVoidPtr implicitly.
+    /// </remarks>
+    public readonly struct GuestVoidPtr : IFormattable, ISpanFormattable
+    {
+        public readonly uint Address;
         public bool IsNullPtr => Address == 0;
-        public GuestVoidPtr(uint address) {
+        public GuestVoidPtr(uint address)
+        {
             Address = address;
         }
 
@@ -72,10 +77,10 @@ namespace PS3Sharp.Common {
         public override string ToString() => Address.ToString();
         public string ToString(string? format, IFormatProvider? formatProvider) => Address.ToString(format, formatProvider);
         public bool TryFormat(
-            Span<char> destination, 
-            out int charsWritten, 
-            ReadOnlySpan<char> format, 
-            IFormatProvider? provider) 
+            Span<char> destination,
+            out int charsWritten,
+            ReadOnlySpan<char> format,
+            IFormatProvider? provider)
             => Address.TryFormat(destination, out charsWritten, format, provider);
     }
 
@@ -93,15 +98,18 @@ namespace PS3Sharp.Common {
     /// Used in PS3 structures where data must be stored in Big Endian byte order.
     /// </remarks>
 
-    public readonly struct BigEndianGuestPtr<T> : IPS3Struct, IFormattable, ISpanFormattable where T : unmanaged {
+    public readonly struct BigEndianGuestPtr<T> : IPS3Struct, IFormattable, ISpanFormattable where T : unmanaged
+    {
         public readonly BigEndian<uint> Address;
         public bool IsNullPtr => (uint)Address == 0;
 
-        public BigEndianGuestPtr(uint address) {
+        public BigEndianGuestPtr(uint address)
+        {
             Address = address;
         }
 
-        public BigEndianGuestPtr(BigEndian<uint> address) {
+        public BigEndianGuestPtr(BigEndian<uint> address)
+        {
             Address = address;
         }
 
@@ -133,16 +141,19 @@ namespace PS3Sharp.Common {
     /// Used in PS3 structures where data must be stored in Big Endian byte order.
     /// </remarks>
 
-    public readonly struct BigEndianGuestVoidPtr : IPS3Struct, IFormattable, ISpanFormattable {
+    public readonly struct BigEndianGuestVoidPtr : IPS3Struct, IFormattable, ISpanFormattable
+    {
         public readonly BigEndian<uint> Address;
 
         public bool IsNullPtr => (uint)Address == 0;
 
-        public BigEndianGuestVoidPtr(uint address) {
+        public BigEndianGuestVoidPtr(uint address)
+        {
             Address = address;
         }
 
-        public BigEndianGuestVoidPtr(BigEndian<uint> address) {
+        public BigEndianGuestVoidPtr(BigEndian<uint> address)
+        {
             Address = address;
         }
 
@@ -162,22 +173,26 @@ namespace PS3Sharp.Common {
             => Address.TryFormat(destination, out charsWritten, format, provider);
     }
 
-    public static class PS3PointersExtensions {
+    public static class PS3PointersExtensions
+    {
         // Gets a native pointer to a struct in guest memory using the GuestPtr
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe T* AsNativePtr<T>(this GuestPtr<T> ptr) where T : unmanaged, IPS3Struct {
+        public static unsafe T* AsNativePtr<T>(this GuestPtr<T> ptr) where T : unmanaged, IPS3Struct
+        {
             return MemoryManager.GetPtr(ptr);
         }
 
         // Gets a managed reference to a struct in guest memory using the GuestPtr -- Avoid using this and prefer explicit T* with unsafe block
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ref T AsRef<T>(this GuestPtr<T> ptr) where T : unmanaged, IPS3Struct {
+        public static ref T AsRef<T>(this GuestPtr<T> ptr) where T : unmanaged, IPS3Struct
+        {
             return ref MemoryManager.GetRef(ptr);
         }
 
         // Gets the struct by value from guest memory using the GuestPtr - This is an atomic read.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T Read<T>(this GuestPtr<T> ptr) where T : unmanaged, IPS3Struct {
+        public static T Read<T>(this GuestPtr<T> ptr) where T : unmanaged, IPS3Struct
+        {
             return MemoryManager.ReadStruct<T>(ptr);
         }
     }

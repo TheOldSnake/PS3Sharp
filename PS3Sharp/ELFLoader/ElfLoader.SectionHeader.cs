@@ -1,10 +1,13 @@
 ﻿using PS3Sharp.Common;
 using System.Runtime.InteropServices;
 
-namespace PS3Sharp {
-    public static partial class ElfLoader {
+namespace PS3Sharp
+{
+    public static partial class ElfLoader
+    {
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public readonly struct SectionHeader {
+        public readonly struct SectionHeader
+        {
             //Section types (SHT_*)
             public const uint SHT_NULL = 0;
             public const uint SHT_PROGBITS = 1;

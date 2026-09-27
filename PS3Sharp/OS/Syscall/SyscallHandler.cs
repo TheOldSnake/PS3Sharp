@@ -6,8 +6,10 @@ using PS3Sharp.OS.Syscall;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
-namespace PS3Sharp.Syscall {
-    public static class SyscallHandler {
+namespace PS3Sharp.Syscall
+{
+    public static class SyscallHandler
+    {
         // Constants
 
         private const uint SysProcessGetPID = 0x001;
@@ -150,12 +152,14 @@ namespace PS3Sharp.Syscall {
         private static readonly Func<PPU, ulong>[] SyscallTable = new Func<PPU, ulong>[0x1000];
         const int SYSCALL_ID_REG = 11;      //r11 contains syscall number
 
-        static SyscallHandler() {
+        static SyscallHandler()
+        {
             //Set up syscall table
             Array.Fill(SyscallTable, Unknown);
         }
 
-        public static void HandleSyscall(PPU ppu, uint lev) {
+        public static void HandleSyscall(PPU ppu, uint lev)
+        {
             uint sys_id = ppu.ReadArg<uint>(SYSCALL_ID_REG);
 
             /*if (ppu.IsMainThread) {
@@ -174,13 +178,15 @@ namespace PS3Sharp.Syscall {
             //}
 
             // Module call
-            if (sys_id == ModulePatcher.ModuleCallSysID) {
+            if (sys_id == ModulePatcher.ModuleCallSysID)
+            {
                 ModuleHandler.HandleModuleCall(ppu);
                 return;
             }
 
             ulong result;
-            switch (sys_id) {
+            switch (sys_id)
+            {
 
                 // RSX Callback
                 case CellGcmSys.RSXCallbackSysID:
@@ -278,7 +284,7 @@ namespace PS3Sharp.Syscall {
                 case SysSPUThreadInitialize: result = SysSPU.SysSPUThreadInitialize(ppu); break;
                 case SysSpuThreadGroupConnectEventAllThreads: result = SysSPU.SysSPUThreadGroupConnectEventAllThreads(ppu); break;
 
-    
+
 
                 // sys_vm
                 case SysVmMemoryMap: result = SysVm.SysVmMemoryMap(ppu); break;
@@ -322,7 +328,7 @@ namespace PS3Sharp.Syscall {
 
                     Console.WriteLine($"[{ppu.ThreadName}] unhandled syscall : 0x{sys_id:X3} LEV = 0x{lev:X8}");
                     result = lev == 1 ? lev : CELL_OK;
-                   // break;
+                    // break;
                     throw new Exception($"unhandled syscall : 0x{sys_id:X3} LEV = 0x{lev:X8}");
             }
 
@@ -330,17 +336,20 @@ namespace PS3Sharp.Syscall {
 
         }
 
-        public static ulong Syscallstub(string name) {
+        public static ulong Syscallstub(string name)
+        {
             Console.WriteLine($"unimplemented syscall : {name}");
             return CELL_OK;
         }
 
-        public static ulong Syscallstub(string name, ulong ret) {
+        public static ulong Syscallstub(string name, ulong ret)
+        {
             Console.WriteLine(name);
             return ret;
         }
 
-        public static ulong Unknown(PPU ppu) {
+        public static ulong Unknown(PPU ppu)
+        {
             uint sys_id = ppu.ReadArg<uint>(SYSCALL_ID_REG);
             throw new Exception($"unhandled syscall : 0x{sys_id:X3}");
         }

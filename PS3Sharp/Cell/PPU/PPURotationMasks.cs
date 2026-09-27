@@ -1,21 +1,27 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace PS3Sharp.Cell.PPU {
-    public static class PPURotationMasks {
+namespace PS3Sharp.Cell.PPU
+{
+    public static class PPURotationMasks
+    {
         private static readonly ulong[] RotationMasksArray = new ulong[64 * 64];
 
-        static PPURotationMasks() {
-           // Uncomment this to fill the array and generate a ROS
-           // FillRotationMasks();
+        static PPURotationMasks()
+        {
+            // Uncomment this to fill the array and generate a ROS
+            // FillRotationMasks();
         }
 
-        private static void FillRotationMasks() {
+        private static void FillRotationMasks()
+        {
             // Generate a rotation mask array - this code is adapted from RPCS3
             const ulong FullMask = ulong.MaxValue;
 
-            for (int mb = 0; mb < 64; mb++) {
-                for (int me = 0; me < 64; me++) {
+            for (int mb = 0; mb < 64; mb++)
+            {
+                for (int me = 0; me < 64; me++)
+                {
                     int index = (mb * 64) + me;
                     ulong mask = (FullMask >> mb) ^ ((me >= 63) ? 0 : (FullMask >> (me + 1)));
                     RotationMasksArray[index] = mb > me ? ~mask : mask;
@@ -25,12 +31,14 @@ namespace PS3Sharp.Cell.PPU {
             PrintRotationMasks(RotationMasksArray);
         }
 
-        private static void PrintRotationMasks(ReadOnlySpan<ulong> masks) {
+        private static void PrintRotationMasks(ReadOnlySpan<ulong> masks)
+        {
             // Generate ReadOnlySpan<ulong> definition of RotationMasks based on the data filled in RotationMasksArray
 
             Console.WriteLine("public static ReadOnlySpan<ulong> RotationMasksSpan => [");
 
-            for (int i = 0; i < masks.Length; i++) {
+            for (int i = 0; i < masks.Length; i++)
+            {
                 int mb = i >> 6;
                 int me = i & 63;
 
@@ -40,9 +48,10 @@ namespace PS3Sharp.Cell.PPU {
 
             Console.WriteLine("];");
         }
-        
+
         // Use this getter to access the masks from interpreter / recompiler
-        public static ulong GetRotationMask(int mb, int me) {
+        public static ulong GetRotationMask(int mb, int me)
+        {
             // Avoid bounds checks, mb/me bitfields cannot exceed 6 bits
             int index = (mb * 64) + me;
             ref ulong start = ref MemoryMarshal.GetReference(RotationMasksSpan); // Read from ROS

@@ -1,6 +1,9 @@
-﻿namespace PS3Sharp.Memory_Manager {
-    public static unsafe partial class MemoryManager {
-        public struct MemoryBlock {
+﻿namespace PS3Sharp.Memory_Manager
+{
+    public static unsafe partial class MemoryManager
+    {
+        public struct MemoryBlock
+        {
             public uint VirtualAddress;
             public uint Size;
             public uint End => VirtualAddress + Size;

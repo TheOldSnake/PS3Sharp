@@ -5,23 +5,28 @@ using PS3Sharp.OS.NID;
 
 using static PS3Sharp.Cell.Arguments;
 
-namespace PS3Sharp.OS.Syscall {
-    public static class SysPRX { // used by vsh
+namespace PS3Sharp.OS.Syscall
+{
+    public static class SysPRX
+    { // used by vsh
 
-        public static ulong SysPRXLoadModule(PPU ppu) { 
+        public static ulong SysPRXLoadModule(PPU ppu)
+        {
             GuestVoidPtr path_ptr = ppu.ReadArg<GuestVoidPtr>(ARG0); //const char* path
             string path = MemoryManager.ReadString(path_ptr);
             Console.WriteLine($"SysPRXLoadModule: {path}");
             return 0; // should return module id?
         }
 
-        public static ulong SysPRXGetModuleIDByName(PPU ppu) { 
+        public static ulong SysPRXGetModuleIDByName(PPU ppu)
+        {
             GuestVoidPtr name_ptr = ppu.ReadArg<GuestVoidPtr>(ARG0); //const char* path
             string name = MemoryManager.ReadString(name_ptr);
             Console.WriteLine($"SysPRXGetModuleIDByName: {name}");
 
             // This is based on chonkystation
-            if (name == "cellLibprof") {
+            if (name == "cellLibprof")
+            {
                 return 0x8001112e;   // CELL_PRX_ERROR_UNKNOWN_MODULE 
             }
 

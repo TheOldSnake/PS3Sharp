@@ -4,13 +4,16 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace PS3Sharp.SFOLoader {
-    public sealed class SFO {
+namespace PS3Sharp.SFOLoader
+{
+    public sealed class SFO
+    {
         // Little Endian
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct SFOHeader {
-            public uint Magic;      
+        public struct SFOHeader
+        {
+            public uint Magic;
             public uint Version;
             public uint KeyTableOffset;
             public uint DataTableOffset;
@@ -18,7 +21,8 @@ namespace PS3Sharp.SFOLoader {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct SFOIndexEntry {
+        public struct SFOIndexEntry
+        {
             public ushort KeyOffset;
             public ushort ParamFormat;
             public uint ParamLength;
@@ -34,9 +38,10 @@ namespace PS3Sharp.SFOLoader {
         private readonly Dictionary<string, uint> UIntsDictionary;
         private readonly Dictionary<string, string> StringsDictionary;
 
-        private SFO(Dictionary<string, uint> uints, Dictionary<string, string> strings) {
+        private SFO(Dictionary<string, uint> uints, Dictionary<string, string> strings)
+        {
             UIntsDictionary = uints;
-            StringsDictionary = strings;    
+            StringsDictionary = strings;
         }
 
         public string TitleID => StringsDictionary["TITLE_ID"];
@@ -44,16 +49,19 @@ namespace PS3Sharp.SFOLoader {
         public bool UIntLookup(string key, out uint value) => UIntsDictionary.TryGetValue(key, out value);
         public bool StringLookup(string key, out string value) => StringsDictionary.TryGetValue(key, out value);
 
-        public static SFO Load(string path){
-            if (!File.Exists(path) || !path.EndsWith(".SFO")) {
+        public static SFO Load(string path)
+        {
+            if (!File.Exists(path) || !path.EndsWith(".SFO"))
+            {
                 Console.WriteLine($"[SFO] Invalid Path: {path}");
                 return null;
             }
 
             ReadOnlySpan<byte> sfo = File.ReadAllBytes(path);
             SFOHeader header = MemoryMarshal.Read<SFOHeader>(sfo);
-            
-            if (header.Magic != MagicValue) {
+
+            if (header.Magic != MagicValue)
+            {
                 throw new Exception($"[SFO] Magic value check failed");
             }
 
@@ -68,7 +76,8 @@ namespace PS3Sharp.SFOLoader {
             int headerSize = Unsafe.SizeOf<SFOHeader>();
             int indexEntrySize = Unsafe.SizeOf<SFOIndexEntry>();
 
-            for (int i = 0; i < header.EntriesCount; i++) {
+            for (int i = 0; i < header.EntriesCount; i++)
+            {
 
                 // Read entry
                 int entryOffset = headerSize + (indexEntrySize * i);
@@ -81,9 +90,10 @@ namespace PS3Sharp.SFOLoader {
                 // Read data, and add it to the dictionary
                 int valueOffset = (int)(header.DataTableOffset + entry.DataOffset);
 
-                switch (entry.ParamFormat) {
+                switch (entry.ParamFormat)
+                {
                     case ParamFormatArray:
-                    case ParamFormatString:         
+                    case ParamFormatString:
                         string stringValue = ReadString(sfo, valueOffset);
                         StringsDictionary[key] = stringValue;
                         //Console.WriteLine($"Key = {key} value = {stringValue}");
@@ -100,7 +110,8 @@ namespace PS3Sharp.SFOLoader {
             return new SFO(UIntsDictionary, StringsDictionary);
         }
 
-        private static string ReadString(ReadOnlySpan<byte> sfo, int offset) {
+        private static string ReadString(ReadOnlySpan<byte> sfo, int offset)
+        {
             ReadOnlySpan<byte> keyStart = sfo.Slice(offset);
             int keyLength = keyStart.IndexOf((byte)0);  //null terminator
 

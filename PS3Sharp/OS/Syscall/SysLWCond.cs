@@ -7,28 +7,35 @@ using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
-namespace PS3Sharp.OS.Syscall {
-    public static class SysLWCond {     // This is incomplete 
+namespace PS3Sharp.OS.Syscall
+{
+    public static class SysLWCond
+    {     // This is incomplete 
 
 
         private static readonly ConcurrentDictionary<uint, LV2LWCond> _conds = [];
         public static bool GetLWCond(uint cond_id, out LV2LWCond cond) => _conds.TryGetValue(cond_id, out cond);
 
-        public static void AddLWCond(uint id, LV2LWCond cond) {
+        public static void AddLWCond(uint id, LV2LWCond cond)
+        {
             bool success = _conds.TryAdd(id, cond);
-            if (!success) {
+            if (!success)
+            {
                 throw new Exception($"[SysLWCond] Could not add cond 0x{id:X8} to dictionary");
             }
         }
 
-        public static void RemoveLWCond(uint cond_id) {
+        public static void RemoveLWCond(uint cond_id)
+        {
             bool success = _conds.TryRemove(cond_id, out _);
-            if (!success) {
+            if (!success)
+            {
                 throw new Exception($"[SysLWCond] Could not remove cond 0x{cond_id:X8} from dictionary");
             }
         }
 
-        public static ulong SysLWCondCreate(PPU ppu) {
+        public static ulong SysLWCondCreate(PPU ppu)
+        {
             uint handle = MemoryManager.GetHandle();
 
             GuestPtr<uint> id_ptr = ppu.ReadArg<uint>(ARG0);

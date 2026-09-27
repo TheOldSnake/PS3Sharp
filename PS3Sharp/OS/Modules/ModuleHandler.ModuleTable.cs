@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PS3Sharp.OS.Modules {
-    public static partial class ModuleHandler {
+namespace PS3Sharp.OS.Modules
+{
+    public static partial class ModuleHandler
+    {
 
         // Bind Module functions
         private static readonly Dictionary<uint, Func<PPU, ulong>> _handlers = new Dictionary<uint, Func<PPU, ulong>>() {

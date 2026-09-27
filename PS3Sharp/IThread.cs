@@ -1,5 +1,7 @@
-﻿namespace PS3Sharp {
-    public interface IThread {
+﻿namespace PS3Sharp
+{
+    public interface IThread
+    {
         public void StartThread();
 
         public void PauseThread();

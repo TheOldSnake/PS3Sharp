@@ -5,14 +5,18 @@ using PS3Sharp.Memory_Manager;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
-namespace PS3Sharp.OS.Modules {
-    public static class SCENPTrophy {
-        public static ulong SCENpTrophyInit(PPU ppu) {
+namespace PS3Sharp.OS.Modules
+{
+    public static class SCENPTrophy
+    {
+        public static ulong SCENpTrophyInit(PPU ppu)
+        {
             Console.WriteLine($"[SCENPTrophy] sceNpTrophyInit");
             return CELL_OK;
         }
 
-        public static ulong SCENpTrophyCreateContext(PPU ppu) {
+        public static ulong SCENpTrophyCreateContext(PPU ppu)
+        {
             GuestVoidPtr context_ptr = ppu.ReadArg<GuestVoidPtr>(ARG0);
             GuestVoidPtr command_id_ptr = ppu.ReadArg<GuestVoidPtr>(ARG1);
             GuestVoidPtr command_sign_ptr = ppu.ReadArg<GuestVoidPtr>(ARG2);
@@ -26,7 +30,8 @@ namespace PS3Sharp.OS.Modules {
             return CELL_OK;
         }
 
-        public static ulong SCENpTrophyRegisterContext(PPU ppu) {
+        public static ulong SCENpTrophyRegisterContext(PPU ppu)
+        {
             // I am not sure how this works, but this code is baes on RPCS3 and chonkystation 
 
             uint ctx = ppu.ReadArg<uint>(ARG0);
@@ -44,17 +49,19 @@ namespace PS3Sharp.OS.Modules {
 
             // We need to call this address with different arguments, different number of times
 
-            RunCallback(1,  3, 0,  args, callback);    // Install the trophy data?
-            RunCallback(4,  5, 3,  args, callback);    // SCE_NP_TROPHY_STATUS_PROCESSING_SETUP
+            RunCallback(1, 3, 0, args, callback);    // Install the trophy data?
+            RunCallback(4, 5, 3, args, callback);    // SCE_NP_TROPHY_STATUS_PROCESSING_SETUP
             RunCallback(32, 6, 31, args, callback);    // SCE_NP_TROPHY_STATUS_PROCESSING_PROGRESS
-            RunCallback(6,  7, 5,  args, callback);    // SCE_NP_TROPHY_STATUS_PROCESSING_FINALIZE
-            RunCallback(1,  8, 0,  args, callback);    // SCE_NP_TROPHY_STATUS_PROCESSING_COMPLETE
+            RunCallback(6, 7, 5, args, callback);    // SCE_NP_TROPHY_STATUS_PROCESSING_FINALIZE
+            RunCallback(1, 8, 0, args, callback);    // SCE_NP_TROPHY_STATUS_PROCESSING_COMPLETE
 
-            void RunCallback(ulong iterations, uint arg1, uint arg3, Span<ulong> args, uint callback) {
+            void RunCallback(ulong iterations, uint arg1, uint arg3, Span<ulong> args, uint callback)
+            {
                 args[1] = arg1; //R4
                 args[3] = arg3; //R6
 
-                for (ulong i = 0; i < iterations; i++) {
+                for (ulong i = 0; i < iterations; i++)
+                {
                     args[2] = i; //R5 = i
                     PPUInterpreter.ExecuteFunction(ppu, callback, toc: false, args); // toc needed ?
                 }
@@ -64,7 +71,8 @@ namespace PS3Sharp.OS.Modules {
             return CELL_OK;
         }
 
-        public static ulong SCENpTrophyCreateHandle(PPU ppu) {
+        public static ulong SCENpTrophyCreateHandle(PPU ppu)
+        {
             GuestVoidPtr handle_ptr = ppu.ReadArg<GuestVoidPtr>(ARG0);
 
             uint handle = MemoryManager.GetHandle();
@@ -74,19 +82,22 @@ namespace PS3Sharp.OS.Modules {
             return CELL_OK;
         }
 
-        public static ulong SCENpTrophyGetRequiredDiskSpace(PPU ppu) {
+        public static ulong SCENpTrophyGetRequiredDiskSpace(PPU ppu)
+        {
             GuestVoidPtr require_space_ptr = ppu.ReadArg<GuestVoidPtr>(ARG2);
             MemoryManager.Write<uint>(require_space_ptr, 0);
             Console.WriteLine($"[SCENPTrophy] SCENpTrophyGetRequiredDiskSpace");
             return CELL_OK;
         }
 
-        public static ulong SCENpTrophyGetGameInfo(PPU ppu) {
+        public static ulong SCENpTrophyGetGameInfo(PPU ppu)
+        {
             Console.WriteLine($"[SCENPTrophy] sceNpTrophyGetGameInfo");
             return CELL_OK;
         }
 
-        public static ulong SCENpTrophyGetTrophyUnlockState(PPU ppu) {
+        public static ulong SCENpTrophyGetTrophyUnlockState(PPU ppu)
+        {
             //This can be stubbed more
 
             uint ctx = ppu.ReadArg<uint>(ARG0);
@@ -101,7 +112,8 @@ namespace PS3Sharp.OS.Modules {
             return CELL_OK;
         }
 
-        public static ulong SCENpTrophyUnlockTrophy(PPU ppu) {
+        public static ulong SCENpTrophyUnlockTrophy(PPU ppu)
+        {
             uint ctx = ppu.ReadArg<uint>(ARG0);
             uint handle = ppu.ReadArg<uint>(ARG1);
             int trophyId = ppu.ReadArg<int>(ARG2);

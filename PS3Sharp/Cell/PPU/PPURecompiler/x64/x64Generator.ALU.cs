@@ -3,19 +3,24 @@ using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAlloc
 using static Iced.Intel.AssemblerRegisters;
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
-    public sealed partial class X64Generator {
-        private void Add(Assembler asm, AssemblerRegister64 destReg, AssemblerRegister64 srcReg, ulong imm) {
+namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
+{
+    public sealed partial class X64Generator
+    {
+        private void Add(Assembler asm, AssemblerRegister64 destReg, AssemblerRegister64 srcReg, ulong imm)
+        {
             asm.mov(destReg, imm);
             asm.add(destReg, srcReg);
         }
 
-        private void Add(Assembler asm, AssemblerRegister64 destReg, AssemblerRegister64 src1Reg, AssemblerRegister64 src2Reg) {
+        private void Add(Assembler asm, AssemblerRegister64 destReg, AssemblerRegister64 src1Reg, AssemblerRegister64 src2Reg)
+        {
             asm.mov(destReg, src1Reg);
             asm.add(destReg, src2Reg);
         }
 
-        private void CommutativeOp(Assembler asm, IRInstruction instruction) {
+        private void CommutativeOp(Assembler asm, IRInstruction instruction)
+        {
             Location destination = GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -26,20 +31,26 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             AssemblerRegister64 dest = destination.GetRegister();
             AssemblerRegister64 reg2;
 
-            if (op1Const) {
+            if (op1Const)
+            {
                 asm.mov(dest, GetConst(op1));
                 reg2 = GetLocation(op2).GetRegister();
 
-            } else if (op2Const) {
+            }
+            else if (op2Const)
+            {
                 asm.mov(dest, GetConst(op2));
                 reg2 = GetLocation(op1).GetRegister();
 
-            } else {
+            }
+            else
+            {
                 asm.mov(dest, GetLocation(op1).GetRegister());
                 reg2 = GetLocation(op2).GetRegister();
             }
 
-            switch (instruction.Opcode) {
+            switch (instruction.Opcode)
+            {
                 case IRInstruction.Op.Add:
                     asm.add(dest, reg2);
                     break;
@@ -61,7 +72,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private void Sub(Assembler asm, IRInstruction instruction) {
+        private void Sub(Assembler asm, IRInstruction instruction)
+        {
             Location destination = GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -73,40 +85,50 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             AssemblerRegister64 reg2;
 
 
-            if (op1Const) {
+            if (op1Const)
+            {
                 // A - B
                 asm.mov(dest, GetConst(op1));
                 asm.sub(dest, GetLocation(op2).GetRegister());
 
-            } else if (op2Const) {
+            }
+            else if (op2Const)
+            {
                 // - B + A
                 asm.mov(dest, -(long)GetConst(op2));
                 asm.add(dest, GetLocation(op1).GetRegister());
 
-            } else {
+            }
+            else
+            {
                 // A - B
                 asm.mov(dest, GetLocation(op1).GetRegister());
                 asm.sub(dest, GetLocation(op2).GetRegister());
             }
         }
 
-        private void Not(Assembler asm, IRInstruction instruction) {
+        private void Not(Assembler asm, IRInstruction instruction)
+        {
             Location destination = GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
             bool op1Const = IsConst(op1);
 
             AssemblerRegister64 dest = destination.GetRegister();
 
-            if (op1Const) {
-                asm.mov(dest, ~ GetConst(op1));
+            if (op1Const)
+            {
+                asm.mov(dest, ~GetConst(op1));
 
-            } else {
+            }
+            else
+            {
                 asm.mov(dest, GetLocation(op1).GetRegister());
                 asm.not(dest);
             }
         }
 
-        private void IMulLD(Assembler asm, IRInstruction instruction) {
+        private void IMulLD(Assembler asm, IRInstruction instruction)
+        {
             // Signed 64 × 64 → Low 64-bit
 
             Location destination = GetLocation(instruction.Destination);
@@ -118,17 +140,22 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             AssemblerRegister64 dest = destination.GetRegister();
 
-            if (op1Const) {
+            if (op1Const)
+            {
                 asm.mov(dest, GetConst(op1));
                 AssemblerRegister64 op2Reg = GetLocation(op2).GetRegister();
                 asm.imul(dest, op2Reg);
 
-            } else if (op2Const) {
+            }
+            else if (op2Const)
+            {
                 asm.mov(dest, GetConst(op2));
                 AssemblerRegister64 op1Reg = GetLocation(op1).GetRegister();
                 asm.imul(dest, op1Reg);
 
-            } else {
+            }
+            else
+            {
                 AssemblerRegister64 op1Reg = GetLocation(op1).GetRegister();
                 AssemblerRegister64 op2Reg = GetLocation(op2).GetRegister();
                 asm.mov(dest, op1Reg);
@@ -136,7 +163,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        private void IMulHD(Assembler asm, IRInstruction instruction) {
+        private void IMulHD(Assembler asm, IRInstruction instruction)
+        {
             // Signed 64 × 64 → High 64-bit
 
             // Note: the existence of this opcode means that RAX and RDX are guaranteed to be free by the allocator
@@ -152,15 +180,20 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             // Use imul(reg) form
 
-            if (op1Const) {
+            if (op1Const)
+            {
                 asm.mov(rax, GetConst(op1));
                 asm.imul(GetLocation(op2).GetRegister());
 
-            } else if (op2Const) {
+            }
+            else if (op2Const)
+            {
                 asm.mov(rax, GetConst(op2));
                 asm.imul(GetLocation(op1).GetRegister());
 
-            } else {
+            }
+            else
+            {
                 asm.mov(rax, GetLocation(op1).GetRegister());
                 asm.imul(GetLocation(op2).GetRegister());
             }
@@ -169,7 +202,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.mov(dest, rdx);
         }
 
-        private void MulHD(Assembler asm, IRInstruction instruction) {
+        private void MulHD(Assembler asm, IRInstruction instruction)
+        {
             // Unsigned 64 × 64 → High 64-bit
 
             // Note: the existence of this opcode means that RAX and RDX are guaranteed to be free by the allocator
@@ -185,15 +219,20 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             // Use mul(reg) form
 
-            if (op1Const) {
+            if (op1Const)
+            {
                 asm.mov(rax, GetConst(op1));
                 asm.mul(GetLocation(op2).GetRegister());
 
-            } else if (op2Const) {
+            }
+            else if (op2Const)
+            {
                 asm.mov(rax, GetConst(op2));
                 asm.mul(GetLocation(op1).GetRegister());
 
-            } else {
+            }
+            else
+            {
                 asm.mov(rax, GetLocation(op1).GetRegister());
                 asm.mul(GetLocation(op2).GetRegister());
             }
@@ -202,7 +241,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.mov(dest, rdx);
         }
 
-        private void IMulLW(Assembler asm, IRInstruction instruction) {
+        private void IMulLW(Assembler asm, IRInstruction instruction)
+        {
             // Signed 32 × 32 → Full 64-bit
 
             Location destination = GetLocation(instruction.Destination);
@@ -215,20 +255,26 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             AssemblerRegister64 dest = destination.GetRegister();
             AssemblerRegister64 temp = BorrowRegister(asm);
 
-            if (op1Const) {
+            if (op1Const)
+            {
                 long signExtended = (long)(int)GetConst(op1);
                 asm.mov(dest, signExtended);
 
-            } else {
+            }
+            else
+            {
                 AssemblerRegister64 op1Reg = GetLocation(op1).GetRegister();
                 asm.movsxd(dest, Reg64ToReg32(op1Reg));
             }
 
-            if (op2Const) {
+            if (op2Const)
+            {
                 long signExtended = (long)(int)GetConst(op2);
                 asm.mov(temp, signExtended);
 
-            } else {
+            }
+            else
+            {
                 AssemblerRegister64 op2Reg = GetLocation(op2).GetRegister();
                 asm.movsxd(temp, Reg64ToReg32(op2Reg));
             }
@@ -239,7 +285,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             ReturnBorrowedRegister(asm, temp);
         }
 
-        private void IMulHW(Assembler asm, IRInstruction instruction) {
+        private void IMulHW(Assembler asm, IRInstruction instruction)
+        {
             // Signed 32 × 32 → High 32-bit, Sign-Extended
 
             Location destination = GetLocation(instruction.Destination);
@@ -252,20 +299,26 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             AssemblerRegister64 dest = destination.GetRegister();
             AssemblerRegister64 temp = BorrowRegister(asm);
 
-            if (op1Const) {
+            if (op1Const)
+            {
                 long signExtended = (long)(int)GetConst(op1);
                 asm.mov(dest, signExtended);
 
-            } else {
+            }
+            else
+            {
                 AssemblerRegister64 op1Reg = GetLocation(op1).GetRegister();
                 asm.movsxd(dest, Reg64ToReg32(op1Reg));
             }
 
-            if (op2Const) {
+            if (op2Const)
+            {
                 long signExtended = (long)(int)GetConst(op2);
                 asm.mov(temp, signExtended);
 
-            } else {
+            }
+            else
+            {
                 AssemblerRegister64 op2Reg = GetLocation(op2).GetRegister();
                 asm.movsxd(temp, Reg64ToReg32(op2Reg));
             }
@@ -276,7 +329,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             ReturnBorrowedRegister(asm, temp);
         }
 
-        private void MulHW(Assembler asm, IRInstruction instruction) {
+        private void MulHW(Assembler asm, IRInstruction instruction)
+        {
             // Unsigned 32 × 32 → High 32-bit, Zero-Extended
 
             Location destination = GetLocation(instruction.Destination);
@@ -289,20 +343,26 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             AssemblerRegister64 dest = destination.GetRegister();
             AssemblerRegister64 temp = BorrowRegister(asm);
 
-            if (op1Const) {
+            if (op1Const)
+            {
                 uint zeroExtended = (uint)GetConst(op1);
                 asm.mov(dest, zeroExtended);
 
-            } else {
+            }
+            else
+            {
                 AssemblerRegister64 op1Reg = GetLocation(op1).GetRegister();
                 asm.mov(Reg64ToReg32(dest), Reg64ToReg32(op1Reg)); // automatic zero extend
             }
 
-            if (op2Const) {
+            if (op2Const)
+            {
                 long signExtended = (long)(int)GetConst(op2);
                 asm.mov(temp, signExtended);
 
-            } else {
+            }
+            else
+            {
                 AssemblerRegister64 op2Reg = GetLocation(op2).GetRegister();
                 asm.mov(Reg64ToReg32(temp), Reg64ToReg32(op2Reg)); // automatic zero extend
             }
@@ -313,7 +373,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             ReturnBorrowedRegister(asm, temp);
         }
 
-        private void CheckedDivD(Assembler asm, IRInstruction instruction) {
+        private void CheckedDivD(Assembler asm, IRInstruction instruction)
+        {
             // Unsigned 64/64, result -> 0 If denominator is zero
 
             // Note: the existence of this opcode means that RAX and RDX are guaranteed to be free by the allocator
@@ -330,7 +391,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             Label done = asm.CreateLabel();
 
             // Special case that we can check at compile time
-            if (op2Const && GetConst(op2) == 0) {
+            if (op2Const && GetConst(op2) == 0)
+            {
                 asm.xor(dest, dest);
                 return;
             }
@@ -341,14 +403,18 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.xor(rdx, rdx);
 
             // Mov numerator to rax
-            if (op1Const) {
+            if (op1Const)
+            {
                 asm.mov(rax, GetConst(op1));
-            } else {
+            }
+            else
+            {
                 asm.mov(rax, GetLocation(op1).GetRegister());
             }
 
             // if op2 is constant no runtime check is needed
-            if (op2Const) {
+            if (op2Const)
+            {
                 asm.mov(dest, GetConst(op2));        // use dest to hold denominator
                 asm.div(dest);                              // divide
                 asm.mov(dest, rax);                         // mov result and zero extend
@@ -372,7 +438,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.Label(ref done);
         }
 
-        private void CheckedIDivD(Assembler asm, IRInstruction instruction) {
+        private void CheckedIDivD(Assembler asm, IRInstruction instruction)
+        {
             // Signed 64/64, result -> 0 If denominator is zero || (numerator is 0x8000_0000_0000_0000 && denominator is -1)
 
             // Note: the existence of this opcode means that RAX and RDX are guaranteed to be free by the allocator
@@ -392,7 +459,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             Label done = asm.CreateLabel();
 
             // Special case that we can check at compile time
-            if (op2Const && GetConst(op2) == 0) {
+            if (op2Const && GetConst(op2) == 0)
+            {
                 asm.xor(dest, dest);
                 return;
             }
@@ -400,16 +468,22 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             // Actual division required 
 
             // Move numerator to rax
-            if (op1Const) {
+            if (op1Const)
+            {
                 asm.mov(rax, GetConst(op1));
-            } else {
+            }
+            else
+            {
                 asm.mov(rax, GetLocation(op1).GetRegister());
             }
 
             // Move denominator to dest
-            if (op2Const) {
+            if (op2Const)
+            {
                 asm.mov(dest, GetConst(op2));
-            } else {
+            }
+            else
+            {
                 asm.mov(dest, GetLocation(op2).GetRegister());
             }
 
@@ -417,7 +491,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             // Emit runtime check 
             // denominator == 0 ?
-            asm.test(denominator, denominator); 
+            asm.test(denominator, denominator);
             asm.jz(zero);
 
             // use rdx to hold 0x8000_0000_0000_0000 temporarily for the check
@@ -444,7 +518,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.Label(ref done);
         }
 
-        private void CheckedDivW(Assembler asm, IRInstruction instruction) {
+        private void CheckedDivW(Assembler asm, IRInstruction instruction)
+        {
             // Unsigned 32/32, result -> 0 If denominator is zero
 
             // Note: the existence of this opcode means that RAX and RDX are guaranteed to be free by the allocator
@@ -463,7 +538,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             Label done = asm.CreateLabel();
 
             // Special case that we can check at compile time
-            if (op2Const && GetConst(op2) == 0) {
+            if (op2Const && GetConst(op2) == 0)
+            {
                 asm.xor(dest_64, dest_64);
                 return;
             }
@@ -474,14 +550,18 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.xor(rdx, rdx);
 
             // Move numerator to eax
-            if (op1Const) {
+            if (op1Const)
+            {
                 asm.mov(eax, (uint)GetConst(op1));
-            } else {
+            }
+            else
+            {
                 asm.mov(eax, Reg64ToReg32(GetLocation(op1).GetRegister()));
             }
 
             // if op2 is constant no runtime check is needed
-            if (op2Const) {
+            if (op2Const)
+            {
                 asm.mov(dest_32, (uint)GetConst(op2));   // use dest to hold denominator
                 asm.div(dest_32);                               // divide
                 asm.mov(dest_32, eax);                          // mov result and zero extend
@@ -505,7 +585,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.Label(ref done);
         }
 
-        private void CheckedIDivW(Assembler asm, IRInstruction instruction) {
+        private void CheckedIDivW(Assembler asm, IRInstruction instruction)
+        {
             // Signed 32/32, result -> 0 If denominator is zero || (numerator is 0x8000_0000 && denominator is -1)
 
             // Note: the existence of this opcode means that RAX and RDX are guaranteed to be free by the allocator
@@ -521,7 +602,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             AssemblerRegister32 dest_32 = Reg64ToReg32(dest_64);
 
             // Special case that we can check at compile time
-            if (op2Const && ((uint)GetConst(op2)) == 0) {
+            if (op2Const && ((uint)GetConst(op2)) == 0)
+            {
                 asm.xor(dest_64, dest_64);
                 return;
             }
@@ -531,16 +613,22 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             Label done = asm.CreateLabel();
 
             // Move numerator to eax
-            if (op1Const) {
+            if (op1Const)
+            {
                 asm.mov(eax, (uint)GetConst(op1));
-            } else {
+            }
+            else
+            {
                 asm.mov(eax, Reg64ToReg32(GetLocation(op1).GetRegister()));
             }
 
             // use dest to hold denominator 
-            if (op2Const) {
+            if (op2Const)
+            {
                 asm.mov(dest_32, (uint)GetConst(op2));
-            } else {
+            }
+            else
+            {
                 asm.mov(dest_32, Reg64ToReg32(GetLocation(op2).GetRegister()));
             }
 
@@ -574,7 +662,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.Label(ref done);
         }
 
-        private void ShiftLeft(Assembler asm, IRInstruction instruction) {
+        private void ShiftLeft(Assembler asm, IRInstruction instruction)
+        {
             Location destination = GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -584,20 +673,27 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             AssemblerRegister64 dest = destination.GetRegister();
 
-            if (op1Const) {
+            if (op1Const)
+            {
                 asm.mov(dest, GetConst(op1));
-            } else {
+            }
+            else
+            {
                 asm.mov(dest, GetLocation(op1).GetRegister());
             }
 
-            if (op2Const) {
+            if (op2Const)
+            {
                 asm.shl(dest, (byte)GetConst(op2));
-            } else {
+            }
+            else
+            {
                 asm.shlx(dest, dest, GetLocation(op2).GetRegister()); // BMI2 extension
             }
         }
 
-        private void ShiftRight(Assembler asm, IRInstruction instruction, bool arithmetic) {
+        private void ShiftRight(Assembler asm, IRInstruction instruction, bool arithmetic)
+        {
             Location destination = GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -607,30 +703,43 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             AssemblerRegister64 dest = destination.GetRegister();
 
-            if (op1Const) {
+            if (op1Const)
+            {
                 asm.mov(dest, GetConst(op1));
-            } else {
+            }
+            else
+            {
                 asm.mov(dest, GetLocation(op1).GetRegister());
             }
 
-            if (op2Const) {
-                if (arithmetic) {
+            if (op2Const)
+            {
+                if (arithmetic)
+                {
                     asm.sar(dest, (byte)GetConst(op2));
-                } else {
+                }
+                else
+                {
                     asm.shr(dest, (byte)GetConst(op2));
                 }
 
-            } else {
-                if (arithmetic) {
+            }
+            else
+            {
+                if (arithmetic)
+                {
                     asm.sarx(dest, dest, GetLocation(op2).GetRegister());  // BMI2 extension
 
-                } else {
+                }
+                else
+                {
                     asm.shrx(dest, dest, GetLocation(op2).GetRegister());  // BMI2 extension
                 }
             }
         }
 
-        private void RotateLeft(Assembler asm, IRInstruction instruction) {
+        private void RotateLeft(Assembler asm, IRInstruction instruction)
+        {
             Location destination = GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -640,22 +749,29 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             AssemblerRegister64 dest = destination.GetRegister();
 
-            if (op1Const) {
+            if (op1Const)
+            {
                 asm.mov(dest, GetConst(op1));
-            } else {
+            }
+            else
+            {
                 asm.mov(dest, GetLocation(op1).GetRegister());
             }
 
-            if (op2Const) {
+            if (op2Const)
+            {
                 asm.rol(dest, (byte)GetConst(op2));
-            } else {
+            }
+            else
+            {
                 // we need to use CL
                 asm.rol(dest, Reg64ToReg8(GetLocation(op2).GetRegister()));
                 throw new Exception($"todo: rol");
             }
         }
 
-        private void RotateRight(Assembler asm, IRInstruction instruction) {
+        private void RotateRight(Assembler asm, IRInstruction instruction)
+        {
             Location destination = GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -665,22 +781,29 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             AssemblerRegister64 dest = destination.GetRegister();
 
-            if (op1Const) {
+            if (op1Const)
+            {
                 asm.mov(dest, GetConst(op1));
-            } else {
+            }
+            else
+            {
                 asm.mov(dest, GetLocation(op1).GetRegister());
             }
 
-            if (op2Const) {
+            if (op2Const)
+            {
                 asm.ror(dest, (byte)GetConst(op2));
-            } else {
+            }
+            else
+            {
                 // we need to use CL
                 asm.ror(dest, Reg64ToReg8(GetLocation(op2).GetRegister()));
                 throw new Exception($"todo: ror");
             }
         }
 
-        private void SetEq(Assembler asm, IRInstruction instruction) {
+        private void SetEq(Assembler asm, IRInstruction instruction)
+        {
             Location destination = GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -693,15 +816,20 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             // asm.xor(dest, dest);
 
             // always compare 1 vs 2
-            if (op1Const) {
+            if (op1Const)
+            {
                 asm.mov(dest, GetConst(op1));
                 asm.cmp(dest, GetLocation(op2).GetRegister());
 
-            } else if (op2Const) {
+            }
+            else if (op2Const)
+            {
                 asm.mov(dest, GetConst(op2));
                 asm.cmp(GetLocation(op1).GetRegister(), dest);
 
-            } else {
+            }
+            else
+            {
                 asm.mov(dest, GetLocation(op1).GetRegister());
                 asm.cmp(dest, GetLocation(op2).GetRegister());
             }
@@ -710,7 +838,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.movzx(dest, Reg64ToReg8(dest));
         }
 
-        private void SetNotEq(Assembler asm, IRInstruction instruction) {
+        private void SetNotEq(Assembler asm, IRInstruction instruction)
+        {
             Location destination = GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -723,15 +852,20 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             // asm.xor(dest, dest);
 
             // always compare 1 vs 2
-            if (op1Const) {
+            if (op1Const)
+            {
                 asm.mov(dest, GetConst(op1));
                 asm.cmp(dest, GetLocation(op2).GetRegister());
 
-            } else if (op2Const) {
+            }
+            else if (op2Const)
+            {
                 asm.mov(dest, GetConst(op2));
                 asm.cmp(GetLocation(op1).GetRegister(), dest);
 
-            } else {
+            }
+            else
+            {
                 asm.mov(dest, GetLocation(op1).GetRegister());
                 asm.cmp(dest, GetLocation(op2).GetRegister());
             }
@@ -740,7 +874,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.movzx(dest, Reg64ToReg8(dest));
         }
 
-        private void SetLessThan(Assembler asm, IRInstruction instruction, bool signed) {
+        private void SetLessThan(Assembler asm, IRInstruction instruction, bool signed)
+        {
             Location destination = GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -753,29 +888,38 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             // asm.xor(dest, dest);
 
             // always compare 1 vs 2
-            if (op1Const) {
+            if (op1Const)
+            {
                 asm.mov(dest, GetConst(op1));
                 asm.cmp(dest, GetLocation(op2).GetRegister());
 
-            } else if (op2Const) {
+            }
+            else if (op2Const)
+            {
                 asm.mov(dest, GetConst(op2));
                 asm.cmp(GetLocation(op1).GetRegister(), dest);
 
-            } else {
+            }
+            else
+            {
                 asm.mov(dest, GetLocation(op1).GetRegister());
                 asm.cmp(dest, GetLocation(op2).GetRegister());
             }
 
-            if (signed) {
+            if (signed)
+            {
                 asm.setl(Reg64ToReg8(dest));
-            } else {
+            }
+            else
+            {
                 asm.setb(Reg64ToReg8(dest));
             }
 
             asm.movzx(dest, Reg64ToReg8(dest));
         }
 
-        private void SetGreaterThan(Assembler asm, IRInstruction instruction, bool signed) {
+        private void SetGreaterThan(Assembler asm, IRInstruction instruction, bool signed)
+        {
             Location destination = GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -788,29 +932,38 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             // asm.xor(dest, dest);
 
             // always compare 1 vs 2
-            if (op1Const) {
+            if (op1Const)
+            {
                 asm.mov(dest, GetConst(op1));
                 asm.cmp(dest, GetLocation(op2).GetRegister());
 
-            } else if (op2Const) {
+            }
+            else if (op2Const)
+            {
                 asm.mov(dest, GetConst(op2));
                 asm.cmp(GetLocation(op1).GetRegister(), dest);
 
-            } else {
+            }
+            else
+            {
                 asm.mov(dest, GetLocation(op1).GetRegister());
                 asm.cmp(dest, GetLocation(op2).GetRegister());
             }
 
-            if (signed) {
+            if (signed)
+            {
                 asm.setg(Reg64ToReg8(dest));
-            } else {
+            }
+            else
+            {
                 asm.seta(Reg64ToReg8(dest));
             }
 
             asm.movzx(dest, Reg64ToReg8(dest));
         }
 
-        private void SetLessThanEq(Assembler asm, IRInstruction instruction, bool signed) {
+        private void SetLessThanEq(Assembler asm, IRInstruction instruction, bool signed)
+        {
             Location destination = GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -823,29 +976,38 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             // asm.xor(dest, dest);
 
             // always compare 1 vs 2
-            if (op1Const) {
+            if (op1Const)
+            {
                 asm.mov(dest, GetConst(op1));
                 asm.cmp(dest, GetLocation(op2).GetRegister());
 
-            } else if (op2Const) {
+            }
+            else if (op2Const)
+            {
                 asm.mov(dest, GetConst(op2));
                 asm.cmp(GetLocation(op1).GetRegister(), dest);
 
-            } else {
+            }
+            else
+            {
                 asm.mov(dest, GetLocation(op1).GetRegister());
                 asm.cmp(dest, GetLocation(op2).GetRegister());
             }
 
-            if (signed) {
+            if (signed)
+            {
                 asm.setle(Reg64ToReg8(dest));
-            } else {
+            }
+            else
+            {
                 asm.setbe(Reg64ToReg8(dest));
             }
 
             asm.movzx(dest, Reg64ToReg8(dest));
         }
 
-        private void SetGreaterThanEq(Assembler asm, IRInstruction instruction, bool signed) {
+        private void SetGreaterThanEq(Assembler asm, IRInstruction instruction, bool signed)
+        {
             Location destination = GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
@@ -858,29 +1020,38 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             // asm.xor(dest, dest);
 
             // always compare 1 vs 2
-            if (op1Const) {
+            if (op1Const)
+            {
                 asm.mov(dest, GetConst(op1));
                 asm.cmp(dest, GetLocation(op2).GetRegister());
 
-            } else if (op2Const) {
+            }
+            else if (op2Const)
+            {
                 asm.mov(dest, GetConst(op2));
                 asm.cmp(GetLocation(op1).GetRegister(), dest);
 
-            } else {
+            }
+            else
+            {
                 asm.mov(dest, GetLocation(op1).GetRegister());
                 asm.cmp(dest, GetLocation(op2).GetRegister());
             }
 
-            if (signed) {
+            if (signed)
+            {
                 asm.setge(Reg64ToReg8(dest));
-            } else {
+            }
+            else
+            {
                 asm.setae(Reg64ToReg8(dest));
             }
 
             asm.movzx(dest, Reg64ToReg8(dest));
         }
 
-        private void Select(Assembler asm, IRInstruction instruction) {
+        private void Select(Assembler asm, IRInstruction instruction)
+        {
             Label done = asm.CreateLabel();
 
             Location destination = GetLocation(instruction.Destination);
@@ -899,9 +1070,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.test(cond, cond);
 
             // assume non zero
-            if (op2Const) {
+            if (op2Const)
+            {
                 asm.mov(dest, GetConst(op2));
-            } else {
+            }
+            else
+            {
                 Location location2 = GetLocation(instruction.Operand2);
                 asm.mov(dest, location2.GetRegister());
             }
@@ -911,9 +1085,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
             // if zero fallthough, overwrite
 
-            if (op3Const) {
+            if (op3Const)
+            {
                 asm.mov(dest, GetConst(op3));
-            } else {
+            }
+            else
+            {
                 Location location3 = GetLocation(instruction.Operand3);
                 asm.mov(dest, location3.GetRegister());
             }
@@ -922,7 +1099,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             asm.Label(ref done);
         }
 
-        public void ZeroExtend(Assembler asm, IRInstruction instruction) {
+        public void ZeroExtend(Assembler asm, IRInstruction instruction)
+        {
             Value destination = instruction.Destination;
             Value operand = instruction.Operand1;
 
@@ -930,11 +1108,13 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             AssemblerRegister64 operandReg = GetLocation(instruction.Operand1).GetRegister();
 
             // using a constant would be weird, a possible IR bug
-            if (IsConst(instruction.Operand1)) {
+            if (IsConst(instruction.Operand1))
+            {
                 throw new Exception($"Unexpected Zero exten with constant operand");
             }
 
-            switch (destination.Type) {
+            switch (destination.Type)
+            {
                 case Value.ValueType.I64:
                     ZeroExtendTo64(asm, destinationReg, operand.Type, operandReg);
                     break;
@@ -951,8 +1131,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        public void ZeroExtendTo64(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand) {
-            switch (operandType) {
+        public void ZeroExtendTo64(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
+        {
+            switch (operandType)
+            {
                 case Value.ValueType.I8:
                     asm.movzx(dest, Reg64ToReg8(operand));
                     break;
@@ -969,8 +1151,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        public void ZeroExtendTo32(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand) {
-            switch (operandType) {
+        public void ZeroExtendTo32(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
+        {
+            switch (operandType)
+            {
                 case Value.ValueType.I8:
                     asm.movzx(Reg64ToReg32(dest), Reg64ToReg8(operand));
                     break;
@@ -983,8 +1167,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        public void ZeroExtendTo16(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand) {
-            switch (operandType) {
+        public void ZeroExtendTo16(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
+        {
+            switch (operandType)
+            {
                 case Value.ValueType.I8:
                     asm.movzx(Reg64ToReg16(dest), Reg64ToReg8(operand));
                     break;
@@ -993,7 +1179,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        public void SignExtend(Assembler asm, IRInstruction instruction) {
+        public void SignExtend(Assembler asm, IRInstruction instruction)
+        {
             Value destination = instruction.Destination;
             Value operand = instruction.Operand1;
 
@@ -1001,11 +1188,13 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             AssemblerRegister64 operandReg = GetLocation(instruction.Operand1).GetRegister();
 
             // using a constant would be weird, a possible IR bug
-            if (IsConst(instruction.Operand1)) {
+            if (IsConst(instruction.Operand1))
+            {
                 throw new Exception($"Unexpected Zero exten with constant operand");
             }
 
-            switch (destination.Type) {
+            switch (destination.Type)
+            {
                 case Value.ValueType.I64:
                     SignExtendTo64(asm, destinationReg, operand.Type, operandReg);
                     break;
@@ -1022,8 +1211,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        public void SignExtendTo64(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand) {
-            switch (operandType) {
+        public void SignExtendTo64(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
+        {
+            switch (operandType)
+            {
                 case Value.ValueType.I8:
                     asm.movsx(dest, Reg64ToReg8(operand));
                     break;
@@ -1040,8 +1231,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        public void SignExtendTo32(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand) {
-            switch (operandType) {
+        public void SignExtendTo32(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
+        {
+            switch (operandType)
+            {
                 case Value.ValueType.I8:
                     asm.movsx(Reg64ToReg32(dest), Reg64ToReg8(operand));
                     break;
@@ -1054,8 +1247,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        public void SignExtendTo16(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand) {
-            switch (operandType) {
+        public void SignExtendTo16(Assembler asm, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
+        {
+            switch (operandType)
+            {
                 case Value.ValueType.I8:
                     asm.movsx(Reg64ToReg16(dest), Reg64ToReg8(operand));
                     break;
@@ -1064,29 +1259,32 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
             }
         }
 
-        public void Truncate(Assembler asm, IRInstruction instruction) {
+        public void Truncate(Assembler asm, IRInstruction instruction)
+        {
             Value destination = instruction.Destination;
             Value operand = instruction.Operand1;
 
             AssemblerRegister64 destinationReg = GetLocation(instruction.Destination).GetRegister();
 
-            if (TryGetConst(instruction.Operand1, out ulong value)) {
+            if (TryGetConst(instruction.Operand1, out ulong value))
+            {
                 uint mask;
 
-                switch (destination.Type) {
-                    case Value.ValueType.I64: 
+                switch (destination.Type)
+                {
+                    case Value.ValueType.I64:
                         return;
 
-                    case Value.ValueType.I32: 
+                    case Value.ValueType.I32:
                         mask = uint.MaxValue;
                         break;
 
-                    case Value.ValueType.I16: 
-                        mask = ushort.MaxValue; 
+                    case Value.ValueType.I16:
+                        mask = ushort.MaxValue;
                         break;
 
-                    case Value.ValueType.I8: 
-                        mask = byte.MaxValue; 
+                    case Value.ValueType.I8:
+                        mask = byte.MaxValue;
                         break;
 
                     default: throw new Exception($"Unsupported truncate to {destination.Type}");
@@ -1094,10 +1292,13 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
 
                 asm.mov(destinationReg, value & mask);
 
-            } else {
+            }
+            else
+            {
                 AssemblerRegister64 operandReg = GetLocation(operand).GetRegister();
 
-                switch (destination.Type) {
+                switch (destination.Type)
+                {
                     case Value.ValueType.I64:
                         return;
 

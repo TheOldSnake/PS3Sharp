@@ -9,12 +9,15 @@ using System.Text;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
-namespace PS3Sharp.FileSystem {
-    public static class FileSystemManager {
+namespace PS3Sharp.FileSystem
+{
+    public static class FileSystemManager
+    {
         private static readonly ConcurrentDictionary<int, GuestFile> _openFiles = new ConcurrentDictionary<int, GuestFile>();
         private static readonly ConcurrentDictionary<int, GuestDirectory> _openDirectories = new ConcurrentDictionary<int, GuestDirectory>();
-        public sealed class GuestFile : IDisposable {
-            public readonly string Path;        
+        public sealed class GuestFile : IDisposable
+        {
+            public readonly string Path;
             public readonly int FileDescriptor;
             public readonly uint OwnerThread;
             public readonly FileStream Stream;
@@ -23,7 +26,8 @@ namespace PS3Sharp.FileSystem {
 
             public readonly ulong Size;
 
-            public GuestFile(string path, int fileDescriptor, uint ownerThread) {
+            public GuestFile(string path, int fileDescriptor, uint ownerThread)
+            {
                 Path = path;
                 FileDescriptor = fileDescriptor;
                 Size = GetFileSize(path);
@@ -34,21 +38,24 @@ namespace PS3Sharp.FileSystem {
                 Stream.Seek(0, SeekOrigin.Begin);
             }
 
-            public void Dispose() {
+            public void Dispose()
+            {
                 Reader.Dispose();
                 Stream.Dispose();
             }
         }
 
-        public sealed class GuestDirectory {
+        public sealed class GuestDirectory
+        {
             public readonly string Path;
             public readonly int FileDescriptor;
             public readonly uint OwnerThread;
             public readonly ulong Size;
             public int CurrentEntry = 0;
-            public DirectoryInfo DirectoryInfo {  get; private set; }
+            public DirectoryInfo DirectoryInfo { get; private set; }
 
-            public GuestDirectory(string path, int fileDescriptor, uint ownerThread) {
+            public GuestDirectory(string path, int fileDescriptor, uint ownerThread)
+            {
                 Path = path;
                 FileDescriptor = fileDescriptor;
                 OwnerThread = ownerThread;
@@ -57,13 +64,16 @@ namespace PS3Sharp.FileSystem {
             }
         }
 
-        public static void InitializeFileSystem() {
-            if (!Directory.Exists(@"dev_hdd0\game")) {
+        public static void InitializeFileSystem()
+        {
+            if (!Directory.Exists(@"dev_hdd0\game"))
+            {
                 Console.WriteLine(@"Creating dev_hdd0\game");
                 Directory.CreateDirectory(@"dev_hdd0\game");
             }
 
-            if (!Directory.Exists("dev_flash")) {
+            if (!Directory.Exists("dev_flash"))
+            {
                 Console.WriteLine("Creating dev_flash");
                 Directory.CreateDirectory("dev_flash");
             }
@@ -82,8 +92,10 @@ namespace PS3Sharp.FileSystem {
         public static GuestFile GetFileByPath(string path) => _openFiles.Values.First(f => f.Path == path); // Normally not used
         public static bool GetFile(int fd, out GuestFile? file) => _openFiles.TryGetValue(fd, out file);
 
-        public static ulong GetFileSize(string filePath) {
-            if (!File.Exists(filePath)) {
+        public static ulong GetFileSize(string filePath)
+        {
+            if (!File.Exists(filePath))
+            {
                 throw new FileNotFoundException("File not found", filePath);
             }
 
@@ -91,8 +103,10 @@ namespace PS3Sharp.FileSystem {
             return (ulong)fileInfo.Length; // size in bytes
         }
 
-        public static ulong GetDirectorySize(string directoryPath) {
-            if (!Directory.Exists(directoryPath)) {
+        public static ulong GetDirectorySize(string directoryPath)
+        {
+            if (!Directory.Exists(directoryPath))
+            {
                 throw new DirectoryNotFoundException($"Directory not found: {directoryPath}");
             }
 
@@ -100,15 +114,18 @@ namespace PS3Sharp.FileSystem {
             return (ulong)dir.GetFiles("*", SearchOption.AllDirectories).Sum(file => file.Length);
         }
 
-        public static ulong OpenFile(string host_path, int fd, uint ownerThread) {
+        public static ulong OpenFile(string host_path, int fd, uint ownerThread)
+        {
 
             // Error if it's a directory
-            if (IsDirectory(host_path)) {
+            if (IsDirectory(host_path))
+            {
                 return CELL_EISDIR;
             }
 
             // Error if the file does not exist
-            if (!IsFile(host_path)) {
+            if (!IsFile(host_path))
+            {
                 return CELL_ENOENT;
             }
 
@@ -119,15 +136,18 @@ namespace PS3Sharp.FileSystem {
             return CELL_OK;
         }
 
-        public static ulong OpenDirectory(string host_path, int fd, uint ownerThread) {
+        public static ulong OpenDirectory(string host_path, int fd, uint ownerThread)
+        {
 
             // Error if it's a file
-            if (IsFile(host_path)) {
+            if (IsFile(host_path))
+            {
                 return CELL_ENOTDIR;
             }
 
             // Error if the directory does not exist
-            if (!IsDirectory(host_path)) {
+            if (!IsDirectory(host_path))
+            {
                 return CELL_ENOENT;
             }
 
@@ -138,74 +158,98 @@ namespace PS3Sharp.FileSystem {
             return CELL_OK;
         }
 
-        public static void Close(int fd) {
+        public static void Close(int fd)
+        {
             _openFiles.Remove(fd, out GuestFile? file);
             file?.Dispose();
         }
 
-        public static long Seek(int fd, long offset, int mode) {
-            if (mode < 0 || mode > 2) {
+        public static long Seek(int fd, long offset, int mode)
+        {
+            if (mode < 0 || mode > 2)
+            {
                 throw new InvalidOperationException($"[FileSystem] Invalid seek mode: {mode}");
             }
 
-            if (_openFiles.TryGetValue(fd, out GuestFile? file)) {
+            if (_openFiles.TryGetValue(fd, out GuestFile? file))
+            {
                 file.Stream.Seek(offset, (SeekOrigin)(mode));
-            } else {
+            }
+            else
+            {
                 throw new InvalidOperationException("[FileSystem] file was not open!");
             }
 
             return file.Stream.Position;
         }
 
-        public static ulong Read(int fd, ulong nbytes, GuestVoidPtr destinationBuffer) {
-            if(nbytes > int.MaxValue) {
+        public static ulong Read(int fd, ulong nbytes, GuestVoidPtr destinationBuffer)
+        {
+            if (nbytes > int.MaxValue)
+            {
                 throw new Exception($"[FileSystem] Read amount is too large: {nbytes}");
             }
 
-            unsafe {
+            unsafe
+            {
                 Span<byte> nativeBuffer = MemoryManager.CreateSpan<byte>(destinationBuffer, (int)nbytes);
 
-                if (_openFiles.TryGetValue(fd, out GuestFile? file)) {
-                    try {
+                if (_openFiles.TryGetValue(fd, out GuestFile? file))
+                {
+                    try
+                    {
                         // Read directly into the buffer
                         file.Reader.ReadExactly(nativeBuffer);
-                    } catch (EndOfStreamException e) {
+                    }
+                    catch (EndOfStreamException e)
+                    {
                         // Might be incorrect
                         Console.WriteLine($"[FileSystem] Reached end of stream");
                         return 0;
                     }
 
-                } else {
+                }
+                else
+                {
                     throw new InvalidOperationException("[FileSystem] file was not open!");
                 }
             }
 
             //Return number of bytes read
-            return nbytes;                             
+            return nbytes;
         }
 
-        public static Span<byte> ReadSpan(int fd, ulong nbytes) {
-            if(nbytes > int.MaxValue) {
+        public static Span<byte> ReadSpan(int fd, ulong nbytes)
+        {
+            if (nbytes > int.MaxValue)
+            {
                 throw new Exception($"[FileSystem] Read amount is too large: {nbytes}");
             }
 
-            if (_openFiles.TryGetValue(fd, out GuestFile? file)) {
-               return file.Reader.ReadBytes((int)nbytes);
+            if (_openFiles.TryGetValue(fd, out GuestFile? file))
+            {
+                return file.Reader.ReadBytes((int)nbytes);
 
-            } else {
+            }
+            else
+            {
                 throw new InvalidOperationException("[FileSystem] file was not open!");
-            }                        
+            }
         }
 
-        public static ulong Write(int fd, int nBytes, GuestVoidPtr sourceBuffer) {
-            if (_openFiles.TryGetValue(fd, out GuestFile? file)) {
-                
+        public static ulong Write(int fd, int nBytes, GuestVoidPtr sourceBuffer)
+        {
+            if (_openFiles.TryGetValue(fd, out GuestFile? file))
+            {
+
                 // Hacky check to ensure we don't write something outside app_home
-                if (!file.Path.StartsWith(@"D:\RPCS3\app_home\")) { 
+                if (!file.Path.StartsWith(@"D:\RPCS3\app_home\"))
+                {
                     throw new Exception($"Attempt to write to file outside app_home, path = {file.Path}");
                 }
 
-                unsafe {
+                unsafe
+                {
                     Span<byte> nativeBuffer = MemoryManager.CreateSpan<byte>(sourceBuffer, nBytes);
                     file.Writer.Write(nativeBuffer);
                 }
@@ -214,22 +258,25 @@ namespace PS3Sharp.FileSystem {
             return (ulong)nBytes;
         }
 
-        public static ulong ReadDir(int fd, GuestPtr<SysFs.CellFsDirent> dirent_ptr) {
+        public static ulong ReadDir(int fd, GuestPtr<SysFs.CellFsDirent> dirent_ptr)
+        {
             // Todo: move constants 
             const byte CELL_FS_TYPE_DIRECTORY = 1;
             const byte CELL_FS_TYPE_REGULAR = 2;
 
             ulong dirent_size = (ulong)Unsafe.SizeOf<SysFs.CellFsDirent>();
             bool found = _openDirectories.TryGetValue(fd, out GuestDirectory? directory);
-            
-            if (!found) {
+
+            if (!found)
+            {
                 throw new InvalidOperationException("[FileSystem] Directory was not open!");
             }
 
             DirectoryInfo dir_info = directory.DirectoryInfo;
             IEnumerable<FileSystemInfo> fs_info_list = dir_info.EnumerateFileSystemInfos();
 
-            unsafe {
+            unsafe
+            {
                 SysFs.CellFsDirent* dirent = dirent_ptr.AsNativePtr();
 
                 Span<byte> name_buffer;
@@ -237,7 +284,8 @@ namespace PS3Sharp.FileSystem {
                 name_dest.Clear();
                 byte type;
 
-                switch (directory.CurrentEntry) {
+                switch (directory.CurrentEntry)
+                {
 
                     case 0: // "." entry
                         name_buffer = Utility.ToCString($".");
@@ -254,7 +302,8 @@ namespace PS3Sharp.FileSystem {
                         int actualEntry = directory.CurrentEntry - 2;
 
                         //if reached end
-                        if (actualEntry >= fs_info_list.Count()) {
+                        if (actualEntry >= fs_info_list.Count())
+                        {
                             dirent->Type = 0;
                             dirent->NameLength = 0;
                             name_dest.Clear();

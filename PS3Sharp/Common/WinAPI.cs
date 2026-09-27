@@ -1,7 +1,9 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace PS3Sharp.Common {
-    internal static class WinAPI {
+namespace PS3Sharp.Common
+{
+    internal static class WinAPI
+    {
         // Constants
         internal const uint PAGE_EXECUTE_READWRITE = 0x00000040;
         internal const uint MEM_COMMIT = 0x00001000;
@@ -20,7 +22,7 @@ namespace PS3Sharp.Common {
         internal static extern int VirtualProtect(nint lpAddress, nuint dwSize, uint flNewProtect, nint lpflOldProtect);
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        internal static extern int VirtualFree(nint lpAddress, nuint dwSize,uint dwFreeType);
+        internal static extern int VirtualFree(nint lpAddress, nuint dwSize, uint dwFreeType);
     }
 }
 

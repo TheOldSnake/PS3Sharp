@@ -1,32 +1,42 @@
 ﻿using Iced.Intel;
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
-    public sealed partial class RegisterAllocator {
-        public sealed class Location {
+namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator
+{
+    public sealed partial class RegisterAllocator
+    {
+        public sealed class Location
+        {
             public Liveness Liveness { get; }
             private AssemblerRegister64? Register { get; set; }
             public int SpillSlot { get; set; } = -1;
 
             public bool IsSpilled => SpillSlot >= 0;
             public Value Value => Liveness.Value;
-            public Location(Liveness liveness) {
+            public Location(Liveness liveness)
+            {
                 Liveness = liveness;
             }
 
-            public AssemblerRegister64 GetRegister() {
-                if (Register != null) {
+            public AssemblerRegister64 GetRegister()
+            {
+                if (Register != null)
+                {
                     return Register.Value;
-                } else {
+                }
+                else
+                {
                     throw new Exception("No register was assigned");
                 }
             }
 
-            public void AssignRegister(AssemblerRegister64 register) { 
+            public void AssignRegister(AssemblerRegister64 register)
+            {
                 Register = register;
             }
 
-            public void UnassignRegister() {
+            public void UnassignRegister()
+            {
                 Register = null;
             }
         }

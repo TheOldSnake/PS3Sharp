@@ -2,11 +2,14 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace PS3Sharp {
-    public static partial class ElfLoader {
+namespace PS3Sharp
+{
+    public static partial class ElfLoader
+    {
         //Structs
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public readonly struct ElfHeader {
+        public readonly struct ElfHeader
+        {
             //e_ident constants
             public const int EI_NIDENT = 16;
 

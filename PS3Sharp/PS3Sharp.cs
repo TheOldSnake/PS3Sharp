@@ -5,8 +5,10 @@ using PS3Sharp.Cell.RSX;
 using PS3Sharp.Memory_Manager;
 using PS3Sharp.SFOLoader;
 
-namespace PS3Sharp {
-    public sealed class PS3Sharp {
+namespace PS3Sharp
+{
+    public sealed class PS3Sharp
+    {
 
         // For now we share the file system with RPCS3
         public const string FileSystemBase = @"D:\RPCS3\";
@@ -25,8 +27,9 @@ namespace PS3Sharp {
 
         public static void TerminateEmulator(int code) => Environment.Exit(code);
 
-        public static void Main() {
-       
+        public static void Main()
+        {
+
             Console.WriteLine("PS3 lol");
 
             MemoryManager.Initialize();
@@ -39,25 +42,28 @@ namespace PS3Sharp {
             RunEmu(ppu_main);
         }
 
-        public static PPU CreateMainPPUThread(string eld_dir) {
+        public static PPU CreateMainPPUThread(string eld_dir)
+        {
             uint entryPointer = ElfLoader.LoadMainElf(eld_dir);
             PPU ppu_main = new PPU("main_thread", entryPointer, path_to_executable: eld_dir);
             ThreadManager.CreateNativePPUThread(ppu_main);
             return ppu_main;
         }
 
-        public static void RunEmu(PPU main) {
+        public static void RunEmu(PPU main)
+        {
             ThreadManager.RunPPUThread(main);
             ThreadManager.JoinThread(main.NativeThread);  // If main_thread exits, terminate everything
             ThreadManager.StopAll();
         }
 
-        public static void RunCellTestRom(string path) {
+        public static void RunCellTestRom(string path)
+        {
             // Load code at 0x1000000
             byte[] code = File.ReadAllBytes(path);
             MemoryManager.MemoryBlock code_block = MemoryManager.AllocateVirtualAddress(0x1000000, (uint)code.Length);
             MemoryManager.CopyBufferToVirtualMemory(code, code_block.VirtualAddress);
-   
+
             // Create the PPU thread
             uint main_thread_id = ThreadManager.GetNewID();
             PPU ppu_main = new PPU("main_thread", code_block.VirtualAddress, main_thread_id, MemoryManager.DEFAULT_STACK_SIZE);
@@ -78,17 +84,22 @@ namespace PS3Sharp {
 
             uint failed_instructions_buffer = r5_block.VirtualAddress;
 
-            while (true) {
+            while (true)
+            {
 
-                try {
+                try
+                {
                     PPUInterpreter.Step(ppu_main);
-                } catch (Exception e) {
-                    
+                }
+                catch (Exception e)
+                {
+
                     // Read "Fail" buffer
 
                     uint failed_instruction = MemoryManager.Read<uint>(failed_instructions_buffer);
 
-                    while (failed_instruction != 0) {
+                    while (failed_instruction != 0)
+                    {
                         Console.WriteLine($"Detected Fail: 0x{failed_instruction:X8}");
                         failed_instructions_buffer += 32;
                         failed_instruction = MemoryManager.Read<uint>(failed_instructions_buffer);
@@ -100,12 +111,13 @@ namespace PS3Sharp {
             }
         }
 
-        public static void RunSimpleElf(string path) {
+        public static void RunSimpleElf(string path)
+        {
             uint entryPointer = ElfLoader.LoadMainElf(path);
 
             // Create the PPU thread
             uint main_thread_id = ThreadManager.GetNewID();
-            
+
             // ulong is probably wrong for PS3 ELFs, but correct for generic PPC64 ELFs?
             // uint is correct for PS3 elfs
 
@@ -117,11 +129,15 @@ namespace PS3Sharp {
 
             PPURecompiler ppu_recompiler = new PPURecompiler();
 
-            while (true) {
-                try {
+            while (true)
+            {
+                try
+                {
                     //PPUInterpreter.Step(ppu_main);
                     ppu_recompiler.RunPPU(ppu_main);
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
 
                     Console.WriteLine($"Exception: {e.Message}");
                     Console.WriteLine($"Trace: {e.StackTrace}");
@@ -130,7 +146,8 @@ namespace PS3Sharp {
             }
         }
 
-        private static string ExtractContentDir(string fullPath) { //Not needed
+        private static string ExtractContentDir(string fullPath)
+        { //Not needed
             string directory = Path.GetDirectoryName(fullPath);
 
             // Split into folders
@@ -139,10 +156,13 @@ namespace PS3Sharp {
             int devIndex = Array.FindIndex(parts, p =>
                 p.StartsWith("dev_", StringComparison.OrdinalIgnoreCase));
 
-            if (devIndex >= 0 && parts.Length > devIndex + 2) {
+            if (devIndex >= 0 && parts.Length > devIndex + 2)
+            {
                 // dev_hdd0 + game + TITLEID
                 return @"\" + string.Join(@"\", parts, devIndex, 3) + @"\";
-            } else {
+            }
+            else
+            {
                 throw new Exception($"Invalid path: {fullPath}");
             }
         }

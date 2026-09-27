@@ -1,10 +1,13 @@
 ﻿using PS3Sharp.Common;
 using System.Runtime.InteropServices;
 
-namespace PS3Sharp {
-    public static unsafe partial class ElfLoader {
+namespace PS3Sharp
+{
+    public static unsafe partial class ElfLoader
+    {
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public readonly struct ProgramHeader {
+        public readonly struct ProgramHeader
+        {
             //Segment types (PT_*)
             public const uint PT_NULL = 0;
             public const uint PT_LOAD = 1;
@@ -38,20 +41,22 @@ namespace PS3Sharp {
             public readonly BigEndian<ulong> p_memsz;    /* Segment size in memory */
             public readonly BigEndian<ulong> p_align;    /* Segment alignment */
 
-            public static string GetName(ProgramHeader programHeader) {
+            public static string GetName(ProgramHeader programHeader)
+            {
                 ulong type = programHeader.p_type;
-                switch (type) {
-                    case PT_NULL:    return "PT_NULL";
-                    case PT_LOAD:    return "PT_LOAD";
+                switch (type)
+                {
+                    case PT_NULL: return "PT_NULL";
+                    case PT_LOAD: return "PT_LOAD";
                     case PT_DYNAMIC: return "PT_DYNAMIC";
-                    case PT_INTERP:  return "PT_INTERP";
-                    case PT_NOTE:    return "PT_NOTE";
-                    case PT_SHLIB:   return "PT_SHLIB";
-                    case PT_PHDR:    return "PT_PHDR";
-                    case PT_TLS:     return "PT_TLS";
+                    case PT_INTERP: return "PT_INTERP";
+                    case PT_NOTE: return "PT_NOTE";
+                    case PT_SHLIB: return "PT_SHLIB";
+                    case PT_PHDR: return "PT_PHDR";
+                    case PT_TLS: return "PT_TLS";
 
                     case PROC_PARAM: return "PROC_PARAM";
-                    case PRX_PARAM:  return "PRX_PARAM";
+                    case PRX_PARAM: return "PRX_PARAM";
 
                     default: return $"Unknown type: ({type})";
                 }

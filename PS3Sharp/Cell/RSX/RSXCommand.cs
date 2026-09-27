@@ -2,18 +2,20 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace PS3Sharp.Cell.RSX {
-    public struct RSXCommand {
+namespace PS3Sharp.Cell.RSX
+{
+    public struct RSXCommand
+    {
         public uint Raw;
 
         //Constant masks/shifts based on PSL1GHT
         public const uint RSX_METHOD_FLAG_NO_INCREMENT = 0x40000000;
-        public const uint RSX_METHOD_FLAG_JUMP         = 0x20000000;
-        public const uint RSX_METHOD_FLAG_CALL         = 0x00000002;
-        public const uint RSX_METHOD_FLAG_RETURN       = 0x00020000;
-        public const uint RSX_MAX_METHOD_COUNT         = 0x000007FF;
-        public const int RSX_METHOD_COUNT_SHIFT        = 18;
-        public const int RSX_SUBCHANNEL_SHIFT          = 13;
+        public const uint RSX_METHOD_FLAG_JUMP = 0x20000000;
+        public const uint RSX_METHOD_FLAG_CALL = 0x00000002;
+        public const uint RSX_METHOD_FLAG_RETURN = 0x00020000;
+        public const uint RSX_MAX_METHOD_COUNT = 0x000007FF;
+        public const int RSX_METHOD_COUNT_SHIFT = 18;
+        public const int RSX_SUBCHANNEL_SHIFT = 13;
 
         public bool NonIncrement => (Raw & RSX_METHOD_FLAG_NO_INCREMENT) != 0;
         public bool Jump => (Raw & RSX_METHOD_FLAG_JUMP) != 0;
@@ -22,8 +24,8 @@ namespace PS3Sharp.Cell.RSX {
 
 
         public uint MethodCount => (Raw >> RSX_METHOD_COUNT_SHIFT) & RSX_MAX_METHOD_COUNT;
-        public uint MethodRegister => Raw & 0xFFFF; 
-        public uint MethodSubChannel => (Raw  >> RSX_SUBCHANNEL_SHIFT) & 0x7;
+        public uint MethodRegister => Raw & 0xFFFF;
+        public uint MethodSubChannel => (Raw >> RSX_SUBCHANNEL_SHIFT) & 0x7;
         public uint JumpOffset => Raw & 0x1FFFFFFF; // >> (31 - 31)
         public uint CallOffset => Raw >> 2;         // >> (31 - 29)         
 
@@ -37,12 +39,12 @@ namespace PS3Sharp.Cell.RSX {
 
         public const uint NV406ETCL_SET_REF = 0x00000050;
         public const uint NV406ETCL_SET_CTX_DMA_SEMAPHORE = 0x00000060;
-        public const uint NV406ETCL_SEMAPHORE_OFFSET  = 0x00000064;
+        public const uint NV406ETCL_SEMAPHORE_OFFSET = 0x00000064;
         public const uint NV406ETCL_SEMAPHORE_ACQUIRE = 0x00000068;
         public const uint NV406ETCL_SEMAPHORE_RELEASE = 0x0000006c;
 
         public const uint NV40TCL_SEMAPHORE_BACKENDWRITE_OFFSET = 0x00001D6C; //it's named NV40TCL_SEMAPHORE_OFFSET	in PSL1GHT for some reason
-        public const uint NV40TCL_SEMAPHORE_BACKENDWRITE_RELEASE  = 0x00001D70;
+        public const uint NV40TCL_SEMAPHORE_BACKENDWRITE_RELEASE = 0x00001D70;
 
         public const uint NV34_TCL_PRIMITIVE_3D_FOG_COLOR = 0x00000370;
 
@@ -53,7 +55,7 @@ namespace PS3Sharp.Cell.RSX {
         public const uint GCM_COLOR_MASK_A = 0x01000000;
 
         public const uint NV40TCL_VIEWPORT_HORIZ = 0x00000A00;
-        public const uint NV40TCL_VIEWPORT_VERT  = 0x00000A04;
+        public const uint NV40TCL_VIEWPORT_VERT = 0x00000A04;
         public const uint NV40TCL_DEPTH_RANGE = 0x00000394;
 
         public const uint NV40TCL_VIEWPORT_OFFSET_X = 0x00000A20 + 0;
@@ -76,7 +78,7 @@ namespace PS3Sharp.Cell.RSX {
 
         public const uint NV34_TCL_PRIMITIVE_3D_DMA_IN_MEMORY0 = 0x00000184;
         public const uint NV34_TCL_PRIMITIVE_3D_DMA_IN_MEMORY1 = 0x00000188;
-       // public const uint NV34_TCL_PRIMITIVE_3D_DMA_IN_MEMORY2 = 0x0000018C;
+        // public const uint NV34_TCL_PRIMITIVE_3D_DMA_IN_MEMORY2 = 0x0000018C;
         //public const uint NV34_TCL_PRIMITIVE_3D_DMA_IN_MEMORY3 = 0x00000194;
         public const uint NV34_TCL_PRIMITIVE_3D_DMA_IN_MEMORY4 = 0x00000198;
         public const uint NV34_TCL_PRIMITIVE_3D_DMA_IN_MEMORY5 = 0x000001A4;
@@ -95,8 +97,8 @@ namespace PS3Sharp.Cell.RSX {
 
         public const uint NV40TCL_SHADER_WINDOW = 0x00001D88;
 
-        public const uint NV40TCL_RT_HORIZ = 0x00000200;    
-        public const uint NV40TCL_RT_VERT = 0x00000204;    
+        public const uint NV40TCL_RT_HORIZ = 0x00000200;
+        public const uint NV40TCL_RT_VERT = 0x00000204;
         public const uint NV40TCL_RT_FORMAT = 0x00000208;
         public const uint NV40TCL_RT_ENABLE = 0x00000220;
         public const uint NV40TCL_ZETA_PITCH = 0x0000022c;
@@ -384,7 +386,7 @@ namespace PS3Sharp.Cell.RSX {
         public const uint NV40TCL_TEX_FORMAT_FORMAT_A8L8 = 0x00001800;
 
         public const uint NV40TCL_POLYGON_OFFSET_FILL_ENABLE = 0x00000A68;
-        public const uint NV40TCL_POLYGON_OFFSET_FACTOR =  0x00000A78;
+        public const uint NV40TCL_POLYGON_OFFSET_FACTOR = 0x00000A78;
         public const uint NV40TCL_CULL_FACE = 0x00001830;
         public const uint NV40TCL_CULL_FACE_ENABLE = 0x0000183C;
         public const uint NV40TCL_STENCIL_BACK_ENABLE = 0x00000328;

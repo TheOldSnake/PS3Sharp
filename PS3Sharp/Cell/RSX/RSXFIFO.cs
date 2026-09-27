@@ -7,24 +7,30 @@ using PS3Sharp.OS.Modules;
 using System.Runtime.CompilerServices;
 using static PS3Sharp.Cell.RSX.RSXCommand;
 
-namespace PS3Sharp.Cell.RSX {
-    public sealed partial class RealitySynthesizer {
-        public unsafe void HandleInstruction(RSXCommand command, CellGcmCtrlRegister* ctrl) {
+namespace PS3Sharp.Cell.RSX
+{
+    public sealed partial class RealitySynthesizer
+    {
+        public unsafe void HandleInstruction(RSXCommand command, CellGcmCtrlRegister* ctrl)
+        {
             //PrintCommand(command);
             Queue<BigEndian<uint>> param;
 
-            unsafe {
+            unsafe
+            {
                 ReadOnlySpan<BigEndian<uint>> param_span = MemoryManager.CreateSpan<BigEndian<uint>>(CellGcmSys.IoToEa(ctrl->Get), (int)command.MethodCount);
                 ctrl->Get += command.MethodCount * 4;
 
                 // this is very bad and slow
                 param = new Queue<BigEndian<uint>>(param_span.ToArray());
             }
-    
+
             uint methodRegister = command.MethodRegister;
 
-            while (param.Count > 0) {
-                switch (methodRegister) {
+            while (param.Count > 0)
+            {
+                switch (methodRegister)
+                {
                     case NV40TCL_NOP:                    /* NOP */
                     case NV40TCL_VTX_CACHE_INVALIDATE:   /* NOP?? */
                     case NV40TCL_VTX_CACHE_INVALIDATE2:  /* NOP?? */
@@ -571,7 +577,7 @@ namespace PS3Sharp.Cell.RSX {
                     case NV40TCL_DIVIDER_FREQUENCY_OP:
                         DividerFrequencyOp(param);
                         break;
-                        
+
                     default:
                         //Console.WriteLine($"[RSX] Unknown MethodRegister: {methodRegister:X} raw = {command.Raw:X8} param_count = {param.Count}");
                         param.Clear();
@@ -581,25 +587,30 @@ namespace PS3Sharp.Cell.RSX {
                 }
 
 
-                if (!command.NonIncrement) {
+                if (!command.NonIncrement)
+                {
                     methodRegister += 4;
                 }
             }
 
-            if (param.Count > 0) {
+            if (param.Count > 0)
+            {
                 throw new Exception($"{command.Raw:X8} -- param: {param.Count}");
             }
         }
 
-        private void Flip(Queue<BigEndian<uint>> param) {
+        private void Flip(Queue<BigEndian<uint>> param)
+        {
             uint bufferID = param.Dequeue(); // ?
 
-            if (CurrentState.FrameDirty) {
+            if (CurrentState.FrameDirty)
+            {
                 GLRenderer.BlitFBO();
                 CurrentState.FrameDirty = false;
             }
 
-            if (!CellGcmSys.FlipHandler.IsNullPtr) {
+            if (!CellGcmSys.FlipHandler.IsNullPtr)
+            {
                 PPUInterpreter.ExecuteFunction(_RSX_PPU_Thread, CellGcmSys.FlipHandler, toc: true, [1, 0, 0, 0, 0]);
             }
 
@@ -612,31 +623,38 @@ namespace PS3Sharp.Cell.RSX {
             Interlocked.Exchange<ulong>(ref CellGcmSys.FlipStatus, 0);
         }
 
-        private void Vblank() {
-            if (!CellGcmSys.VblankHandler.IsNullPtr) {
+        private void Vblank()
+        {
+            if (!CellGcmSys.VblankHandler.IsNullPtr)
+            {
                 PPUInterpreter.ExecuteFunction(_RSX_PPU_Thread, CellGcmSys.VblankHandler, toc: true, [1, 0, 0, 0, 0]);
             }
         }
 
-        private void SetRef(Queue<BigEndian<uint>> param) {
+        private void SetRef(Queue<BigEndian<uint>> param)
+        {
             uint ref_value = param.Dequeue();
 
-            unsafe {
+            unsafe
+            {
                 CellGcmCtrlRegister* ctrl = CtrlPtr.AsNativePtr();
                 ctrl->Ref = ref_value;
             }
         }
 
-        private void SemaphoreBackendwriteOffset(Queue<BigEndian<uint>> param) {
+        private void SemaphoreBackendwriteOffset(Queue<BigEndian<uint>> param)
+        {
             CurrentState.CurrentSemaphoreOffset = param.Dequeue();
             //Console.WriteLine($"[RSX] SemaphoreBackendwriteOffset = [{CurrentState.CurrentSemaphoreOffset}]");
         }
 
-        private void SET_CTX_DMA_SEMAPHORE(Queue<BigEndian<uint>> param) {
+        private void SET_CTX_DMA_SEMAPHORE(Queue<BigEndian<uint>> param)
+        {
             CurrentState.CurrentSemaphoreLocation = param.Dequeue() & 1;
         }
 
-        private void SemaphoreBackendwriteRelease(Queue<BigEndian<uint>> param) {
+        private void SemaphoreBackendwriteRelease(Queue<BigEndian<uint>> param)
+        {
             // wvalue is: u32 wvalue = (value&0xff00ff00) | ((value>>16)&0xff) | ((value&0xff)<<16);
             // Reverse it
             uint wvalue = param.Dequeue();
@@ -645,7 +663,8 @@ namespace PS3Sharp.Cell.RSX {
             //Console.WriteLine($"[RSX] SemaphoreBackendwriteRelease [{CurrentState.CurrentSemaphoreOffset}] = 0x{value:X8}");
         }
 
-        private void SemaphoreAcquire(Queue<BigEndian<uint>> param) {
+        private void SemaphoreAcquire(Queue<BigEndian<uint>> param)
+        {
             BigEndian<uint> arg = param.Dequeue();
 
             // This command makes RSX waits until semaphore value == argument
@@ -662,136 +681,162 @@ namespace PS3Sharp.Cell.RSX {
             //}
         }
 
-        private void SemaphoreRelease(Queue<BigEndian<uint>> param) {
+        private void SemaphoreRelease(Queue<BigEndian<uint>> param)
+        {
             uint value = param.Dequeue();
             MemoryManager.Write<uint>(LabelsPtr + CurrentState.CurrentSemaphoreOffset, value);
             //Console.WriteLine($"[RSX] SemaphoreRelease [{CurrentState.CurrentSemaphoreOffset}] = 0x{value:X8}");
         }
 
-        public void DividerFrequencyOp(Queue<BigEndian<uint>> param) {
+        public void DividerFrequencyOp(Queue<BigEndian<uint>> param)
+        {
             uint op = param.Dequeue();
-            if(op != 0) {
+            if (op != 0)
+            {
                 Console.WriteLine($"[RSX] NV40TCL_DIVIDER_FREQUENCY_OP = 0x{op:X8}");
             }
         }
 
-        private void Primitive3DColorMask(Queue<BigEndian<uint>> param) {
+        private void Primitive3DColorMask(Queue<BigEndian<uint>> param)
+        {
             uint colorMask = param.Dequeue();
             bool r = (colorMask & GCM_COLOR_MASK_R) > 0;
             bool g = (colorMask & GCM_COLOR_MASK_G) > 0;
             bool b = (colorMask & GCM_COLOR_MASK_B) > 0;
             bool a = (colorMask & GCM_COLOR_MASK_A) > 0;
 
-            bool hasChanged = 
-                GLRenderer.ColorMaskR != r || 
-                GLRenderer.ColorMaskG != g || 
-                GLRenderer.ColorMaskB != b || 
+            bool hasChanged =
+                GLRenderer.ColorMaskR != r ||
+                GLRenderer.ColorMaskG != g ||
+                GLRenderer.ColorMaskB != b ||
                 GLRenderer.ColorMaskA != a;
 
-            if (hasChanged) {
+            if (hasChanged)
+            {
                 GLRenderer.SetColorMask(r, g, b, a);
             }
         }
 
-        private void Primitive3DFogColor(Queue<BigEndian<uint>> param) {
+        private void Primitive3DFogColor(Queue<BigEndian<uint>> param)
+        {
             uint fogColor = param.Dequeue();
         }
 
-        private void ViewPortHorizontal(Queue<BigEndian<uint>> param) {
+        private void ViewPortHorizontal(Queue<BigEndian<uint>> param)
+        {
             uint w = param.Dequeue() >> 16;
             uint h = param.Dequeue() >> 16;
         }
 
-        private void ViewPortVertical(Queue<BigEndian<uint>> param) {
+        private void ViewPortVertical(Queue<BigEndian<uint>> param)
+        {
             uint p1 = param.Dequeue();
             uint p2 = param.Dequeue();
         }
 
-        private void DepthRange(Queue<BigEndian<uint>> param) {
+        private void DepthRange(Queue<BigEndian<uint>> param)
+        {
             //TODO
             float min = Unsafe.BitCast<uint, float>(param.Dequeue());
             float max = Unsafe.BitCast<uint, float>(param.Dequeue());
         }
 
-        private void ViewPortOffset(uint methodRegister, Queue<BigEndian<uint>> param) {
+        private void ViewPortOffset(uint methodRegister, Queue<BigEndian<uint>> param)
+        {
             //TODO
             int index = (int)((methodRegister - NV40TCL_VIEWPORT_OFFSET_X) >> 2);
             uint raw = param.Dequeue();
             float value = Unsafe.BitCast<uint, float>(raw);
 
-            if (CurrentState.ViewPortOffset[index] != value) {
+            if (CurrentState.ViewPortOffset[index] != value)
+            {
                 CurrentState.ViewPortOffset[index] = value;
                 CurrentState.ViewPortOffsetDirty = true;
             }
         }
 
-        private void ViewPortScale(uint methodRegister, Queue<BigEndian<uint>> param) {
+        private void ViewPortScale(uint methodRegister, Queue<BigEndian<uint>> param)
+        {
             //TODO
             int index = (int)((methodRegister - NV40TCL_VIEWPORT_SCALE_X) >> 2);
             uint raw = param.Dequeue();
             float value = Unsafe.BitCast<uint, float>(raw);
 
-            if (CurrentState.ViewPortScale[index] != value) {
+            if (CurrentState.ViewPortScale[index] != value)
+            {
                 CurrentState.ViewPortScale[index] = value;
                 CurrentState.ViewPortScaleDirty = true;
             }
         }
 
-        private void ScissorHorizontal(Queue<BigEndian<uint>> param) {
+        private void ScissorHorizontal(Queue<BigEndian<uint>> param)
+        {
             uint value = param.Dequeue();
             CurrentState.ScissorX = value & 0xFFFF;
             CurrentState.ScissorWidth = (value >> 16) & 0xFFFF;
             GLRenderer.SetScissor((int)CurrentState.ScissorX, 720 - (int)(CurrentState.ScissorY + CurrentState.ScissorHeight), (int)CurrentState.ScissorWidth, (int)CurrentState.ScissorHeight);
         }
 
-        private void ScissorVertical(Queue<BigEndian<uint>> param) {
+        private void ScissorVertical(Queue<BigEndian<uint>> param)
+        {
             uint value = param.Dequeue();
             CurrentState.ScissorY = value & 0xFFFF;
             CurrentState.ScissorHeight = (value >> 16) & 0xFFFF;
             GLRenderer.SetScissor((int)CurrentState.ScissorX, 720 - (int)(CurrentState.ScissorY + CurrentState.ScissorHeight), (int)CurrentState.ScissorWidth, (int)CurrentState.ScissorHeight);
         }
 
-        private void DepthTestEnable(Queue<BigEndian<uint>> param) {
+        private void DepthTestEnable(Queue<BigEndian<uint>> param)
+        {
             uint value = param.Dequeue();
-            if (value > 0) {
+            if (value > 0)
+            {
                 CurrentState.DepthTestEnabled = true;
                 GLRenderer.EnabelDepthTest();
-            } else {
+            }
+            else
+            {
                 CurrentState.DepthTestEnabled = false;
                 GLRenderer.DisableDepthTest();
             }
         }
 
-        private void DepthFunction(Queue<BigEndian<uint>> param) {
+        private void DepthFunction(Queue<BigEndian<uint>> param)
+        {
             //They use the same values as opengl -- we can cast directly
             uint function = param.Dequeue();
             GLRenderer.SetDepthFunction((DepthFunction)function);
         }
 
-        private void ShadeModel(Queue<BigEndian<uint>> param) {
+        private void ShadeModel(Queue<BigEndian<uint>> param)
+        {
             //TODO
             param.Clear();
         }
 
-        private void DepthWriteEnable(Queue<BigEndian<uint>> param) {
+        private void DepthWriteEnable(Queue<BigEndian<uint>> param)
+        {
             //Depth Mask
             uint value = param.Dequeue();
             CurrentState.DepthMask = value > 0;
             GLRenderer.SetDepthMask(CurrentState.DepthMask);
         }
 
-        private void FrontFace(Queue<BigEndian<uint>> param) {
+        private void FrontFace(Queue<BigEndian<uint>> param)
+        {
             //TODO
             param.Clear();
         }
 
-        private void Primitive_3D_DMA_In_Memory(Queue<BigEndian<uint>> param) {
+        private void Primitive_3D_DMA_In_Memory(Queue<BigEndian<uint>> param)
+        {
             //TODO
             param.Clear();
         }
 
-        private void DMAColor(uint methodRegister, Queue<BigEndian<uint>> param) {
-            if (methodRegister == NV40TCL_DMA_COLOR0) {
+        private void DMAColor(uint methodRegister, Queue<BigEndian<uint>> param)
+        {
+            if (methodRegister == NV40TCL_DMA_COLOR0)
+            {
                 CurrentState.Surface_A_Location = param.Dequeue();
             }
 
@@ -799,7 +844,8 @@ namespace PS3Sharp.Cell.RSX {
             param.Clear();
         }
 
-        private void RTFormat(Queue<BigEndian<uint>> param) {
+        private void RTFormat(Queue<BigEndian<uint>> param)
+        {
             // TODO
             //Console.WriteLine($"RSX NV40TCL_RT_FORMAT");
 
@@ -816,39 +862,46 @@ namespace PS3Sharp.Cell.RSX {
             param.Clear();
         }
 
-        private void ZetaPitch(Queue<BigEndian<uint>> param) {
+        private void ZetaPitch(Queue<BigEndian<uint>> param)
+        {
             //TODO
             param.Clear();
         }
 
-        private void Color2Pitch(Queue<BigEndian<uint>> param) {
+        private void Color2Pitch(Queue<BigEndian<uint>> param)
+        {
             //TODO
             param.Clear();
         }
 
 
-        private void Color3Pitch(Queue<BigEndian<uint>> param) {
+        private void Color3Pitch(Queue<BigEndian<uint>> param)
+        {
             //TODO
             param.Clear();
         }
 
-        private void RTEnable(Queue<BigEndian<uint>> param) {
+        private void RTEnable(Queue<BigEndian<uint>> param)
+        {
             //TODO
             param.Clear();
         }
 
-        private void WindowOffset(Queue<BigEndian<uint>> param) {
+        private void WindowOffset(Queue<BigEndian<uint>> param)
+        {
             //TODO
             param.Clear();
         }
 
-        private void RTHorizontal(Queue<BigEndian<uint>> param) {
+        private void RTHorizontal(Queue<BigEndian<uint>> param)
+        {
             // Surface clip X
             uint clip = param.Dequeue();
             uint x = clip & 0xFFFF;            // todo
             int width = (int)((clip >> 16) & 0xFFFF);
 
-            if (width != CurrentState.SurfaceClip[0]) {
+            if (width != CurrentState.SurfaceClip[0])
+            {
                 CurrentState.SurfaceClip[0] = width;
                 CurrentState.SurfaceClipDirty = true;
             }
@@ -856,25 +909,29 @@ namespace PS3Sharp.Cell.RSX {
             //Console.WriteLine($"[RSX] Surface Clip width = {width}");
         }
 
-        private void RTVertical(Queue<BigEndian<uint>> param) {
+        private void RTVertical(Queue<BigEndian<uint>> param)
+        {
             // Surface clip Y
             uint clip = param.Dequeue();
             uint y = clip & 0xFFFF;             // todo
             int height = (int)((clip >> 16) & 0xFFFF);
 
-            if (height != CurrentState.SurfaceClip[1]) {
+            if (height != CurrentState.SurfaceClip[1])
+            {
                 CurrentState.SurfaceClip[1] = height;
                 CurrentState.SurfaceClipDirty = true;
             }
             //Console.WriteLine($"[RSX] Surface Clip height = {height}");
         }
 
-        private void ShaderWindow(Queue<BigEndian<uint>> param) {
+        private void ShaderWindow(Queue<BigEndian<uint>> param)
+        {
             //TODO
             param.Clear();
         }
 
-        private void ClearValueColor(Queue<BigEndian<uint>> param) {
+        private void ClearValueColor(Queue<BigEndian<uint>> param)
+        {
             uint color = param.Dequeue();
 
             float r = (color & 0xFF) / 255.0f;
@@ -882,38 +939,44 @@ namespace PS3Sharp.Cell.RSX {
             float b = ((color >> 16) & 0xFF) / 255.0f;
             float a = ((color >> 24) & 0xFF) / 255.0f;
 
-            bool hasChanged = 
+            bool hasChanged =
                 GLRenderer.ClearColorR != r ||
-                GLRenderer.ClearColorG != g || 
-                GLRenderer.ClearColorB != b || 
+                GLRenderer.ClearColorG != g ||
+                GLRenderer.ClearColorB != b ||
                 GLRenderer.ClearColorA != a;
 
-            if (hasChanged) {
+            if (hasChanged)
+            {
                 GLRenderer.SetClearColor(r, g, b, a);
             }
         }
 
-        private void ClearValueDepth(Queue<BigEndian<uint>> param) {
+        private void ClearValueDepth(Queue<BigEndian<uint>> param)
+        {
             //Console.WriteLine($"RSX NV40TCL_CLEAR_VALUE_DEPTH param_count = {command.MethodCount}");
             param.Clear();
         }
 
-        private void ClearBuffers(Queue<BigEndian<uint>> param) {
+        private void ClearBuffers(Queue<BigEndian<uint>> param)
+        {
             //Console.WriteLine($"RSX NV40TCL_CLEAR_BUFFERS param_count = {command.MethodCount}");
 
             // ensure that we're clearing the target buffer
             BindSurfaceA();
 
             uint value = param.Dequeue();
-            if ((value >> 4) > 0) {                 //should & 0xf0
+            if ((value >> 4) > 0)
+            {                 //should & 0xf0
                 GLRenderer.ClearColorBuffer();
             }
 
-            if (((value >> 1) & 1) == 1) {
+            if (((value >> 1) & 1) == 1)
+            {
                 GLRenderer.ClearStencilBuffer();
             }
 
-            if ((value & 1) == 1) {
+            if ((value & 1) == 1)
+            {
                 GLRenderer.SetDepthMask(true);
                 GLRenderer.ClearDepthBuffer();
                 GLRenderer.SetDepthMask(CurrentState.DepthMask);
@@ -922,43 +985,52 @@ namespace PS3Sharp.Cell.RSX {
             CurrentState.FrameDirty = true;
         }
 
-        private void DepthControl(Queue<BigEndian<uint>> param) {
+        private void DepthControl(Queue<BigEndian<uint>> param)
+        {
             param.Clear();
         }
 
-        private void ViewPortClipHorizontal(Queue<BigEndian<uint>> param) {
+        private void ViewPortClipHorizontal(Queue<BigEndian<uint>> param)
+        {
             param.Clear();
         }
 
         //-----------------------------------------------Shader stuff-------------------------------------------------
-        private void VP_UploadFromID(Queue<BigEndian<uint>> param) {
+        private void VP_UploadFromID(Queue<BigEndian<uint>> param)
+        {
             uint loadIndex = param.Dequeue() * 4; // Index of instruction to load at in the buffer
             VertexShaderGenerator.VertexShaderLoadIndex = loadIndex;
         }
 
-        private void VP_StartFromID(Queue<BigEndian<uint>> param) {
+        private void VP_StartFromID(Queue<BigEndian<uint>> param)
+        {
             uint startIndex = param.Dequeue() * 4; // Index of the first instruction in the program
             VertexShaderGenerator.VertexShaderShaderStart = startIndex;
         }
 
-        private void VP_UploadInstructions(Queue<BigEndian<uint>> param) {
+        private void VP_UploadInstructions(Queue<BigEndian<uint>> param)
+        {
             //Console.WriteLine($"RSX NV40TCL_VP_UPLOAD_INST param_count = {param.Count}");
             VertexShaderGenerator.UploadInstructions(param);
         }
 
-        private void VP_AttributeEnable(Queue<BigEndian<uint>> param) {
+        private void VP_AttributeEnable(Queue<BigEndian<uint>> param)
+        {
             uint mask = param.Dequeue();
         }
 
-        private void VP_ResultEnable(Queue<BigEndian<uint>> param) {
+        private void VP_ResultEnable(Queue<BigEndian<uint>> param)
+        {
             uint mask = param.Dequeue();
         }
 
-        private void TransformTimeout(Queue<BigEndian<uint>> param) {
+        private void TransformTimeout(Queue<BigEndian<uint>> param)
+        {
             param.Clear();
         }
 
-        private void VP_UploadConstantID(Queue<BigEndian<uint>> param) {
+        private void VP_UploadConstantID(Queue<BigEndian<uint>> param)
+        {
             uint loadPosition = (uint)param.Dequeue(); //Get load position (first arg)
 
             //Console.WriteLine($"RSX NV40TCL_VP_UPLOAD_CONST_ID param_count = {command.MethodCount} load at: {loadPosition}");
@@ -966,18 +1038,21 @@ namespace PS3Sharp.Cell.RSX {
 
             uint count = (uint)param.Count;
 
-            if ((count % 4) != 0) {
+            if ((count % 4) != 0)
+            {
                 //Console.WriteLine("[RSX] NV40TCL_VP_UPLOAD_CONST_ID: warning values count is not a multiple of 4");
                 //throw new Exception();
             }
 
-            for (uint i = 0; i < count; i++) {
+            for (uint i = 0; i < count; i++)
+            {
                 uint index = (loadPosition * 4) + i;
 
                 uint raw = param.Dequeue();
                 float value = Unsafe.BitCast<uint, float>(raw);
 
-                if (value != CurrentState.Constants[index]) {
+                if (value != CurrentState.Constants[index])
+                {
                     CurrentState.Constants[index] = value;
                     CurrentState.ConstantsDirty = true;
 
@@ -997,7 +1072,8 @@ namespace PS3Sharp.Cell.RSX {
             }
         }
 
-        private void VP_UploadConstantX(Queue<BigEndian<uint>> param) {
+        private void VP_UploadConstantX(Queue<BigEndian<uint>> param)
+        {
             //uint id = (CurrentCommand.Raw - NV40TCL_VP_UPLOAD_CONST_X) / 16;
             param.Clear();
 
@@ -1006,7 +1082,8 @@ namespace PS3Sharp.Cell.RSX {
         }
 
         // Sends the address of the fragment shader program 
-        private void FP_Address(Queue<BigEndian<uint>> param) {
+        private void FP_Address(Queue<BigEndian<uint>> param)
+        {
             uint offset_loc = param.Dequeue();
             uint offset = offset_loc & ~3U;
             uint loc = (offset_loc & 3) - 1;
@@ -1015,48 +1092,58 @@ namespace PS3Sharp.Cell.RSX {
             FragmentShaderGenerator.FragmentShaderStartAddress = address;
         }
 
-        private void FP_Control(Queue<BigEndian<uint>> param) {
+        private void FP_Control(Queue<BigEndian<uint>> param)
+        {
             uint fp_control = param.Dequeue();
         }
 
-        private void ClipPlaneEnable(Queue<BigEndian<uint>> param) {
+        private void ClipPlaneEnable(Queue<BigEndian<uint>> param)
+        {
             param.Clear();
         }
 
-        private void TexCoordControl(Queue<BigEndian<uint>> param) {
+        private void TexCoordControl(Queue<BigEndian<uint>> param)
+        {
             param.Clear();
         }
 
-        private void SetContextDMAImageDest(Queue<BigEndian<uint>> param) {
+        private void SetContextDMAImageDest(Queue<BigEndian<uint>> param)
+        {
             param.Clear();
         }
 
-        private void SetOffsetDest(Queue<BigEndian<uint>> param) {
+        private void SetOffsetDest(Queue<BigEndian<uint>> param)
+        {
             CurrentState.DestOffset = param.Dequeue();
         }
 
-        private void SetColorFormat(Queue<BigEndian<uint>> param) {
+        private void SetColorFormat(Queue<BigEndian<uint>> param)
+        {
             param.Clear();
         }
 
         // Sets the position for NV308A_COLOR
-        private void Point_Position(Queue<BigEndian<uint>> param) {
+        private void Point_Position(Queue<BigEndian<uint>> param)
+        {
             //Still needs to be figured out
             uint point = param.Dequeue();
             CurrentState.PointX = point & 0xFFFF;
             CurrentState.PointY = point >> 16;
         }
 
-        private void SizeOut(Queue<BigEndian<uint>> param) {
+        private void SizeOut(Queue<BigEndian<uint>> param)
+        {
             param.Clear();
         }
 
         // Sends a fragment uniform at the positions set by NV308A_POINT
-        private void Point_Color(Queue<BigEndian<uint>> param) {
+        private void Point_Color(Queue<BigEndian<uint>> param)
+        {
             //Still needs to be figured out
 
             int count = param.Count;
-            if (count > 4) {
+            if (count > 4)
+            {
                 throw new ArgumentException($"[RSX] NV308A_COLOR got more than 4 parameters");
             }
 
@@ -1065,7 +1152,8 @@ namespace PS3Sharp.Cell.RSX {
 
             Span<float> values = [0.0f, 0.0f, 0.0f, 0.0f];
 
-            for (int i = 0; i < count; i++) {
+            for (int i = 0; i < count; i++)
+            {
                 uint raw = param.Dequeue();
 
                 // Reverse the swapF32_16 function
@@ -1079,18 +1167,23 @@ namespace PS3Sharp.Cell.RSX {
             CurrentState.AllUniforms[address] = vector;
         }
 
-        private void BlendEnable(Queue<BigEndian<uint>> param) {
+        private void BlendEnable(Queue<BigEndian<uint>> param)
+        {
             bool isEnabled = param.Dequeue() != 0;
             CurrentState.BlendingEnabled = isEnabled;
 
-            if (isEnabled) {
+            if (isEnabled)
+            {
                 GLRenderer.EnableBlending();
-            } else {
+            }
+            else
+            {
                 GLRenderer.DisableBlending();
             }
         }
 
-        private void BlendFunctionSRC(Queue<BigEndian<uint>> param) {
+        private void BlendFunctionSRC(Queue<BigEndian<uint>> param)
+        {
             uint value = param.Dequeue();
             (BlendingFactorSrc srcFactor, BlendingFactorSrc srcAlphaFactor) = GetSrcBlendFactors(value);
 
@@ -1105,7 +1198,8 @@ namespace PS3Sharp.Cell.RSX {
             );
         }
 
-        private void BlendFunctionDST(Queue<BigEndian<uint>> param) {
+        private void BlendFunctionDST(Queue<BigEndian<uint>> param)
+        {
             uint value = param.Dequeue();
             (BlendingFactorDest destFactor, BlendingFactorDest destAlphaFactor) = GetDestBlendFactors(value);
 
@@ -1120,7 +1214,8 @@ namespace PS3Sharp.Cell.RSX {
             );
         }
 
-        private void BlendColor(Queue<BigEndian<uint>> param) {
+        private void BlendColor(Queue<BigEndian<uint>> param)
+        {
             uint color = param.Dequeue();
 
             float r = (color & 0xFF) / 255.0f;
@@ -1134,36 +1229,42 @@ namespace PS3Sharp.Cell.RSX {
                 GLRenderer.BlendColorB != b ||
                 GLRenderer.BlendColorA != a;
 
-            if (hasChanged) {
+            if (hasChanged)
+            {
                 GLRenderer.SetBlendColor(r, g, b, a);
             }
         }
 
-        private void BlendEquation(Queue<BigEndian<uint>> param) {
+        private void BlendEquation(Queue<BigEndian<uint>> param)
+        {
             uint value = param.Dequeue();
             (BlendEquationMode rgb, BlendEquationMode alpha) = GetBlendEquation(value);
 
             GLRenderer.SetBlendEquation(rgb, alpha);
         }
 
-        private void ColorLogicOPEnable(Queue<BigEndian<uint>> param) {
+        private void ColorLogicOPEnable(Queue<BigEndian<uint>> param)
+        {
             param.Clear();
         }
 
-        private void ColorLogicOP(Queue<BigEndian<uint>> param) {
+        private void ColorLogicOP(Queue<BigEndian<uint>> param)
+        {
             param.Clear();
         }
 
         // Sets texture offset
-        private void TexOffset(uint methodRegister, Queue<BigEndian<uint>> param) {
-            uint location = (methodRegister - NV40TCL_TEX_OFFSET_0) >> 5;    
+        private void TexOffset(uint methodRegister, Queue<BigEndian<uint>> param)
+        {
+            uint location = (methodRegister - NV40TCL_TEX_OFFSET_0) >> 5;
             uint offset = param.Dequeue();
 
             CurrentState.Textures[location].Offset = offset;
             //Console.WriteLine($"RSX NV40TCL_TEX_OFFSET: tex[{location}] offset = 0x{offset:X8}");
         }
 
-        private void TexFormat(uint methodRegister, Queue<BigEndian<uint>> param) {
+        private void TexFormat(uint methodRegister, Queue<BigEndian<uint>> param)
+        {
             uint location = (methodRegister - NV40TCL_TEX_FORMAT_0) >> 5;
             uint format = param.Dequeue();
 
@@ -1173,13 +1274,15 @@ namespace PS3Sharp.Cell.RSX {
             CurrentState.Textures[location].Format = format;
         }
 
-        private void TesSwizzle(uint methodRegister, Queue<BigEndian<uint>> param) {
+        private void TesSwizzle(uint methodRegister, Queue<BigEndian<uint>> param)
+        {
             uint location = (methodRegister - NV40TCL_TEX_SWIZZLE_0) >> 5;
             uint swzzle = param.Dequeue();
             CurrentState.Textures[location].SwizzleValue = swzzle;
         }
 
-        private void TexSize0(uint methodRegister, Queue<BigEndian<uint>> param) {
+        private void TexSize0(uint methodRegister, Queue<BigEndian<uint>> param)
+        {
             uint location = (methodRegister - NV40TCL_TEX_SIZE0_0) >> 5;
             uint size = param.Dequeue();
             uint height = size & 0xFFFF;
@@ -1188,7 +1291,8 @@ namespace PS3Sharp.Cell.RSX {
             CurrentState.Textures[location].Width = width;
         }
 
-        private void TexSize1(uint methodRegister, Queue<BigEndian<uint>> param) {
+        private void TexSize1(uint methodRegister, Queue<BigEndian<uint>> param)
+        {
             uint location = (methodRegister - NV40TCL_TEX_SIZE1_0) >> 2;
             uint pitch_depth = param.Dequeue();
             uint pitch = pitch_depth & 0xFFFF;
@@ -1197,7 +1301,8 @@ namespace PS3Sharp.Cell.RSX {
             CurrentState.Textures[location].Depth = depth;
         }
 
-        private void TexEnable(uint methodRegister, Queue<BigEndian<uint>> param) {
+        private void TexEnable(uint methodRegister, Queue<BigEndian<uint>> param)
+        {
             uint location = (methodRegister - NV40TCL_TEX_ENABLE_0) >> 5;
             uint value = param.Dequeue();
             bool isEnabled = (value >> 31) == 1;
@@ -1206,23 +1311,27 @@ namespace PS3Sharp.Cell.RSX {
         }
 
 
-        private void TexFilter(uint methodRegister, Queue<BigEndian<uint>> param) {
+        private void TexFilter(uint methodRegister, Queue<BigEndian<uint>> param)
+        {
             uint location = (methodRegister - NV40TCL_TEX_FILTER_0) >> 5;
             uint filter = param.Dequeue();
             CurrentState.Textures[location].Filter = filter;
         }
 
-        private void TexWrap(uint methodRegister, Queue<BigEndian<uint>> param) {
+        private void TexWrap(uint methodRegister, Queue<BigEndian<uint>> param)
+        {
             uint location = (methodRegister - NV40TCL_TEX_WRAP_0) >> 5;
             uint wrap = param.Dequeue();
             CurrentState.Textures[location].Wrap = wrap;
         }
 
-        private void TexCacheCtl(Queue<BigEndian<uint>> param) {
+        private void TexCacheCtl(Queue<BigEndian<uint>> param)
+        {
             param.Clear();
         }
 
-        private void VertexFormat(uint methodRegister, Queue<BigEndian<uint>> param) {
+        private void VertexFormat(uint methodRegister, Queue<BigEndian<uint>> param)
+        {
             // Verex Buffer format
 
             uint location = (methodRegister - NV40TCL_VTXFMT_0) >> 2;
@@ -1236,7 +1345,8 @@ namespace PS3Sharp.Cell.RSX {
             VertexAttribPointerType dtype;
             bool isNormalized = type == 1 || type == 4;
 
-            switch (type) {
+            switch (type)
+            {
                 case 1: dtype = VertexAttribPointerType.Short; break;
                 case 2: dtype = VertexAttribPointerType.Float; break;
                 case 3: dtype = VertexAttribPointerType.HalfFloat; break;
@@ -1263,7 +1373,8 @@ namespace PS3Sharp.Cell.RSX {
             //Console.WriteLine($"RSX NV40TCL_VTXFMT type = {dtype} elements = {elements} stride = {stride} frequency = {frequency} isNormalized: {isNormalized} location = {location}");
         }
 
-        private void VertexBufferAddress(uint methodRegister, Queue<BigEndian<uint>> param) {   //Vertex Buffer Address
+        private void VertexBufferAddress(uint methodRegister, Queue<BigEndian<uint>> param)
+        {   //Vertex Buffer Address
             uint location = (methodRegister - NV40TCL_VTXBUF_ADDRESS_0) >> 2;
             uint offset = param.Dequeue();
             uint isEA = offset >> 31;
@@ -1272,7 +1383,8 @@ namespace PS3Sharp.Cell.RSX {
             //Console.WriteLine($"RSX NV40TCL_VTXBUF_ADDRESS location = {location} - offset = 0x{offset:X8} address = 0x{CurrentState.VertexAttributes[location].BufferAddress:X}");
         }
 
-        public void VertexImmediate4F(uint methodRegister, Queue<BigEndian<uint>> param) {
+        public void VertexImmediate4F(uint methodRegister, Queue<BigEndian<uint>> param)
+        {
             uint location = (methodRegister - NV40TCL_VTX_ATTR_4F_0) >> 4;
 
             // Assuming that X, Y, Z, W are always provided. Othwerise we need to split this into 4 commands.
@@ -1293,7 +1405,8 @@ namespace PS3Sharp.Cell.RSX {
             //Console.WriteLine($"vertex buffer {location} imm: ({x}. {y}, {z}, {w})");
         }
 
-        public void VertexImmediate2F(uint methodRegister, Queue<BigEndian<uint>> param) {
+        public void VertexImmediate2F(uint methodRegister, Queue<BigEndian<uint>> param)
+        {
             uint location = (methodRegister - NV40TCL_VTX_ATTR_2F_0) >> 3;
 
             // Assuming that X, Y are always provided. Othwerise we need to split this into 2 commands.
@@ -1308,7 +1421,8 @@ namespace PS3Sharp.Cell.RSX {
             CurrentState.VertexBuffers[location].ImmediateData.Add(y);
         }
 
-        private void IndexBatchOffset(Queue<BigEndian<uint>> param) {
+        private void IndexBatchOffset(Queue<BigEndian<uint>> param)
+        {
             uint offset = param.Dequeue();
             uint loc_type = param.Dequeue();
 
@@ -1317,7 +1431,8 @@ namespace PS3Sharp.Cell.RSX {
 
             CurrentState.ElementBuffer.BufferAddress = OffsetToAddress(offset, loc);
 
-            switch (type) {
+            switch (type)
+            {
                 case 1: CurrentState.ElementBuffer.ElementBufferType = DrawElementsType.UnsignedShort; break;
                 default: throw new Exception($"unimplemented ElementBufferType = {type}");
             }
@@ -1325,18 +1440,23 @@ namespace PS3Sharp.Cell.RSX {
             //Console.WriteLine($"RSX NV40TCL_VB_INDEX_BATCH_OFFSET param_count = {command.MethodCount} offset = {offset:X} loc = {loc:X} type = {type:X} ");
         }
 
-        private void BeginEnd(Queue<BigEndian<uint>> param) {
+        private void BeginEnd(Queue<BigEndian<uint>> param)
+        {
             // TODO: figure out immediate mode
 
             uint mode = param.Dequeue();
             CurrentState.Begin = mode != 0;
 
-            if (CurrentState.Begin) {
-                if (mode >= 1 && mode <= RSXInternalState.BeginModeLookup.Length) {
-                    CurrentState.BeginMode = RSXInternalState.BeginModeLookup[mode - 1];           
+            if (CurrentState.Begin)
+            {
+                if (mode >= 1 && mode <= RSXInternalState.BeginModeLookup.Length)
+                {
+                    CurrentState.BeginMode = RSXInternalState.BeginModeLookup[mode - 1];
                 }
 
-            } else {
+            }
+            else
+            {
 
                 // Mode 0 == End
                 // Dispatch the last bound mode..?
@@ -1361,9 +1481,11 @@ namespace PS3Sharp.Cell.RSX {
 
                 //DrawArrays((uint)vertexCount, 0);
 
-                for (int location = 0; location < CurrentState.VertexBuffers.Length; location++) {
+                for (int location = 0; location < CurrentState.VertexBuffers.Length; location++)
+                {
                     var vertexAttribute = CurrentState.VertexBuffers[location];
-                    if (vertexAttribute.HasImmediateData) {
+                    if (vertexAttribute.HasImmediateData)
+                    {
                         vertexAttribute.ImmediateData.Clear();
                     }
                 }
@@ -1372,7 +1494,8 @@ namespace PS3Sharp.Cell.RSX {
             //Console.WriteLine($"[RSX] TODO NV40TCL_BEGIN_END Begin = {CurrentState.Begin} Mode = {CurrentState.BeginMode}");
         }
 
-        private void IndexBatchDraw(Queue<BigEndian<uint>> param) {
+        private void IndexBatchDraw(Queue<BigEndian<uint>> param)
+        {
             // Draw indexed -> GL DrawElements
             // Each param is a draw call
 
@@ -1395,7 +1518,7 @@ namespace PS3Sharp.Cell.RSX {
             SetupRenderer(vertexCount);
 
             // Send raw bytes anyways, the type is an argument of the draw call
-             GLRenderer.SetIndexList<byte>(data);
+            GLRenderer.SetIndexList<byte>(data);
 
             // Draw
             GLRenderer.DrawElements(CurrentState.BeginMode, (int)CurrentState.ElementBuffer.TotalElements, CurrentState.ElementBuffer.ElementBufferType);
@@ -1404,7 +1527,8 @@ namespace PS3Sharp.Cell.RSX {
             //Console.WriteLine($"RSX NV40TCL_VB_INDEX_BATCH_DRAW count = {indicesTotalCount}");
         }
 
-        private void VertexBatchDraw(Queue<BigEndian<uint>> param) {
+        private void VertexBatchDraw(Queue<BigEndian<uint>> param)
+        {
             // Draw Array
 
             int count = param.Count;
@@ -1412,7 +1536,8 @@ namespace PS3Sharp.Cell.RSX {
 
             //Console.WriteLine($"[RSX] Draw arrays command count = {count}");
 
-            for (int i = 0; i < count; i++) {
+            for (int i = 0; i < count; i++)
+            {
                 uint drawCall = param.Dequeue();
                 uint start = drawCall & 0xFFFFFF;
                 uint vertexCount = (drawCall >> 24) + 1;

@@ -1,10 +1,13 @@
 ﻿using static PS3Sharp.Cell.PPU.PPURotationMasks;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
-    public sealed partial class IRGenerator {
+namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
+{
+    public sealed partial class IRGenerator
+    {
         // Add instructions
 
-        public void ADDI(PPUInstruction instruction) {
+        public void ADDI(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
@@ -15,7 +18,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             _irContext.SetGPR(rt, result);
         }
 
-        public void ADDIS(PPUInstruction instruction) {
+        public void ADDIS(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
             long si = (int)(instruction.SI << 16); // sign extended
@@ -26,7 +30,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             _irContext.SetGPR(rt, result);
         }
 
-        public void ADDIC(PPUInstruction instruction) {
+        public void ADDIC(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
@@ -36,12 +41,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             _irContext.SetGPR(rt, result);
             _irContext.SetCA(carry);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void ADDE(PPUInstruction instruction) {
+        public void ADDE(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
@@ -58,12 +65,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             _irContext.SetGPR(rt, finalSum);
             _irContext.SetCA(finalCarry);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(finalSum, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void ADD(PPUInstruction instruction) {
+        public void ADD(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
@@ -74,12 +83,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(rt, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void ADDC(PPUInstruction instruction) {
+        public void ADDC(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
@@ -91,12 +102,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             _irContext.SetGPR(rt, result);
             _irContext.SetCA(carry);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void ADDZE(PPUInstruction instruction) {
+        public void ADDZE(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
@@ -107,12 +120,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             _irContext.SetGPR(rt, result);
             _irContext.SetCA(carry);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void ADDME(PPUInstruction instruction) {
+        public void ADDME(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
@@ -127,14 +142,16 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             _irContext.SetGPR(rt, finalSum);
             _irContext.SetCA(finalCarry);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(finalSum, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
         // Subtract instructions
 
-        public void SUBF(PPUInstruction instruction) {
+        public void SUBF(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
@@ -145,12 +162,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(rt, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void SUBFC(PPUInstruction instruction) {
+        public void SUBFC(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
@@ -167,12 +186,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             _irContext.SetGPR(rt, finalSum);
             _irContext.SetCA(finalCarry);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(finalSum, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void SUBFIC(PPUInstruction instruction) {
+        public void SUBFIC(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
@@ -189,7 +210,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             _irContext.SetCA(finalCarry);
         }
 
-        public void SUBFE(PPUInstruction instruction) {
+        public void SUBFE(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
@@ -206,12 +228,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             _irContext.SetGPR(rt, finalSum);
             _irContext.SetCA(finalCarry);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(finalSum, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void SUBFZE(PPUInstruction instruction) {
+        public void SUBFZE(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
@@ -223,12 +247,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             _irContext.SetGPR(rt, result);
             _irContext.SetCA(carry);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void SUBFME(PPUInstruction instruction) {
+        public void SUBFME(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
@@ -243,13 +269,15 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             _irContext.SetGPR(rt, finalSum);
             _irContext.SetCA(finalCarry);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(finalSum, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
         // General logic instructions
-        public void ANDI(PPUInstruction instruction) {
+        public void ANDI(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
@@ -261,7 +289,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);  // Always updates CR0
         }
 
-        public void ANDIS(PPUInstruction instruction) {
+        public void ANDIS(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
@@ -273,7 +302,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0); // Always updates CR0
         }
 
-        public void ORI(PPUInstruction instruction) {
+        public void ORI(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
@@ -285,7 +315,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             // Does not affect CR0
         }
 
-        public void ORIS(PPUInstruction instruction) {
+        public void ORIS(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
@@ -297,7 +328,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             // Does not affect CR0
         }
 
-        public void XORI(PPUInstruction instruction) {
+        public void XORI(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
@@ -309,7 +341,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             // Does not affect CR0
         }
 
-        public void XORIS(PPUInstruction instruction) {
+        public void XORIS(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
@@ -321,7 +354,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             // Does not affect CR0
         }
 
-        public void AND(PPUInstruction instruction) {
+        public void AND(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
@@ -332,12 +366,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void OR(PPUInstruction instruction) {
+        public void OR(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
@@ -348,12 +384,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void XOR(PPUInstruction instruction) {
+        public void XOR(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
@@ -364,12 +402,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void NAND(PPUInstruction instruction) {
+        public void NAND(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
@@ -380,12 +420,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void NOR(PPUInstruction instruction) {
+        public void NOR(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
@@ -396,12 +438,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void EQV(PPUInstruction instruction) {
+        public void EQV(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
@@ -412,12 +456,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void ANDC(PPUInstruction instruction) {
+        public void ANDC(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
@@ -428,12 +474,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void ORC(PPUInstruction instruction) {
+        public void ORC(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
@@ -444,12 +492,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void NEG(PPUInstruction instruction) {
+        public void NEG(PPUInstruction instruction)
+        {
             // RT = ¬(RA) + 1
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
@@ -460,13 +510,15 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(rt, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
         // Condition register bit logic opcodes
-        public (Value ba, Value bb) GetBitsAB(PPUInstruction instruction) {
+        public (Value ba, Value bb) GetBitsAB(PPUInstruction instruction)
+        {
             //Helper for condition register bit opcodes
             int bitA = (int)(31 - instruction.Ba);
             int bitB = (int)(31 - instruction.Bb);
@@ -477,56 +529,64 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             return (a, b);
         }
 
-        public void CROR(PPUInstruction instruction) {
+        public void CROR(PPUInstruction instruction)
+        {
             uint bt = instruction.Bt;
             (Value bitA, Value bitB) = GetBitsAB(instruction);
             Value result = Or(bitA, bitB);
             _irContext.WriteCRBit(bt, result);
         }
 
-        public void CRORC(PPUInstruction instruction) {
+        public void CRORC(PPUInstruction instruction)
+        {
             uint bt = instruction.Bt;
             (Value bitA, Value bitB) = GetBitsAB(instruction);
             Value result = Or(bitA, Not(bitB));
             _irContext.WriteCRBit(bt, result);
         }
 
-        public void CRAND(PPUInstruction instruction) {
+        public void CRAND(PPUInstruction instruction)
+        {
             uint bt = instruction.Bt;
             (Value bitA, Value bitB) = GetBitsAB(instruction);
             Value result = And(bitA, bitB);
             _irContext.WriteCRBit(bt, result);
         }
 
-        public void CRANDC(PPUInstruction instruction) {
+        public void CRANDC(PPUInstruction instruction)
+        {
             uint bt = instruction.Bt;
             (Value bitA, Value bitB) = GetBitsAB(instruction);
             Value result = And(bitA, Not(bitB));
             _irContext.WriteCRBit(bt, result);
         }
 
-        public void CRXOR(PPUInstruction instruction) {
+        public void CRXOR(PPUInstruction instruction)
+        {
             uint bt = instruction.Bt;
             (Value bitA, Value bitB) = GetBitsAB(instruction);
             Value result = Xor(bitA, bitB);
             _irContext.WriteCRBit(bt, result);
         }
 
-        public void CRNAND(PPUInstruction instruction) {
+        public void CRNAND(PPUInstruction instruction)
+        {
             uint bt = instruction.Bt;
             (Value bitA, Value bitB) = GetBitsAB(instruction);
             Value result = Not(And(bitA, bitB));
             _irContext.WriteCRBit(bt, result);
         }
 
-        public void CRNOR(PPUInstruction instruction) {
+        public void CRNOR(PPUInstruction instruction)
+        {
             uint bt = instruction.Bt;
             (Value bitA, Value bitB) = GetBitsAB(instruction);
             Value result = Not(Or(bitA, bitB));
             _irContext.WriteCRBit(bt, result);
         }
 
-        public void CREQV(PPUInstruction instruction) {
+        public void CREQV(PPUInstruction instruction)
+        {
             uint bt = instruction.Bt;
             (Value bitA, Value bitB) = GetBitsAB(instruction);
             Value result = Not(Xor(bitA, bitB));
@@ -534,7 +594,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
         }
 
         // Multiply instructions
-        public void MULLI(PPUInstruction instruction) {
+        public void MULLI(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
@@ -546,7 +607,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             // No special registers affected
         }
 
-        public void MULLW(PPUInstruction instruction) {
+        public void MULLW(PPUInstruction instruction)
+        {
             // Multiply word, write 64-bit result (signed)
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -558,12 +620,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(rt, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void MULHW(PPUInstruction instruction) {
+        public void MULHW(PPUInstruction instruction)
+        {
             // Multiply word, write high 32-bit result (signed)
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -575,12 +639,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(rt, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void MULHWU(PPUInstruction instruction) {
+        public void MULHWU(PPUInstruction instruction)
+        {
             // Multiply word, write high 32-bit (unsigned)
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -592,12 +658,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(rt, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void MULLD(PPUInstruction instruction) {
+        public void MULLD(PPUInstruction instruction)
+        {
             // Multiply double word (signed)
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -609,12 +677,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(rt, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void MULHD(PPUInstruction instruction) {
+        public void MULHD(PPUInstruction instruction)
+        {
             // Multiply double word, write high 64-bit (signed)
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -626,12 +696,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(rt, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void MULHDU(PPUInstruction instruction) {
+        public void MULHDU(PPUInstruction instruction)
+        {
             // Multiply double word, write high 64-bit (unsigned)
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -643,13 +715,15 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(rt, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
         // Divide instructions
-        public void DIVD(PPUInstruction instruction) {
+        public void DIVD(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
@@ -660,12 +734,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(rt, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void DIVDU(PPUInstruction instruction) {
+        public void DIVDU(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
@@ -676,12 +752,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(rt, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void DIVW(PPUInstruction instruction) {
+        public void DIVW(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
@@ -692,12 +770,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(rt, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void DIVWU(PPUInstruction instruction) {
+        public void DIVWU(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rt = instruction.Rt;
@@ -708,13 +788,16 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(rt, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public (Value shiftAmount, Value isGreaterThanMaxShift) GetShiftAmount(Value shiftRegister, Value.ValueType destinationType) {
-            if (destinationType != Value.ValueType.I64 && destinationType != Value.ValueType.I32) {
+        public (Value shiftAmount, Value isGreaterThanMaxShift) GetShiftAmount(Value shiftRegister, Value.ValueType destinationType)
+        {
+            if (destinationType != Value.ValueType.I64 && destinationType != Value.ValueType.I32)
+            {
                 throw new Exception($"IR unsupported shift type: {destinationType}");
             }
 
@@ -735,20 +818,24 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             return (shiftAmount, isGreaterThanMaxShift);
         }
 
-        public Value GetShiftedOutCA(Value value, Value shiftAmount, Value isGreaterThanMax) {
+        public Value GetShiftedOutCA(Value value, Value shiftAmount, Value isGreaterThanMax)
+        {
             // Get the sign from the original value before extending
             Value sign = GetSign(value);
             Value value64;
 
-            if (value.Type != Value.ValueType.I64) {
+            if (value.Type != Value.ValueType.I64)
+            {
                 // Shifted-out bits are examined as a raw bit pattern,
                 // so widen without changing the low bits.
                 value64 = ZeroExtend(value, Value.ValueType.I64);
 
-            } else {
+            }
+            else
+            {
                 value64 = value;
             }
- 
+
             // We must not perform an invalid shift when shiftAmount > max.
             Value safeShift = Select(isGreaterThanMax, _irContext.Zero, shiftAmount);
 
@@ -767,7 +854,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             return Select(isGreaterThanMax, largeShiftCA, normalCA);
         }
 
-        public Value GetSign(Value value) {
+        public Value GetSign(Value value)
+        {
             // Make sure we're comparing same size
             Value zero = Constant(0, value.Type);
             Value isNegative = SetLessThanSigned(value, zero);
@@ -777,7 +865,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
         }
 
         // Shift instructions
-        public void SLD(PPUInstruction instruction) {
+        public void SLD(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
@@ -791,12 +880,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void SRD(PPUInstruction instruction) {
+        public void SRD(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
@@ -810,12 +901,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void SLW(PPUInstruction instruction) {
+        public void SLW(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
@@ -827,17 +920,19 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             Value shiftAmount32 = Truncate(shiftAmount, Value.ValueType.I32);
 
             Value shiftedValue32 = ShiftLeft(srcReg32, shiftAmount32);
-            Value shiftedValue64 = ZeroExtend(shiftedValue32, Value.ValueType.I64);     
+            Value shiftedValue64 = ZeroExtend(shiftedValue32, Value.ValueType.I64);
             Value result = Select(isGreaterThanMax, _irContext.Zero, shiftedValue64);
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void SRW(PPUInstruction instruction) {
+        public void SRW(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
@@ -849,17 +944,19 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             Value shiftAmount32 = Truncate(shiftAmount, Value.ValueType.I32);
 
             Value shiftedValue32 = ShiftRight(srcReg32, shiftAmount32);
-            Value shiftedValue64 = ZeroExtend(shiftedValue32, Value.ValueType.I64);     
+            Value shiftedValue64 = ZeroExtend(shiftedValue32, Value.ValueType.I64);
             Value result = Select(isGreaterThanMax, _irContext.Zero, shiftedValue64);
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void SRAD(PPUInstruction instruction) {
+        public void SRAD(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
@@ -872,31 +969,34 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             Value sign = GetSign(srcReg);
 
             // For arithmetic shift if shift > 63, fill based on sign.
-            Value fill =  Select(sign, _irContext.MinusOne, _irContext.Zero);
+            Value fill = Select(sign, _irContext.MinusOne, _irContext.Zero);
             Value result = Select(isGreaterThanMax, fill, shiftedValue);
             Value ca = GetShiftedOutCA(srcReg, shiftAmount, isGreaterThanMax);
 
             _irContext.SetGPR(ra, result);
             _irContext.SetCA(ca);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void SRADI(PPUInstruction instruction) {
+        public void SRADI(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
             // SH is 6 bits
-            Value shiftAmount = Constant((ulong)instruction.SH); 
+            Value shiftAmount = Constant((ulong)instruction.SH);
 
             Value srcReg = _irContext.GetGPR(rs);
             Value result = ShiftRightArithmetic(srcReg, shiftAmount);
 
             Value ca;
 
-            if (instruction.SH > 0) {
+            if (instruction.SH > 0)
+            {
                 Value mask = Constant((ulong)((1L << instruction.SH) - 1));
 
                 Value shiftedBits = And(srcReg, mask);
@@ -905,19 +1005,23 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
                 ca = And(sign, hasOnes);
 
-            } else {
+            }
+            else
+            {
                 ca = _irContext.Zero;
             }
 
             _irContext.SetGPR(ra, result);
             _irContext.SetCA(ca);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void SRAW(PPUInstruction instruction) {
+        public void SRAW(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
@@ -937,19 +1041,21 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             // For arithmetic shift if shift > 31, fill based on sign.
             // We use 64-bit operands here
 
-            Value fill =  Select(sign, _irContext.MinusOne, _irContext.Zero);
+            Value fill = Select(sign, _irContext.MinusOne, _irContext.Zero);
             Value result = Select(isGreaterThanMax, fill, shiftedValue64);
             Value ca = GetShiftedOutCA(srcReg32, shiftAmount, isGreaterThanMax);
 
             _irContext.SetGPR(ra, result);
             _irContext.SetCA(ca);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void SRAWI(PPUInstruction instruction) {
+        public void SRAWI(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
@@ -965,7 +1071,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             Value ca;
 
-            if (instruction.SH > 0) {
+            if (instruction.SH > 0)
+            {
                 Value sign = GetSign(srcReg32); // pass the 32-bit value
                 Value mask = Constant((ulong)((1L << sh) - 1));
 
@@ -974,19 +1081,23 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
                 ca = And(sign, hasOnes);
 
-            } else {
+            }
+            else
+            {
                 ca = _irContext.Zero;
             }
 
             _irContext.SetGPR(ra, result64);
             _irContext.SetCA(ca);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result64, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void RLDICL(PPUInstruction instruction) {
+        public void RLDICL(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
             int sh = instruction.SH;
@@ -999,12 +1110,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void RLDICR(PPUInstruction instruction) {
+        public void RLDICR(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
             int sh = instruction.SH;
@@ -1017,12 +1130,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void RLDIC(PPUInstruction instruction) {
+        public void RLDIC(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
             int sh = instruction.SH;
@@ -1035,12 +1150,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void RLDIMI(PPUInstruction instruction) {
+        public void RLDIMI(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
             int sh = instruction.SH;
@@ -1060,12 +1177,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void RLDCL(PPUInstruction instruction) {
+        public void RLDCL(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
@@ -1080,12 +1199,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void RLDCR(PPUInstruction instruction) {
+        public void RLDCR(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
@@ -1100,12 +1221,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void RLWIMI(PPUInstruction instruction) {
+        public void RLWIMI(PPUInstruction instruction)
+        {
             int n = instruction.SH & 0x1F; //Rotate 32 takes only 5 bits of SH
 
             uint ra = instruction.Ra;
@@ -1124,12 +1247,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             Value result = Or(rotatedMasked, raMasked);
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void RLWINM(PPUInstruction instruction) {
+        public void RLWINM(PPUInstruction instruction)
+        {
             int n = instruction.SH & 0x1F; //Rotate 32 takes only 5 bits of SH
 
             uint ra = instruction.Ra;
@@ -1144,12 +1269,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }
 
-        public void RLWNM(PPUInstruction instruction) {
+        public void RLWNM(PPUInstruction instruction)
+        {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
@@ -1164,7 +1291,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
             _irContext.SetGPR(ra, result);
 
-            if (instruction.Rc == 1) {
+            if (instruction.Rc == 1)
+            {
                 _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
             }
         }

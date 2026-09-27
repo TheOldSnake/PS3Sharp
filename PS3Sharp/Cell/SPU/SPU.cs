@@ -7,13 +7,15 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text;
 
-namespace PS3Sharp.Cell.SPU {
-    public unsafe sealed class SPU : IDisposable {
+namespace PS3Sharp.Cell.SPU
+{
+    public unsafe sealed class SPU : IDisposable
+    {
         private bool disposedValue;
 
         public string Name { get; }
         public uint ID { get; } = 0xFFFFFFFF;
-        public uint GroupID {  get; } = 0xFFFFFFFF;
+        public uint GroupID { get; } = 0xFFFFFFFF;
         public SysSPU.SysSPUImage Image { get; }
         public SysSPU.SysSPUThreadArgument Argument { get; }
 
@@ -35,32 +37,40 @@ namespace PS3Sharp.Cell.SPU {
 
         public ThreadStatus Status { get; private set; } = ThreadStatus.Stopped;
 
-        public enum ThreadStatus {
+        public enum ThreadStatus
+        {
             Stopped = 0,
             Running = 1,
         }
 
-        public SPU(string name, uint id, uint groupID, SysSPU.SysSPUImage img, SysSPU.SysSPUThreadArgument arg) { 
+        public SPU(string name, uint id, uint groupID, SysSPU.SysSPUImage img, SysSPU.SysSPUThreadArgument arg)
+        {
             Name = name;
             ID = id;
             GroupID = groupID;
             Image = img;
             Argument = arg;
 
-            for (int i = 0; i < _ports.Length; i++) {
+            for (int i = 0; i < _ports.Length; i++)
+            {
                 _ports[i] = 0xFFFFFFFF;
             }
         }
 
-        public void SetPort(int port, uint id) {
-            if (_ports[port] == 0xFFFFFFFF) {
+        public void SetPort(int port, uint id)
+        {
+            if (_ports[port] == 0xFFFFFFFF)
+            {
                 _ports[port] = id;
-            } else {
+            }
+            else
+            {
                 throw new Exception($"[SPU] Port is not free");
             }
         }
 
-        public void Reset() {
+        public void Reset()
+        {
             NativeMemory.Clear(GPR, (nuint)GPRByteSize);
             NativeMemory.Clear(LS, (nuint)LocalStorageSize);
             PC = 0;
@@ -68,7 +78,8 @@ namespace PS3Sharp.Cell.SPU {
             Status = ThreadStatus.Stopped;
         }
 
-        public void Start() {
+        public void Start()
+        {
             LoadImage();
             SetArgs();
 
@@ -77,31 +88,37 @@ namespace PS3Sharp.Cell.SPU {
             //...
         }
 
-        public void LoadImage() {
+        public void LoadImage()
+        {
             GuestPtr<uint> entry = Image.Entry;
             uint count = (uint)Image.SegmentsCount;
-            
-            if (entry.IsNullPtr) {
+
+            if (entry.IsNullPtr)
+            {
                 throw new Exception($"[SPU] Image null pointer");
             }
 
-            unsafe {
+            unsafe
+            {
                 ReadOnlySpan<SysSPU.SysSPUSegment> segments = MemoryManager.CreateSpan<SysSPU.SysSPUSegment>(entry, (int)count);
 
-                for (int i = 0; i < segments.Length; i++) {
+                for (int i = 0; i < segments.Length; i++)
+                {
                     LoadSegment(segments[i]);
                 }
             }
         }
 
-        private void LoadSegment(SysSPU.SysSPUSegment segment) {
+        private void LoadSegment(SysSPU.SysSPUSegment segment)
+        {
             int size = segment.Size;
             uint src_value = segment.Src;
             uint ls_offset = segment.LSAddress;
 
             Span<byte> dest = new Span<byte>(LS + ls_offset, size);
 
-            switch (segment.Type) {
+            switch (segment.Type)
+            {
                 case SysSPU.SYS_SPU_SEGMENT_TYPE_COPY:
                     MemoryManager.ReadBufferFromVirtualMemory(src_value, dest);
                     break;
@@ -112,16 +129,20 @@ namespace PS3Sharp.Cell.SPU {
             }
         }
 
-        public void SetArgs() {
+        public void SetArgs()
+        {
             GPR[3].ULongs[1] = Argument.Arg1;
             GPR[4].ULongs[1] = Argument.Arg2;
             GPR[5].ULongs[1] = Argument.Arg3;
             GPR[6].ULongs[1] = Argument.Arg4;
         }
 
-        public void Dispose(bool disposing) {
-            if (!disposedValue) {
-                if (disposing) {
+        public void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
                     // TODO: dispose managed state (managed objects)
                 }
 
@@ -137,12 +158,14 @@ namespace PS3Sharp.Cell.SPU {
         }
 
         // override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        ~SPU() {
+        ~SPU()
+        {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: false);
         }
 
-        public void Dispose() {
+        public void Dispose()
+        {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);

@@ -7,8 +7,10 @@ using System.Collections.Generic;
 using System.Text;
 using static PS3Sharp.OS.Syscall.SysSPU;
 
-namespace PS3Sharp.OS.LV2 {
-    public sealed class LV2SPUThreadGroup {
+namespace PS3Sharp.OS.LV2
+{
+    public sealed class LV2SPUThreadGroup
+    {
         public uint Handle { get; } = MemoryManager.GetHandle();
         public GuestPtr<SysSPUThreadGroupAttribute> AttributePtr { get; }
         public uint Number { get; }
@@ -16,22 +18,27 @@ namespace PS3Sharp.OS.LV2 {
         public List<SPU> SPUThreads { get; } = new();
         private bool _started = false;
 
-        public LV2SPUThreadGroup(GuestPtr<SysSPUThreadGroupAttribute> attrib_ptr, uint number, int prio) {
+        public LV2SPUThreadGroup(GuestPtr<SysSPUThreadGroupAttribute> attrib_ptr, uint number, int prio)
+        {
             AttributePtr = attrib_ptr;
             Number = number;
             Priority = prio;
         }
 
-        public void AddThread(SPU spu) {
-           SPUThreads.Add(spu);
+        public void AddThread(SPU spu)
+        {
+            SPUThreads.Add(spu);
         }
 
-        public void StartGroup() {
-            if (_started) {
+        public void StartGroup()
+        {
+            if (_started)
+            {
                 return;
             }
 
-            for (int i = 0; i < SPUThreads.Count; i++) {
+            for (int i = 0; i < SPUThreads.Count; i++)
+            {
                 SPUThreads[i].Start();
             }
 

@@ -4,11 +4,14 @@ using PS3Sharp.Memory_Manager;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.ErrorCode;
 
-namespace PS3Sharp.OS.LV2 {
-    public sealed class LV2Semaphore {
+namespace PS3Sharp.OS.LV2
+{
+    public sealed class LV2Semaphore
+    {
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct SysSemaphoreAttribute : IPS3Struct {
+        public struct SysSemaphoreAttribute : IPS3Struct
+        {
             public BigEndian<uint> Protocol;
             public BigEndian<uint> PShared;
             public BigEndian<ulong> IPC_KEY;
@@ -22,43 +25,54 @@ namespace PS3Sharp.OS.LV2 {
         private readonly int _maxCount;
         public uint Handle { get; } = MemoryManager.GetHandle();
 
-        public LV2Semaphore(int initialCount, int maxCount, SysSemaphoreAttribute attribute) {
+        public LV2Semaphore(int initialCount, int maxCount, SysSemaphoreAttribute attribute)
+        {
             _semaphore = new SemaphoreSlim(initialCount, maxCount);
             _attribute = attribute;
             _maxCount = maxCount;
         }
 
-        public ulong Release(int count) {
-            if (count <= 0) { 
+        public ulong Release(int count)
+        {
+            if (count <= 0)
+            {
                 return CELL_EINVAL;
             }
 
-            try {
+            try
+            {
                 _semaphore.Release(count);
                 return CELL_OK;
 
-            } catch (SemaphoreFullException e) {
+            }
+            catch (SemaphoreFullException e)
+            {
                 // is this the correct error?
                 return CELL_ESRCH;
             }
         }
 
-        public ulong TryWait() {
+        public ulong TryWait()
+        {
             bool ok = _semaphore.Wait(0);
             return ok ? CELL_OK : CELL_EBUSY;
         }
 
-        public ulong Wait(ulong us_timeout) {
+        public ulong Wait(ulong us_timeout)
+        {
             bool ok;
 
-            if (us_timeout > 0) {
+            if (us_timeout > 0)
+            {
                 ok = _semaphore.Wait(TimeSpan.FromMicroseconds(us_timeout));
-            } else {
+            }
+            else
+            {
                 _semaphore.Wait();
                 ok = true;
             }
 
-            return ok ? CELL_OK : CELL_ETIMEDOUT; 
+            return ok ? CELL_OK : CELL_ETIMEDOUT;
         }
     }
 }

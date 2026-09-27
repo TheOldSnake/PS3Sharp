@@ -5,12 +5,15 @@ using System.Runtime.InteropServices;
 
 using static PS3Sharp.Cell.ErrorCode;
 
-namespace PS3Sharp.OS.LV2 {
+namespace PS3Sharp.OS.LV2
+{
 
-    public sealed class LV2LWMutex {
+    public sealed class LV2LWMutex
+    {
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct LWMutex : IPS3Struct {
+        public struct LWMutex : IPS3Struct
+        {
             public BigEndian<uint> Owner;
             public BigEndian<uint> Waiter;
             public BigEndian<uint> Attribute;
@@ -19,7 +22,8 @@ namespace PS3Sharp.OS.LV2 {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct LWMutexAttrib : IPS3Struct {
+        public struct LWMutexAttrib : IPS3Struct
+        {
             public BigEndian<uint> Protocol;
             public BigEndian<uint> Recursive;
             public InlineData.InlineArray8<byte> Name;
@@ -39,22 +43,28 @@ namespace PS3Sharp.OS.LV2 {
         private readonly LWMutexAttrib _attributes;
         private readonly bool _isRecursive;
 
-        public LV2LWMutex(GuestPtr<LWMutex> ptr, LWMutexAttrib attribute) {
+        public LV2LWMutex(GuestPtr<LWMutex> ptr, LWMutexAttrib attribute)
+        {
             InstancePtr = ptr;
             _attributes = attribute;
             _isRecursive = attribute.Recursive == SYS_SYNC_RECURSIVE;
         }
 
-        public bool IsEntered() {
+        public bool IsEntered()
+        {
             return Monitor.IsEntered(_mutex);
         }
 
         // functions for _sys_lwmutex syscalls:
-        public ulong _Sys_Lock(ulong us_timeout) {
+        public ulong _Sys_Lock(ulong us_timeout)
+        {
             bool ok;
-            if (us_timeout > 0) {
+            if (us_timeout > 0)
+            {
                 ok = Monitor.TryEnter(_mutex, TimeSpan.FromMicroseconds(us_timeout));
-            } else {
+            }
+            else
+            {
                 Monitor.Enter(_mutex);
                 ok = true;
             }
@@ -62,13 +72,16 @@ namespace PS3Sharp.OS.LV2 {
             return ok ? CELL_OK : CELL_ETIMEDOUT;
         }
 
-        public ulong _Sys_TryLock() {
+        public ulong _Sys_TryLock()
+        {
             bool ok = Monitor.TryEnter(_mutex, 0);
             return ok ? CELL_OK : CELL_ETIMEDOUT;
         }
 
-        public ulong _Sys_Unlock() {
-            if (!Monitor.IsEntered(_mutex)) {
+        public ulong _Sys_Unlock()
+        {
+            if (!Monitor.IsEntered(_mutex))
+            {
                 return CELL_EINVAL;
             }
 
@@ -78,64 +91,85 @@ namespace PS3Sharp.OS.LV2 {
 
 
         // functions for sys_lwmutex module:
-        public ulong Lock(uint threadID, ulong us_timeout) {
+        public ulong Lock(uint threadID, ulong us_timeout)
+        {
             //bool canLock = CanLock(ref mutex, threadID);
 
-            if (Monitor.IsEntered(_mutex)) {
+            if (Monitor.IsEntered(_mutex))
+            {
                 return ReEnter();
 
-            } else {
+            }
+            else
+            {
 
                 // Acquire the Mutex, with timeout if set
                 bool ok;
-                if (us_timeout > 0) {
+                if (us_timeout > 0)
+                {
                     ok = Monitor.TryEnter(_mutex, TimeSpan.FromMicroseconds(us_timeout));
 
-                } else {
+                }
+                else
+                {
                     Monitor.Enter(_mutex);
                     ok = true;
                 }
 
-                if (ok) {
+                if (ok)
+                {
                     // if acquiring succeeds, set the owner to the current thread
                     SetOwnerFirstTime(threadID);
                     return CELL_OK;
 
-                } else {
+                }
+                else
+                {
                     return CELL_ETIMEDOUT;
                 }
             }
         }
 
-        public ulong TryLock(uint threadID) {
+        public ulong TryLock(uint threadID)
+        {
 
-            if (Monitor.IsEntered(_mutex)) {
+            if (Monitor.IsEntered(_mutex))
+            {
                 return ReEnter();
 
-            } else {
+            }
+            else
+            {
                 // Try to acquire the Mutex
                 bool ok = Monitor.TryEnter(_mutex, 0);
 
-                if (ok) {
+                if (ok)
+                {
                     // if acquiring succeeds, set the owner to the current thread
                     SetOwnerFirstTime(threadID);
                     return CELL_OK;
 
-                } else {
+                }
+                else
+                {
                     return CELL_EBUSY;
                 }
             }
         }
 
-        private ulong ReEnter() {
-            if (!_isRecursive) {
+        private ulong ReEnter()
+        {
+            if (!_isRecursive)
+            {
                 return CELL_EDEADLK;
             }
 
             Monitor.Enter(_mutex);
 
-            using (MemoryManager.AcquireTemporaryLock()) { 
-                unsafe {
+            using (MemoryManager.AcquireTemporaryLock())
+            {
+                unsafe
+                {
                     LWMutex* mutex = InstancePtr.AsNativePtr();
                     uint currentCount = mutex->RecursiveCount;
                     mutex->RecursiveCount = currentCount + 1;
@@ -145,11 +179,14 @@ namespace PS3Sharp.OS.LV2 {
             return CELL_OK;
         }
 
-        private void SetOwnerFirstTime(uint threadID) {
+        private void SetOwnerFirstTime(uint threadID)
+        {
             // For when we get the lock for the first time, not a re-entrance
 
-            using (MemoryManager.AcquireTemporaryLock()) { 
-                unsafe {
+            using (MemoryManager.AcquireTemporaryLock())
+            {
+                unsafe
+                {
                     LWMutex* mutex = InstancePtr.AsNativePtr();
                     mutex->Owner = threadID;
                     mutex->RecursiveCount = _isRecursive ? 1u : 0u;
@@ -157,30 +194,40 @@ namespace PS3Sharp.OS.LV2 {
             }
         }
 
-        public ulong Unlock(uint threadID) {
+        public ulong Unlock(uint threadID)
+        {
             // Error if we did not lock the mutex before
-            if (!Monitor.IsEntered(_mutex)) {
+            if (!Monitor.IsEntered(_mutex))
+            {
                 return CELL_EINVAL;
             }
 
             // Handle updating the state before unlocking
             bool becameFree;
-            using (MemoryManager.AcquireTemporaryLock()) {
-                unsafe {
+            using (MemoryManager.AcquireTemporaryLock())
+            {
+                unsafe
+                {
                     LWMutex* mutex = InstancePtr.AsNativePtr();
 
-                    if (_isRecursive && mutex->RecursiveCount > 0) {
+                    if (_isRecursive && mutex->RecursiveCount > 0)
+                    {
                         mutex->RecursiveCount--;
 
-                        if (mutex->RecursiveCount == 0) {
+                        if (mutex->RecursiveCount == 0)
+                        {
                             mutex->Owner = 0xFFFFFFFF;
                             becameFree = true;
 
-                        } else {
+                        }
+                        else
+                        {
                             becameFree = false;
                         }
 
-                    } else {
+                    }
+                    else
+                    {
                         becameFree = true;
                         mutex->Owner = 0xFFFFFFFF;
                         mutex->RecursiveCount = 0;
@@ -191,7 +238,8 @@ namespace PS3Sharp.OS.LV2 {
             }
 
             // Sanity check
-            if (becameFree && Monitor.IsEntered(_mutex)) {
+            if (becameFree && Monitor.IsEntered(_mutex))
+            {
                 throw new Exception($"[LwMutex] unlock bug");
             }
 

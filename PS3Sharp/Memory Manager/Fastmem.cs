@@ -4,8 +4,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using static PS3Sharp.Memory_Manager.MemoryManager;
 
-namespace PS3Sharp.Memory_Manager {
-    public static unsafe class Fastmem { 
+namespace PS3Sharp.Memory_Manager
+{
+    public static unsafe class Fastmem
+    {
         public const uint PAGE_BITS = 16;
         public const uint PAGE_SHIFT = (32 - PAGE_BITS);
         public const uint PAGE_COUNT = 1 << (int)PAGE_BITS;
@@ -22,23 +24,27 @@ namespace PS3Sharp.Memory_Manager {
 
 
         // -- Unused --
-        public static void AllocatePageTable() {
+        public static void AllocatePageTable()
+        {
             PageTable = (byte**)NativeMemory.AllocZeroed(PageTableSizeBytes);
         }
 
         // -- Unused --
-        private static bool TrySetFastmem(ref MemoryBlock memoryBlock) {
+        private static bool TrySetFastmem(ref MemoryBlock memoryBlock)
+        {
             uint startPage = memoryBlock.VirtualAddress >> (int)PAGE_SHIFT;
             uint numberOfPages = memoryBlock.Size / PAGE_SIZE;
             uint endPage = startPage + numberOfPages;
 
-            if (memoryBlock.Size % PAGE_SIZE != 0) {
+            if (memoryBlock.Size % PAGE_SIZE != 0)
+            {
                 throw new Exception($"Size is not aligned"); // Should never happen
                 //return false;
             }
 
             uint pageIndex = 0;
-            for (uint i = startPage; i < endPage; i++) {
+            for (uint i = startPage; i < endPage; i++)
+            {
                 PageTable[i] = (byte*)memoryBlock.NativeAddress + (pageIndex * PAGE_SIZE);
                 MemoryManager.SetMemoryBlock(ref memoryBlock, (int)i);
                 pageIndex++;
@@ -48,12 +54,14 @@ namespace PS3Sharp.Memory_Manager {
         }
 
         // -- Unused --
-        private static void UnsetFastmem(ref MemoryBlock memoryBlock) {
+        private static void UnsetFastmem(ref MemoryBlock memoryBlock)
+        {
             uint startPage = memoryBlock.VirtualAddress >> (int)PAGE_SHIFT;
             uint numberOfPages = memoryBlock.Size / PAGE_SIZE;
             uint endPage = startPage + numberOfPages;
 
-            for (uint i = startPage; i < endPage; i++) {
+            for (uint i = startPage; i < endPage; i++)
+            {
                 PageTable[i] = null;
                 MemoryManager.UnsetMemoryBlock((int)i);
             }
@@ -61,15 +69,19 @@ namespace PS3Sharp.Memory_Manager {
 
 
         // -- Unused --
-        private static void* GetNativeAddress(uint virtualAddress) {
+        private static void* GetNativeAddress(uint virtualAddress)
+        {
             // Get the page from the page table
             uint page = virtualAddress >> (int)PAGE_SHIFT;
             byte* pageStart = PageTable[page];
             uint inPageOffset = virtualAddress & PAGE_MASK;
 
-            if (pageStart != null) {
+            if (pageStart != null)
+            {
                 return pageStart + inPageOffset;
-            } else {
+            }
+            else
+            {
                 // if the page address is null then crash
                 throw new PageFaultException(virtualAddress);
             }

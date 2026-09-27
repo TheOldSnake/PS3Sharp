@@ -13,8 +13,10 @@ using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 using static PS3Sharp.Memory_Manager.MemoryManager;
 
-namespace PS3Sharp.Cell.PPU {
-    public unsafe sealed partial class PPU : IThread, IDisposable {
+namespace PS3Sharp.Cell.PPU
+{
+    public unsafe sealed partial class PPU : IThread, IDisposable
+    {
         // PPU thread sealed class — all fields here are single-threaded by default.
         // DO NOT access or mutate from another thread unless using thread-safe mechanisms
         // like Interlocked, locks, or a message queue. Violating this will cause race conditions.
@@ -38,7 +40,8 @@ namespace PS3Sharp.Cell.PPU {
         public List<uint> CallStack = new List<uint>();
         public SysUtil.SysUtilCallback[] SysUtilCallbacks = new SysUtil.SysUtilCallback[4];   // Each thread has its own?
 
-        public enum PPUThreadStates {
+        public enum PPUThreadStates
+        {
             Running,
             Paused,
             Stopped
@@ -46,18 +49,19 @@ namespace PS3Sharp.Cell.PPU {
 
         public PPUThreadStates PPUThreadState = PPUThreadStates.Stopped;
 
-       // public ConditionRegister CR;            //Condition Register
-       // public uint LR;                         //Link Register
-       // public uint TB;                         //Time Base Register -- this is actually global, not per thread
-       // public ulong CTR;                       //Count Register
-       // public uint VRSAVE = 0xFFFFFFFF;        
+        // public ConditionRegister CR;            //Condition Register
+        // public uint LR;                         //Link Register
+        // public uint TB;                         //Time Base Register -- this is actually global, not per thread
+        // public ulong CTR;                       //Count Register
+        // public uint VRSAVE = 0xFFFFFFFF;        
 
-       // public uint PC;                         //Program Counter
+        // public uint PC;                         //Program Counter
 
 
         // Unmanaged State
         [StructLayout(LayoutKind.Sequential)]
-        public struct PPUState {
+        public struct PPUState
+        {
             public uint PC;                     // Program Counter
             public uint LR;                     // Link Register      
             public uint TB;                     // Time Base Register -- is this global, or per thread ?
@@ -77,7 +81,7 @@ namespace PS3Sharp.Cell.PPU {
 
         public PPUGPR* GPR => &State->GPR[0];
         public PPUFPR* FPR => &State->FPR[0];
-        public PPUVR* VRF  => &State->VRF[0];
+        public PPUVR* VRF => &State->VRF[0];
 
         public GCHandle Handle { get; private set; }
 
@@ -88,8 +92,10 @@ namespace PS3Sharp.Cell.PPU {
         public void Return(ulong result) => GPR[ARG0].Value64 = result;
 
 
-        public T ReadArg<T>(uint index) where T : unmanaged {
-            if (sizeof(T) > sizeof(PPUGPR)) {
+        public T ReadArg<T>(uint index) where T : unmanaged
+        {
+            if (sizeof(T) > sizeof(PPUGPR))
+            {
                 throw new ArgumentException($"Can't read type <{nameof(T)}> (too large)");
             }
 
@@ -97,8 +103,10 @@ namespace PS3Sharp.Cell.PPU {
             return Unsafe.Read<T>(base_address);
         }
 
-        public void WriteReg<T>(uint index, T value) where T : unmanaged {
-            if (sizeof(T) > sizeof(PPUGPR)) {
+        public void WriteReg<T>(uint index, T value) where T : unmanaged
+        {
+            if (sizeof(T) > sizeof(PPUGPR))
+            {
                 throw new ArgumentException($"Can't read type <{nameof(T)}> (too large)");
             }
 
@@ -106,31 +114,37 @@ namespace PS3Sharp.Cell.PPU {
             Unsafe.Write<T>(base_address, value);
         }
 
-        public PPUGPR[] CaptureGPRState() {
+        public PPUGPR[] CaptureGPRState()
+        {
             PPUGPR[] gprs = new PPUGPR[32];
-            for (int i = 0; i < gprs.Length; i++) {
+            for (int i = 0; i < gprs.Length; i++)
+            {
                 gprs[i] = GPR[i];
             }
 
             return gprs;
         }
 
-        public PPUFPR[] CaptureFPRState() {
+        public PPUFPR[] CaptureFPRState()
+        {
             PPUFPR[] fprs = new PPUFPR[32];
-            for (int i = 0; i < fprs.Length; i++) {
+            for (int i = 0; i < fprs.Length; i++)
+            {
                 fprs[i] = FPR[i];
             }
 
             return fprs;
         }
 
-        public void SetThreadPriority(int threadPriority) {
+        public void SetThreadPriority(int threadPriority)
+        {
             _threadPriority = threadPriority;
         }
 
         //Fixed-Point Exception Register
         //public XERRegister XER;
-        public struct XERRegister {
+        public struct XERRegister
+        {
             public const int SOBit = 31;
             public const int OVBit = 30;
             public const int CABit = 29;
@@ -140,17 +154,20 @@ namespace PS3Sharp.Cell.PPU {
             public uint OV => (uint)((Raw >> OVBit) & 1);
             public uint CA => (uint)((Raw >> CABit) & 1);
 
-            public void SetSO(uint v) {
+            public void SetSO(uint v)
+            {
                 Raw &= ~(1u << SOBit);
                 Raw |= (v << SOBit);
             }
 
-            public void SetOV(uint v) {
+            public void SetOV(uint v)
+            {
                 Raw &= ~(1u << OVBit);
                 Raw |= (v << OVBit);
             }
 
-            public void SetCA(uint v) {
+            public void SetCA(uint v)
+            {
                 Raw &= ~(1u << CABit);
                 Raw |= (v << CABit);
             }
@@ -158,25 +175,28 @@ namespace PS3Sharp.Cell.PPU {
 
         // The bits in the Condition Register are grouped into
         // eight 4-bit fields, named CR Field 0 (CR0), ..., CR Field 7 (CR7)
-        public enum CRNumber { 
+        public enum CRNumber
+        {
             CR0 = 0,
-            CR1 = 1, 
-            CR2 = 2, 
-            CR3 = 3, 
-            CR4 = 4, 
-            CR5 = 5, 
-            CR6 = 6, 
+            CR1 = 1,
+            CR2 = 2,
+            CR3 = 3,
+            CR4 = 4,
+            CR5 = 5,
+            CR6 = 6,
             CR7 = 7
         }
 
-        public struct ConditionRegister {
+        public struct ConditionRegister
+        {
             public const uint EQ = 0b0010;
             public const uint GT = 0b0100;
             public const uint LT = 0b1000;
 
             public uint Raw;
 
-            public void WriteCRField(CRNumber cr, uint value) {
+            public void WriteCRField(CRNumber cr, uint value)
+            {
                 value &= 0xF;
                 int bit = 28 - ((int)cr * 4);  // CR Fields are reversed
                 uint clearMask = (uint)~(0xF << bit);
@@ -184,40 +204,47 @@ namespace PS3Sharp.Cell.PPU {
                 Raw |= value << bit;
             }
 
-            public uint GetCRField(CRNumber cr) {
+            public uint GetCRField(CRNumber cr)
+            {
                 int bit = 28 - ((int)cr * 4);  // CR Fields are reversed
                 return (Raw >> bit) & 0xF;
             }
 
-            public void WriteCRBit(uint bit, uint value) {       //bit number is in big endian
+            public void WriteCRBit(uint bit, uint value)
+            {       //bit number is in big endian
                 int position = (int)(31 - bit);
                 Raw &= ((uint)~(1 << position));
                 Raw |= (value << position);
             }
 
-            public uint ReadCRBit(uint bit) {                 //bit number is in big endian
+            public uint ReadCRBit(uint bit)
+            {                 //bit number is in big endian
                 int position = (int)(31 - bit);
                 return (Raw >> position) & 1;
             }
         }
 
-        public static PPU GetInstance(IntPtr context) {
+        public static PPU GetInstance(IntPtr context)
+        {
             return (PPU)GCHandle.FromIntPtr(context).Target!;
         }
 
         //Constructor for main thread -- called by PS3Sharp.cs
         public PPU(
-            string threadName, 
-            uint entryPointer, 
-            uint stackSize = MemoryManager.DEFAULT_STACK_SIZE, 
+            string threadName,
+            uint entryPointer,
+            uint stackSize = MemoryManager.DEFAULT_STACK_SIZE,
             string? path_to_executable = null,
-            uint thread_id = 0) {
+            uint thread_id = 0)
+        {
 
-            if ((stackSize & 0xF) > 0) {
+            if ((stackSize & 0xF) > 0)
+            {
                 stackSize = AlignPowerOfTwo(stackSize, 16);
             }
 
-            if (stackSize < 0x1000) {
+            if (stackSize < 0x1000)
+            {
                 stackSize = 0x1000;
             }
 
@@ -250,11 +277,11 @@ namespace PS3Sharp.Cell.PPU {
             // GPR[9].Value64 = tls.Size;
             // GPR[10].Value64 = tls.Size;
 
-            GPR[11].Value64 = entryPointer; 
+            GPR[11].Value64 = entryPointer;
             GPR[12].Value64 = 0x100000;     //malloc pagesize or something
 
             GPR[13].Value64 = tls.VirtualAddress + 0x7030;   //first 0x30 bytes are reserved, guest code seems to access tls from r13 - ~0x7000 ?
-        
+
             ArgumentNullException.ThrowIfNullOrEmpty(path_to_executable);
             SetupArgs(path_to_executable);
 
@@ -268,13 +295,16 @@ namespace PS3Sharp.Cell.PPU {
             string threadName,
             uint entryPointer,
             ulong arg,
-            uint stackSize) {
+            uint stackSize)
+        {
 
-            if ((stackSize & 0xF) > 0) {
+            if ((stackSize & 0xF) > 0)
+            {
                 stackSize = AlignPowerOfTwo(stackSize, 16);
             }
 
-            if (stackSize < 0x1000) {
+            if (stackSize < 0x1000)
+            {
                 stackSize = 0x1000;
             }
 
@@ -287,7 +317,8 @@ namespace PS3Sharp.Cell.PPU {
             RSX = PS3Sharp.RSX;
             State->VRSAVE = 0xFFFFFFFF;
 
-            if (entryPointer != 0) {
+            if (entryPointer != 0)
+            {
                 State->PC = MemoryManager.Read<uint>(entryPointer);
                 GPR[2].Value64 = MemoryManager.Read<uint>(entryPointer + 4);
             }
@@ -320,7 +351,8 @@ namespace PS3Sharp.Cell.PPU {
             Console.WriteLine($"PPU Thread: PC entry = 0x{State->PC:X} stack = {GPR[1]} r2 = {GPR[2]} tls = {GPR[13]}");
         }
 
-        public PPU(string threadName, uint pc, uint threadID, uint stackSize) {
+        public PPU(string threadName, uint pc, uint threadID, uint stackSize)
+        {
             SetGCHandle();
             SetPageTable();
 
@@ -343,7 +375,8 @@ namespace PS3Sharp.Cell.PPU {
         }
 
 
-        public void SetupArgs(string? name) {
+        public void SetupArgs(string? name)
+        {
             //TODO: Do this properly 
 
             // Push envp NULL
@@ -365,7 +398,8 @@ namespace PS3Sharp.Cell.PPU {
             // Allocate 0x70 bytes for main()
             GPR[STACK_REG].Value64 -= 0x70;
 
-            if ((GPR[STACK_REG].Value64 & 0xF) > 0) {
+            if ((GPR[STACK_REG].Value64 & 0xF) > 0)
+            {
                 throw new Exception("Alignment check fails");
             }
 
@@ -381,27 +415,32 @@ namespace PS3Sharp.Cell.PPU {
             GPR[31].Value64 = GPR[1].Value64; //Frame pointer?
         }
 
-        public void SetGCHandle() {
+        public void SetGCHandle()
+        {
             Handle = GCHandle.Alloc(this);
             State->Context = (void*)GCHandle.ToIntPtr(Handle);
         }
 
-        public void FreeGCHandle() {
+        public void FreeGCHandle()
+        {
             Handle.Free();
             State->Context = null;
         }
 
-        public void SetPageTable() {
+        public void SetPageTable()
+        {
             State->MemoryBase = MemoryManager.GetGuestMemoryBase();
         }
 
-        public void WriteStack(ulong value) {
+        public void WriteStack(ulong value)
+        {
             GPR[STACK_REG].Value32 -= sizeof(ulong); // -= 8
             MemoryManager.Write<ulong>(GPR[STACK_REG].Value32, value);
             Console.WriteLine($"STACK[{GPR[STACK_REG].Value32:X8}] = {value:X16}");
         }
 
-        public uint WritePathArg(string path) {
+        public uint WritePathArg(string path)
+        {
             byte[] chars = Encoding.UTF8.GetBytes(path);
 
             //Allocate memory for the string + a null character
@@ -413,17 +452,20 @@ namespace PS3Sharp.Cell.PPU {
             return (uint)nameBlock.VirtualAddress;
         }
 
-        public void StartThread() {
-           Console.WriteLine($"PPU Thread Started");
-           PPUThreadState = PPUThreadStates.Running;
+        public void StartThread()
+        {
+            Console.WriteLine($"PPU Thread Started");
+            PPUThreadState = PPUThreadStates.Running;
         }
 
-        public void PauseThread() {
+        public void PauseThread()
+        {
             Console.WriteLine($"PPU Thread Paused");
             PPUThreadState = PPUThreadStates.Paused;
         }
 
-        public void StopThread() {
+        public void StopThread()
+        {
             Console.WriteLine($"PPU Thread Stopped");
             PPUThreadState = PPUThreadStates.Stopped;
         }
@@ -434,39 +476,51 @@ namespace PS3Sharp.Cell.PPU {
         private bool disposedValue;
         const int TraceMaxCount = 200;
 
-        public struct Trace {
+        public struct Trace
+        {
             public uint PC;
             public PPUInstruction Instruction;
         }
 
-        public void PrintTraceQueue(bool reverse = false) {
+        public void PrintTraceQueue(bool reverse = false)
+        {
             Console.WriteLine($"Printing Last {TraceQueue.Count} Instructions:");
             int count = TraceQueue.Count;
             Trace t;
-            if (reverse) {
-                for (int i = count - 1; i >= 0; i--) {
+            if (reverse)
+            {
+                for (int i = count - 1; i >= 0; i--)
+                {
                     t = TraceQueue.ElementAt(i);
                     Console.WriteLine($"PC = {t.PC:X} - {t.Instruction.Raw:X}");
                 }
-            } else {
-                for (int i = 0; i < count; i++) {
+            }
+            else
+            {
+                for (int i = 0; i < count; i++)
+                {
                     t = TraceQueue.ElementAt(i);
                     Console.WriteLine($"PC = {t.PC:X} - {t.Instruction.Raw:X}");
                 }
             }
         }
 
-        public void AddTrace(uint pc, PPUInstruction instruction) {
+        public void AddTrace(uint pc, PPUInstruction instruction)
+        {
             TraceQueue.Enqueue(new Trace { PC = pc, Instruction = instruction });
-            if (TraceQueue.Count > TraceMaxCount) {
+            if (TraceQueue.Count > TraceMaxCount)
+            {
                 TraceQueue.Dequeue();
             }
         }
 
         // Dispose Pattern 
-        public void Dispose(bool disposing) {
-            if (!disposedValue) {
-                if (disposing) {
+        public void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
                     // dispose managed state (managed objects)
                     Handle.Free();
                 }
@@ -481,12 +535,14 @@ namespace PS3Sharp.Cell.PPU {
         }
 
         // override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        ~PPU() {
+        ~PPU()
+        {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: false);
         }
 
-        public void Dispose() {
+        public void Dispose()
+        {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);

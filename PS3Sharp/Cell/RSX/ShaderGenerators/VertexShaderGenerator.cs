@@ -1,7 +1,9 @@
 ﻿using PS3Sharp.Common;
 
-namespace PS3Sharp.Cell.RSX {
-    public static partial class VertexShaderGenerator {
+namespace PS3Sharp.Cell.RSX
+{
+    public static partial class VertexShaderGenerator
+    {
         private static readonly string VertexProgramBase = @"
             #version 460        
 
@@ -67,7 +69,7 @@ namespace PS3Sharp.Cell.RSX {
             out vec4 fs_tex8;       //dst_reg15
             out vec4 fs_tex9;       //dst_reg16
             out vec4 fs_ssa;        //dst_reg17
-            out vec4 fs_unk15;      //dst_reg18";    
+            out vec4 fs_unk15;      //dst_reg18";
 
         private static readonly string VertexProgramEnd = @"
             void main(){
@@ -96,11 +98,12 @@ namespace PS3Sharp.Cell.RSX {
         private static string CurrentVetrexShader = VertexProgramBase;
         public static string LastVertexShader;
         public static uint VertexShaderShaderStart { get; set; }   // Index of the first instruction
-        public static uint VertexShaderLoadIndex { get;  set; }    // Index to load instructions from
+        public static uint VertexShaderLoadIndex { get; set; }    // Index to load instructions from
 
         private static readonly uint[] VertexShaderBuffer = new uint[512 * 4];  // 512 qwords
 
-        private static string FinalizeVertexShader() {
+        private static string FinalizeVertexShader()
+        {
             //Add the base
             string shader = VertexProgramBase;
 
@@ -121,7 +124,8 @@ namespace PS3Sharp.Cell.RSX {
             return shader;
         }
 
-        public static VertexInstruction GetVertexInstruction(ReadOnlySpan<uint> data) {
+        public static VertexInstruction GetVertexInstruction(ReadOnlySpan<uint> data)
+        {
             VertexInstruction v;
             v.Raw_0 = data[0];
             v.Raw_1 = data[1];
@@ -130,23 +134,28 @@ namespace PS3Sharp.Cell.RSX {
             return v;
         }
 
-        public static void UploadInstructions(Queue<BigEndian<uint>> data) {
-            while (data.Count > 0) {
+        public static void UploadInstructions(Queue<BigEndian<uint>> data)
+        {
+            while (data.Count > 0)
+            {
                 BigEndian<uint> value = data.Dequeue();
                 VertexShaderBuffer[VertexShaderLoadIndex] = value;
                 VertexShaderLoadIndex++;
             }
         }
 
-        public static ulong CalculateChecksum() {
+        public static ulong CalculateChecksum()
+        {
             ulong checksum = 0;
-            for (uint i = VertexShaderShaderStart; i < VertexShaderBuffer.Length; i += 4) {
+            for (uint i = VertexShaderShaderStart; i < VertexShaderBuffer.Length; i += 4)
+            {
                 checksum += VertexShaderBuffer[i + 0];
                 checksum += VertexShaderBuffer[i + 1];
                 checksum += VertexShaderBuffer[i + 2];
                 checksum += VertexShaderBuffer[i + 3];
 
-                if ((VertexShaderBuffer[i + 3] & 1) == 1) { // End bit
+                if ((VertexShaderBuffer[i + 3] & 1) == 1)
+                { // End bit
                     break;
                 }
             }
@@ -154,11 +163,14 @@ namespace PS3Sharp.Cell.RSX {
             return checksum;
         }
 
-        public static string GenerateVertexShader() {
+        public static string GenerateVertexShader()
+        {
             CurrentVetrexShader = string.Empty;
-            
-            for (uint i = VertexShaderShaderStart; i < VertexShaderBuffer.Length; i += 4) {
-                VertexInstruction instruction = new VertexInstruction { // Or we can do casts
+
+            for (uint i = VertexShaderShaderStart; i < VertexShaderBuffer.Length; i += 4)
+            {
+                VertexInstruction instruction = new VertexInstruction
+                { // Or we can do casts
                     Raw_0 = VertexShaderBuffer[i + 0],
                     Raw_1 = VertexShaderBuffer[i + 1],
                     Raw_2 = VertexShaderBuffer[i + 2],
@@ -168,16 +180,18 @@ namespace PS3Sharp.Cell.RSX {
                 CurrentVetrexShader += HandleVectorInstruction(instruction);
                 CurrentVetrexShader += HandleScalarInstruction(instruction);
 
-                if (instruction.End) {
+                if (instruction.End)
+                {
                     break;
                 }
             }
 
-            LastVertexShader = FinalizeVertexShader(); 
+            LastVertexShader = FinalizeVertexShader();
             return LastVertexShader;
         }
 
-        public static string HandleVectorInstruction(VertexInstruction instruction) {
+        public static string HandleVectorInstruction(VertexInstruction instruction)
+        {
             string src0 = GetSource(0, instruction);
             string src1 = GetSource(1, instruction);
             string src2 = GetSource(2, instruction);
@@ -187,7 +201,8 @@ namespace PS3Sharp.Cell.RSX {
             string generatedSource = string.Empty;
             string generatedSourceChannels = "xyzw".Substring(0, vectorChannels.Length);
 
-            switch (instruction.VectorOp) {
+            switch (instruction.VectorOp)
+            {
                 case NVFX_VP_INST_VEC_OP_NOP:
                     return string.Empty;
 
@@ -239,7 +254,7 @@ namespace PS3Sharp.Cell.RSX {
                     generatedSource = $"vec4(greaterThanEqual({src0}, {src1}))";
                     break;
 
-                case NVFX_VP_INST_VEC_OP_ARL: 
+                case NVFX_VP_INST_VEC_OP_ARL:
                     generatedSource = $"ivec4({src0})";
                     break;
 
@@ -285,16 +300,20 @@ namespace PS3Sharp.Cell.RSX {
             string fullDest = $"{vectorDest}.{vectorChannels}";
 
             // apply saturation if needed
-            if (instruction.Saturate) {
+            if (instruction.Saturate)
+            {
                 fullSource = $"clamp({fullSource}, 0.0f, 1.0f)";
             }
 
             string output;
-            if (instruction.CondEnabled) {
+            if (instruction.CondEnabled)
+            {
                 string selectionStatment = ConditionalSelect(instruction, fullDest, vectorChannels, fullSource);
                 output = $"{fullDest} = {selectionStatment};\n";
 
-            } else {
+            }
+            else
+            {
                 output = $"{fullDest} = {fullSource};\n";
             }
 
@@ -302,7 +321,8 @@ namespace PS3Sharp.Cell.RSX {
             return WhiteSpace + output;
         }
 
-        public static string HandleScalarInstruction(VertexInstruction instruction) {
+        public static string HandleScalarInstruction(VertexInstruction instruction)
+        {
             // Not sure how scalar work
             // Big TODO
 
@@ -311,9 +331,10 @@ namespace PS3Sharp.Cell.RSX {
 
             string generatedSource = string.Empty;
 
-            switch (instruction.ScalarOp) {
-                case NVFX_VP_INST_SCA_OP_NOP: 
-                    /* NOP */  
+            switch (instruction.ScalarOp)
+            {
+                case NVFX_VP_INST_SCA_OP_NOP:
+                    /* NOP */
                     return string.Empty;
 
                 case NVFX_VP_INST_SCA_OP_RCP:
@@ -321,7 +342,7 @@ namespace PS3Sharp.Cell.RSX {
                     break;
 
                 case NVFX_VP_INST_SCA_OP_RSQ: // was using inversesqrt
-                    generatedSource = $"(1.0f / sqrt(max({src2}, 0.0000000001))).xxxx"; 
+                    generatedSource = $"(1.0f / sqrt(max({src2}, 0.0000000001))).xxxx";
                     break;
 
                 case NVFX_VP_INST_SCA_OP_EXP:
@@ -355,13 +376,15 @@ namespace PS3Sharp.Cell.RSX {
             return WhiteSpace + output;
         }
 
-        public static string GetSource(int sourceNumber, VertexInstruction instruction) {
+        public static string GetSource(int sourceNumber, VertexInstruction instruction)
+        {
             //some information like "abs" are not in the common "src" fields 
 
             VertexSrc src;
             bool isAbsolute = false;
 
-            switch (sourceNumber) {
+            switch (sourceNumber)
+            {
                 case 0:
                     src = new VertexSrc { Raw = instruction.Src0 };
                     isAbsolute = instruction.Src0Abs;
@@ -385,15 +408,16 @@ namespace PS3Sharp.Cell.RSX {
             const string xyzw = "xyzw";     // we index into this string for swizzling
             string srcName = string.Empty;
 
-            switch (src.Type) {
+            switch (src.Type)
+            {
 
                 // temorary register
-                case 1: 
-                    srcName = $"r[{src.TempID}]"; 
+                case 1:
+                    srcName = $"r[{src.TempID}]";
                     break;
 
                 // input
-                case 2: 
+                case 2:
                     srcName = $"{InputNames[instruction.InputSrc]}";
                     break;
 
@@ -402,13 +426,16 @@ namespace PS3Sharp.Cell.RSX {
                     uint const_src = instruction.ConstSrc;
                     string c_index = string.Empty;
 
-                    if (instruction.IsIndexedConst) {
+                    if (instruction.IsIndexedConst)
+                    {
                         // index is offseted by addr0 / addr1
                         // the swizzle selects a single channel from the vector
                         char addr_reg_swizzle = xyzw[(int)instruction.Addr_Reg_Swizzle];
                         c_index = $"{const_src} + addr{instruction.Addr_Reg_Sel}.{addr_reg_swizzle}";
 
-                    } else {
+                    }
+                    else
+                    {
                         // direct index 
                         c_index = $"{const_src}";
                     }
@@ -431,18 +458,21 @@ namespace PS3Sharp.Cell.RSX {
 
             srcName += $".{channels}";
 
-            if (isAbsolute) {
+            if (isAbsolute)
+            {
                 srcName = $"abs({srcName})";
             }
 
-            if (src.Negate) {
+            if (src.Negate)
+            {
                 srcName = $"(-{srcName})";
             }
 
             return srcName;
         }
 
-        public static (string, string) GetDestination(VertexInstruction instruction, bool isScalar = false) {
+        public static (string, string) GetDestination(VertexInstruction instruction, bool isScalar = false)
+        {
             string destName = string.Empty;
 
             bool isDestAddr = instruction.VectorOp == NVFX_VP_INST_VEC_OP_ARL; // Load to address register
@@ -450,24 +480,33 @@ namespace PS3Sharp.Cell.RSX {
             uint temp_index = isScalar ? instruction.Sca_Dest_Temp : instruction.Vec_Dest_Temp;
             uint output_index = instruction.Dest;
 
-            if (isOutput && output_index != 0x1F) {
+            if (isOutput && output_index != 0x1F)
+            {
                 // Output
                 destName = OutputNames[instruction.Dest];
 
-            } else {
+            }
+            else
+            {
 
-                if (isDestAddr) {
+                if (isDestAddr)
+                {
                     destName = $"addr{instruction.Vec_Dest_Temp}";   // always vec_dest_temp ?
 
-                } else {
-                    if (temp_index == 0x3F) {
+                }
+                else
+                {
+                    if (temp_index == 0x3F)
+                    {
                         //CC
                         destName = $"cc{instruction.Cond_Reg_Sel}";
-                    } else {
+                    }
+                    else
+                    {
                         // temporary register
                         destName = $"r[{temp_index}]";
                     }
-                }            
+                }
             }
 
             //Handle dest swizzle
@@ -480,12 +519,15 @@ namespace PS3Sharp.Cell.RSX {
             bool z_mask;
             bool w_mask;
 
-            if (isScalar) {
+            if (isScalar)
+            {
                 x_mask = instruction.X_Sca_Mask;
                 y_mask = instruction.Y_Sca_Mask;
                 z_mask = instruction.Z_Sca_Mask;
                 w_mask = instruction.W_Sca_Mask;
-            } else {
+            }
+            else
+            {
                 x_mask = instruction.X_Vec_Mask;
                 y_mask = instruction.Y_Vec_Mask;
                 z_mask = instruction.Z_Vec_Mask;
@@ -493,22 +535,26 @@ namespace PS3Sharp.Cell.RSX {
             }
 
 
-            if (x_mask) {
+            if (x_mask)
+            {
                 channels += "x";
                 numberOfChannels++;
             }
 
-            if (y_mask) {
+            if (y_mask)
+            {
                 channels += "y";
                 numberOfChannels++;
             }
 
-            if (z_mask) {
+            if (z_mask)
+            {
                 channels += "z";
                 numberOfChannels++;
             }
 
-            if (w_mask) {
+            if (w_mask)
+            {
                 channels += "w";
                 numberOfChannels++;
             }
@@ -531,7 +577,8 @@ namespace PS3Sharp.Cell.RSX {
 
         const string xyzw = "xyzw";
 
-        public static string ConditionalSelect(VertexInstruction instruction, string destination, string destinationMask, string source) { // dest and source are already masked
+        public static string ConditionalSelect(VertexInstruction instruction, string destination, string destinationMask, string source)
+        { // dest and source are already masked
             // Select CC
             string cc = $"cc{instruction.Cond_Reg_Sel}";
 
@@ -555,8 +602,10 @@ namespace PS3Sharp.Cell.RSX {
             return final;
         }
 
-        public static string GetCast(int numberOfChannels) {
-            switch (numberOfChannels) {
+        public static string GetCast(int numberOfChannels)
+        {
+            switch (numberOfChannels)
+            {
                 case 1: return "float";
                 case 2: return "vec2";
                 case 3: return "vec3";

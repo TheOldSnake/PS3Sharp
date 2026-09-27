@@ -6,8 +6,10 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace PS3Sharp.Cell.RSX {
-    public sealed class RSXVertexBuffer {
+namespace PS3Sharp.Cell.RSX
+{
+    public sealed class RSXVertexBuffer
+    {
 
         // Attributes 
         public bool IsEnabled { get; set; }
@@ -26,7 +28,8 @@ namespace PS3Sharp.Cell.RSX {
         public ScratchBuffer ScratchBuffer { get; } = new ScratchBuffer();
         public VertexCacheKey CacheKey = new VertexCacheKey();
 
-        public struct VertexCacheKey {
+        public struct VertexCacheKey
+        {
             public uint Address;
             public uint Type;
             public uint NumberOfElements;
@@ -34,17 +37,21 @@ namespace PS3Sharp.Cell.RSX {
             public ulong Hash;
         }
 
-        public Span<T> GetScratchData<T>(int elementsCount) where T: unmanaged {
+        public Span<T> GetScratchData<T>(int elementsCount) where T : unmanaged
+        {
             Span<T> data = ScratchBuffer.RequestBuffer<T>(elementsCount);
             return data;
         }
 
-        public Span<byte> GetLastScratchData() {
+        public Span<byte> GetLastScratchData()
+        {
             return ScratchBuffer.GetLastRequestedBuffer<byte>();
         }
 
-        public void FetchVertexData(uint vertexCount, uint startOffset) {
-            switch (AttribType) {
+        public void FetchVertexData(uint vertexCount, uint startOffset)
+        {
+            switch (AttribType)
+            {
                 case VertexAttribPointerType.Float:
                     FetchVertexBufferData<float>(vertexCount, startOffset);
                     break;
@@ -67,7 +74,8 @@ namespace PS3Sharp.Cell.RSX {
             }
         }
 
-        public void FetchVertexBufferData<T>(uint vertexCount, uint startOffset) where T : unmanaged {
+        public void FetchVertexBufferData<T>(uint vertexCount, uint startOffset) where T : unmanaged
+        {
             uint bufferAddress = BufferAddress;
             uint elementsPerUnitCount = NumberOfElements;
             uint stride = Stride;
@@ -75,7 +83,8 @@ namespace PS3Sharp.Cell.RSX {
             uint sizeOfT = (uint)Unsafe.SizeOf<T>();
 
             //Should never happen
-            if (stride < (ulong)elementsPerUnitCount * sizeOfT) {
+            if (stride < (ulong)elementsPerUnitCount * sizeOfT)
+            {
                 throw new Exception($"Invalid Stride: {stride}");
             }
 
@@ -86,11 +95,13 @@ namespace PS3Sharp.Cell.RSX {
             Span<T> vertexData = GetScratchData<T>(totalElements);
 
             // Fill in the data
-            for (uint dataIndex = 0; dataIndex < vertexCount; dataIndex++) {
+            for (uint dataIndex = 0; dataIndex < vertexCount; dataIndex++)
+            {
                 uint dataMemoryOffset = dataIndex * stride;
                 uint dataBaseIndex = dataIndex * elementsPerUnitCount;
 
-                for (uint element = 0; element < elementsPerUnitCount; element++) {
+                for (uint element = 0; element < elementsPerUnitCount; element++)
+                {
                     uint address = bufferAddress + dataMemoryOffset + (element * sizeOfT);
                     T data = MemoryManager.Read<T>(address);
                     vertexData[(int)(dataBaseIndex + element)] = data;
@@ -98,7 +109,8 @@ namespace PS3Sharp.Cell.RSX {
             }
         }
 
-        public void UpdateHashKey() {
+        public void UpdateHashKey()
+        {
             Span<byte> data = GetLastScratchData();
             CacheKey.Address = BufferAddress;
             CacheKey.Type = (uint)AttribType;
@@ -107,7 +119,8 @@ namespace PS3Sharp.Cell.RSX {
             CacheKey.Hash = XxHash3.HashToUInt64(data);
         }
 
-        public void PrintInfo(int location) { // For debugging
+        public void PrintInfo(int location)
+        { // For debugging
             string inputName = VertexShaderGenerator.InputNames[location];
             Console.WriteLine($"[RSX] Setting up vertex buffer {location} ({inputName}) - type = {AttribType}, address = 0x{BufferAddress:X8}, n_elements = {NumberOfElements}, stride = {Stride}");
         }

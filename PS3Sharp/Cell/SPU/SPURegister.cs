@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace PS3Sharp.Cell.SPU {
+namespace PS3Sharp.Cell.SPU
+{
 
     [StructLayout(LayoutKind.Explicit)]
-    public unsafe struct SPURegister {   
+    public unsafe struct SPURegister
+    {
         //Unsigned
         [FieldOffset(0)] public byte Value8;
         [FieldOffset(0)] public ushort Value16;

@@ -7,29 +7,36 @@ using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 using static PS3Sharp.OS.LV2.LV2EventFlag;
 
-namespace PS3Sharp.OS.Syscall {
-    public static class SysEventFlag {
+namespace PS3Sharp.OS.Syscall
+{
+    public static class SysEventFlag
+    {
         private static readonly ConcurrentDictionary<uint, LV2EventFlag> _eventFlags = [];
 
         public static bool GetEventFlag(uint handle, out LV2EventFlag? eventFlag) => _eventFlags.TryGetValue(handle, out eventFlag);
 
-        public static void AddEventFlag(uint handle, LV2EventFlag eventFlag) {
+        public static void AddEventFlag(uint handle, LV2EventFlag eventFlag)
+        {
             bool success = _eventFlags.TryAdd(handle, eventFlag);
 
-            if (!success) {
+            if (!success)
+            {
                 throw new Exception($"[SysEventFlag] Could not add event flag: 0x{handle:X8} to dictionary");
             }
         }
 
-        public static void RemoveEventFlag(uint handle) {
+        public static void RemoveEventFlag(uint handle)
+        {
             bool success = _eventFlags.TryRemove(handle, out _);
 
-            if (!success) {
+            if (!success)
+            {
                 throw new Exception($"[SysEventFlag] Could not remove event flag: 0x{handle:X8} from dictionary");
             }
         }
 
-        public static ulong SysEventFlagCreate(PPU ppu) {
+        public static ulong SysEventFlagCreate(PPU ppu)
+        {
             GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             GuestVoidPtr attributes_ptr = ppu.ReadArg<GuestVoidPtr>(ARG1);
             ulong initialValue = ppu.ReadArg<ulong>(ARG2);
@@ -43,7 +50,8 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysEventFlagDestroy(PPU ppu) {
+        public static ulong SysEventFlagDestroy(PPU ppu)
+        {
             uint id = ppu.ReadArg<uint>(ARG0);
             RemoveEventFlag(id);
 
@@ -51,7 +59,8 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysEventFlagWait(PPU ppu) {
+        public static ulong SysEventFlagWait(PPU ppu)
+        {
             uint id = ppu.ReadArg<uint>(ARG0);
             ulong bitPattern = ppu.ReadArg<ulong>(ARG1);
             uint mode = ppu.ReadArg<uint>(ARG2);
@@ -60,48 +69,60 @@ namespace PS3Sharp.OS.Syscall {
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_flag_wait id = 0x{id:X8} mode = 0x{mode:X8} bp = 0x{bitPattern:X8}");
 
-            if (GetEventFlag(id, out LV2EventFlag? eventFlag)) {
+            if (GetEventFlag(id, out LV2EventFlag? eventFlag))
+            {
                 ulong errorCode = eventFlag.Wait((SysEventFlagMode)mode, bitPattern, timeout_us, out ulong result);
 
                 //Console.WriteLine($"[{ppu.ThreadName}] sys_event_flag_wait: woke up - returned: 0x{result:X8}");
 
-                if (errorCode == CELL_OK) {
+                if (errorCode == CELL_OK)
+                {
                     MemoryManager.Write<ulong>(result_ptr, result);
                 }
 
                 return errorCode;
 
-            } else {
+            }
+            else
+            {
                 return CELL_ESRCH;
             }
         }
 
-        public static ulong SysEventFlagSet(PPU ppu) {
+        public static ulong SysEventFlagSet(PPU ppu)
+        {
             uint id = ppu.ReadArg<uint>(ARG0);
             ulong bitPattern = ppu.ReadArg<ulong>(ARG1);
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_flag_set id = 0x{id:X} bp = 0x{bitPattern:X8}");
 
-            if (GetEventFlag(id, out LV2EventFlag? eventFlag)) {
+            if (GetEventFlag(id, out LV2EventFlag? eventFlag))
+            {
                 eventFlag.Set(bitPattern);
 
-            } else {
+            }
+            else
+            {
                 return CELL_ESRCH;
             }
 
             return CELL_OK;
         }
 
-        public static ulong SysEventFlagClear(PPU ppu) {
+        public static ulong SysEventFlagClear(PPU ppu)
+        {
             uint id = ppu.ReadArg<uint>(ARG0);
             ulong bitPattern = ppu.ReadArg<ulong>(ARG1);
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_flag_clear id = 0x{id:X} bp = 0x{bitPattern:X8}");
 
-            if (GetEventFlag(id, out LV2EventFlag? eventFlag)) {
+            if (GetEventFlag(id, out LV2EventFlag? eventFlag))
+            {
                 eventFlag.Clear(bitPattern);
 
-            } else {
+            }
+            else
+            {
                 return CELL_ESRCH;
             }
 

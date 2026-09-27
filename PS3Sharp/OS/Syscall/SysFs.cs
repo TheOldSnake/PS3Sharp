@@ -7,12 +7,15 @@ using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 using static PS3Sharp.FileSystem.FileSystemManager;
 
-namespace PS3Sharp.OS.Syscall {
+namespace PS3Sharp.OS.Syscall
+{
     //File System Syscalls
-    
-    public static class SysFs {
+
+    public static class SysFs
+    {
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct CellFsStat : IPS3Struct {
+        public struct CellFsStat : IPS3Struct
+        {
             public BigEndian<int> Mode;          // s32
             public BigEndian<int> UID;           // s32
             public BigEndian<int> GID;           // s32
@@ -24,7 +27,8 @@ namespace PS3Sharp.OS.Syscall {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct CellFsDirent : IPS3Struct {
+        public struct CellFsDirent : IPS3Struct
+        {
             public byte Type;
             public byte NameLength;
             public InlineData.InlineArray256<byte> Name;
@@ -53,7 +57,7 @@ namespace PS3Sharp.OS.Syscall {
         public static readonly uint CELL_FS_S_IXOTH = Oct("0000001"); // X for other
 
         //Default Modes
-        public static readonly uint DIR_MODE  = Oct("0777") | CELL_FS_S_IFDIR;   // RWX RWX RWX
+        public static readonly uint DIR_MODE = Oct("0777") | CELL_FS_S_IFDIR;   // RWX RWX RWX
         public static readonly uint FILE_MODE = Oct("0666") | CELL_FS_S_IFREG;   // RW- RW- RW-
 
         // SysFsOpen flags
@@ -77,13 +81,14 @@ namespace PS3Sharp.OS.Syscall {
         public static readonly uint O_CLOEXEC = Oct("02000000");    // Close on exec
 
         //Same as linux?
-        public const uint FD_STDIN  = 0;
+        public const uint FD_STDIN = 0;
         public const uint FD_STDOUT = 1;
         public const uint FD_STDERR = 2;
         public const uint FD_EOF = 4;
 
         // For the console
-        private static CellFsStat ConsoleFsStat = new CellFsStat {
+        private static CellFsStat ConsoleFsStat = new CellFsStat
+        {
             Mode = (int)(CELL_FS_S_IRUSR | CELL_FS_S_IWUSR | CELL_FS_S_IXUSR |
                          CELL_FS_S_IRGRP | CELL_FS_S_IWGRP | CELL_FS_S_IXGRP |
                          CELL_FS_S_IROTH | CELL_FS_S_IWOTH | CELL_FS_S_IXOTH |
@@ -100,9 +105,11 @@ namespace PS3Sharp.OS.Syscall {
 
 
         public static bool IsGuestAbsolutePath(string guestPath) => guestPath.StartsWith("/");
-        public static string GetAbsoluteHostPath(string guestPath) {
+        public static string GetAbsoluteHostPath(string guestPath)
+        {
             //Assuming absolute paths 
-            if (!IsGuestAbsolutePath(guestPath)) {
+            if (!IsGuestAbsolutePath(guestPath))
+            {
                 throw new Exception($"[FileSystem] path is not absolute -- path = {guestPath}");
             }
 
@@ -114,27 +121,32 @@ namespace PS3Sharp.OS.Syscall {
         }
 
 
-        public static ulong SysFsAioInit(PPU ppu) {
+        public static ulong SysFsAioInit(PPU ppu)
+        {
             Console.WriteLine($"[{ppu.ThreadName}] [SysFs] SysFsAioInit");
             return CELL_OK;
         }
 
-        public static uint SysFsStat(PPU ppu) {
+        public static uint SysFsStat(PPU ppu)
+        {
             uint path_ptr = ppu.ReadArg<uint>(ARG0);
             GuestPtr<CellFsStat> stat_ptr = ppu.ReadArg<GuestPtr<CellFsStat>>(ARG1);
 
-            if (path_ptr == 0) {
+            if (path_ptr == 0)
+            {
                 return CELL_EFAULT;
             }
 
             string guestPath = MemoryManager.ReadString(path_ptr);
             //Console.WriteLine($"[{ppu.ThreadName}] [SysFs] SysFstat path = {guestPath}");
 
-            if (string.IsNullOrEmpty(guestPath)) { // ?
+            if (string.IsNullOrEmpty(guestPath))
+            { // ?
                 return CELL_ENOENT;
             }
 
-            if (!IsGuestAbsolutePath(guestPath)) {
+            if (!IsGuestAbsolutePath(guestPath))
+            {
                 //TODO
                 throw new Exception($"path is not absolute -- path = {guestPath}");
             }
@@ -143,12 +155,14 @@ namespace PS3Sharp.OS.Syscall {
             bool isDirectory = IsDirectory(hostPath);
             bool isFile = IsFile(hostPath);
 
-            if (!isDirectory && !isFile) {
+            if (!isDirectory && !isFile)
+            {
                 Console.WriteLine($"[{ppu.ThreadName}] [SysFs] SysFstat file: {guestPath} does not exist");
                 return CELL_ENOENT;
             }
-            
-            unsafe {
+
+            unsafe
+            {
                 CellFsStat* stat = stat_ptr.AsNativePtr();
                 stat->Mode = (int)(isDirectory ? DIR_MODE : FILE_MODE);
                 stat->UID = 0;
@@ -165,7 +179,8 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static uint SysFsFstat(PPU ppu) {
+        public static uint SysFsFstat(PPU ppu)
+        {
             int fd = ppu.ReadArg<int>(ARG0);
             GuestPtr<CellFsStat> stat_ptr = ppu.ReadArg<GuestPtr<CellFsStat>>(ARG1);
 
@@ -173,31 +188,38 @@ namespace PS3Sharp.OS.Syscall {
 
             Console.WriteLine($"[{ppu.ThreadName}] [SysFs] SysFsFstat fd = 0x{fd:X}");
 
-            if (isConsole) {
+            if (isConsole)
+            {
                 MemoryManager.WriteStruct<CellFsStat>(stat_ptr, ConsoleFsStat);
                 Console.WriteLine($"[{ppu.ThreadName}] [SysFs] SysFsFstat => CELL_EBADF");
                 return CELL_EBADF;
             }
 
-            
+
             ulong size;
             int mode;
 
-            if (GetFile(fd, out GuestFile? guestFile)) {
+            if (GetFile(fd, out GuestFile? guestFile))
+            {
                 size = guestFile.Size;
                 mode = (int)FILE_MODE;
 
-            } else if (GetDirectory(fd, out GuestDirectory? directory)) {
+            }
+            else if (GetDirectory(fd, out GuestDirectory? directory))
+            {
                 size = directory.Size;
                 mode = (int)DIR_MODE;
 
-            } else {
+            }
+            else
+            {
                 Console.WriteLine($"[{ppu.ThreadName}] [SysFs] SysFsFstat => CELL_EBADF");
                 return CELL_EBADF;
                 //throw new Exception($"FD: 0x{fd:X} does not corrospond to any file/directory");
             }
 
-            unsafe {
+            unsafe
+            {
                 CellFsStat* stat = stat_ptr.AsNativePtr();
                 stat->Mode = mode;
                 stat->UID = 0;
@@ -212,7 +234,8 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysFsOpen(PPU ppu) {        
+        public static ulong SysFsOpen(PPU ppu)
+        {
             uint path_ptr = ppu.ReadArg<uint>(ARG0);
             uint flags = ppu.ReadArg<uint>(ARG1);
             GuestPtr<int> fd_ptr = ppu.ReadArg<GuestPtr<int>>(ARG2);
@@ -222,18 +245,24 @@ namespace PS3Sharp.OS.Syscall {
 
             string guestPath = MemoryManager.ReadString(path_ptr);
 
-            if (!IsGuestAbsolutePath(guestPath)) {
+            if (!IsGuestAbsolutePath(guestPath))
+            {
                 Console.WriteLine($"[{ppu.ThreadName}] [SysFsOpen] Error, path: {guestPath} is not absolute (CELL_ENOENT)");
                 return CELL_ENOENT;
             }
 
             string hostPath = GetAbsoluteHostPath(guestPath);
 
-            if (IsFile(hostPath)) {
-                if (IsEncryptedFile(hostPath)) {
-                    if (HasBeenDecrypted(hostPath)) {
+            if (IsFile(hostPath))
+            {
+                if (IsEncryptedFile(hostPath))
+                {
+                    if (HasBeenDecrypted(hostPath))
+                    {
                         hostPath += ".unedat";
-                    } else {
+                    }
+                    else
+                    {
                         throw new Exception($"Need to decrypt: {hostPath}");
                     }
                 }
@@ -243,19 +272,23 @@ namespace PS3Sharp.OS.Syscall {
             int handle = (int)MemoryManager.GetHandle();
             ulong result = OpenFile(hostPath, handle, ppu.ThreadID);
 
-            if (result == CELL_OK) {
+            if (result == CELL_OK)
+            {
                 //Write the file descriptor
                 MemoryManager.Write<int>(fd_ptr, handle);
                 // Console.WriteLine($"[{ppu.ThreadName}] [SysFsOpen] cellFsOpen opened file {guestPath} fd = 0x{handle:X} flags = 0x{flags}");
 
-            } else {
+            }
+            else
+            {
                 // Console.WriteLine($"[{ppu.ThreadName}] [SysFsOpen] path: {guestPath} failed -> {CellErrorNames[result]}");
             }
 
             return result;
         }
 
-        public static ulong SysFsLseek(PPU ppu) {
+        public static ulong SysFsLseek(PPU ppu)
+        {
             int fd = ppu.ReadArg<int>(ARG0);
             long offset = ppu.ReadArg<long>(ARG1);
             int whence = ppu.ReadArg<int>(ARG2);
@@ -263,7 +296,8 @@ namespace PS3Sharp.OS.Syscall {
 
             // Console.WriteLine($"[{ppu.ThreadName}] [SysFsLseek] cellFsLseek fd = 0x{fd:X} seek offset: 0x{offset:X} mode = {whence}");
 
-            if (!IsFileOpen(fd)) {
+            if (!IsFileOpen(fd))
+            {
                 // Console.WriteLine($"[SysFsLseek] cellFsLseek fails (file not open) -> CELL_EINVAL");
                 return CELL_EINVAL;
             }
@@ -274,7 +308,8 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysFsRead(PPU ppu, bool IsSys = true) {
+        public static ulong SysFsRead(PPU ppu, bool IsSys = true)
+        {
             int fd = ppu.ReadArg<int>(ARG0);
             GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(ARG1);
             ulong nbytes = ppu.ReadArg<ulong>(ARG2);
@@ -284,48 +319,56 @@ namespace PS3Sharp.OS.Syscall {
 
             // Console.WriteLine($"[{ppu.ThreadName}] [SysFsRead] cellFsRead fd = 0x{fd:X} amount: 0x{nbytes:X} dest: 0x{buf:X} base = 0x{b.VirtualAddress:X8}");
 
-            if (buf == 0xD003DF58) {
+            if (buf == 0xD003DF58)
+            {
                 throw new Exception("yes");
             }
 
-            if (buf.IsNullPtr || nread_ptr.IsNullPtr || nbytes == 0) {
+            if (buf.IsNullPtr || nread_ptr.IsNullPtr || nbytes == 0)
+            {
                 // Console.WriteLine($"[{ppu.ThreadName}] [SysFsRead] cellFsRead -> CELL_EFAULT");
                 return CELL_EFAULT;
             }
- 
+
             ulong readCount = Read(fd, nbytes, buf);                                  // Read into the buffer
 
             // Write back the number of bytes read
-            if (nread_ptr > 0) {
-                MemoryManager.Write<ulong>(nread_ptr, readCount);      
+            if (nread_ptr > 0)
+            {
+                MemoryManager.Write<ulong>(nread_ptr, readCount);
             }
 
             // Seems like this syscall returns CELL_EFAULT if number of bytes read == 0, while CellFsRead does not
             ulong ret;
-            if ((IsSys && nread_ptr == 0) || readCount == 0) {
+            if ((IsSys && nread_ptr == 0) || readCount == 0)
+            {
                 ret = CELL_EFAULT;
                 //throw new Exception("[SysFsRead] TODO");
 
-            } else {
+            }
+            else
+            {
                 ret = CELL_OK;
             }
-       
+
             return CELL_OK;
         }
 
-        public static ulong SysFsWrite(PPU ppu) {
+        public static ulong SysFsWrite(PPU ppu)
+        {
             int fd = ppu.ReadArg<int>(ARG0);
             GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(ARG1);
             ulong nbytes = ppu.ReadArg<ulong>(ARG2);
             GuestPtr<ulong> nwrite_ptr = ppu.ReadArg<GuestPtr<ulong>>(ARG3);
-          
+
             ulong nrwite = Write(fd, (int)nbytes, buf);
             MemoryManager.Write<ulong>(nwrite_ptr, nrwite); //Write back the number of bytes written
 
             return CELL_OK;
         }
 
-        public static ulong SysFsClose(PPU ppu) {
+        public static ulong SysFsClose(PPU ppu)
+        {
             int fd = ppu.ReadArg<int>(ARG0);
 
             Close(fd);
@@ -333,13 +376,15 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysFsMkDir(PPU ppu) {
+        public static ulong SysFsMkDir(PPU ppu)
+        {
             // todo
             Console.WriteLine($"[SysFsMkDir] SysFsMkDir -> CELL_OK");
             return CELL_OK;
         }
 
-        public static ulong SysFsOpenDir(PPU ppu) {
+        public static ulong SysFsOpenDir(PPU ppu)
+        {
             // todo
             return CELL_ENOENT;
             GuestVoidPtr path_ptr = ppu.ReadArg<GuestVoidPtr>(ARG0);
@@ -353,16 +398,20 @@ namespace PS3Sharp.OS.Syscall {
             int handle = (int)MemoryManager.GetHandle();
             ulong result = OpenDirectory(hostPath, handle, ppu.ThreadID);
 
-            if (result == CELL_OK) {
+            if (result == CELL_OK)
+            {
                 MemoryManager.Write<uint>(fd_ptr, (uint)handle);
-            } else {
+            }
+            else
+            {
                 Console.WriteLine($"[SysFsOpenDir] SysFsOpenDir failed -> {CellErrorNames[result]}");
             }
 
             return result;
         }
 
-        public static ulong SysFsReadDir(PPU ppu) {
+        public static ulong SysFsReadDir(PPU ppu)
+        {
             int fd = ppu.ReadArg<int>(ARG0);
             GuestPtr<CellFsDirent> direent_ptr = ppu.ReadArg<GuestPtr<CellFsDirent>>(ARG1);
             GuestPtr<ulong> bytes_read_ptr = ppu.ReadArg<GuestPtr<ulong>>(ARG2);
@@ -375,7 +424,8 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysFsCloseDir(PPU ppu) {
+        public static ulong SysFsCloseDir(PPU ppu)
+        {
             // todo
             // Console.WriteLine($"[SysFsCloseDir] SysFsCloseDir -> CELL_OK");
             return CELL_OK;

@@ -8,11 +8,13 @@ using System.Text;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
-namespace PS3Sharp.OS.Modules {
+namespace PS3Sharp.OS.Modules
+{
 
-    public static class CellGame {
-        
-        static string ContentDirectory => PS3Sharp.ContentDir.Replace("\\", "/") + "\0"; 
+    public static class CellGame
+    {
+
+        static string ContentDirectory => PS3Sharp.ContentDir.Replace("\\", "/") + "\0";
         static string USRDIR => PS3Sharp.ContentDir.Replace("\\", "/") + @"/USRDIR" + "\0";
 
         public const uint CELL_GAME_PARAMID_TITLE = 0;
@@ -83,19 +85,22 @@ namespace PS3Sharp.OS.Modules {
         };
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct CellGameContentSize : IPS3Struct {
+        public struct CellGameContentSize : IPS3Struct
+        {
             public BigEndian<int> HDDFreeSizeKB;
             public BigEndian<int> SizeKB;
             public BigEndian<int> SysSizeKB;
         }
 
-        public static ulong CellGameBootCheck(PPU ppu) {
+        public static ulong CellGameBootCheck(PPU ppu)
+        {
             GuestPtr<uint> type_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             GuestPtr<uint> attrib_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
             GuestPtr<CellGameContentSize> size_ptr = ppu.ReadArg<GuestPtr<CellGameContentSize>>(ARG2);
             GuestVoidPtr dir_ptr = ppu.ReadArg<GuestVoidPtr>(ARG3);
 
-            if(!dir_ptr.IsNullPtr) {
+            if (!dir_ptr.IsNullPtr)
+            {
                 //copy content dir
                 byte[] content_chars = Encoding.UTF8.GetBytes(ContentDirectory);
                 MemoryManager.CopyBufferToVirtualMemory(content_chars, dir_ptr);
@@ -103,11 +108,13 @@ namespace PS3Sharp.OS.Modules {
                 Console.WriteLine($"[CellGame] cellGameBootCheck path = {ContentDirectory}");
             }
 
-            if (!size_ptr.IsNullPtr) {
+            if (!size_ptr.IsNullPtr)
+            {
                 string host_dir = PS3Sharp.FileSystemBase + PS3Sharp.ContentDir;
                 int size = (int)FileSystem.FileSystemManager.GetDirectorySize(host_dir);
 
-                unsafe {
+                unsafe
+                {
                     CellGameContentSize* size_struct = size_ptr.AsNativePtr();
                     size_struct->HDDFreeSizeKB = 40 * 1024 * 1024 - 256;
                     size_struct->SizeKB = size;
@@ -118,7 +125,8 @@ namespace PS3Sharp.OS.Modules {
             return CELL_OK;
         }
 
-        public static ulong CellGameContentPermit(PPU ppu) {
+        public static ulong CellGameContentPermit(PPU ppu)
+        {
             uint content_dir_ptr = ppu.ReadArg<uint>(ARG0);
             uint usr_dir_ptr = ppu.ReadArg<uint>(ARG1);
 
@@ -135,15 +143,19 @@ namespace PS3Sharp.OS.Modules {
             return CELL_OK;
         }
 
-        public static ulong CellGameGetParamInt(PPU ppu) {
+        public static ulong CellGameGetParamInt(PPU ppu)
+        {
             uint id = ppu.ReadArg<uint>(ARG0);
             GuestPtr<uint> value_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
 
             string key = CellGameParamId[id];
 
-            if (PS3Sharp.SFO.UIntLookup(key, out uint value)) {
+            if (PS3Sharp.SFO.UIntLookup(key, out uint value))
+            {
                 MemoryManager.Write<uint>(value_ptr, value);
-            } else {
+            }
+            else
+            {
                 throw new Exception($"[CellGame] CellGameGetParamInt cannot find key = {key}");
             }
 
@@ -151,7 +163,8 @@ namespace PS3Sharp.OS.Modules {
             return CELL_OK;
         }
 
-        public static ulong CellGameGetParamString(PPU ppu) {
+        public static ulong CellGameGetParamString(PPU ppu)
+        {
             uint id = ppu.ReadArg<uint>(ARG0);
             GuestPtr<uint> buffer_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
             uint bufferSize = ppu.ReadArg<uint>(ARG2);
@@ -159,18 +172,23 @@ namespace PS3Sharp.OS.Modules {
             string key = CellGameParamId[id];
 
 
-            if (PS3Sharp.SFO.StringLookup(key, out string value)) {
+            if (PS3Sharp.SFO.StringLookup(key, out string value))
+            {
                 byte[] str = Encoding.UTF8.GetBytes(value + "\0");
 
-                for (uint i = 0; i < bufferSize; i++) {
+                for (uint i = 0; i < bufferSize; i++)
+                {
                     uint offset = buffer_ptr + i;
                     MemoryManager.Write<byte>(offset, str[i]);
-                    if (str[i] == 0) {
+                    if (str[i] == 0)
+                    {
                         break;
                     }
                 }
 
-            } else {
+            }
+            else
+            {
                 throw new Exception($"[CellGame] CellGameGetParamString cannot find key = {key}");
             }
 
@@ -179,17 +197,20 @@ namespace PS3Sharp.OS.Modules {
             return CELL_OK;
         }
 
-        public static ulong CellGameDataCheck(PPU ppu) {
+        public static ulong CellGameDataCheck(PPU ppu)
+        {
             Console.WriteLine($"[CellGame] cellGameDataCheck");
             return CELL_OK;
         }
 
-        public static ulong CellGameGetDiscContentInfoUpdatePath(PPU ppu) {
+        public static ulong CellGameGetDiscContentInfoUpdatePath(PPU ppu)
+        {
             Console.WriteLine($"[CellGame] cellGameGetDiscContentInfoUpdatePath");
             return CELL_OK;
         }
 
-        public static ulong CellGamePatchCheck(PPU ppu) {
+        public static ulong CellGamePatchCheck(PPU ppu)
+        {
             Console.WriteLine($"[CellGame] CellGamePatchCheck");
             return CELL_GAME_ERROR_NOTPATCH;
         }

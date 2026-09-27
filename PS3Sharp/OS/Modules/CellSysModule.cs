@@ -4,28 +4,36 @@ using System.Xml.Linq;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
-namespace PS3Sharp.OS.Modules {
-    public static class CellSysModule {
-        public static ulong CellSysmoduleLoadModule(PPU ppu) {
+namespace PS3Sharp.OS.Modules
+{
+    public static class CellSysModule
+    {
+        public static ulong CellSysmoduleLoadModule(PPU ppu)
+        {
             //TODO
             ushort id = ppu.ReadArg<ushort>(ARG0);
 
-            if (ModuleMap.TryGetValue(id, out string? name)) {
+            if (ModuleMap.TryGetValue(id, out string? name))
+            {
                 Console.WriteLine($"[CellSysModule] cellSysmoduleLoadModule requested: {name}");
 
-            } else {
+            }
+            else
+            {
                 Console.WriteLine($"[CellSysModule] cellSysmoduleLoadModule requested: unknown");
             }
 
             return CELL_OK;
         }
 
-        public static ulong CellSysmoduleUnloadModule(PPU ppu) {
+        public static ulong CellSysmoduleUnloadModule(PPU ppu)
+        {
             Console.WriteLine($"[CellSysModule] cellSysmoduleUnloadModule");
             return CELL_OK;
         }
 
-        public static ulong CellSysmoduleIsLoaded(PPU ppu) {
+        public static ulong CellSysmoduleIsLoaded(PPU ppu)
+        {
             Console.WriteLine($"[CellSysModule] cellSysmoduleIsLoaded");
             return CELL_OK;
         }

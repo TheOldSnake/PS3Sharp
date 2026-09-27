@@ -1,5 +1,7 @@
-﻿namespace PS3Sharp.Cell.PPU {
-    public struct PPUInstruction {
+﻿namespace PS3Sharp.Cell.PPU
+{
+    public struct PPUInstruction
+    {
         public uint Raw;
         public Op Op => (Op)(Raw >> 26);
         public uint BF => (Raw >> 23) & 0x07;
@@ -50,7 +52,8 @@
         public uint Rc => Raw & 0x1;
     }
 
-    public enum Op : uint {
+    public enum Op : uint
+    {
         Altivec = 0x04,
         MULLI = 0x07,
         SUBFIC = 0x08,
@@ -105,7 +108,8 @@
         G3F = 0x3F,
     }
 
-    public enum G04 : uint {    // Altivec
+    public enum G04 : uint
+    {    // Altivec
         VADDFP = 0x00A,
         VSEL = 0x02A,
         VPERM = 0x02B,
@@ -150,7 +154,8 @@
         VNOR = 0x504
     }
 
-    public enum G13 : uint {
+    public enum G13 : uint
+    {
         MCRF = 0x000,
         BCLR = 0x010,
         ISYNC = 0x096,
@@ -165,7 +170,8 @@
         BCCTR = 0x210,
     }
 
-    public enum G1F : uint {
+    public enum G1F : uint
+    {
         CMP = 0x000,
         LVEBX = 0x007,
         LVSL = 0x006,
@@ -279,7 +285,8 @@
         DCBZ = 0x3F6
     }
 
-    public enum G3B : uint {
+    public enum G3B : uint
+    {
         FDIVS = 0x12,
         FSUBS = 0x14,
         FADDS = 0x15,
@@ -293,7 +300,8 @@
         FNMADDS = 0x1F
     }
 
-    public enum G3F : uint {
+    public enum G3F : uint
+    {
         FCMPU = 0x000,
         FRSP = 0x00C,
         FCTIW = 0x00E,

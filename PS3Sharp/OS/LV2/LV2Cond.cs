@@ -9,11 +9,14 @@ using System.Runtime.InteropServices;
 using System.Text;
 using static PS3Sharp.Cell.ErrorCode;
 
-namespace PS3Sharp.OS.LV2 {
-    public sealed class LV2Cond {
+namespace PS3Sharp.OS.LV2
+{
+    public sealed class LV2Cond
+    {
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct SysCondAttribute : IPS3Struct {
+        public struct SysCondAttribute : IPS3Struct
+        {
             public BigEndian<uint> PShared;
             public BigEndian<int> Flags;
             public BigEndian<ulong> IPC_Key;
@@ -26,20 +29,24 @@ namespace PS3Sharp.OS.LV2 {
         private static readonly ConcurrentDictionary<uint, LV2CondWaiter> _threadCondWaiters = [];
         private readonly List<LV2CondWaiter> Waiters = new();
 
-        public LV2Cond(SysCondAttribute attribute, LV2Mutex mutex) {
+        public LV2Cond(SysCondAttribute attribute, LV2Mutex mutex)
+        {
             _attribute = attribute;
             _mutex = mutex;
         }
 
-        public ulong Wait(uint callerThreadID, ulong us_timeout = 0) {
-            if (!_mutex.IsEntered) {
+        public ulong Wait(uint callerThreadID, ulong us_timeout = 0)
+        {
+            if (!_mutex.IsEntered)
+            {
                 return 0xFFFFFFFFFFFFFFFF; // -1
             }
 
             // Add the thread to the wait list
             LV2CondWaiter waiter = GetThreadCondWaiter(callerThreadID);
 
-            lock (Waiters) {
+            lock (Waiters)
+            {
                 Waiters.Add(waiter);
             }
 
@@ -47,18 +54,24 @@ namespace PS3Sharp.OS.LV2 {
             _mutex.Unlock();
 
             bool ok;
-            try {
+            try
+            {
 
                 // Wait for a signal
-                if (us_timeout > 0) {
+                if (us_timeout > 0)
+                {
                     ok = waiter.Event.Wait(TimeSpan.FromMicroseconds(us_timeout));
-                } else {
+                }
+                else
+                {
                     waiter.Event.Wait();
                     ok = true;
                 }
 
-            } finally {
-                
+            }
+            finally
+            {
+
                 // Reset the event
                 waiter.Event.Reset();
 
@@ -66,7 +79,8 @@ namespace PS3Sharp.OS.LV2 {
                 _mutex.Lock();
 
                 // Remove the waiter from the list
-                lock (Waiters) {
+                lock (Waiters)
+                {
                     Waiters.Remove(waiter);
                 }
             }
@@ -74,8 +88,10 @@ namespace PS3Sharp.OS.LV2 {
             return ok ? CELL_OK : CELL_ETIMEDOUT;
         }
 
-        public ulong Signal() {
-            lock (Waiters) {
+        public ulong Signal()
+        {
+            lock (Waiters)
+            {
                 LV2CondWaiter? waiter = Waiters.FirstOrDefault();
                 waiter?.Event.Set();
             }
@@ -83,30 +99,37 @@ namespace PS3Sharp.OS.LV2 {
             return CELL_OK;
         }
 
-        public ulong SignalAll() {
-            lock (Waiters) {
-                foreach (LV2CondWaiter? waiter in Waiters) {
+        public ulong SignalAll()
+        {
+            lock (Waiters)
+            {
+                foreach (LV2CondWaiter? waiter in Waiters)
+                {
                     waiter.Event.Set();
-                }                 
+                }
             }
 
             return CELL_OK;
         }
 
-        public ulong SignalTo(uint waiterID) {
+        public ulong SignalTo(uint waiterID)
+        {
             LV2CondWaiter? waiter;
 
-            lock (Waiters) {
-                 waiter = Waiters.FirstOrDefault(w => w.WaiterTheadID == waiterID);
+            lock (Waiters)
+            {
+                waiter = Waiters.FirstOrDefault(w => w.WaiterTheadID == waiterID);
             }
 
             waiter?.Event.Set();
             return CELL_OK;
         }
 
-        private LV2CondWaiter GetThreadCondWaiter(uint threadID) {
+        private LV2CondWaiter GetThreadCondWaiter(uint threadID)
+        {
             // Look up the condWaiter instance in the dictionary
-            if (_threadCondWaiters.TryGetValue(threadID, out LV2CondWaiter waiter)) {
+            if (_threadCondWaiters.TryGetValue(threadID, out LV2CondWaiter waiter))
+            {
                 return waiter;
             }
 
@@ -114,7 +137,8 @@ namespace PS3Sharp.OS.LV2 {
             LV2CondWaiter condWaiter = new LV2CondWaiter(threadID);
             bool success = _threadCondWaiters.TryAdd(threadID, condWaiter);
 
-            if (!success) {
+            if (!success)
+            {
                 throw new Exception($"[LV2Cond] Could not add a CondWaiter instance to the dictionary");
             }
 

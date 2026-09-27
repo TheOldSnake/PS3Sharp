@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace PS3Sharp.Memory_Manager {
-    public static partial class MemoryManager {
+namespace PS3Sharp.Memory_Manager
+{
+    public static partial class MemoryManager
+    {
         // Unused functions that depends on the older paging system 
-        
+
         /* 
          
          public static bool IsWithinSingleBlock(uint virtualAddress, uint length) {

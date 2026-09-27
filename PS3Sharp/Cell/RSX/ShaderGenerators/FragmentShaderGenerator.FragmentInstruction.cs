@@ -1,11 +1,14 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace PS3Sharp.Cell.RSX {
-    public static partial class FragmentShaderGenerator {
+namespace PS3Sharp.Cell.RSX
+{
+    public static partial class FragmentShaderGenerator
+    {
         // Based on nvfx_shader.h in PSL1GHT
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct FragmentInstruction {
+        public struct FragmentInstruction
+        {
             public uint OPDEST_Raw;
             public uint SRC0_Raw;
             public uint SRC1_Raw;
@@ -31,8 +34,9 @@ namespace PS3Sharp.Cell.RSX {
             public SRC SRC0 => new SRC { Raw = SRC0_Raw };
             public SRC SRC1 => new SRC { Raw = SRC1_Raw };
             public SRC SRC2 => new SRC { Raw = SRC2_Raw };
-            
-            public struct SRC {
+
+            public struct SRC
+            {
                 //Bits 0-17
                 public uint Raw;
                 public uint Type => (Raw & 0x3);

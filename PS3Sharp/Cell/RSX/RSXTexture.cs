@@ -4,8 +4,10 @@ using PS3Sharp.Memory_Manager;
 using System.IO.Hashing;
 using static PS3Sharp.Cell.RSX.RSXCommand;
 
-namespace PS3Sharp.Cell.RSX {
-    public sealed class RSXTexture() {
+namespace PS3Sharp.Cell.RSX
+{
+    public sealed class RSXTexture()
+    {
 
         // Atributes 
         public uint Address => PS3Sharp.RSX.OffsetToAddress(Offset, MemoryLocation); // Final address
@@ -30,45 +32,53 @@ namespace PS3Sharp.Cell.RSX {
         private static ReadOnlySpan<int> _swizzleTable => [(int)All.Alpha, (int)All.Red, (int)All.Green, (int)All.Blue];
         private static readonly string[] _swizzleStringTable = ["a", "r", "g", "b"];
 
-        public static readonly Swizzle DefaultSwizzle = new Swizzle {
+        public static readonly Swizzle DefaultSwizzle = new Swizzle
+        {
             A = _swizzleTable[0],
             R = _swizzleTable[1],
             G = _swizzleTable[2],
             B = _swizzleTable[3],
         };
 
-        public struct Swizzle {
+        public struct Swizzle
+        {
             public int A;
             public int R;
             public int G;
             public int B;
         }
 
-        public struct TextureCacheKey {
+        public struct TextureCacheKey
+        {
             public uint Address;
             public uint Width;
             public uint Height;
             public ulong Hash;
         }
 
-        public int GetSizeInBytes() {
+        public int GetSizeInBytes()
+        {
             int pitch = (int)Pitch;
             int height = (int)Height;
             return IsCompressed() ? GetCompressedSize() : pitch * height;
         }
 
-        public Span<byte> GetScratchData() {
+        public Span<byte> GetScratchData()
+        {
             int sizeInBytes = GetSizeInBytes();
             Span<byte> data = ScratchBuffer.RequestBuffer<byte>(sizeInBytes);
             return data;
         }
 
-        public Span<byte> GetLastScratchData() {
+        public Span<byte> GetLastScratchData()
+        {
             return ScratchBuffer.GetLastRequestedBuffer<byte>();
         }
 
-        public PixelInternalFormat GetPixelInternalFormat() {
-            switch (PixelFormatValue) {
+        public PixelInternalFormat GetPixelInternalFormat()
+        {
+            switch (PixelFormatValue)
+            {
                 case NV40TCL_TEX_FORMAT_FORMAT_A8R8G8B8: return PixelInternalFormat.Rgba8;
                 case NV40TCL_TEX_FORMAT_FORMAT_R5G6B5: return (PixelInternalFormat)All.Rgb565;
                 case NV40TCL_TEX_FORMAT_FORMAT_G8B8: return PixelInternalFormat.Rg8;
@@ -83,10 +93,12 @@ namespace PS3Sharp.Cell.RSX {
             }
         }
 
-        public InternalFormat GetCompressedInternalFormat() {
+        public InternalFormat GetCompressedInternalFormat()
+        {
             // For GL.CompressedTexImage2D
 
-            switch (PixelFormatValue) {
+            switch (PixelFormatValue)
+            {
                 case NV40TCL_TEX_FORMAT_FORMAT_DXT1: return InternalFormat.CompressedRgbaS3tcDxt1Ext;  //CELL_GCM_TEXTURE_DXT1 - used by LBP and gta sa
                 case NV40TCL_TEX_FORMAT_FORMAT_DXT3: return InternalFormat.CompressedRgbaS3tcDxt3Ext;  //CELL_GCM_TEXTURE_DXT3 - used by gta sa
                 case NV40TCL_TEX_FORMAT_FORMAT_DXT5: return InternalFormat.CompressedRgbaS3tcDxt5Ext;  //CELL_GCM_TEXTURE_DXT3 - used by gta sa
@@ -95,8 +107,10 @@ namespace PS3Sharp.Cell.RSX {
             }
         }
 
-        public PixelFormat GetPixelFormat() {
-            switch (PixelFormatValue) {
+        public PixelFormat GetPixelFormat()
+        {
+            switch (PixelFormatValue)
+            {
                 case NV40TCL_TEX_FORMAT_FORMAT_A8R8G8B8: return PixelFormat.Bgra; // ARGB in big endian == BGRA
 
                 case NV40TCL_TEX_FORMAT_FORMAT_R5G6B5: return PixelFormat.Rgb;
@@ -111,9 +125,11 @@ namespace PS3Sharp.Cell.RSX {
             }
         }
 
-        public PixelType GetPixelType() {
+        public PixelType GetPixelType()
+        {
 
-            switch (PixelFormatValue) {
+            switch (PixelFormatValue)
+            {
                 case NV40TCL_TEX_FORMAT_FORMAT_R5G6B5: return PixelType.UnsignedShort565;
 
                 default:
@@ -121,8 +137,10 @@ namespace PS3Sharp.Cell.RSX {
             }
         }
 
-        public int GetBytesPerPixel() {
-            switch (PixelFormatValue) {
+        public int GetBytesPerPixel()
+        {
+            switch (PixelFormatValue)
+            {
                 case NV40TCL_TEX_FORMAT_FORMAT_A8R8G8B8: return 4;
                 case NV40TCL_TEX_FORMAT_FORMAT_R5G6B5: return 2;
                 case NV40TCL_TEX_FORMAT_FORMAT_G8B8: return 2;
@@ -133,7 +151,8 @@ namespace PS3Sharp.Cell.RSX {
             }
         }
 
-        public bool IsCompressed() {
+        public bool IsCompressed()
+        {
             uint pixelFormat = PixelFormatValue;
 
             bool isCompressed =
@@ -144,7 +163,8 @@ namespace PS3Sharp.Cell.RSX {
             return isCompressed;
         }
 
-        public int GetCompressedSize() {
+        public int GetCompressedSize()
+        {
             // DXT texture is divided into 4×4 blocks
             // the size of a single tile is either 8 or 16 bytes depending on the type
 
@@ -154,7 +174,8 @@ namespace PS3Sharp.Cell.RSX {
             int blocksWidth = (int)Math.Ceiling(width / 4.0f);  // How many blocks wide
             int blockHeight = (int)Math.Ceiling(height / 4.0f); // How many blocks high
 
-            int bytesPerBlock = PixelFormatValue switch {
+            int bytesPerBlock = PixelFormatValue switch
+            {
                 NV40TCL_TEX_FORMAT_FORMAT_DXT1 => 8,
                 NV40TCL_TEX_FORMAT_FORMAT_DXT3 => 16,
                 NV40TCL_TEX_FORMAT_FORMAT_DXT5 => 16,
@@ -164,7 +185,8 @@ namespace PS3Sharp.Cell.RSX {
             return blocksWidth * blockHeight * bytesPerBlock;
         }
 
-        public Swizzle GetSwizzle() {
+        public Swizzle GetSwizzle()
+        {
 
             uint pixelFormat = PixelFormatValue;
             int swizzle = (int)SwizzleValue;
@@ -179,13 +201,15 @@ namespace PS3Sharp.Cell.RSX {
             Swizzle swizzleResult;
 
             // Compressed texture
-            if (IsCompressed()) {
+            if (IsCompressed())
+            {
                 return DefaultSwizzle;
             }
 
             // CELL_GCM_TEXTURE_B8 is a single channel format,
             // we use the RED channel for all of them
-            if (pixelFormat == NV40TCL_TEX_FORMAT_FORMAT_L8) {
+            if (pixelFormat == NV40TCL_TEX_FORMAT_FORMAT_L8)
+            {
                 swizzleResult.A = _swizzleTable[1];
                 swizzleResult.R = _swizzleTable[1];
                 swizzleResult.G = _swizzleTable[1];
@@ -195,7 +219,8 @@ namespace PS3Sharp.Cell.RSX {
 
 
             // NV40TCL_TEX_FORMAT_FORMAT_G8B8 
-            if (pixelFormat == NV40TCL_TEX_FORMAT_FORMAT_G8B8) {
+            if (pixelFormat == NV40TCL_TEX_FORMAT_FORMAT_G8B8)
+            {
                 swizzleResult.A = _swizzleTable[1]; // R
                 swizzleResult.R = _swizzleTable[2]; // G
                 swizzleResult.G = _swizzleTable[1]; // R
@@ -205,7 +230,8 @@ namespace PS3Sharp.Cell.RSX {
 
             // TODO: Handle more special cases
 
-            if (pixelFormat == NV40TCL_TEX_FORMAT_FORMAT_A8R8G8B8 && !IsSurface) {
+            if (pixelFormat == NV40TCL_TEX_FORMAT_FORMAT_A8R8G8B8 && !IsSurface)
+            {
                 // For A8R8G8B8 mode we used BGRA which sets the color channels correctly
                 // We have to reverse the swizzle lookup because our tabel is ARGB, but the indexer is BRGA
                 swizzleResult.A = _swizzleTable[3 - sw_a];
@@ -213,7 +239,9 @@ namespace PS3Sharp.Cell.RSX {
                 swizzleResult.G = _swizzleTable[3 - sw_g];
                 swizzleResult.B = _swizzleTable[3 - sw_b];
 
-            } else {
+            }
+            else
+            {
 
                 // For modes that were uploaded with normal RGBA, the channels are already reversed due to the memory being big endian
                 // so we keep the indexer reversed too, so it matches the channels
@@ -226,10 +254,12 @@ namespace PS3Sharp.Cell.RSX {
             return swizzleResult;
         }
 
-        public TextureMinFilter GetMinFilter() {
+        public TextureMinFilter GetMinFilter()
+        {
             uint minFilter = (Filter >> 16) & 0xF;
 
-            switch (minFilter) {
+            switch (minFilter)
+            {
                 case 1: return TextureMinFilter.Nearest;
                 case 2: return TextureMinFilter.Linear;
                 case 3: return TextureMinFilter.NearestMipmapNearest;
@@ -242,41 +272,48 @@ namespace PS3Sharp.Cell.RSX {
             }
         }
 
-        public TextureMagFilter GetMagFilter() {
+        public TextureMagFilter GetMagFilter()
+        {
             uint magFilter = (Filter >> 24) & 0xF;
 
-            switch (magFilter) {
+            switch (magFilter)
+            {
                 case 1: return TextureMagFilter.Nearest;
                 case 2: return TextureMagFilter.Linear;
 
                 // These should be like MinFilter, but we don't have this.. ?
                 case 3:
-                case 4: 
-                case 5: 
+                case 4:
+                case 5:
                 case 6: return TextureMagFilter.Nearest;
 
                 default:
                     throw new Exception($"Unknown TexMagFilter = {magFilter}");
             }
         }
-      
-        public TextureWrapMode GetWrapS() {
+
+        public TextureWrapMode GetWrapS()
+        {
             uint wrapS = Wrap & 0xFF;
             return GetWrap(wrapS);
         }
 
-        public TextureWrapMode GetWrapT() {
+        public TextureWrapMode GetWrapT()
+        {
             uint wrapT = (Wrap >> 8) & 0xFF;
             return GetWrap(wrapT);
         }
 
-        public TextureWrapMode GetWrapR() {
+        public TextureWrapMode GetWrapR()
+        {
             uint wrapR = (Wrap >> 16) & 0xFF;
-            return GetWrap(wrapR);    
+            return GetWrap(wrapR);
         }
 
-        private TextureWrapMode GetWrap(uint wrap) {
-            switch (wrap) {
+        private TextureWrapMode GetWrap(uint wrap)
+        {
+            switch (wrap)
+            {
                 case 1: return TextureWrapMode.Repeat;
                 case 2: return TextureWrapMode.MirroredRepeat;
                 case 3: return TextureWrapMode.ClampToEdge;
@@ -294,14 +331,16 @@ namespace PS3Sharp.Cell.RSX {
             }
         }
 
-        public void FetchTextureData() {
+        public void FetchTextureData()
+        {
             Span<byte> destination = GetScratchData();
 
             // Read a copy of the texture into the scratch buffer
             MemoryManager.ReadBufferFromVirtualMemory(Address, destination);
         }
 
-        public void UpdateHashKey() {
+        public void UpdateHashKey()
+        {
             ReadOnlySpan<byte> data = GetLastScratchData();
             CacheKey.Address = Address;
             CacheKey.Width = Width;
@@ -309,7 +348,8 @@ namespace PS3Sharp.Cell.RSX {
             CacheKey.Hash = XxHash3.HashToUInt64(data);
         }
 
-        public void PrintInfo(int location) { // For debugging
+        public void PrintInfo(int location)
+        { // For debugging
             Console.WriteLine($"Texture[{location}] addr = 0x{Address:X8} w = {Width} h = {Height} pitch = {Pitch} swizzle = 0x{SwizzleValue:X} Format = 0x{Format:X8}");
         }
     }

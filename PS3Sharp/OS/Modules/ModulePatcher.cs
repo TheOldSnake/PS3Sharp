@@ -8,11 +8,14 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using static PS3Sharp.ElfLoader;
 
-namespace PS3Sharp.OS.Modules {
-    public static class ModulePatcher {
+namespace PS3Sharp.OS.Modules
+{
+    public static class ModulePatcher
+    {
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct PRXParam : IPS3Struct {
+        public struct PRXParam : IPS3Struct
+        {
             public BigEndian<uint> size;
             public BigEndian<uint> magic;
             public BigEndian<uint> version;
@@ -27,7 +30,8 @@ namespace PS3Sharp.OS.Modules {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct PRXStubHeader : IPS3Struct {
+        public struct PRXStubHeader : IPS3Struct
+        {
             public byte s_size;
             public byte s_unk0;
             public BigEndian<ushort> s_version;
@@ -47,23 +51,28 @@ namespace PS3Sharp.OS.Modules {
         public static List<ModuleStubInfo> Stubs = [];
         public const ushort ModuleCallSysID = 0x7C7C;
 
-        public static void HandlePRXImports(BinaryReader reader, ProgramHeader prxProgram) { // for main elf
+        public static void HandlePRXImports(BinaryReader reader, ProgramHeader prxProgram)
+        { // for main elf
             reader.BaseStream.Seek((long)(ulong)prxProgram.p_offset, SeekOrigin.Begin);
             PRXParam prx = ReadPRXParam(reader);
             uint sizeOfStubHeader = (uint)Unsafe.SizeOf<PRXStubHeader>();
             uint spanLength = (prx.libstubend - prx.libstubstart) / sizeOfStubHeader;
 
-            unsafe {
+            unsafe
+            {
                 ReadOnlySpan<PRXStubHeader> moduleStubs = MemoryManager.CreateSpan<PRXStubHeader>(prx.libstubstart, (int)spanLength);
                 ImportModules(moduleStubs);
             }
         }
 
-        public static unsafe void ImportModules(ReadOnlySpan<PRXStubHeader> moduleStubs) {
+        public static unsafe void ImportModules(ReadOnlySpan<PRXStubHeader> moduleStubs)
+        {
             int length = moduleStubs.Length;
 
-            unsafe {
-                for (int i = 0; i < length; i++) {
+            unsafe
+            {
+                for (int i = 0; i < length; i++)
+                {
                     PRXStubHeader moduleStub = moduleStubs[i];
                     string moduleName = MemoryManager.ReadString(moduleStub.s_modulename);
                     Console.WriteLine($"Module Import: {moduleName}");
@@ -78,15 +87,19 @@ namespace PS3Sharp.OS.Modules {
             PRXManager.PRXManager.LoadPRXLibraries();
         }
 
-        public static unsafe void ImportFunctions(string moduleName, Span<BigEndian<uint>> nids, Span<BigEndian<uint>> stubCodeAddresses) {
-            if (nids.Length != stubCodeAddresses.Length) {
+        public static unsafe void ImportFunctions(string moduleName, Span<BigEndian<uint>> nids, Span<BigEndian<uint>> stubCodeAddresses)
+        {
+            if (nids.Length != stubCodeAddresses.Length)
+            {
                 throw new Exception();
             }
 
             int length = nids.Length;
 
-            unsafe {
-                for (int i = 0; i < length; i++) {
+            unsafe
+            {
+                for (int i = 0; i < length; i++)
+                {
                     uint nid = nids[i];
                     uint stubCodeAddress = stubCodeAddresses[i];
 
@@ -98,13 +111,15 @@ namespace PS3Sharp.OS.Modules {
             }
         }
 
-        public static void PatchModuleCallHLE(string moduleName, string functionName, uint nid, uint stubCodeAddress) {
+        public static void PatchModuleCallHLE(string moduleName, string functionName, uint nid, uint stubCodeAddress)
+        {
             ModuleStubInfo stubInfo = new ModuleStubInfo(moduleName, functionName, nid, stubCodeAddress);
             stubInfo.PatchStartAddress = WriteHLEStub(stubCodeAddress);
             Stubs.Add(stubInfo);
         }
 
-        private static uint WriteHLEStub(uint stubAddress) {
+        private static uint WriteHLEStub(uint stubAddress)
+        {
             //The module call does some small setup (like writing r2 to the stack) then does:
             //lwz r0,0x0(r12)
             //lwz r2,0x4(r12)
@@ -118,8 +133,10 @@ namespace PS3Sharp.OS.Modules {
             //Find lwz r2
             int count = 0;
             PPUInstruction instruction = new PPUInstruction { Raw = MemoryManager.Read<uint>(stubAddress) };
-            while (true) {
-                if (instruction.Op == Op.LWZ && instruction.Rt == 2) {
+            while (true)
+            {
+                if (instruction.Op == Op.LWZ && instruction.Rt == 2)
+                {
                     break;
                 }
 
@@ -127,7 +144,8 @@ namespace PS3Sharp.OS.Modules {
                 count++;
                 instruction.Raw = MemoryManager.Read<uint>(stubAddress);
 
-                if (count > 64) { //or any big number
+                if (count > 64)
+                { //or any big number
                     throw new Exception($"Can't find lwz r2");
                 }
             }
@@ -135,30 +153,36 @@ namespace PS3Sharp.OS.Modules {
             //Check which type the branch is
             bool is_bctr = false;
             instruction.Raw = MemoryManager.Read<uint>(stubAddress + 8);
-            if (instruction.Op == Op.G13 && instruction.G13 == G13.BCCTR) {
-                is_bctr = (instruction.Raw & 1) == 0; 
-            } else {
+            if (instruction.Op == Op.G13 && instruction.G13 == G13.BCCTR)
+            {
+                is_bctr = (instruction.Raw & 1) == 0;
+            }
+            else
+            {
                 throw new Exception($"Can't find bctr/bctrl");
             }
 
 
             //Write the patch
-            const uint li  = 0x39600000 | ModuleCallSysID;    //li r11, ModuleCallSysID
-            const uint sc  = 0x44000002;                      //syscall
+            const uint li = 0x39600000 | ModuleCallSysID;    //li r11, ModuleCallSysID
+            const uint sc = 0x44000002;                      //syscall
             const uint blr = 0x4e800020;                      //return
             const uint nop = 0x60000000;                      //nop
 
             MemoryManager.Write<uint>(stubAddress + 0, li);                 //instead of lwz r2
             MemoryManager.Write<uint>(stubAddress + 4, sc);                 //instead of mtspr CTR,r0
-            MemoryManager.Write<uint>(stubAddress + 8, is_bctr? blr: nop);  //instead of bctr / bctrl 
+            MemoryManager.Write<uint>(stubAddress + 8, is_bctr ? blr : nop);  //instead of bctr / bctrl 
 
             //Return the address where the patch starts
-            return stubAddress; 
+            return stubAddress;
         }
 
-        public static ModuleStubInfo GetModuleInfo(uint stubAddress) { //takes the address of li r11, ModuleCallSysID
-            for (int i = 0; i < Stubs.Count; i++) {
-                if (Stubs[i].PatchStartAddress == stubAddress) {
+        public static ModuleStubInfo GetModuleInfo(uint stubAddress)
+        { //takes the address of li r11, ModuleCallSysID
+            for (int i = 0; i < Stubs.Count; i++)
+            {
+                if (Stubs[i].PatchStartAddress == stubAddress)
+                {
                     return Stubs[i];
                 }
             }
@@ -166,13 +190,15 @@ namespace PS3Sharp.OS.Modules {
             throw new Exception($"Cannot find module at stub {stubAddress:X8}");
         }
 
-        private static PRXParam ReadPRXParam(BinaryReader reader) {
+        private static PRXParam ReadPRXParam(BinaryReader reader)
+        {
             Span<byte> buffer = stackalloc byte[Unsafe.SizeOf<PRXParam>()];
             reader.ReadExactly(buffer);
             return MemoryMarshal.Read<PRXParam>(buffer);
         }
 
-        public static void PrintPRXParam(PRXParam p) {
+        public static void PrintPRXParam(PRXParam p)
+        {
             Console.WriteLine("PRXParam:");
             Console.WriteLine($"size         = 0x{p.size:X8}");
             Console.WriteLine($"magic        = 0x{p.magic:X8}");

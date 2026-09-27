@@ -1,7 +1,9 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace PS3Sharp.Common {
-    public static class InlineData {
+namespace PS3Sharp.Common
+{
+    public static class InlineData
+    {
         // InlineArray<T> Definitions from 1 to 256
         [InlineArray(1)] public struct InlineArray1<T> { private T _element0; }
         [InlineArray(2)] public struct InlineArray2<T> { private T _element0; }

@@ -5,12 +5,15 @@ using PS3Sharp.OS.Syscall;
 
 using static PS3Sharp.Cell.ErrorCode;
 
-namespace PS3Sharp.OS.LV2 {
-    public sealed class LV2EventFlag {
-        public enum SysEventFlagMode : uint {
-            SYS_EVENT_FLAG_WAIT_AND       = 0x01,
-            SYS_EVENT_FLAG_WAIT_OR        = 0x02,
-            SYS_EVENT_FLAG_WAIT_CLEAR     = 0x10,
+namespace PS3Sharp.OS.LV2
+{
+    public sealed class LV2EventFlag
+    {
+        public enum SysEventFlagMode : uint
+        {
+            SYS_EVENT_FLAG_WAIT_AND = 0x01,
+            SYS_EVENT_FLAG_WAIT_OR = 0x02,
+            SYS_EVENT_FLAG_WAIT_CLEAR = 0x10,
             SYS_EVENT_FLAG_WAIT_CLEAR_ALL = 0x20
         }
 
@@ -19,53 +22,66 @@ namespace PS3Sharp.OS.LV2 {
         private ulong _value;
         public uint Handle { get; } = MemoryManager.GetHandle();
 
-        public LV2EventFlag(ulong initialValue) {
+        public LV2EventFlag(ulong initialValue)
+        {
             _value = initialValue;
         }
 
-        public void Set(ulong value) {
-            lock (_lock) {
+        public void Set(ulong value)
+        {
+            lock (_lock)
+            {
                 _value |= value;
                 Monitor.PulseAll(_lock);
             }
         }
 
-        public void Clear(ulong value) {
-            lock (_lock) {
+        public void Clear(ulong value)
+        {
+            lock (_lock)
+            {
                 _value &= value;
                 Monitor.PulseAll(_lock);
             }
         }
 
-        public ulong Wait(SysEventFlagMode mode, ulong pattern, ulong us_timeout, out ulong resultValue) {
+        public ulong Wait(SysEventFlagMode mode, ulong pattern, ulong us_timeout, out ulong resultValue)
+        {
 
-            lock (_lock) {
+            lock (_lock)
+            {
 
                 bool firstIteration = true;
                 bool isUsingTimeOut = us_timeout > 0;
                 DateTime deadline = DateTime.UtcNow + TimeSpan.FromMicroseconds(us_timeout);
 
-                while (!IsSatisfied(mode, pattern)) {
+                while (!IsSatisfied(mode, pattern))
+                {
                     firstIteration = false;
 
                     // Monitor.Wait() releases the lock and waits until the thread is notified by Monitor.Pulse
 
-                    if (isUsingTimeOut) {
+                    if (isUsingTimeOut)
+                    {
                         TimeSpan remaining_time = deadline - DateTime.UtcNow;
 
-                        if (remaining_time <= TimeSpan.Zero) {
+                        if (remaining_time <= TimeSpan.Zero)
+                        {
                             // timeout
                             resultValue = 0;
                             return CELL_ETIMEDOUT;
                         }
 
-                        if (!Monitor.Wait(_lock, remaining_time)) {
+                        if (!Monitor.Wait(_lock, remaining_time))
+                        {
                             // timeout
                             resultValue = 0;
                             return CELL_ETIMEDOUT;
                         }
 
-                    } else {
+                    }
+                    else
+                    {
                         Monitor.Wait(_lock);
                     }
                 }
@@ -78,29 +94,39 @@ namespace PS3Sharp.OS.LV2 {
             }
         }
 
-        private bool IsSatisfied(SysEventFlagMode mode, ulong pattern) {
+        private bool IsSatisfied(SysEventFlagMode mode, ulong pattern)
+        {
             bool is_And = (mode & SysEventFlagMode.SYS_EVENT_FLAG_WAIT_AND) != 0;
             bool is_or = (mode & SysEventFlagMode.SYS_EVENT_FLAG_WAIT_OR) != 0;
 
-            if (is_And) {
+            if (is_And)
+            {
                 return (_value & pattern) == pattern;
 
-            } else if (is_or){
+            }
+            else if (is_or)
+            {
                 return (_value & pattern) != 0;
 
-            } else {
+            }
+            else
+            {
                 throw new Exception($"[SysEventFlagMode] Unknown wait mode: 0x{(uint)mode:X8}");
             }
         }
 
-        private void Clear(SysEventFlagMode mode, ulong pattern) {
+        private void Clear(SysEventFlagMode mode, ulong pattern)
+        {
             bool clearPattern = (mode & SysEventFlagMode.SYS_EVENT_FLAG_WAIT_CLEAR) != 0;
             bool clearAll = (mode & SysEventFlagMode.SYS_EVENT_FLAG_WAIT_CLEAR_ALL) != 0;
 
-            if (clearPattern) {
+            if (clearPattern)
+            {
                 _value &= ~pattern;
 
-            } else if (clearAll) {
+            }
+            else if (clearAll)
+            {
                 _value = 0;
             }
         }

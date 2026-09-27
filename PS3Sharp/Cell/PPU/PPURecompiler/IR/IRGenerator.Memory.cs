@@ -1,13 +1,19 @@
 ﻿using static PS3Sharp.Cell.PPU.PPUInterpreter.PPUInterpreter;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
-    public sealed partial class IRGenerator {
-        public Value GetEa(PPUInstruction instruction, MemAccessForm form, bool checkRA) {
+namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
+{
+    public sealed partial class IRGenerator
+    {
+        public Value GetEa(PPUInstruction instruction, MemAccessForm form, bool checkRA)
+        {
 
             Value baseAddress;
-            if (checkRA) {
+            if (checkRA)
+            {
                 baseAddress = instruction.Ra != 0 ? _irContext.GetGPR(instruction.Ra) : _irContext.Zero;
-            } else {
+            }
+            else
+            {
                 baseAddress = _irContext.GetGPR(instruction.Ra);
             }
 
@@ -15,7 +21,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             Value offs;
             Value ea;
 
-            switch (form) {
+            switch (form)
+            {
                 case MemAccessForm.DForm:
                     offs = Constant((long)(short)instruction.D);           // sign extended
                     break;
@@ -38,26 +45,30 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
         }
 
         // Store Byte Instructions
-        public void STB(PPUInstruction instruction) {
+        public void STB(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.DForm, true);
             Value src = _irContext.GetGPR(instruction.Rs);
             Store8(ea, Truncate(src, Value.ValueType.I8));
         }
 
-        public void STBX(PPUInstruction instruction) {
+        public void STBX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, true);
             Value src = _irContext.GetGPR(instruction.Rs);
             Store8(ea, Truncate(src, Value.ValueType.I8));
         }
 
-        public void STBU(PPUInstruction instruction) {
+        public void STBU(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.DForm, false);
             Value src = _irContext.GetGPR(instruction.Rs);
             Store8(ea, Truncate(src, Value.ValueType.I8));
             _irContext.SetGPR(instruction.Ra, ea); // update
         }
 
-        public void STBUX(PPUInstruction instruction) {
+        public void STBUX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, false);
             Value src = _irContext.GetGPR(instruction.Rs);
             Store8(ea, Truncate(src, Value.ValueType.I8));
@@ -65,72 +76,83 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
         }
 
         // Store Half Instructions
-        public void STH(PPUInstruction instruction) {
+        public void STH(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.DForm, true);
             Value src = _irContext.GetGPR(instruction.Rs);
             Store16(ea, Truncate(src, Value.ValueType.I16));
         }
 
-        public void STHX(PPUInstruction instruction) {
+        public void STHX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, true);
             Value src = _irContext.GetGPR(instruction.Rs);
             Store16(ea, Truncate(src, Value.ValueType.I16));
         }
 
-        public void STHU(PPUInstruction instruction) {
+        public void STHU(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.DForm, false);
             Value src = _irContext.GetGPR(instruction.Rs);
             Store16(ea, Truncate(src, Value.ValueType.I16));
             _irContext.SetGPR(instruction.Ra, ea); // update
         }
 
-        public void STHUX(PPUInstruction instruction) {
+        public void STHUX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, false);
             Value src = _irContext.GetGPR(instruction.Rs);
             Store16(ea, Truncate(src, Value.ValueType.I16));
             _irContext.SetGPR(instruction.Ra, ea); // update
         }
 
-        public void STHBRX(PPUInstruction instruction) {
+        public void STHBRX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, true);
             Value src = _irContext.GetGPR(instruction.Rs);
             Store16Reversed(ea, Truncate(src, Value.ValueType.I16));
         }
 
         // Store Word Instructions
-        public void STW(PPUInstruction instruction) {
+        public void STW(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.DForm, true);
             Value src = _irContext.GetGPR(instruction.Rs);
             Store32(ea, Truncate(src, Value.ValueType.I32));
         }
 
-        public void STWX(PPUInstruction instruction) {
+        public void STWX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, true);
             Value src = _irContext.GetGPR(instruction.Rs);
             Store32(ea, Truncate(src, Value.ValueType.I32));
         }
 
-        public void STWU(PPUInstruction instruction) {
+        public void STWU(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.DForm, false);
             Value src = _irContext.GetGPR(instruction.Rs);
             Store32(ea, Truncate(src, Value.ValueType.I32));
             _irContext.SetGPR(instruction.Ra, ea); // update
         }
 
-        public void STWUX(PPUInstruction instruction) {
+        public void STWUX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, false);
             Value src = _irContext.GetGPR(instruction.Rs);
             Store32(ea, Truncate(src, Value.ValueType.I32));
             _irContext.SetGPR(instruction.Ra, ea); // update
         }
 
-        public void STWBRX(PPUInstruction instruction) {
+        public void STWBRX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, true);
             Value src = _irContext.GetGPR(instruction.Rs);
             Store32Reversed(ea, Truncate(src, Value.ValueType.I32));
         }
 
-        public void STWCX(PPUInstruction instruction) {
+        public void STWCX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, true);
             Value src = _irContext.GetGPR(instruction.Rs);
             Value success = Store32Conditional(ea, Truncate(src, Value.ValueType.I32));
@@ -139,7 +161,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
         }
 
         // Store Double Word Instructions
-        public void STD(PPUInstruction instruction) {
+        public void STD(PPUInstruction instruction)
+        {
             bool update = (instruction.Raw & 0x3) == 1;
             bool checkRa = !update;
 
@@ -147,12 +170,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             Value src = _irContext.GetGPR(instruction.Rs);
             Store64(ea, src);
 
-            if (update) {
+            if (update)
+            {
                 _irContext.SetGPR(instruction.Ra, ea);
             }
         }
 
-        public void STDX(PPUInstruction instruction) {
+        public void STDX(PPUInstruction instruction)
+        {
             bool update = (instruction.Raw & 0x3) == 1;
             bool checkRa = !update;
 
@@ -160,19 +185,22 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             Value src = _irContext.GetGPR(instruction.Rs);
             Store64(ea, src);
 
-            if (update) {
+            if (update)
+            {
                 _irContext.SetGPR(instruction.Ra, ea);
             }
         }
 
-        public void STDUX(PPUInstruction instruction) {
+        public void STDUX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, false);
             Value src = _irContext.GetGPR(instruction.Rs);
             Store64(ea, src);
             _irContext.SetGPR(instruction.Ra, ea);     // update
         }
 
-        public void STDCX(PPUInstruction instruction) {
+        public void STDCX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, true);
             Value src = _irContext.GetGPR(instruction.Rs);
             Value success = Store64Conditional(ea, src);
@@ -181,26 +209,30 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
         }
 
         // Load Byte Instructions
-        public void LBZ(PPUInstruction instruction) {
+        public void LBZ(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.DForm, true);
             Value value = Load8(ea);
             _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
         }
 
-        public void LBZX(PPUInstruction instruction) {
+        public void LBZX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, true);
             Value value = Load8(ea);
             _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
         }
 
-        public void LBZU(PPUInstruction instruction) {
+        public void LBZU(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.DForm, false);
             Value value = Load8(ea);
             _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
             _irContext.SetGPR(instruction.Ra, ea);    // update
         }
 
-        public void LBZUX(PPUInstruction instruction) {
+        public void LBZUX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, false);
             Value value = Load8(ea);
             _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
@@ -208,58 +240,67 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
         }
 
         // Load Half Instructions
-        public void LHZ(PPUInstruction instruction) {
+        public void LHZ(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.DForm, true);
             Value value = Load16(ea);
             _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
         }
 
-        public void LHZX(PPUInstruction instruction) {
+        public void LHZX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, true);
             Value value = Load16(ea);
             _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
         }
 
-        public void LHZU(PPUInstruction instruction) {
+        public void LHZU(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.DForm, false);
             Value value = Load16(ea);
             _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
             _irContext.SetGPR(instruction.Ra, ea);    // update
         }
 
-        public void LHZUX(PPUInstruction instruction) {
+        public void LHZUX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, false);
             Value value = Load16(ea);
             _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
             _irContext.SetGPR(instruction.Ra, ea);    // update
         }
 
-        public void LHBRX(PPUInstruction instruction) {
+        public void LHBRX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, true);
             Value value = Load16Reversed(ea);
             _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
         }
 
-        public void LHA(PPUInstruction instruction) {
+        public void LHA(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.DForm, true);
             Value value = Load16(ea);
             _irContext.SetGPR(instruction.Rt, SignExtend(value, Value.ValueType.I64));    // Sign extends
         }
 
-        public void LHAX(PPUInstruction instruction) {
+        public void LHAX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, true);
             Value value = Load16(ea);
             _irContext.SetGPR(instruction.Rt, SignExtend(value, Value.ValueType.I64));    // Sign extends
         }
 
-        public void LHAU(PPUInstruction instruction) {
+        public void LHAU(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.DForm, false);
             Value value = Load16(ea);
             _irContext.SetGPR(instruction.Rt, SignExtend(value, Value.ValueType.I64));    // Sign extends
             _irContext.SetGPR(instruction.Ra, ea);    // update
         }
 
-        public void LHAUX(PPUInstruction instruction) {
+        public void LHAUX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, false);
             Value value = Load16(ea);
             _irContext.SetGPR(instruction.Rt, SignExtend(value, Value.ValueType.I64));    // Sign extends
@@ -268,68 +309,79 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
 
         // Load Word Instructions
-        public void LWZ(PPUInstruction instruction) {
+        public void LWZ(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.DForm, true);
             Value value = Load32(ea);
             _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
         }
 
-        public void LWZX(PPUInstruction instruction) {
+        public void LWZX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, true);
             Value value = Load32(ea);
             _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
         }
 
-        public void LWZU(PPUInstruction instruction) {
+        public void LWZU(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.DForm, false);
             Value value = Load32(ea);
             _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
             _irContext.SetGPR(instruction.Ra, ea);    // update
         }
 
-        public void LWZUX(PPUInstruction instruction) {
+        public void LWZUX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, false);
             Value value = Load32(ea);
             _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
             _irContext.SetGPR(instruction.Ra, ea);    // update
         }
 
-        public void LWBRX(PPUInstruction instruction) {
+        public void LWBRX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, true);
             Value value = Load32Reversed(ea);
             _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
         }
 
-        public void LWARX(PPUInstruction instruction) {
+        public void LWARX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, true);
             Value value = Load32AndReserve(ea);
             _irContext.SetGPR(instruction.Rt, ZeroExtend(value, Value.ValueType.I64));
         }
 
-        public void LWA(PPUInstruction instruction) {
+        public void LWA(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.DForm, true);
             Value value = Load32(ea);
             _irContext.SetGPR(instruction.Rt, SignExtend(value, Value.ValueType.I64));    // Sign extends
         }
 
-        public void LWAX(PPUInstruction instruction) {
+        public void LWAX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, true);
             Value value = Load32(ea);
             _irContext.SetGPR(instruction.Rt, SignExtend(value, Value.ValueType.I64));    // Sign extends
         }
 
-        public void LWAUX(PPUInstruction instruction) {
+        public void LWAUX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, false);
             Value value = Load32(ea);
             _irContext.SetGPR(instruction.Rt, SignExtend(value, Value.ValueType.I64));    // Sign extends
             _irContext.SetGPR(instruction.Ra, ea);    // update
         }
 
-        public void LMW(PPUInstruction instruction) {
+        public void LMW(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.DForm, true);
             uint currentRegister = instruction.Rt;
 
-            while (currentRegister <= 31) {
+            while (currentRegister <= 31)
+            {
                 Value value = Load32(ea);
                 _irContext.SetGPR(currentRegister, ZeroExtend(value, Value.ValueType.I64));
                 ea = Add(ea, Constant(4));
@@ -338,8 +390,10 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
         }
 
         // Load Double Word Instructions
-        public void LD(PPUInstruction instruction) {
-            switch (instruction.Raw & 0x3) {
+        public void LD(PPUInstruction instruction)
+        {
+            switch (instruction.Raw & 0x3)
+            {
                 case 0:
                 case 1:
                     LoadDoubleWord(instruction);
@@ -352,7 +406,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             }
         }
 
-        public void LoadDoubleWord(PPUInstruction instruction) {
+        public void LoadDoubleWord(PPUInstruction instruction)
+        {
             bool update = (instruction.Raw & 0x3) == 1;
             bool checkRa = !update;
 
@@ -360,25 +415,29 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             Value value = Load64(ea);
             _irContext.SetGPR(instruction.Rt, value);
 
-            if (update) {
+            if (update)
+            {
                 _irContext.SetGPR(instruction.Ra, ea);
             }
         }
 
-        public void LDX(PPUInstruction instruction) {
+        public void LDX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, true);
             Value value = Load64(ea);
             _irContext.SetGPR(instruction.Rt, value);
         }
 
-        public void LDUX(PPUInstruction instruction) {
+        public void LDUX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, false);
             Value value = Load64(ea);
             _irContext.SetGPR(instruction.Rt, value);
             _irContext.SetGPR(instruction.Ra, ea);     // update
         }
 
-        public void LDARX(PPUInstruction instruction) {
+        public void LDARX(PPUInstruction instruction)
+        {
             Value ea = GetEa(instruction, MemAccessForm.XForm, true);
             Value value = Load64AndReserve(ea);
             _irContext.SetGPR(instruction.Rt, value);

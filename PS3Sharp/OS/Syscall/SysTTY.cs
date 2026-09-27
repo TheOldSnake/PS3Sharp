@@ -4,8 +4,10 @@ using PS3Sharp.Memory_Manager;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
-namespace PS3Sharp.OS.Syscall {
-    public static class SysTTY {
+namespace PS3Sharp.OS.Syscall
+{
+    public static class SysTTY
+    {
         private static ConsoleColor[] Colors = [
             //todo
         ];
@@ -14,17 +16,19 @@ namespace PS3Sharp.OS.Syscall {
         public const uint STDERR = 2;
 
         //static StreamWriter output = File.AppendText(@"D:\RPCS3\app_home\output.txt");
-        private static void Print(string s, ConsoleColor color) {
+        private static void Print(string s, ConsoleColor color)
+        {
             //  ConsoleColor old = Console.ForegroundColor;
             //  Console.ForegroundColor = color;
 
-              Console.Write(s);
+            Console.Write(s);
 
             //  Console.ForegroundColor = old;
             //output.Write(s);
         }
 
-        public static uint SysTTYWrite(PPU ppu) {
+        public static uint SysTTYWrite(PPU ppu)
+        {
 
             uint ch = ppu.ReadArg<uint>(ARG0);                               //channel? probably file descriptor
             GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(ARG1);              //void*

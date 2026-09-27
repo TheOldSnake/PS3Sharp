@@ -1,36 +1,45 @@
 ﻿using System.Numerics;
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
-    public sealed class IROptimizer {
-        public Dictionary<Value, ulong> ConstantFold(IRContext ctx) {
+namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
+{
+    public sealed class IROptimizer
+    {
+        public Dictionary<Value, ulong> ConstantFold(IRContext ctx)
+        {
             Dictionary<Value, ulong> constants = new Dictionary<Value, ulong>();
             List<IRInstruction> code = ctx.GetIRCode();
             List<IRInstruction> foldedCode = new();
             bool removed;
 
-            for (int i = 0; i < code.Count; i++) {
+            for (int i = 0; i < code.Count; i++)
+            {
                 IRInstruction instruction = code[i];
                 Value dest = instruction.Destination;
 
                 removed = false;
 
                 // Skip special loads
-                if (!IsSpecialRegisterLoad(instruction)) {
+                if (!IsSpecialRegisterLoad(instruction))
+                {
 
-                    if (instruction.Opcode == IRInstruction.Op.Constant) {
+                    if (instruction.Opcode == IRInstruction.Op.Constant)
+                    {
                         // Add any destination of "Constant" instruction, the instruction can be removed
                         constants[dest] = instruction.Immediate1;
                         removed = true;
 
-                    } else {
+                    }
+                    else
+                    {
                         // Try to compute the destination as a constant, if succeeds the instruction can be removed
                         removed = TryComputeConstant(instruction, constants);
                     }
 
                 }
 
-                if (!removed) {
+                if (!removed)
+                {
                     foldedCode.Add(instruction);
                 }
             }
@@ -39,19 +48,23 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             return constants;
         }
 
-        public bool TryComputeConstant(IRInstruction instruction, Dictionary<Value, ulong> constants) {
+        public bool TryComputeConstant(IRInstruction instruction, Dictionary<Value, ulong> constants)
+        {
             // Skip special loads
-            if (IsSpecialRegisterLoad(instruction)) {
+            if (IsSpecialRegisterLoad(instruction))
+            {
                 return false;
             }
 
             // Ensure that the instruction is a math/logic instruciton on 2 operands, with a valid destination
             bool isUsingTwoOperands = GetNumberOfValidOperands(instruction) == 2;
-            if (!isUsingTwoOperands) {
+            if (!isUsingTwoOperands)
+            {
                 return false;
             }
 
-            if (!instruction.Destination.IsValid) {
+            if (!instruction.Destination.IsValid)
+            {
                 return false;
             }
 
@@ -60,12 +73,14 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             Value op2 = instruction.Operand2;
             bool operandsAreConstants = constants.ContainsKey(op1) && constants.ContainsKey(op2);
 
-            if (!operandsAreConstants){
+            if (!operandsAreConstants)
+            {
                 return false;
             }
 
             ulong result;
-            switch (instruction.Opcode) {
+            switch (instruction.Opcode)
+            {
                 case IRInstruction.Op.Add:
                     result = constants[op1] + constants[op2];
                     break;
@@ -135,7 +150,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             return true;
         }
 
-        public void CopyPropagation(IRContext ctx, Dictionary<Value, ulong> knownConstants) {
+        public void CopyPropagation(IRContext ctx, Dictionary<Value, ulong> knownConstants)
+        {
             // Copy Propagation on any case where we have ADD value2, value1, 0 or ADD value2, 0, Value1
             // todo: generalize for more opcodes than ADD
 
@@ -152,9 +168,11 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
             ctx.SetIRCode(propagatedCode);
         }
 
-        private void FilterPropagation(List<IRInstruction> inputCode, List<IRInstruction> outputCode, Dictionary<Value, Value> propagatedValues, Dictionary<Value, ulong> knownConstants) {
+        private void FilterPropagation(List<IRInstruction> inputCode, List<IRInstruction> outputCode, Dictionary<Value, Value> propagatedValues, Dictionary<Value, ulong> knownConstants)
+        {
             // Remove instructions where propagation is possible, and add the info to the dictionary
-            for (int i = 0; i < inputCode.Count; i++) {
+            for (int i = 0; i < inputCode.Count; i++)
+            {
                 IRInstruction instruction = inputCode[i];
                 bool removed = false;
                 int operandsCount = GetNumberOfValidOperands(instruction);
@@ -168,7 +186,8 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
                 bool op3Const = knownConstants.ContainsKey(op3);
 
 
-                if (operandsCount == 2 && op1Const && op2Const) {
+                if (operandsCount == 2 && op1Const && op2Const)
+                {
                     // this should not happen here, the constant folding phase should have eliminated this
                     throw new Exception($"[IR Optimizer] Unexpected instruction with 2 constant operands");
                 }
@@ -177,46 +196,56 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
 
 
                 // Select is special case, we can optimize if we know the condition
-                if (instruction.Opcode == IRInstruction.Op.Select && op1Const) {
+                if (instruction.Opcode == IRInstruction.Op.Select && op1Const)
+                {
                     // known condition => known propagation
                     propagatedValues[dest] = knownConstants[op1] != 0 ? op2 : op3;
                     removed = true;
                 }
 
-                if (instruction.Opcode == IRInstruction.Op.Add) {     
-                    if (op1Const && knownConstants[op1] == 0) {
+                if (instruction.Opcode == IRInstruction.Op.Add)
+                {
+                    if (op1Const && knownConstants[op1] == 0)
+                    {
                         // op1 == 0, propagate op2 to dest, the instruction can be removed
                         propagatedValues[dest] = op2;
                         removed = true;
 
-                    } else if (op2Const && knownConstants[op2] == 0) {
+                    }
+                    else if (op2Const && knownConstants[op2] == 0)
+                    {
                         // op2 == 0, propagate op1 to dest, the instruction can be removed
                         propagatedValues[dest] = op1;
                         removed = true;
                     }
                 }
 
-                if (instruction.Opcode == IRInstruction.Op.ShiftLeft || 
+                if (instruction.Opcode == IRInstruction.Op.ShiftLeft ||
                     instruction.Opcode == IRInstruction.Op.ShiftRight ||
                     instruction.Opcode == IRInstruction.Op.RotateLeft ||
-                    instruction.Opcode == IRInstruction.Op.RotateRight ) {
+                    instruction.Opcode == IRInstruction.Op.RotateRight)
+                {
 
-                    if (op2Const && knownConstants[op2] == 0) {
+                    if (op2Const && knownConstants[op2] == 0)
+                    {
                         // shift/rotate by 0, propagate op1 to dest, the instruction can be removed
                         propagatedValues[dest] = op1;
                         removed = true;
                     }
                 }
 
-                if (!removed) {
+                if (!removed)
+                {
                     outputCode.Add(instruction);
                 }
             }
         }
 
-        private void PropagateToInputs(List<IRInstruction> code, Dictionary<Value, Value> propagatedValues) {
+        private void PropagateToInputs(List<IRInstruction> code, Dictionary<Value, Value> propagatedValues)
+        {
             // Replace inputs with the propagated values
-            for (int i = 0; i < code.Count; i++) {
+            for (int i = 0; i < code.Count; i++)
+            {
                 IRInstruction instruction = code[i];
 
                 Value dest = instruction.Destination;
@@ -228,17 +257,21 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
                 bool op2IsPropagated = propagatedValues.ContainsKey(op2) && op2.IsValid;
 
                 // This case is only valid for memory store, where the "destination" is an input 
-                if (destIsPropagated) {
-                    if (IsRegularStore(instruction) || IsSpecialRegisterStore(instruction)) {
+                if (destIsPropagated)
+                {
+                    if (IsRegularStore(instruction) || IsSpecialRegisterStore(instruction))
+                    {
                         instruction.Destination = propagatedValues[dest];
                     }
                 }
 
-                if (op1IsPropagated) {
+                if (op1IsPropagated)
+                {
                     instruction.Operand1 = propagatedValues[op1];
                 }
 
-                if (op2IsPropagated) {
+                if (op2IsPropagated)
+                {
                     instruction.Operand2 = propagatedValues[op2];
                 }
 

@@ -12,8 +12,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
-namespace PS3Sharp.OS.Syscall {
-    public static class SysSPU {
+namespace PS3Sharp.OS.Syscall
+{
+    public static class SysSPU
+    {
         public const uint SYS_SPU_THREAD_EVENT_USER = 1;
 
         public const ulong SYS_SPU_THREAD_EVENT_USER_KEY = 0xFFFFFFFF53505501;
@@ -32,7 +34,8 @@ namespace PS3Sharp.OS.Syscall {
 
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct SysSPUSegment : IPS3Struct {
+        public struct SysSPUSegment : IPS3Struct
+        {
             public BigEndian<int> Type;            // Segment type (COPY / FILL / INFO)
             public BigEndian<uint> LSAddress;      // Addr in LS that this segment will be loaded to
             public BigEndian<int> Size;
@@ -44,7 +47,8 @@ namespace PS3Sharp.OS.Syscall {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct SysSPUImage : IPS3Struct {
+        public struct SysSPUImage : IPS3Struct
+        {
             public BigEndian<uint> Type;
             public BigEndian<uint> Entry;
             public BigEndian<uint> SegmentsPtr;
@@ -52,7 +56,8 @@ namespace PS3Sharp.OS.Syscall {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct SysSPUThreadGroupAttribute : IPS3Struct {
+        public struct SysSPUThreadGroupAttribute : IPS3Struct
+        {
             public BigEndian<uint> NameLength;
             public BigEndian<uint> NamePtr;
             public BigEndian<uint> Type;
@@ -60,14 +65,16 @@ namespace PS3Sharp.OS.Syscall {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct SysSPUThreadAttribute : IPS3Struct {
+        public struct SysSPUThreadAttribute : IPS3Struct
+        {
             public BigEndian<uint> NamePtr;
             public BigEndian<uint> NameLength;
             public BigEndian<uint> Option;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct SysSPUThreadArgument : IPS3Struct {
+        public struct SysSPUThreadArgument : IPS3Struct
+        {
             public BigEndian<ulong> Arg1;
             public BigEndian<ulong> Arg2;
             public BigEndian<ulong> Arg3;
@@ -76,29 +83,36 @@ namespace PS3Sharp.OS.Syscall {
 
         private static readonly ConcurrentDictionary<uint, LV2SPUThreadGroup> _SPUThreadGroupes = new ConcurrentDictionary<uint, LV2SPUThreadGroup>();
 
-        public static void AddSPUThreadGroup(LV2SPUThreadGroup group) {
-            if (!_SPUThreadGroupes.TryAdd(group.Handle, group)) {
+        public static void AddSPUThreadGroup(LV2SPUThreadGroup group)
+        {
+            if (!_SPUThreadGroupes.TryAdd(group.Handle, group))
+            {
                 throw new Exception($"[SysSPU] Failed to add SPU group");
             }
         }
 
-        public static void RemoveSPUThreadGroup(uint handle) {
-            if (!_SPUThreadGroupes.TryRemove(handle, out _)) {
+        public static void RemoveSPUThreadGroup(uint handle)
+        {
+            if (!_SPUThreadGroupes.TryRemove(handle, out _))
+            {
                 throw new Exception($"[SysSPU] Failed to remove SPU group");
             }
         }
 
-        public static bool GetSPUThreadGroup(uint handle, out LV2SPUThreadGroup group) {
+        public static bool GetSPUThreadGroup(uint handle, out LV2SPUThreadGroup group)
+        {
             return _SPUThreadGroupes.TryGetValue(handle, out group);
         }
 
-        public static ulong SysSPUInitialize(PPU ppu) {
+        public static ulong SysSPUInitialize(PPU ppu)
+        {
             return CELL_OK;
         }
 
 
         // TODO
-        public static ulong SysSPUThreadGroupCreate(PPU ppu) {
+        public static ulong SysSPUThreadGroupCreate(PPU ppu)
+        {
             GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             uint num = ppu.ReadArg<uint>(ARG1);
             int prio = ppu.ReadArg<int>(ARG2);
@@ -113,7 +127,8 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysSPUThreadInitialize(PPU ppu) {
+        public static ulong SysSPUThreadInitialize(PPU ppu)
+        {
             GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             uint group_id = ppu.ReadArg<uint>(ARG1);
             uint spu_num = ppu.ReadArg<uint>(ARG2);     // ?
@@ -123,7 +138,8 @@ namespace PS3Sharp.OS.Syscall {
             GuestPtr<SysSPUThreadArgument> arg_ptr = ppu.ReadArg<GuestPtr<SysSPUThreadArgument>>(ARG5);
 
             // there is a lot more checks and errors to be added
-            if (!GetSPUThreadGroup(group_id, out LV2SPUThreadGroup threadGroup)) {
+            if (!GetSPUThreadGroup(group_id, out LV2SPUThreadGroup threadGroup))
+            {
                 return CELL_ESRCH;
             }
 
@@ -146,10 +162,12 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysSPUThreadGroupStart(PPU ppu) {
+        public static ulong SysSPUThreadGroupStart(PPU ppu)
+        {
             uint group_id = ppu.ReadArg<uint>(ARG0);
 
-            if (!GetSPUThreadGroup(group_id, out LV2SPUThreadGroup threadGroup)) {
+            if (!GetSPUThreadGroup(group_id, out LV2SPUThreadGroup threadGroup))
+            {
                 return CELL_ESRCH;
             }
 
@@ -160,13 +178,15 @@ namespace PS3Sharp.OS.Syscall {
             return CELL_OK;
         }
 
-        public static ulong SysSPUThreadGroupConnectEventAllThreads(PPU ppu) {
+        public static ulong SysSPUThreadGroupConnectEventAllThreads(PPU ppu)
+        {
             uint group_id = ppu.ReadArg<uint>(ARG0);
             uint equeue_id = ppu.ReadArg<uint>(ARG1);
             ulong req = ppu.ReadArg<ulong>(ARG2);                        // port bits
             GuestPtr<byte> spup_ptr = ppu.ReadArg<GuestPtr<byte>>(ARG3); // chosen port 
 
-            if (!GetSPUThreadGroup(group_id, out LV2SPUThreadGroup threadGroup)) {
+            if (!GetSPUThreadGroup(group_id, out LV2SPUThreadGroup threadGroup))
+            {
                 return CELL_ESRCH;
             }
 
@@ -176,35 +196,42 @@ namespace PS3Sharp.OS.Syscall {
             byte port;
             bool foundFreePort = false;
 
-            for (port = 0; port < 64; port++) {
+            for (port = 0; port < 64; port++)
+            {
 
                 // Skip 
-                if (((req >> port) & 1) == 0) {
+                if (((req >> port) & 1) == 0)
+                {
                     continue;
                 }
 
                 // Check all threads      
                 foundFreePort = true;
-                
-                for (int i = 0; i < threads.Count; i++) {
 
-                    if (!threads[i].PortIsFree(port)) {
+                for (int i = 0; i < threads.Count; i++)
+                {
+
+                    if (!threads[i].PortIsFree(port))
+                    {
                         foundFreePort = false;
                         break;
                     }
                 }
 
-                if (foundFreePort) {
+                if (foundFreePort)
+                {
                     break;
                 }
             }
 
 
-            if (!foundFreePort) {  
+            if (!foundFreePort)
+            {
                 return CELL_EISCONN;
             }
 
-            for (int i = 0; i < threads.Count; i++) {
+            for (int i = 0; i < threads.Count; i++)
+            {
                 threads[i].SetPort(port, equeue_id);
             }
 

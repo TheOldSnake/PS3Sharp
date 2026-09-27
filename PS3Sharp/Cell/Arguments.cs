@@ -1,5 +1,7 @@
-﻿namespace PS3Sharp.Cell {
-    public static class Arguments {
+﻿namespace PS3Sharp.Cell
+{
+    public static class Arguments
+    {
         // Register arguments
         public const int ARG0 = 3; // Return register
         public const int ARG1 = 4;

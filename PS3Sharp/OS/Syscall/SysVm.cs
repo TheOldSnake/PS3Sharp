@@ -7,9 +7,12 @@ using static PS3Sharp.Cell.Arguments;
 using PS3Sharp.Common;
 using PS3Sharp.Memory_Manager;
 
-namespace PS3Sharp.OS.Syscall {
-    public static class SysVm {
-        public static ulong SysVmMemoryMap(PPU ppu) {
+namespace PS3Sharp.OS.Syscall
+{
+    public static class SysVm
+    {
+        public static ulong SysVmMemoryMap(PPU ppu)
+        {
             // TODO implement properly 
             // For now we just do a normal allocation
 
