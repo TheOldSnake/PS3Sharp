@@ -49,18 +49,18 @@ namespace PS3Sharp.OS.Modules
             uint io_size = ppu.ReadArg<uint>(ARG2);
             uint io_addr = ppu.ReadArg<uint>(ARG3);
 
-            if (PS3Sharp.RSX.MemoryAllocated)
+            if (ppu.RSX.MemoryAllocated)
             { //Can _CellGcmInitBody get called more than once?
                 throw new Exception($"RSX memory already allocated"); //or we can initialize without allocating?
             }
 
             //Allocate RSX memory and registers
-            PS3Sharp.RSX.AllocateRSXMemory();
+            ppu.RSX.AllocateRSXMemory();
             DefaultCtxPtr = ctx_ptr;
 
             //Create a PPU thread for RSX callbacks
             ulong r2 = ppu.ReadArg<ulong>(2); //Register 2, not ARG2
-            PS3Sharp.RSX.CreateRSXPPUThread(r2);
+            ppu.RSX.CreateRSXPPUThread(r2);
 
             //Prepare callback
             MemoryManager.MemoryBlock callback = CreateRSXCallback();
@@ -68,16 +68,16 @@ namespace PS3Sharp.OS.Modules
             unsafe
             {
                 // Intialize CellGcmConfig
-                CellGcmConfig* initialConfig = PS3Sharp.RSX.ConfigPtr.AsNativePtr();
+                CellGcmConfig* initialConfig = ppu.RSX.ConfigPtr.AsNativePtr();
                 initialConfig->Local_Size = VRAM_SIZE;
-                initialConfig->Local_Addr = PS3Sharp.RSX.VRAM_Ptr.Address;
+                initialConfig->Local_Addr = ppu.RSX.VRAM_Ptr.Address;
                 initialConfig->IO_Addr = io_addr;
                 initialConfig->IO_Size = io_size;
                 initialConfig->MemFreq = 650000000;
                 initialConfig->CoreFreq = 500000000;
 
                 // Intialize CellGcmCtxData
-                CellGcmCtxData* initialCtx = PS3Sharp.RSX.CtxPtr.AsNativePtr();
+                CellGcmCtxData* initialCtx = ppu.RSX.CtxPtr.AsNativePtr();
                 initialCtx->Begin = io_addr + 4096;
                 initialCtx->End = io_addr + COMMAND_BUFFER_SIZE - 4;
                 initialCtx->Current = io_addr + 4096;
@@ -88,11 +88,11 @@ namespace PS3Sharp.OS.Modules
             }
 
             //Write the CellGcmCtxData memory address to ctx_ptr
-            MemoryManager.Write<uint>(ctx_ptr, PS3Sharp.RSX.CtxPtr.Address);
+            MemoryManager.Write<uint>(ctx_ptr, ppu.RSX.CtxPtr.Address);
 
 
             //Start RSX thread
-            ThreadManager.RunRSXThread();
+            ppu.ThreadManager.RunRSXThread();
             TotalCommandBuffers = cmd_size / COMMAND_BUFFER_SIZE;
 
             Console.WriteLine($"[CellGcmSys] _cellGcmInitBody ctx = {ctx_ptr:X8} cmd_size = {cmd_size:X} io_size = {io_size:X} io_addr = {io_addr:X8} numberOfCommandBuffers = {TotalCommandBuffers}");
@@ -155,7 +155,7 @@ namespace PS3Sharp.OS.Modules
 
         internal static ulong CellGcmSetDefaultCommandBuffer(PPU ppu)
         {
-            MemoryManager.Write<uint>(DefaultCtxPtr, PS3Sharp.RSX.CtxPtr);
+            MemoryManager.Write<uint>(DefaultCtxPtr, ppu.RSX.CtxPtr);
             Console.WriteLine($"[CellGcmSys] cellGcmSetDefaultCommandBuffer");
             return CELL_OK;
         }
@@ -195,12 +195,12 @@ namespace PS3Sharp.OS.Modules
 
             WorkItem rsxFlush = new(() =>
             {
-                PS3Sharp.RSX.SetPut(PS3Sharp.RSX.AddressToOffset(ctx_current));
+                ppu.RSX.SetPut(ppu.RSX.AddressToOffset(ctx_current));
                 // Console.WriteLine($"[RSX] Flush Call!");
-                PS3Sharp.RSX.RunCommandBuffer();
+                ppu.RSX.RunCommandBuffer();
             });
 
-            PS3Sharp.RSX.EnqueueCommand(rsxFlush);
+            ppu.RSX.EnqueueCommand(rsxFlush);
 
             // Wait
             rsxFlush.Done.Wait();
@@ -214,8 +214,8 @@ namespace PS3Sharp.OS.Modules
             unsafe
             {
                 CellGcmCtxData* ctx = ctx_ptr.AsNativePtr(); // Ctx argument
-                CellGcmConfig* config = PS3Sharp.RSX.ConfigPtr.AsNativePtr();
-                CellGcmCtrlRegister* ctrl = PS3Sharp.RSX.CtrlPtr.AsNativePtr();
+                CellGcmConfig* config = ppu.RSX.ConfigPtr.AsNativePtr();
+                CellGcmCtrlRegister* ctrl = ppu.RSX.CtrlPtr.AsNativePtr();
 
                 // Go to next command buffer if we did not reach the last one, otherwise reset to the beginning
                 uint currentCommandBuffer = (ctx->Begin - (config->IO_Addr + 4096)) / COMMAND_BUFFER_SIZE;
@@ -240,7 +240,7 @@ namespace PS3Sharp.OS.Modules
                 }
 
                 // Inject a Jump command to the new location in the current stream
-                uint jump = 0x20000000 | PS3Sharp.RSX.AddressToOffset(newBegin);
+                uint jump = 0x20000000 | ppu.RSX.AddressToOffset(newBegin);
                 MemoryManager.Write<uint>(ctx_current, jump);
 
                 // Update context struct
@@ -261,7 +261,7 @@ namespace PS3Sharp.OS.Modules
             GuestPtr<CellGcmConfig> gcmConfigPtr = ppu.ReadArg<GuestPtr<CellGcmConfig>>(ARG0);
 
             //Ensure it was allocated
-            if (PS3Sharp.RSX.ConfigPtr.IsNullPtr)
+            if (ppu.RSX.ConfigPtr.IsNullPtr)
             {
                 throw new Exception($"[CellGcmSys] cellGcmGetConfiguration: config block was not allocated!");
             }
@@ -270,7 +270,7 @@ namespace PS3Sharp.OS.Modules
             // Copy the struct
             unsafe
             {
-                CellGcmConfig* rsxConfig = PS3Sharp.RSX.ConfigPtr.AsNativePtr();
+                CellGcmConfig* rsxConfig = ppu.RSX.ConfigPtr.AsNativePtr();
                 CellGcmConfig* destConfig = gcmConfigPtr.AsNativePtr();
                 *destConfig = *rsxConfig;
             }
@@ -281,7 +281,7 @@ namespace PS3Sharp.OS.Modules
         internal static ulong CellGcmGetControlRegister(PPU ppu)
         {
             uint ctr_ptr = ppu.ReadArg<uint>(ARG0);
-            uint ret = PS3Sharp.RSX.CtrlPtr.Address;
+            uint ret = ppu.RSX.CtrlPtr.Address;
             //  Console.WriteLine($"[CellGcmSys] cellGcmGetControlRegister ret = {ret:X8}");
             return ret; //Address goes to R3
         }
@@ -290,7 +290,7 @@ namespace PS3Sharp.OS.Modules
         {
             uint address = ppu.ReadArg<uint>(ARG0);
             uint offset_ptr = ppu.ReadArg<uint>(ARG1);
-            uint offset = PS3Sharp.RSX.AddressToOffset(address);
+            uint offset = ppu.RSX.AddressToOffset(address);
             MemoryManager.Write<uint>(offset_ptr, offset);
 
             //  Console.WriteLine($"[CellGcmSys] cellGcmAddressToOffset address = {address:X8} offset_ptr = {offset_ptr:X8} ret = {offset:X8}");
@@ -300,7 +300,7 @@ namespace PS3Sharp.OS.Modules
         internal static ulong CellGcmGetLabelAddress(PPU ppu)
         {
             uint index = ppu.ReadArg<uint>(ARG0);
-            uint ret = PS3Sharp.RSX.LabelsPtr + (index * 0x10);
+            uint ret = ppu.RSX.LabelsPtr + (index * 0x10);
             //Console.WriteLine($"[CellGcmSys] cellGcmGetLabelAddress index = {index:X8} ret = {ret:X8}");
             return ret;
         }
@@ -321,12 +321,12 @@ namespace PS3Sharp.OS.Modules
             uint width = ppu.ReadArg<uint>(ARG3);
             uint height = ppu.ReadArg<uint>(ARG4);
 
-            PS3Sharp.RSX.EnqueueCommand(new WorkItem(() =>
+            ppu.RSX.EnqueueCommand(new WorkItem(() =>
             {
-                PS3Sharp.RSX.FrameBuffers[bufferId].Address = PS3Sharp.RSX.VRAM_Ptr.Address + offset;
-                PS3Sharp.RSX.FrameBuffers[bufferId].Pitch = pitch;
-                PS3Sharp.RSX.FrameBuffers[bufferId].Width = width;
-                PS3Sharp.RSX.FrameBuffers[bufferId].Height = height;
+                ppu.RSX.FrameBuffers[bufferId].Address = ppu.RSX.VRAM_Ptr.Address + offset;
+                ppu.RSX.FrameBuffers[bufferId].Pitch = pitch;
+                ppu.RSX.FrameBuffers[bufferId].Width = width;
+                ppu.RSX.FrameBuffers[bufferId].Height = height;
 
                 if (bufferId > 1)
                 {

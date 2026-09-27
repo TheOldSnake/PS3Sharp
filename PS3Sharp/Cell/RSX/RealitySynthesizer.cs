@@ -71,10 +71,10 @@ namespace PS3Sharp.Cell.RSX
         internal RSXInternalState CurrentState { get; } = new RSXInternalState();
         private static PPU.PPU? _RSX_PPU_Thread;    // for executing rsx callbacks that are ppu functions
         internal Thread? NativeThread { get; set; }
+        internal ThreadManager ThreadManager { get; }
         internal RSXThreadStates RsxThreadState = RSXThreadStates.Stopped;
 
         private readonly ConcurrentQueue<WorkItem> CommandQueue = new(); // External commands from PPU thread
-        internal static RealitySynthesizer Instance { get; } = new RealitySynthesizer();
 
         private Stack<uint> CallStack = new();
         private ulong LastVblank;
@@ -82,7 +82,7 @@ namespace PS3Sharp.Cell.RSX
 
         internal void EnqueueCommand(WorkItem command) => CommandQueue.Enqueue(command);
 
-        private RealitySynthesizer()
+        internal RealitySynthesizer(ThreadManager threadManager)
         {
             for (int i = 0; i < FrameBuffers.Length; i++)
             {
@@ -96,8 +96,10 @@ namespace PS3Sharp.Cell.RSX
 
             for (int i = 0; i < CurrentState.Textures.Length; i++)
             {
-                CurrentState.Textures[i] = new RSXTexture();
+                CurrentState.Textures[i] = new RSXTexture(this);
             }
+
+            ThreadManager = threadManager;
 
             // Create a native thread
             ThreadManager.CreateRSXThread(this);

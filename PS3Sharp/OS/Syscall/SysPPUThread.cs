@@ -32,7 +32,7 @@ namespace PS3Sharp.OS.Syscall
             GuestPtr<int> prio_ptr = ppu.ReadArg<GuestPtr<int>>(ARG1);
 
             //Console.WriteLine($"[sys_ppu_thread] sys_ppu_thread_get_priority ID = 0x{id:X8}");
-            PPU? thread = ThreadManager.GetThreadByID(id);
+            PPU? thread = ppu.ThreadManager.GetThreadByID(id);
             MemoryManager.Write<int>(prio_ptr, thread.ThreadPriority);
             return CELL_OK;
         }
@@ -43,7 +43,7 @@ namespace PS3Sharp.OS.Syscall
             int priority = ppu.ReadArg<int>(ARG1);
 
             //Console.WriteLine($"[sys_ppu_thread] sys_ppu_thread_set_priority ID = 0x{id:X8}");
-            PPU? thread = ThreadManager.GetThreadByID(id);
+            PPU? thread = ppu.ThreadManager.GetThreadByID(id);
             thread?.SetThreadPriority(priority);
 
             return CELL_OK;
@@ -71,10 +71,10 @@ namespace PS3Sharp.OS.Syscall
             }
 
             //Create a new PPU thread
-            PPU new_ppu_thread = new(name, entry, arg, stacksize);
+            PPU new_ppu_thread = new(name, entry, arg, stacksize, ppu.ThreadManager, ppu.RSX);
 
-            ThreadManager.CreateNativePPUThread(new_ppu_thread);
-            ThreadManager.RunPPUThread(new_ppu_thread);
+            ppu.ThreadManager.CreateNativePPUThread(new_ppu_thread);
+            ppu.ThreadManager.RunPPUThread(new_ppu_thread);
 
             MemoryManager.Write<ulong>(id_ptr, new_ppu_thread.ThreadID);
             Console.WriteLine($"[SysPPUThread] sys_ppu_thread_create: {name} thread_id = 0x{new_ppu_thread.ThreadID:X8} entry_pc = {entry:X8}");
@@ -102,7 +102,7 @@ namespace PS3Sharp.OS.Syscall
             uint id = ppu.ReadArg<uint>(ARG0);
             GuestPtr<ulong> exit_code_ptr = ppu.ReadArg<GuestPtr<ulong>>(ARG1);
 
-            int exit_code = ThreadManager.JoinThreadByID(id);
+            int exit_code = ppu.ThreadManager.JoinThreadByID(id);
             MemoryManager.Write<ulong>(exit_code_ptr, (ulong)exit_code);
 
             Console.WriteLine($"[SysPPUThread] sys_ppu_thread_join: caller = {ppu.ThreadName} joins: 0x{id:X8}");

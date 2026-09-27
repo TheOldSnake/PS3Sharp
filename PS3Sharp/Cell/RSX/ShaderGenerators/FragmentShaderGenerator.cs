@@ -1,4 +1,5 @@
-﻿using PS3Sharp.Memory_Manager;
+﻿using PS3Sharp.Cell.PPU;
+using PS3Sharp.Memory_Manager;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
@@ -577,7 +578,7 @@ namespace PS3Sharp.Cell.RSX
                     const uint sizeOfVector = (4 * sizeof(uint));
 
                     //Check if there's a uniform for this address
-                    Dictionary<uint, OpenTK.Mathematics.Vector4> uniformsDict = PS3Sharp.RSX.CurrentState.AllUniforms;
+                    Dictionary<uint, OpenTK.Mathematics.Vector4> uniformsDict = EmulatorRuntime.RSX.CurrentState.AllUniforms;
                     if (uniformsDict.ContainsKey(CurrentAddress))
                     {
 

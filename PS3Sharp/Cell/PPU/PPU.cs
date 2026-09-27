@@ -19,6 +19,7 @@ namespace PS3Sharp.Cell.PPU
 
         internal Thread NativeThread;
         internal RealitySynthesizer RSX;
+        internal ThreadManager ThreadManager { get; }
         private readonly string _threadName;
         private readonly uint _threadID;
         private int _threadPriority;
@@ -230,7 +231,10 @@ namespace PS3Sharp.Cell.PPU
             uint entryPointer,
             uint stackSize = MemoryManager.DEFAULT_STACK_SIZE,
             string? path_to_executable = null,
-            uint thread_id = 0)
+            uint thread_id = 0,
+            ThreadManager threadManager = null,
+            RealitySynthesizer rsx = null
+            )
         {
 
             if ((stackSize & 0xF) > 0)
@@ -246,10 +250,11 @@ namespace PS3Sharp.Cell.PPU
             SetGCHandle();
             SetPageTable();
 
+            ThreadManager = threadManager;
             _threadName = threadName;
             _threadID = ThreadManager.GetNewID();
 
-            RSX = PS3Sharp.RSX;
+            RSX = rsx;
 
             State->PC = MemoryManager.Read<uint>(entryPointer);
             State->VRSAVE = 0xFFFFFFFF;
@@ -290,7 +295,9 @@ namespace PS3Sharp.Cell.PPU
             string threadName,
             uint entryPointer,
             ulong arg,
-            uint stackSize)
+            uint stackSize,
+            ThreadManager threadManager,
+            RealitySynthesizer rsx)
         {
 
             if ((stackSize & 0xF) > 0)
@@ -306,10 +313,11 @@ namespace PS3Sharp.Cell.PPU
             SetGCHandle();
             SetPageTable();
 
+            ThreadManager = threadManager;
             _threadName = threadName;
             _threadID = ThreadManager.GetNewID();
 
-            RSX = PS3Sharp.RSX;
+            RSX = rsx;
             State->VRSAVE = 0xFFFFFFFF;
 
             if (entryPointer != 0)

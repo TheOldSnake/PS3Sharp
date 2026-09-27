@@ -6,11 +6,11 @@ using static PS3Sharp.Cell.RSX.RSXCommand;
 
 namespace PS3Sharp.Cell.RSX
 {
-    internal sealed class RSXTexture()
+    internal sealed class RSXTexture(RealitySynthesizer rsx)
     {
 
         // Atributes 
-        internal uint Address => PS3Sharp.RSX.OffsetToAddress(Offset, MemoryLocation); // Final address
+        internal uint Address => rsx.OffsetToAddress(Offset, MemoryLocation); // Final address
         internal uint Offset { get; set; }         // Offset in memory     
         internal uint MemoryLocation { get; set; } // RSX memory or CELL
         internal uint Format { get; set; }

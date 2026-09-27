@@ -6,14 +6,14 @@ using static PS3Sharp.Cell.RSX.RealitySynthesizer;
 
 namespace PS3Sharp
 {
-    internal static class ThreadManager
+    internal class ThreadManager
     {
-        private static uint NextID = 0x1000000;
-        private static readonly List<PPU> _ppuThreads = new();
-        private static RealitySynthesizer RSXThread;
-        private static readonly object _threadManagerLock = new(); //I am not sure if this lock is even needed
+        private uint NextID = 0x1000000;
+        private readonly List<PPU> _ppuThreads = new();
+        private RealitySynthesizer RSXThread;
+        private readonly object _threadManagerLock = new(); //I am not sure if this lock is even needed
 
-        internal static uint GetNewID()
+        internal uint GetNewID()
         {
             lock (_threadManagerLock)
             {
@@ -23,7 +23,7 @@ namespace PS3Sharp
             }
         }
 
-        internal static void CreateNativePPUThread(PPU ppu)
+        internal void CreateNativePPUThread(PPU ppu)
         {
             ppu.NativeThread = new Thread(() => RunPPU(ppu))
             {
@@ -36,12 +36,12 @@ namespace PS3Sharp
             }
         }
 
-        internal static void RunPPUThread(PPU ppu)
+        internal void RunPPUThread(PPU ppu)
         {
             ppu.NativeThread.Start();
         }
 
-        internal static void CreateRSXThread(RealitySynthesizer RSX)
+        internal void CreateRSXThread(RealitySynthesizer RSX)
         {
             RSXThread = RSX;
             RSXThread.NativeThread = new Thread(() => RunRSX(RSXThread))
@@ -50,17 +50,17 @@ namespace PS3Sharp
             };
         }
 
-        internal static void RunRSXThread()
+        internal void RunRSXThread()
         {
             RSXThread.NativeThread.Start();
         }
 
-        internal static void JoinThread(Thread thread)
+        internal void JoinThread(Thread thread)
         {
             thread.Join();
         }
 
-        internal static void RunPPU(PPU ppu)
+        internal void RunPPU(PPU ppu)
         {
             ppu.StartThread();
 
@@ -94,7 +94,7 @@ namespace PS3Sharp
             }
         }
 
-        private static void RunRSX(RealitySynthesizer rsx)
+        private void RunRSX(RealitySynthesizer rsx)
         {
             rsx.StartThread();
             while (rsx.RsxThreadState != RSXThreadStates.Stopped)
@@ -121,7 +121,7 @@ namespace PS3Sharp
             }
         }
 
-        internal static void StopAll()
+        internal void StopAll()
         {
             foreach (PPU ppu_thread in _ppuThreads)
             {
@@ -134,7 +134,7 @@ namespace PS3Sharp
             RSXThread.StopThread();
         }
 
-        internal static PPU? GetThreadByID(ulong id)
+        internal PPU? GetThreadByID(ulong id)
         {
             lock (_threadManagerLock)
             {
@@ -150,7 +150,7 @@ namespace PS3Sharp
             return null;
         }
 
-        internal static string GetThreadName(ulong id)
+        internal string GetThreadName(ulong id)
         {
             lock (_threadManagerLock)
             {
@@ -166,7 +166,7 @@ namespace PS3Sharp
             return "unknown";
         }
 
-        internal static int JoinThreadByID(ulong id)
+        internal int JoinThreadByID(ulong id)
         {
             PPU? thread = GetThreadByID(id);
 
