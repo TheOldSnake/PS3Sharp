@@ -50,7 +50,6 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler
             if (page == null)
             {
                 page = (X64Block*)NativeMemory.AllocZeroed((nuint)(PAGE_SIZE * sizeof(X64Block)));
-                NativeMemory.Clear(page, (nuint)(PAGE_SIZE * sizeof(X64Block)));
                 _blocks[l1] = page;
             }
 
