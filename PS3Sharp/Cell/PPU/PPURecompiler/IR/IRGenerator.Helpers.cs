@@ -1,5 +1,5 @@
 ﻿namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
-    public partial class IRGenerator {
+    public sealed partial class IRGenerator {
         // Helpers
 
         public Value CkdAdd(Value a, Value b, out Value carry) {

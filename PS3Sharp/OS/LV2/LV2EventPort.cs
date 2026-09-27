@@ -4,7 +4,7 @@ using PS3Sharp.Memory_Manager;
 using System.Runtime.InteropServices;
 
 namespace PS3Sharp.OS.LV2 {
-    public class LV2EventPort {
+    public sealed class LV2EventPort {
 
         // This is what will be sent through event_queue
         // We can probably not use BigEndian here

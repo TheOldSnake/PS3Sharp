@@ -4,7 +4,7 @@ using PS3Sharp.Common;
 using System.Runtime.CompilerServices;
 
 namespace PS3Sharp.Cell.RSX {
-    public partial class RSXInternalState {
+    public sealed partial class RSXInternalState {
         public uint CurrentSemaphoreOffset { get; set; }
         public uint CurrentSemaphoreLocation { get; set; }
         public RSXVertexBuffer[] VertexBuffers { get; } = new RSXVertexBuffer[16];

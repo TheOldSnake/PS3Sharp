@@ -1,7 +1,7 @@
 ﻿using PS3Sharp.Memory_Manager;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
-    public partial class IRGenerator {
+    public sealed partial class IRGenerator {
         private IRContext _irContext;
         private readonly IROptimizer _irOptimizer = new();
 

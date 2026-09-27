@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace PS3Sharp.Cell.RSX {
-    public partial class RealitySynthesizer : IThread {
+    public sealed partial class RealitySynthesizer : IThread {
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct CellGcmConfig : IPS3Struct {
             public BigEndian<uint> Local_Addr;    // Pointer to RSX local memory
@@ -33,7 +33,7 @@ namespace PS3Sharp.Cell.RSX {
             public BigEndian<uint> Ref;		   /* member for accessing the REF register. Initial value is 0xFFFFFFFF */
         }
 
-        public class RSXFrameBuffer {
+        public sealed class RSXFrameBuffer {
             public uint Address;
             public uint Pitch;
             public uint Width;

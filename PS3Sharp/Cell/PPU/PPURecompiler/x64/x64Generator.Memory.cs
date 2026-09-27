@@ -6,7 +6,7 @@ using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAllocator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
-    public unsafe partial class X64Generator {
+    public unsafe sealed partial class X64Generator {
         private void MemoryWriteImm64(Assembler asm, AssemblerMemoryOperand addr, ulong value, bool isBE) {
             if (isBE) {
                 if (value != 0) {

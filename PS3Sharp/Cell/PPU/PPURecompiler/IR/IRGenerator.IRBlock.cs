@@ -1,6 +1,6 @@
 ﻿namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
-    public partial class IRGenerator {
-        public class IRBlock {
+    public sealed partial class IRGenerator {
+        public sealed class IRBlock {
             public uint VirtualAddressStart;
             public uint VirtualAddressEnd;      // address of last ppc instruction
             public List<IRInstruction> IRCode;

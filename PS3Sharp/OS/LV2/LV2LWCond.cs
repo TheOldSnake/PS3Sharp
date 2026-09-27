@@ -12,7 +12,7 @@ namespace PS3Sharp.OS.LV2 {
     // But it uses LWMutex instead of Mutex
 
     // This is incomplete 
-    public class LV2LWCond {    
+    public sealed class LV2LWCond {    
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct SysLWCondAttribute : IPS3Struct {
             public InlineData.InlineArray8<byte> Name;
@@ -37,7 +37,7 @@ namespace PS3Sharp.OS.LV2 {
 
         public LV2LWMutex GetLWMutex() {
             // this is assuming that the mutex is stored here
-            // but we already get a mutex ID in like every syscall of this class.. ?
+            // but we already get a mutex ID in like every syscall of this sealed class.. ?
 
             uint id;
             unsafe {

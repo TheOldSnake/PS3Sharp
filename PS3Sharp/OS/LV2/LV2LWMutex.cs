@@ -7,7 +7,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.LV2 {
 
-    public class LV2LWMutex {
+    public sealed class LV2LWMutex {
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct LWMutex : IPS3Struct {

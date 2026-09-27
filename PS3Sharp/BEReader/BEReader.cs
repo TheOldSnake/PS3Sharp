@@ -1,7 +1,7 @@
 ﻿namespace PS3Sharp.BEReader {
     // Unused
 
-   /*public class BigEndianReader : BinaryReader {
+   /*public sealed class BigEndianReader : BinaryReader {
         public BigEndianReader(System.IO.Stream stream) : base(stream) { }
 
         public override int ReadInt32() {

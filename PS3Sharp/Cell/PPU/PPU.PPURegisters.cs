@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 
 namespace PS3Sharp.Cell.PPU {
-    public unsafe partial class PPU {
+    public unsafe sealed partial class PPU {
         [StructLayout(LayoutKind.Explicit)]
         public unsafe struct PPUGPR {
             //Unsigned

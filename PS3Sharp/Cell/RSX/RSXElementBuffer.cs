@@ -5,7 +5,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace PS3Sharp.Cell.RSX {
-    public class RSXElementBuffer {
+    public sealed class RSXElementBuffer {
         public uint BufferAddress { get; set; }                 // Index list address
         public DrawElementsType ElementBufferType { get; set; } // Index list element type
 

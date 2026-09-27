@@ -9,7 +9,7 @@ using static PS3Sharp.OS.LV2.LV2EventPort;
 using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.LV2 {
-    public class LV2EventQueue {
+    public sealed class LV2EventQueue {
         // Event Queue attributes
         public const uint SYS_PPU_QUEUE = 1;
         public const uint SYS_SPU_QUEUE = 2;

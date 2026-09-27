@@ -8,7 +8,7 @@ using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAlloc
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
-    public unsafe partial class X64Generator {
+    public unsafe sealed partial class X64Generator {
         private RegisterAllocator.RegisterAllocator _registerAllocator = new();
 
         private List<AssemblerRegister64> _borrowPool { get; set; }                  // List of all borrowable registers for this block, based on the allocator

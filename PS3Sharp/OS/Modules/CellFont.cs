@@ -13,7 +13,7 @@ using static PS3Sharp.Cell.PPU.PPU;
 
 namespace PS3Sharp.OS.Modules {
     public static class CellFont {
-        //We LLE CellFont, this class is purely for debugging purposes
+        //We LLE CellFont, this sealed class is purely for debugging purposes
 
         public struct CellFont_ : IPS3Struct {
             public BigEndian<float> scale_x;

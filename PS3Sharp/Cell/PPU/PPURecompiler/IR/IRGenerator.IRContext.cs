@@ -3,8 +3,8 @@ using System.Net;
 using static PS3Sharp.Cell.PPU.PPU;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
-    public partial class IRGenerator {
-        public class IRContext {
+    public sealed partial class IRGenerator {
+        public sealed class IRContext {
             // Constants 
             public Value Zero { get; set; }
             public Value One { get; set; }

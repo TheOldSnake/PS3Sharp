@@ -4,7 +4,7 @@ using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAllocator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
-    public partial class RegisterAllocator {
+    public sealed partial class RegisterAllocator {
 
         // Register pools
 		private readonly AssemblerRegister64[] StaticRegisterPool64 = [

@@ -20,7 +20,7 @@ namespace PS3Sharp {
         public static int CurrentVertexShaderHandle { get; private set; }
         public static int CurrentFragmentShaderHandle { get; private set; }
 
-        // Dictionaries probable need their own cache class
+        // Dictionaries probable need their own cache sealed class
 
         // Shader checksum to handle lookup dictionaries
         public static Dictionary<(ulong vertexChecksum, ulong fragmentChecksum), int> CompiledPrograms { get; private set; } = [];
@@ -44,7 +44,7 @@ namespace PS3Sharp {
 
         private static readonly int FBOTextureUnit = 20; // or anything more than 15
 
-        // Global GL states (probaly need their own class)
+        // Global GL states (probaly need their own sealed class)
         public static float ClearColorR { get; private set; } = 0.0f;
         public static float ClearColorG { get; private set; } = 0.0f;
         public static float ClearColorB { get; private set; } = 0.0f;

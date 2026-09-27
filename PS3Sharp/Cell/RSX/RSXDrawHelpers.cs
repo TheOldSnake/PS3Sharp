@@ -6,7 +6,7 @@ using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 
 namespace PS3Sharp.Cell.RSX {
-    public partial class RealitySynthesizer {  
+    public sealed partial class RealitySynthesizer {  
         public void BindSurfaceA() {
             // Bind Surface A
             uint surface_a_address = OffsetToAddress(CurrentState.Surface_A_Offset, CurrentState.Surface_A_Location & 1);

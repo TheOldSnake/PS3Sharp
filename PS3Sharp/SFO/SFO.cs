@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 namespace PS3Sharp.SFOLoader {
-    public class SFO {
+    public sealed class SFO {
         // Little Endian
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]

@@ -5,7 +5,7 @@ using System.IO.Hashing;
 using static PS3Sharp.Cell.RSX.RSXCommand;
 
 namespace PS3Sharp.Cell.RSX {
-    public class RSXTexture() {
+    public sealed class RSXTexture() {
 
         // Atributes 
         public uint Address => PS3Sharp.RSX.OffsetToAddress(Offset, MemoryLocation); // Final address

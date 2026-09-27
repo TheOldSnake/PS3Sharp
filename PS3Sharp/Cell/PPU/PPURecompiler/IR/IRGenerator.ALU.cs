@@ -1,7 +1,7 @@
 ﻿using static PS3Sharp.Cell.PPU.PPURotationMasks;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
-    public partial class IRGenerator {
+    public sealed partial class IRGenerator {
         // Add instructions
 
         public void ADDI(PPUInstruction instruction) {

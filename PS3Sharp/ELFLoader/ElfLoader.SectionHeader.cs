@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 
 namespace PS3Sharp {
-    public static unsafe partial class ElfLoader {
+    public static partial class ElfLoader {
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public readonly struct SectionHeader {
             //Section types (SHT_*)

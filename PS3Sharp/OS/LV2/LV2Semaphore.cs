@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.LV2 {
-    public class LV2Semaphore {
+    public sealed class LV2Semaphore {
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct SysSemaphoreAttribute : IPS3Struct {

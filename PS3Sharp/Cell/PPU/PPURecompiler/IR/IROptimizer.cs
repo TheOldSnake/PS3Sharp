@@ -2,7 +2,7 @@
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
-    public class IROptimizer {
+    public sealed class IROptimizer {
         public Dictionary<Value, ulong> ConstantFold(IRContext ctx) {
             Dictionary<Value, ulong> constants = new Dictionary<Value, ulong>();
             List<IRInstruction> code = ctx.GetIRCode();

@@ -1,7 +1,7 @@
 ﻿using System.Runtime.Serialization;
 
 namespace PS3Sharp.Memory_Manager {
-    public class PageFaultException : Exception {
+    public sealed class PageFaultException : Exception {
         public uint VirtualAddress { get; }
 
         public PageFaultException(uint address)

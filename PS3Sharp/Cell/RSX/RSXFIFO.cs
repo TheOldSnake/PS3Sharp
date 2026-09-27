@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 using static PS3Sharp.Cell.RSX.RSXCommand;
 
 namespace PS3Sharp.Cell.RSX {
-    public partial class RealitySynthesizer {
+    public sealed partial class RealitySynthesizer {
         public unsafe void HandleInstruction(RSXCommand command, CellGcmCtrlRegister* ctrl) {
             //PrintCommand(command);
             Queue<BigEndian<uint>> param;

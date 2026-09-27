@@ -6,7 +6,7 @@ using PS3Sharp.OS.Syscall;
 using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.LV2 {
-    public class LV2EventFlag {
+    public sealed class LV2EventFlag {
         public enum SysEventFlagMode : uint {
             SYS_EVENT_FLAG_WAIT_AND       = 0x01,
             SYS_EVENT_FLAG_WAIT_OR        = 0x02,

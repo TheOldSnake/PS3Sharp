@@ -1594,7 +1594,7 @@
 0x9CB87B0D _ZN3vsh13MessageDialog12GetBasePlaneEv
 0x69C27C12 fopen
 0xC6533FB2 divxDecClose
-0x007854F4 _FDclass
+0x007854F4 _FDsealed class
 0xF733525E _ZN3vsh11ContentInfo4ShowEff
 0x8FD2F1CC sceNpUpdateClockClean
 0x1EE13E83 _ZNSt6locale5facetD0Ev
@@ -2833,7 +2833,7 @@
 0xF7E4A50A cellMediatorGetStatus
 0x6C366C43 svc1dGetVersionNumber
 0xFD61DFF5 _Z32_sce_np_sysutil_cxml_prepare_docPN16sysutil_cxmlutil11FixedMemoryERN4cxml8DocumentEPKcRNS2_7ElementES6_i
-0xB7282DC4 _Z25PSJS_ClassType_ScriptFuncv
+0xB7282DC4 _Z25PSJS_sealed classType_ScriptFuncv
 0x89B67B9C _ZNK3paf4View9GetStringEPKc
 0x18EA899A cellGemGetTrackerHue
 0xC56DEFB5 cellSpursGetNumSpuThread
@@ -2945,7 +2945,7 @@
 0x6F5DD7D2 cexpf
 0xD59AA307 cellSyncLFQueueGetDirection
 0x8AD55D80 cellSsAimIsDEX
-0x53375995 ceapartment_CEDllGetClassObject
+0x53375995 ceapartment_CEDllGetsealed classObject
 0xDD5EBDEB UTF8stoSJISs
 0xEC86025F cellGcmCgGetParameterVariability
 0xF6557AD3 sceNetXmppGetPresence
@@ -3721,7 +3721,7 @@
 0x04E83D2C _sys_strncmp
 0x5A59E258 cellSysmoduleIsLoaded
 0x5560C79E _ZNSdD1Ev
-0x6B6AB2A9 _LDclass
+0x6B6AB2A9 _LDsealed class
 0x2BD8F812 _ZN3paf8PhCanvas4lockEv
 0x5909E3C4 memset
 0x0C16A258 _ZN3paf7PhPlaneD2Ev
@@ -4337,7 +4337,7 @@
 0x32C941CF cellRtcGetCurrentClock
 0x1B0B915E cellFsLsnGetCDA
 0xF3E81219 cellFiberPpuCheckStackLimit
-0x550BA039 _ZNK10PSJSObject12GetClassTypeEv
+0x550BA039 _ZNK10PSJSObject12Getsealed classTypeEv
 0xFD461E85 spu_thread_write_ldouble
 0x2F336853 _ZN3paf10PhSaveData12SetFrameRateEf
 0x3D32ADD6 cellM4hdEncQueryResource
@@ -6215,7 +6215,7 @@
 0xF4CF5435 FTC_Manager_Done
 0xC051D361 _ZN3paf9PhHandler16HandleStateEventEPNS_7PhEventE
 0x75975EB4 _ZNSsC1EPKc
-0xBF7FBF01 _ZNK9PSJSValue7IsClassEPKt
+0xBF7FBF01 _ZNK9PSJSValue7Issealed classEPKt
 0x970A3432 cacosh
 0x02170D1A cellDmuxQueryEsAttr
 0xD52B1C5F sceNpSetMyLanguages
@@ -6385,7 +6385,7 @@
 0x49D18217 sceNpTrophyGetGameInfo
 0xC0AB392E sceNpC7yScoreGetRankingByRangeRequestVsh
 0x146618DF sceNpCommerce2GetProductInfoListGetResult
-0xC6EA0FD0 _ZNSt6locale7classicEv
+0xC6EA0FD0 _ZNSt6locale7sealed classicEv
 0x7E7017B1 rmdir
 0x744680A2 sys_initialize_tls
 0xBB5C565B cellCameraStopPost
@@ -7026,7 +7026,7 @@
 0x332A74DD cellRtcTickAddYears
 0xD277E345 sceSystemFileGetValuePtr
 0x7F155BBA _ZN3paf10PhSaveData18SetCurrentLightingEii
-0x01E3CDE3 CEComGetClassObject
+0x01E3CDE3 CEComGetsealed classObject
 0x840C5239 cellSpursJobQueueGetHandleCount
 0x551BEDA8 CEULock_release
 0xA5F629E4 cellCryptoPuRsavp1512
@@ -7516,7 +7516,7 @@
 0x19C27A2C CESysMemBlockUnsetPurgeable
 0x19EB4098 CEComSetThreadActivityTimeStamp
 0x1A06259A CESysFillMemory
-0x1B5DCB3F CEComPushClassObjectsToThreadContext
+0x1B5DCB3F CEComPushsealed classObjectsToThreadContext
 0x1C26A015 CEComFreeUnusedLibraries
 0x1E4D1A96 CEComSetGlobalConfiguration
 0x211A8290 CEComIsMemoryRecoverd
@@ -7565,7 +7565,7 @@
 0x7D732695 CESysSetLastError
 0x7D9FFDAD CESysInitializeCriticalSection
 0x7E30A60B CESysWakeConditionVariable
-0x7FCFF71E CESysThreadClassGetStackSize
+0x7FCFF71E CESysThreadsealed classGetStackSize
 0x85EE7EBA CEComGlobalLockEx2
 0x86C37BCE CESysSleepConditionVariableCS
 0x901D1123 CEUThread_incrementDependency
@@ -7585,7 +7585,7 @@
 0xB1037795 CEComGlobalUnlock
 0xB1496C95 CEComGlobalLockEx
 0xB1ED9D5F CEComPopThreadContexts
-0xB37CEE2F CESysThreadClassGetPriority
+0xB37CEE2F CESysThreadsealed classGetPriority
 0xB5DAC425 CESysSetAssertMode
 0xB964E4F4 CESysEnterCriticalSection
 0xBB608E0E CESysAlignedFreeEx
@@ -7855,7 +7855,7 @@
 0xE66BAC36 console_putc
 0xD7F43016 module_info
 0xFC52A7A9 sys_game_process_exitspawn
-0x2D7C1B40 _ZNK10PSJSObject10IsSubClassEPKt
+0x2D7C1B40 _ZNK10PSJSObject10IsSubsealed classEPKt
 0x904E646B cargl
 0x9C40D1F9 _ZNKSt8numpunctIwE16do_decimal_pointEv
 0x4E010403 copysign
@@ -9162,7 +9162,7 @@
 0xF463981C cellGameUpdateCheckFinishAsyncEx
 0x10231873 _ZNSt13runtime_errorD1Ev
 0xBAB91FC9 sceNpBasicGetPlayersHistoryEntry
-0x3EEEDB0E _Dclass
+0x3EEEDB0E _Dsealed class
 0xBD1C5D6B _cellSpursJobQueuePortPushFlush
 0x7B1DB41E _ZNSt6locale7_AddfacEPNS_5facetEjj
 0x18DD4604 cellFsOpen2
@@ -9400,7 +9400,7 @@
 0xF843818D cellSpursReadyCountStore
 0x210F6245 cellAsfParser2CheckNeedMem
 0xBA85CE08 _ZNSt12strstreambufD2Ev
-0x8572802A _Z25PSJS_ClassType_NativeFuncv
+0x8572802A _Z25PSJS_sealed classType_NativeFuncv
 0x62236E88 SSLCERT_NAME_hash
 0x9CFC0EAF _ZNSiD1Ev
 0xE509DEEB sceNpInstallerInit
@@ -9421,7 +9421,7 @@
 0xC839BB4C sys_rsxaudio_initialize
 0x0B9FEA5F cellHttpRequestGetHeader
 0x94E21701 cellSearchGetContentIdByOffset
-0x47D8CE7C _ZNK10PSJSObject7IsClassEPKt
+0x47D8CE7C _ZNK10PSJSObject7Issealed classEPKt
 0x430FCFED _ZNK3paf4View6NotifyEi
 0x24E230D2 _Wctob
 0x59E8DD58 strtoll

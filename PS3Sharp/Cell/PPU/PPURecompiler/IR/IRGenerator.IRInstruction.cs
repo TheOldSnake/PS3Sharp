@@ -1,6 +1,6 @@
 ﻿
 namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
-    public partial class IRGenerator {
+    public sealed partial class IRGenerator {
         public struct IRInstruction {
             public Op Opcode;
 

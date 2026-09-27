@@ -1,11 +1,7 @@
-﻿using OpenTK.Graphics.ES11;
-using PS3Sharp.Memory_Manager;
+﻿using PS3Sharp.Memory_Manager;
 using PS3Sharp.OS.Modules;
-using SixLabors.ImageSharp.PixelFormats;
-using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using static PS3Sharp.ElfLoader;
 using static PS3Sharp.ELFLoader.ElfLoader;
 
 namespace PS3Sharp {

@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler {
-    public unsafe class PPURecompiler : IDisposable {     
+    public unsafe sealed class PPURecompiler : IDisposable {     
         private const int VirtualAllocSize = 4 * 1024;    // 4 kb
 
         private readonly List<(nint Address, ulong Size)> AllocatedPages = [];
@@ -140,7 +140,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler {
             return (value + alignment - 1) & ~(alignment - 1);
         }
 
-        protected virtual void Dispose(bool disposing) {
+        public void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
                     // TODO: dispose managed state (managed objects)

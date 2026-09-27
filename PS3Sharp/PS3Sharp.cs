@@ -6,7 +6,7 @@ using PS3Sharp.Memory_Manager;
 using PS3Sharp.SFOLoader;
 
 namespace PS3Sharp {
-    public class PS3Sharp {
+    public sealed class PS3Sharp {
 
         // For now we share the file system with RPCS3
         public const string FileSystemBase = @"D:\RPCS3\";

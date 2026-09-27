@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 
 namespace PS3Sharp.Common {
-    public class ScratchBuffer {
+    public sealed class ScratchBuffer {
         // This buffer is ment to be reused and hence it can grow if needed,
         // and will stay at the maximum size.
 

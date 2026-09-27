@@ -13,7 +13,7 @@ namespace PS3Sharp.FileSystem {
     public static class FileSystemManager {
         private static readonly ConcurrentDictionary<int, GuestFile> _openFiles = new ConcurrentDictionary<int, GuestFile>();
         private static readonly ConcurrentDictionary<int, GuestDirectory> _openDirectories = new ConcurrentDictionary<int, GuestDirectory>();
-        public class GuestFile : IDisposable {
+        public sealed class GuestFile : IDisposable {
             public readonly string Path;        
             public readonly int FileDescriptor;
             public readonly uint OwnerThread;
@@ -40,7 +40,7 @@ namespace PS3Sharp.FileSystem {
             }
         }
 
-        public class GuestDirectory {
+        public sealed class GuestDirectory {
             public readonly string Path;
             public readonly int FileDescriptor;
             public readonly uint OwnerThread;

@@ -14,8 +14,8 @@ using static PS3Sharp.Cell.ErrorCode;
 using static PS3Sharp.Memory_Manager.MemoryManager;
 
 namespace PS3Sharp.Cell.PPU {
-    public unsafe partial class PPU : IThread, IDisposable {
-        // PPU thread class — all fields here are single-threaded by default.
+    public unsafe sealed partial class PPU : IThread, IDisposable {
+        // PPU thread sealed class — all fields here are single-threaded by default.
         // DO NOT access or mutate from another thread unless using thread-safe mechanisms
         // like Interlocked, locks, or a message queue. Violating this will cause race conditions.
         public const uint STACK_REG = 1;
@@ -464,7 +464,7 @@ namespace PS3Sharp.Cell.PPU {
         }
 
         // Dispose Pattern 
-        protected virtual void Dispose(bool disposing) {
+        public void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
                     // dispose managed state (managed objects)

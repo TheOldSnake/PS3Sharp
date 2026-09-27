@@ -47,7 +47,7 @@ namespace PS3Sharp.OS.Modules {
         }
 
 
-        public class AudioPort { // todo
+        public sealed class AudioPort { // todo
             public uint Number;
             public uint Status;
             public ulong NumberOfChannels;

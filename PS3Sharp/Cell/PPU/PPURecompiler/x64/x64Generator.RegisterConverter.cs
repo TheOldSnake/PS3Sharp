@@ -2,7 +2,7 @@
 using static Iced.Intel.AssemblerRegisters;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64 {
-    public partial class X64Generator {
+    public sealed partial class X64Generator {
         private AssemblerRegister32 Reg64ToReg32(AssemblerRegister64 reg) {
             switch (reg.Value) {
                 case Register.RAX: return eax;

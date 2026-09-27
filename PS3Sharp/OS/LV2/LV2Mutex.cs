@@ -6,7 +6,7 @@ using PS3Sharp.Cell;
 using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.LV2 {
-    public class LV2Mutex {
+    public sealed class LV2Mutex {
         public const uint SYS_SYNC_RECURSIVE = 0x10;
         public const uint SYS_SYNC_NOT_RECURSIVE = 0x20;
 

@@ -1,7 +1,7 @@
 ﻿using static PS3Sharp.Cell.PPU.PPU;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.IR {
-    public partial class IRGenerator {
+    public sealed partial class IRGenerator {
 
         public void Syscall(PPUInstruction instruction) {
             //IRSyscall(instruction, _irContext.CurrentPC);

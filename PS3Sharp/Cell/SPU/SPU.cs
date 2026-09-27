@@ -8,7 +8,7 @@ using System.Security.Principal;
 using System.Text;
 
 namespace PS3Sharp.Cell.SPU {
-    public unsafe class SPU : IDisposable {
+    public unsafe sealed class SPU : IDisposable {
         private bool disposedValue;
 
         public string Name { get; }
@@ -119,7 +119,7 @@ namespace PS3Sharp.Cell.SPU {
             GPR[6].ULongs[1] = Argument.Arg4;
         }
 
-        protected virtual void Dispose(bool disposing) {
+        public void Dispose(bool disposing) {
             if (!disposedValue) {
                 if (disposing) {
                     // TODO: dispose managed state (managed objects)

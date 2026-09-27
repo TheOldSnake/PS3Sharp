@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace PS3Sharp.Cell.RSX {
-    public class RSXVertexBuffer {
+    public sealed class RSXVertexBuffer {
 
         // Attributes 
         public bool IsEnabled { get; set; }

@@ -36,7 +36,7 @@ namespace PS3Sharp.OS.Syscall {
 
         private static readonly ConcurrentDictionary<uint, StorageDevice> _openDevices = new();
 
-        public class StorageDevice {
+        public sealed class StorageDevice {
             public readonly Devices Type;
             public readonly byte[] Data;
 

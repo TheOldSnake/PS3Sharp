@@ -8,7 +8,7 @@ using System.Text;
 using static PS3Sharp.OS.Syscall.SysSPU;
 
 namespace PS3Sharp.OS.LV2 {
-    public class LV2SPUThreadGroup {
+    public sealed class LV2SPUThreadGroup {
         public uint Handle { get; } = MemoryManager.GetHandle();
         public GuestPtr<SysSPUThreadGroupAttribute> AttributePtr { get; }
         public uint Number { get; }

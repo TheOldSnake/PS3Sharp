@@ -2,8 +2,8 @@
 using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
 
 namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator {
-    public partial class RegisterAllocator {
-        public class Location {
+    public sealed partial class RegisterAllocator {
+        public sealed class Location {
             public Liveness Liveness { get; }
             private AssemblerRegister64? Register { get; set; }
             public int SpillSlot { get; set; } = -1;

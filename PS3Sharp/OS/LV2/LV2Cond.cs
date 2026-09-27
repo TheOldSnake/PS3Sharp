@@ -10,7 +10,7 @@ using System.Text;
 using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.LV2 {
-    public class LV2Cond {
+    public sealed class LV2Cond {
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct SysCondAttribute : IPS3Struct {
