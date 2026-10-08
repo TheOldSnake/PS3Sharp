@@ -1,6 +1,6 @@
 ﻿namespace PS3Sharp
 {
-    internal interface IThread
+    internal interface IEmulatorThread
     {
         internal void StartThread();
 

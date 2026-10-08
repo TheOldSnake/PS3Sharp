@@ -1,6 +1,6 @@
-﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Graphics.OpenGL4;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using System.IO.Hashing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -9,6 +9,12 @@ namespace PS3Sharp.Cell.RSX
 {
     internal sealed class RSXVertexBuffer
     {
+        private readonly MemoryManager _memoryManager;
+
+        internal RSXVertexBuffer(MemoryManager memoryManager)
+        {
+            _memoryManager = memoryManager;
+        }
 
         // Attributes 
         internal bool IsEnabled { get; set; }
@@ -102,7 +108,7 @@ namespace PS3Sharp.Cell.RSX
                 for (uint element = 0; element < elementsPerUnitCount; element++)
                 {
                     uint address = bufferAddress + dataMemoryOffset + (element * sizeOfT);
-                    T data = MemoryManager.Read<T>(address);
+                    T data = _memoryManager.Read<T>(address);
                     vertexData[(int)(dataBaseIndex + element)] = data;
                 }
             }

@@ -1,7 +1,7 @@
-﻿using PS3Sharp.Cell;
+using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using System.Collections.Concurrent;
 using System.Text;
 using static PS3Sharp.Cell.Arguments;
@@ -9,8 +9,25 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal static class SysStorage
+    internal class SysStorage
     {
+        internal sealed class StorageDevice
+        {
+            internal readonly Devices Type;
+            internal readonly byte[] Data;
+
+            internal StorageDevice(Devices type, int size)
+            {
+                Type = type;
+                Data = new byte[size];
+            }
+
+            internal Span<byte> CreateSpan(int start, int size)
+            {
+                return new Span<byte>(Data, start, size);
+            }
+        }
+
         internal enum Devices : ulong
         {
             ATA_HDD = 0x101000000000007UL,
@@ -33,26 +50,6 @@ namespace PS3Sharp.OS.Syscall
             USB_MASS_STORAGE_2_BASE = 0x10300000000001FUL,
         }
 
-
-        private static readonly ConcurrentDictionary<uint, StorageDevice> _openDevices = new();
-
-        internal sealed class StorageDevice
-        {
-            internal readonly Devices Type;
-            internal readonly byte[] Data;
-
-            internal StorageDevice(Devices type, int size)
-            {
-                Type = type;
-                Data = new byte[size];
-            }
-
-            internal Span<byte> CreateSpan(int start, int size)
-            {
-                return new Span<byte>(Data, start, size);
-            }
-        }
-
         internal struct StorageDeviceInfo : IPS3Struct
         {
             internal InlineData.InlineArray32<byte> Name;
@@ -64,7 +61,15 @@ namespace PS3Sharp.OS.Syscall
             internal InlineData.InlineArray8<byte> Flags;
         };
 
-        internal static ulong SysStorageGetDeviceInfo(PPU ppu)
+        private readonly MemoryManager _memoryManager;
+        private readonly ConcurrentDictionary<uint, StorageDevice> _openDevices = new();
+
+        internal SysStorage(MemoryManager memoryManager)
+        {
+            _memoryManager = memoryManager;
+        }
+
+        internal ulong SysStorageGetDeviceInfo(PPUThread ppu)
         {
             return CELL_OK;
             ulong device = ppu.ReadArg<ulong>(ARG0);
@@ -103,7 +108,7 @@ namespace PS3Sharp.OS.Syscall
         }
 
 
-        internal static ulong GetUSBMassStorageInfo(GuestPtr<StorageDeviceInfo> info_ptr, ulong dev_num)
+        internal ulong GetUSBMassStorageInfo(GuestPtr<StorageDeviceInfo> info_ptr, ulong dev_num)
         {
             if (dev_num > 0)
             {
@@ -112,7 +117,7 @@ namespace PS3Sharp.OS.Syscall
 
             unsafe
             {
-                StorageDeviceInfo* info = info_ptr.AsNativePtr();
+                StorageDeviceInfo* info = _memoryManager.GetPtr(info_ptr);
 
                 Span<byte> name_string = Encoding.UTF8.GetBytes("unnamed");
                 name_string.CopyTo(info->Name);
@@ -128,7 +133,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        internal static ulong SysStorageOpen(PPU ppu)
+        internal ulong SysStorageOpen(PPUThread ppu)
         {
             return CELL_OK;
             ulong dev = ppu.ReadArg<ulong>(ARG0);
@@ -163,19 +168,19 @@ namespace PS3Sharp.OS.Syscall
 
             if (size > 0)
             {
-                uint fd = MemoryManager.GetHandle();
+                uint fd = _memoryManager.GetHandle();
 
                 _openDevices.TryAdd(
                       fd,
                       new StorageDevice(storage, size));
 
-                MemoryManager.Write<uint>(fd_ptr, fd);
+                _memoryManager.Write<uint>(fd_ptr, fd);
             }
 
             return CELL_OK;
         }
 
-        internal static ulong SysStorageRead(PPU ppu)
+        internal ulong SysStorageRead(PPUThread ppu)
         {
             return CELL_OK;
 
@@ -196,7 +201,7 @@ namespace PS3Sharp.OS.Syscall
                 unsafe
                 {
                     Span<byte> data = storageDevice.CreateSpan(offset, size);
-                    Span<byte> dest = MemoryManager.CreateSpan<byte>(buf, size);
+                    Span<byte> dest = _memoryManager.CreateSpan<byte>(buf, size);
                     dest.Clear();
                     data.CopyTo(dest);
                 }
@@ -210,11 +215,11 @@ namespace PS3Sharp.OS.Syscall
                 //throw new Exception($"SysStorageRead: Device was not open");
             }
 
-            MemoryManager.Write<uint>(sectors_read, num_sectors);
+            _memoryManager.Write<uint>(sectors_read, num_sectors);
             return CELL_OK;
         }
 
-        internal static ulong SysStorageClose(PPU ppu)
+        internal ulong SysStorageClose(PPUThread ppu)
         {
             return CELL_OK;
             uint fd = ppu.ReadArg<uint>(ARG0);

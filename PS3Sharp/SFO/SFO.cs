@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -32,6 +32,8 @@ namespace PS3Sharp.SFOLoader
         internal const ushort ParamFormatString = 0x004;
         internal const ushort ParamFormatArray = 0x204;
         internal const ushort ParamFormatUInt = 0x404;
+        internal string TitleID => StringsDictionary["TITLE_ID"];
+        internal string Title => StringsDictionary["TITLE"];
 
         private readonly Dictionary<string, uint> UIntsDictionary;
         private readonly Dictionary<string, string> StringsDictionary;
@@ -42,12 +44,11 @@ namespace PS3Sharp.SFOLoader
             StringsDictionary = strings;
         }
 
-        internal string TitleID => StringsDictionary["TITLE_ID"];
-        internal string Title => StringsDictionary["TITLE"];
         internal bool UIntLookup(string key, out uint value) => UIntsDictionary.TryGetValue(key, out value);
+
         internal bool StringLookup(string key, out string value) => StringsDictionary.TryGetValue(key, out value);
 
-        internal static SFO Load(string path)
+        internal static SFO? LoadSFO(string path)
         {
             if (!File.Exists(path) || !path.EndsWith(".SFO"))
             {
@@ -76,7 +77,6 @@ namespace PS3Sharp.SFOLoader
 
             for (int i = 0; i < header.EntriesCount; i++)
             {
-
                 // Read entry
                 int entryOffset = headerSize + (indexEntrySize * i);
                 SFOIndexEntry entry = MemoryMarshal.Read<SFOIndexEntry>(sfo.Slice(entryOffset));

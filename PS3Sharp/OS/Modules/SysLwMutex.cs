@@ -1,6 +1,6 @@
-﻿using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using PS3Sharp.OS.LV2;
 using System.Collections.Concurrent;
 
@@ -12,33 +12,17 @@ namespace PS3Sharp.OS.Modules
 {
 
     // This is for sys_lwmutex module, not _sys_lwmutex (the syscalls)
-
-    internal static class SysLwMutex
+    internal class SysLwMutex
     {
-        private static readonly ConcurrentDictionary<uint, LV2LWMutex> _lwMutexes = [];
+        private readonly MemoryManager _memoryManager;
+        private readonly ConcurrentDictionary<uint, LV2LWMutex> _lwMutexes = [];
 
-        internal static bool GetLWMutex(uint id, out LV2LWMutex? mutex) => _lwMutexes.TryGetValue(id, out mutex);
-        internal static void AddLWMutex(uint id, LV2LWMutex mutex)
+        internal SysLwMutex(MemoryManager memoryManager)
         {
-            bool success = _lwMutexes.TryAdd(id, mutex);
-
-            if (!success)
-            {
-                throw new Exception($"[SysLwMutex] Could not add lwmutex 0x{id:X8} to dictionary");
-            }
+            _memoryManager = memoryManager;
         }
 
-        internal static void RemoveLWMutex(uint id)
-        {
-            bool success = _lwMutexes.TryRemove(id, out _);
-
-            if (!success)
-            {
-                throw new Exception($"[SysLwMutex] Could not remove lwmutex 0x{id:X8} from dictionary");
-            }
-        }
-
-        internal static ulong SysLWmutexCreate(PPU ppu)
+        internal ulong SysLWmutexCreate(PPUThread ppu)
         {
             GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(ARG0);
             GuestPtr<LWMutexAttrib> attribute_ptr = ppu.ReadArg<GuestPtr<LWMutexAttrib>>(ARG1);
@@ -49,12 +33,12 @@ namespace PS3Sharp.OS.Modules
                 return CELL_EAGAIN;
             }
 
-            uint id = MemoryManager.GetHandle();
+            uint id = _memoryManager.GetHandle();
 
             unsafe
             {
-                LWMutexAttrib attribute = attribute_ptr.Read();
-                LWMutex* lwmutex = lwmutex_ptr.AsNativePtr();
+                LWMutexAttrib attribute = _memoryManager.ReadStruct<LWMutexAttrib>(attribute_ptr);
+                LWMutex* lwmutex = _memoryManager.GetPtr(lwmutex_ptr);
 
                 lwmutex->Owner = 0xFFFFFFFF; //-1 = free
                 lwmutex->Waiter = 0;
@@ -64,14 +48,14 @@ namespace PS3Sharp.OS.Modules
 
                 //Console.WriteLine($"[SysLwMutex] sys_lwmutex_create id: 0x{id:X8}");
 
-                LV2LWMutex mutex = new(lwmutex_ptr, attribute);
+                LV2LWMutex mutex = new(lwmutex_ptr, attribute, _memoryManager);
                 AddLWMutex(id, mutex);
             }
 
             return CELL_OK;
         }
 
-        internal static ulong SysLWmutexLock(PPU ppu)
+        internal ulong SysLWmutexLock(PPUThread ppu)
         {
             GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(ARG0);
             ulong us_timeout = ppu.ReadArg<ulong>(ARG1);
@@ -79,7 +63,7 @@ namespace PS3Sharp.OS.Modules
             uint id;
             unsafe
             {
-                LWMutex* mutex = lwmutex_ptr.AsNativePtr();
+                LWMutex* mutex = _memoryManager.GetPtr(lwmutex_ptr);
                 id = mutex->SleepQueue;
             }
 
@@ -87,7 +71,7 @@ namespace PS3Sharp.OS.Modules
 
             if (GetLWMutex(id, out LV2LWMutex? lwmutex))
             {
-                return lwmutex.Lock(ppu.ThreadID, us_timeout);
+                return lwmutex.Lock(ppu, us_timeout);
 
             }
             else
@@ -96,14 +80,14 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        internal static ulong SysLWmutexTryLock(PPU ppu)
+        internal ulong SysLWmutexTryLock(PPUThread ppu)
         {
             GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(ARG0);
 
             uint id;
             unsafe
             {
-                LWMutex* mutex = lwmutex_ptr.AsNativePtr();
+                LWMutex* mutex = _memoryManager.GetPtr(lwmutex_ptr);
                 id = mutex->SleepQueue;
             }
 
@@ -111,7 +95,7 @@ namespace PS3Sharp.OS.Modules
 
             if (GetLWMutex(id, out LV2LWMutex? lwmutex))
             {
-                return lwmutex.TryLock(ppu.ThreadID);
+                return lwmutex.TryLock(ppu);
 
             }
             else
@@ -120,14 +104,14 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        internal static ulong SysLWmutexUnlock(PPU ppu)
+        internal ulong SysLWmutexUnlock(PPUThread ppu)
         {
             GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(ARG0);
 
             uint id;
             unsafe
             {
-                LWMutex* mutex = lwmutex_ptr.AsNativePtr();
+                LWMutex* mutex = _memoryManager.GetPtr(lwmutex_ptr);
                 id = mutex->SleepQueue;
             }
 
@@ -135,7 +119,7 @@ namespace PS3Sharp.OS.Modules
 
             if (GetLWMutex(id, out LV2LWMutex? lwmutex))
             {
-                return lwmutex.Unlock(ppu.ThreadID);
+                return lwmutex.Unlock();
 
             }
             else
@@ -144,14 +128,14 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        internal static ulong SysLWmutexDestroy(PPU ppu)
+        internal ulong SysLWmutexDestroy(PPUThread ppu)
         {
             GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(ARG0);
 
             uint id;
             unsafe
             {
-                LWMutex* mutex = lwmutex_ptr.AsNativePtr();
+                LWMutex* mutex = _memoryManager.GetPtr(lwmutex_ptr);
                 id = mutex->SleepQueue;
             }
 
@@ -159,6 +143,28 @@ namespace PS3Sharp.OS.Modules
             RemoveLWMutex(id);
 
             return CELL_OK;
+        }
+
+        internal bool GetLWMutex(uint id, out LV2LWMutex? mutex) => _lwMutexes.TryGetValue(id, out mutex);
+
+        private void AddLWMutex(uint id, LV2LWMutex mutex)
+        {
+            bool success = _lwMutexes.TryAdd(id, mutex);
+
+            if (!success)
+            {
+                throw new Exception($"[SysLwMutex] Could not add lwmutex 0x{id:X8} to dictionary");
+            }
+        }
+
+        private void RemoveLWMutex(uint id)
+        {
+            bool success = _lwMutexes.TryRemove(id, out _);
+
+            if (!success)
+            {
+                throw new Exception($"[SysLwMutex] Could not remove lwmutex 0x{id:X8} from dictionary");
+            }
         }
     }
 }

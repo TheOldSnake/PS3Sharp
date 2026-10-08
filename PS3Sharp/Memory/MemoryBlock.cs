@@ -1,6 +1,6 @@
-﻿namespace PS3Sharp.Memory_Manager
+﻿namespace PS3Sharp.Memory
 {
-    internal static unsafe partial class MemoryManager
+    internal unsafe partial class MemoryManager
     {
         internal struct MemoryBlock
         {

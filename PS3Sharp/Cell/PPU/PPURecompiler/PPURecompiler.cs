@@ -1,90 +1,96 @@
-﻿using PS3Sharp.Cell.PPU.PPURecompiler.IR;
-using PS3Sharp.Cell.PPU.PPURecompiler.x64;
+using PS3Sharp.Cell.PPU.Recompiler.IR;
+using PS3Sharp.Cell.PPU.Recompiler.x64;
 using PS3Sharp.Common;
-using PS3Sharp.Syscall;
-using System.ComponentModel;
+using PS3Sharp.Memory;
 using System.Runtime.InteropServices;
-using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
+using System.Runtime.Intrinsics.X86;
+using static PS3Sharp.Cell.PPU.Recompiler.IR.IRGenerator;
+using static PS3Sharp.Cell.PPU.PPUThread;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler
+namespace PS3Sharp.Cell.PPU.Recompiler
 {
     internal unsafe sealed class PPURecompiler : IDisposable
     {
         internal struct X64Block
         {
-            internal delegate* unmanaged[Stdcall]<PPU.PPUState*, void> Code;
+            internal delegate* unmanaged[Stdcall]<PPUState*, void> Code;
             internal int IsSyscallExit;
         }
 
         private const int PAGE_BITS = 16;
         private const int PAGE_SIZE = 1 << PAGE_BITS;
-        private const uint PAGE_MASK = PAGE_SIZE - 1;
+        private const uint PAGE_MASK = (1 << PAGE_BITS) - 1;
 
-        private readonly List<(nint Address, ulong Size)> AllocatedPages = [];
-        private readonly X64Block*[] _blocks = new X64Block*[PAGE_SIZE];
+        private static readonly bool IsRecompilerEnabled = false; // TODO make this configurable
+        internal static bool IsRecompilerUsable => IsPlatformSupported() && IsRecompilerEnabled;
+
+        internal ulong NumberOfCompiledBlocks { get; private set; }
+        internal ulong NumberOfExecutedBlocks { get; private set; }
+        internal ulong TotalAllocatedPages { get; private set; }
+
+        private readonly List<VirtualMemoryHandle?> _executablePages = [];
+        private readonly NativeMemoryHandle?[] _memoryBlocksTable = new NativeMemoryHandle[PAGE_SIZE];
 
         private readonly IRGenerator _irGenerator = new();
         private readonly X64Generator _x64Generator = new();
 
-        private nint NextBlockAddress;
-        private nint CurrentPageStartAddress;
-        private nint CurrentPageEndAddress;
-        private bool disposedValue;
-
-        internal static ulong NumberOfCompiledBlocks = 0;
-        internal static ulong NumberOfExecutedBlocks = 0;
-        internal static ulong TotalAllocatedPages = 0;
+        private nint _nextBlockAddress;
+        private nint _currentPageStartAddress;
+        private nint _currentPageEndAddress;
 
         private X64Block* GetOrCreateBlock(uint virtualAddress)
         {
+            // The smallest block is 4 bytes (one instruction)
             uint index = virtualAddress >> 2;
 
             // 2 Levels look up
-            uint l1 = index >> PAGE_BITS;
-            uint l2 = index & PAGE_MASK;
+            uint pageIndex = index >> PAGE_BITS;
+            uint blockIndex = index & PAGE_MASK;
 
             // Look up the page
-            X64Block* page = _blocks[l1];
+            NativeMemoryHandle? page = _memoryBlocksTable[pageIndex];
 
             // If not already allocated, allocate the page
             if (page == null)
             {
-                page = (X64Block*)NativeMemory.AllocZeroed((nuint)(PAGE_SIZE * sizeof(X64Block)));
-                _blocks[l1] = page;
+                nuint size = (nuint)(PAGE_SIZE * sizeof(X64Block));
+                page = new(size);
+                _memoryBlocksTable[pageIndex] = page;
             }
 
             // Look up into the page
-            return &page[l2];
+            X64Block* pageBase = (X64Block*)page.DangerousGetHandle();
+            X64Block* block = &pageBase[blockIndex];
+
+            return block;
         }
 
-        internal void RunPPU(PPU ppu)
+        internal void RunPPU(PPUThread ppu)
         {
-
+            // As of now this code is NOT thread safe
             X64Block* block = GetOrCreateBlock(ppu.State->PC);
 
             if (block->Code == null)
             {
                 CompilePPCBlock(ppu, block);
-                NumberOfCompiledBlocks++;
             }
 
-            // Console.WriteLine($"Executing block 0x{ppu.State->PC:X8}");
+            // Console.WriteLine($"Executing block 0x{ppu.State->PC:X8} at: 0x{(nint)block->Code:X16}");
 
             block->Code(ppu.State);
-            NumberOfExecutedBlocks++;
 
             if (block->IsSyscallExit == 1)
             {
-                SyscallHandler.HandleSyscall(ppu, 0);
+                ppu.SyscallDispatcher.DispatchSyscall(ppu, 0);
             }
 
             //throw new Exception($"Done, exit pc = 0x{ppu.State->PC:X8}");
         }
 
-        private void CompilePPCBlock(PPU ppu, X64Block* nativeBlock)
+        private void CompilePPCBlock(PPUThread ppu, X64Block* nativeBlock)
         {
             // Generate IR
-            IRBlock block = _irGenerator.GenerateIRBlock(ppu.State->PC);
+            IRBlock block = _irGenerator.GenerateIRBlock(ppu.State->PC, ppu.MemoryManager);
             nativeBlock->IsSyscallExit = block.IsSyscallExit;
 
             // Generate x64
@@ -96,7 +102,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler
                 AllocateExecutableMemory(nativeCode.Length);
             }
 
-            void* dest = (void*)NextBlockAddress;
+            void* dest = (void*)_nextBlockAddress;
 
             // Copy the code
             int length = nativeCode.Length;
@@ -104,34 +110,39 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler
             nativeCode.CopyTo(destSpan);
 
             // Set the address
-            nativeBlock->Code = (delegate* unmanaged[Stdcall]<PPU.PPUState*, void>)dest;
+            nativeBlock->Code = (delegate* unmanaged[Stdcall]<PPUThread.PPUState*, void>)dest;
 
             // Advance next block address and align to 16-byte
-            NextBlockAddress += length;
-            NextBlockAddress = (nint)AlignPow2((nuint)NextBlockAddress, 16);
+            _nextBlockAddress += length;
+            _nextBlockAddress = (nint)AlignPow2((nuint)_nextBlockAddress, 16);
         }
 
         private void AllocateExecutableMemory(int size)
         {
             ulong alignedSize = AlignPow2((ulong)size, PAGE_SIZE);
-            nuint memory = (nuint)WinAPI.VirtualAlloc(IntPtr.Zero, (nuint)alignedSize, WinAPI.MEM_COMMIT, WinAPI.PAGE_EXECUTE_READWRITE);
 
-            if (memory == 0)
-            {
-                throw new Win32Exception();
-            }
+            // Create VirtualMemoryHandle
+            // Uses MEM_RESERVE by default
+            VirtualMemoryHandle memoryHandle = new((nuint)alignedSize, NativeMethods.WIN_API_PAGE_EXECUTE_READWRITE);
+            nint memory = memoryHandle.DangerousGetHandle();
 
-            CurrentPageStartAddress = (nint)memory;
-            CurrentPageEndAddress = (nint)(memory + alignedSize);
-            NextBlockAddress = CurrentPageStartAddress;
-            AllocatedPages.Add((CurrentPageStartAddress, alignedSize));
+            // Commit
+            NativeMethods.VirtualAlloc(memory, (nuint)alignedSize, NativeMethods.WIN_API_MEM_COMMIT, NativeMethods.WIN_API_PAGE_EXECUTE_READWRITE);
+
+            // Clear
+            NativeMemory.Clear((void*)memory, (nuint)alignedSize);
+
+            _currentPageStartAddress = memory;
+            _currentPageEndAddress = memory + (nint)alignedSize;
+            _nextBlockAddress = _currentPageStartAddress;
+            _executablePages.Add(memoryHandle);
             TotalAllocatedPages++;
         }
 
         private bool HasEnoughMemory(int size)
         {
-            ulong aligned = AlignPow2((nuint)NextBlockAddress + (nuint)size, 16);
-            return aligned < (nuint)CurrentPageEndAddress;
+            ulong aligned = AlignPow2((nuint)_nextBlockAddress + (nuint)size, 16);
+            return aligned < (nuint)_currentPageEndAddress;
         }
 
         private ulong AlignPow2(ulong value, ulong alignment)
@@ -146,54 +157,41 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler
             return (value + alignment - 1) & ~(alignment - 1);
         }
 
-        internal void Dispose(bool disposing)
+        private static bool IsPlatformSupported()
         {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects)
-                }
-
-                // free unmanaged resources (unmanaged objects) and override finalizer
-                // set large fields to null
-
-                // Free executable pages
-                foreach ((nint Address, ulong Size) allocation in AllocatedPages)
-                {
-                    int ok = WinAPI.VirtualFree(allocation.Address, 0, WinAPI.MEM_RELEASE);
-
-                    if (ok == 0)
-                    {
-                        throw new Win32Exception();
-                    }
-                }
-
-                // Free block structs
-                foreach (X64Block* block in _blocks)
-                {
-                    if (block != null)
-                    {
-                        NativeMemory.Free(block);
-                    }
-                }
-
-                disposedValue = true;
-            }
-        }
-
-        // override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        ~PPURecompiler()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: false);
+            bool isWindows64bit = OperatingSystem.IsWindows() && RuntimeInformation.OSArchitecture == Architecture.X64;
+            bool hasSSE = Sse.IsSupported;
+            bool hasSSE2 = Sse2.IsSupported;
+            bool hasAVX = Avx.IsSupported;
+            bool hasBMI2 = Bmi2.IsSupported;
+            bool isSupported = isWindows64bit && hasSSE && hasSSE2 && hasAVX && hasBMI2;
+            return isSupported;
         }
 
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            Console.WriteLine($"[PPURecompiler] Disposing Recompiler");
+
+            // Free executable pages
+            for (int i = 0; i < _executablePages.Count; i++)
+            {
+                VirtualMemoryHandle? virtualAlloc = _executablePages[i];
+                virtualAlloc?.Dispose();
+            }
+
+            _executablePages.Clear();
+
+            // Free block structs
+            for (int i = 0; i < _memoryBlocksTable.Length; i++)
+            {
+                NativeMemoryHandle? block = _memoryBlocksTable[i];
+                block?.Dispose();
+                _memoryBlocksTable[i] = null;
+            }
+
+            _currentPageStartAddress = 0;
+            _currentPageEndAddress = 0;
+            _nextBlockAddress = 0;
         }
     }
 }

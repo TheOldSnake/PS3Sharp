@@ -109,7 +109,8 @@
     }
 
     internal enum G04 : uint
-    {    // Altivec
+    {
+        // Altivec
         VADDFP = 0x00A,
         VSEL = 0x02A,
         VPERM = 0x02B,

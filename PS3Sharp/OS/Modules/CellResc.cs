@@ -1,88 +1,78 @@
 ﻿using PS3Sharp.Cell.PPU;
+using PS3Sharp.Memory;
 using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal static class CellResc
+    internal class CellResc
     {
-        internal static ulong CellRescInit(PPU ppu)
+        private readonly MemoryManager _memoryManager;
+        private readonly CellGcmSys _cellGcmSys;
+
+        internal CellResc(MemoryManager memoryManager, CellGcmSys cellGcmSys)
         {
-            //TODO
-            //  Console.WriteLine($"[CellResc] cellRescInit");
+            _memoryManager = memoryManager;
+            _cellGcmSys = cellGcmSys;
+        }
+
+        internal ulong CellRescInit(PPUThread ppu)
+        {
             return CELL_OK;
         }
 
-        internal static ulong CellRescVideoOutResolutionId2RescBufferMode(PPU ppu)
+        internal ulong CellRescVideoOutResolutionId2RescBufferMode(PPUThread ppu)
         {
-            //TODO
-            //  Console.WriteLine($"[CellResc] CellRescVideoOutResolutionId2RescBufferMode");
             return CELL_OK;
         }
 
-        internal static ulong CellRescSetDsts(PPU ppu)
+        internal ulong CellRescSetDsts(PPUThread ppu)
         {
-            //TODO
-            //  Console.WriteLine($"[CellResc] cellRescSetDsts");
             return CELL_OK;
         }
 
-        internal static ulong CellRescSetDisplayMode(PPU ppu)
+        internal ulong CellRescSetDisplayMode(PPUThread ppu)
         {
-            //TODO
-            //  Console.WriteLine($"[CellResc] cellRescSetDisplayMode");
             return CELL_OK;
         }
 
-        internal static ulong CellRescGetBufferSize(PPU ppu)
+        internal ulong CellRescGetBufferSize(PPUThread ppu)
         {
-            //TODO
-            //  Console.WriteLine($"[CellResc] cellRescGetBufferSize");
             return CELL_OK;
         }
 
-        internal static ulong CellRescSetBufferAddress(PPU ppu)
+        internal ulong CellRescSetBufferAddress(PPUThread ppu)
         {
-            //TODO
-            //   Console.WriteLine($"[CellResc] cellRescSetBufferAddress");
             return CELL_OK;
         }
 
-        internal static ulong CellRescGcmSurface2RescSrc(PPU ppu)
+        internal ulong CellRescGcmSurface2RescSrc(PPUThread ppu)
         {
-            //TODO
-            //  Console.WriteLine($"[CellResc] cellRescGcmSurface2RescSrc");
             return CELL_OK;
         }
 
-        internal static ulong CellRescSetSrc(PPU ppu)
+        internal ulong CellRescSetSrc(PPUThread ppu)
         {
-            //TODO
-            //  Console.WriteLine($"[CellResc] cellRescSetSrc");
             return CELL_OK;
         }
 
-        internal static ulong CellRescGetFlipStatus(PPU ppu)
+        internal ulong CellRescGetFlipStatus(PPUThread ppu)
         {
-            // Console.WriteLine($"[CellResc] cellRescGetFlipStatus");
-            return CellGcmSys.CellGcmGetFlipStatus(ppu);
+            return _cellGcmSys.CellGcmGetFlipStatus(ppu);
         }
 
-        internal static ulong CellRescResetFlipStatus(PPU ppu)
+        internal ulong CellRescResetFlipStatus(PPUThread ppu)
         {
-            // Console.WriteLine($"[CellResc] cellRescResetFlipStatus");
-            return CellGcmSys.CellGcmResetFlipStatus(ppu);
+            return _cellGcmSys.CellGcmResetFlipStatus(ppu);
         }
 
-        internal static ulong CellRescSetConvertAndFlip(PPU ppu)
+        internal ulong CellRescSetConvertAndFlip(PPUThread ppu)
         {
-            //  Console.WriteLine($"[CellResc] cellRescSetConvertAndFlip");
-            return CellGcmSys.CellGcmSetFlip(ppu);
+            return _cellGcmSys.CellGcmSetFlip(ppu);
         }
 
-        internal static ulong CellRescSetWaitFlip(PPU ppu)
+        internal ulong CellRescSetWaitFlip(PPUThread ppu)
         {
-            //   Console.WriteLine($"[CellResc] cellRescSetWaitFlip");
-            return CellGcmSys.CellGcmSetWaitFlip(ppu);
+            return _cellGcmSys.CellGcmSetWaitFlip(ppu);
         }
     }
 }

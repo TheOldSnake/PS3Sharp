@@ -1,33 +1,31 @@
-﻿using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal static class SysTTY
+    internal class SysTTY
     {
-        private static ConsoleColor[] Colors = [
-            //todo
-        ];
-
         internal const uint STDOUT = 1;
         internal const uint STDERR = 2;
+        private readonly MemoryManager _memoryManager;
 
-        //static StreamWriter output = File.AppendText(@"D:\RPCS3\app_home\output.txt");
-        private static void Print(string s, ConsoleColor color)
+        // private StreamWriter output = File.AppendText(@"D:\RPCS3\app_home\output.txt");
+
+        internal SysTTY(MemoryManager memoryManager)
         {
-            //  ConsoleColor old = Console.ForegroundColor;
-            //  Console.ForegroundColor = color;
+            _memoryManager = memoryManager;
+        }
 
+        private void Print(string s, ConsoleColor color)
+        {
             Console.Write(s);
-
-            //  Console.ForegroundColor = old;
             //output.Write(s);
         }
 
-        internal static uint SysTTYWrite(PPU ppu)
+        internal ulong SysTTYWrite(PPUThread ppu)
         {
 
             uint ch = ppu.ReadArg<uint>(ARG0);                               //channel? probably file descriptor
@@ -35,9 +33,7 @@ namespace PS3Sharp.OS.Syscall
             uint len = ppu.ReadArg<uint>(ARG2);                              //uint32_t
             GuestPtr<uint> pwritelen = ppu.ReadArg<GuestPtr<uint>>(ARG3);    //uint32_t*
 
-            //Console.WriteLine($"sys_tty_write ch = {ch} buf = 0x{buf:X8} len = {len} pwritelen = {pwritelen:X8}");
-
-            string text = MemoryManager.ReadString(buf);
+            string text = _memoryManager.ReadString(buf);
             ConsoleColor color = ch == STDOUT ? ConsoleColor.Green : ConsoleColor.Red;
             Print(text, color);
 

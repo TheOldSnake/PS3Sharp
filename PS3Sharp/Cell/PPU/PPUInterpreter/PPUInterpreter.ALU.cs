@@ -1,7 +1,7 @@
-﻿using System.Numerics;
+using System.Numerics;
 using static PS3Sharp.Cell.PPU.PPURotationMasks;
 
-namespace PS3Sharp.Cell.PPU.PPUInterpreter
+namespace PS3Sharp.Cell.PPU.Interpreter
 {
     internal static unsafe partial class PPUInterpreter
     {
@@ -22,17 +22,17 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
         }
 
         // ADD instructions
-        private static void ADDI(PPUInstruction instruction, PPU ppu)
+        private static void ADDI(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Rt].Value64 = (instruction.Ra == 0 ? 0 : ppu.GPR[instruction.Ra].Value64) + (ulong)instruction.SI_64;
         }
 
-        private static void ADDIS(PPUInstruction instruction, PPU ppu)
+        private static void ADDIS(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Rt].SValue64 = (instruction.Ra == 0 ? 0 : ppu.GPR[instruction.Ra].SValue64) + (long)(int)(instruction.SI << 16);
         }
 
-        private static void ADDIC(PPUInstruction instruction, PPU ppu)
+        private static void ADDIC(PPUInstruction instruction, PPUThread ppu)
         {
             ulong ra = ppu.GPR[instruction.Ra].Value64;
             ulong b = (ulong)instruction.SI_64;
@@ -42,7 +42,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             ppu.State->XER.SetCA(carry ? 1U : 0U);
         }
 
-        private static void ADDIC_Record(PPUInstruction instruction, PPU ppu)
+        private static void ADDIC_Record(PPUInstruction instruction, PPUThread ppu)
         {
             ulong ra = ppu.GPR[instruction.Ra].Value64;
             ulong b = (ulong)instruction.SI_64;
@@ -52,10 +52,10 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             ppu.State->XER.SetCA(carry ? 1U : 0U);
 
             // this instructions always updates CR0
-            UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+            UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
         }
 
-        private static void ADDE(PPUInstruction instruction, PPU ppu)
+        private static void ADDE(PPUInstruction instruction, PPUThread ppu)
         {
             ulong ra = ppu.GPR[instruction.Ra].Value64;
             ulong rb = ppu.GPR[instruction.Rb].Value64;
@@ -69,17 +69,17 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
 
-        private static void ADD(PPUInstruction instruction, PPU ppu)
+        private static void ADD(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Rt].Value64 = ppu.GPR[instruction.Rb].Value64 + ppu.GPR[instruction.Ra].Value64;
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
 
             if (instruction.Oe == 1)
@@ -88,7 +88,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        private static void ADDC(PPUInstruction instruction, PPU ppu)
+        private static void ADDC(PPUInstruction instruction, PPUThread ppu)
         {
             ulong ra = ppu.GPR[instruction.Ra].Value64;
             ulong rb = ppu.GPR[instruction.Rb].Value64;
@@ -99,7 +99,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
 
             if (instruction.Oe == 1)
@@ -108,7 +108,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        internal static void ADDZE(PPUInstruction instruction, PPU ppu)
+        internal static void ADDZE(PPUInstruction instruction, PPUThread ppu)
         {
             ulong ra = ppu.GPR[instruction.Ra].Value64;
             ulong ca = ppu.State->XER.CA;
@@ -119,7 +119,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
 
             if (instruction.Oe == 1)
@@ -128,7 +128,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        internal static void ADDME(PPUInstruction instruction, PPU ppu)
+        internal static void ADDME(PPUInstruction instruction, PPUThread ppu)
         {
             ulong ra = ppu.GPR[instruction.Ra].Value64;
             ulong ca = ppu.State->XER.CA;
@@ -142,17 +142,17 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
         // Subtract instructions
-        private static void SUBF(PPUInstruction instruction, PPU ppu)
+        private static void SUBF(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Rt].Value64 = ppu.GPR[instruction.Rb].Value64 - ppu.GPR[instruction.Ra].Value64;
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
 
             if (instruction.Oe == 1)
@@ -161,7 +161,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        private static void SUBFC(PPUInstruction instruction, PPU ppu)
+        private static void SUBFC(PPUInstruction instruction, PPUThread ppu)
         {
             ulong ra = ppu.GPR[instruction.Ra].Value64;
             ulong rb = ppu.GPR[instruction.Rb].Value64;
@@ -174,7 +174,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
 
             if (instruction.Oe == 1)
@@ -183,7 +183,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        private static void SUBFIC(PPUInstruction instruction, PPU ppu)
+        private static void SUBFIC(PPUInstruction instruction, PPUThread ppu)
         {
             ulong ra = ppu.GPR[instruction.Ra].Value64;
             ulong b = (ulong)instruction.SI_64;
@@ -196,7 +196,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
         }
 
 
-        private static void SUBFE(PPUInstruction instruction, PPU ppu)
+        private static void SUBFE(PPUInstruction instruction, PPUThread ppu)
         {
             ulong ra = ppu.GPR[instruction.Ra].Value64;
             ulong rb = ppu.GPR[instruction.Rb].Value64;
@@ -210,11 +210,11 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void SUBFZE(PPUInstruction instruction, PPU ppu)
+        internal static void SUBFZE(PPUInstruction instruction, PPUThread ppu)
         {
             ulong ra = ppu.GPR[instruction.Ra].Value64;
             ulong ca = ppu.State->XER.CA;
@@ -225,11 +225,11 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void SUBFME(PPUInstruction instruction, PPU ppu)
+        internal static void SUBFME(PPUInstruction instruction, PPUThread ppu)
         {
             ulong ra = ppu.GPR[instruction.Ra].Value64;
             ulong ca = ppu.State->XER.CA;
@@ -243,126 +243,126 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
         // General logic instructions
-        internal static void ANDI(PPUInstruction instruction, PPU ppu)
+        internal static void ANDI(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ppu.GPR[instruction.Rs].Value64 & instruction.UI;
-            UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+            UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
         }
 
-        internal static void ANDIS(PPUInstruction instruction, PPU ppu)
+        internal static void ANDIS(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ppu.GPR[instruction.Rs].Value64 & ((ulong)instruction.UI << 16);
-            UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+            UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
         }
 
-        private static void ORI(PPUInstruction instruction, PPU ppu)
+        private static void ORI(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ppu.GPR[instruction.Rs].Value64 | instruction.UI;
             // Does not affect CR
         }
 
-        private static void ORIS(PPUInstruction instruction, PPU ppu)
+        private static void ORIS(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ppu.GPR[instruction.Rs].Value64 | ((ulong)instruction.UI << 16);
             // Does not affect CR
         }
 
-        private static void XORI(PPUInstruction instruction, PPU ppu)
+        private static void XORI(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ppu.GPR[instruction.Rs].Value64 ^ instruction.UI;
             // Does not affect CR
         }
 
-        private static void XORIS(PPUInstruction instruction, PPU ppu)
+        private static void XORIS(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ppu.GPR[instruction.Rs].Value64 ^ ((ulong)instruction.UI << 16);
             // Does not affect CR
         }
 
-        internal static void AND(PPUInstruction instruction, PPU ppu)
+        internal static void AND(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ppu.GPR[instruction.Rs].Value64 & ppu.GPR[instruction.Rb].Value64;
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void OR(PPUInstruction instruction, PPU ppu)
+        internal static void OR(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ppu.GPR[instruction.Rs].Value64 | ppu.GPR[instruction.Rb].Value64;
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void XOR(PPUInstruction instruction, PPU ppu)
+        internal static void XOR(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ppu.GPR[instruction.Rs].Value64 ^ ppu.GPR[instruction.Rb].Value64;
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void NAND(PPUInstruction instruction, PPU ppu)
+        internal static void NAND(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ~(ppu.GPR[instruction.Rs].Value64 & ppu.GPR[instruction.Rb].Value64);
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void NOR(PPUInstruction instruction, PPU ppu)
+        internal static void NOR(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ~(ppu.GPR[instruction.Rs].Value64 | ppu.GPR[instruction.Rb].Value64);
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void EQV(PPUInstruction instruction, PPU ppu)
+        internal static void EQV(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ~(ppu.GPR[instruction.Rs].Value64 ^ ppu.GPR[instruction.Rb].Value64);
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void ANDC(PPUInstruction instruction, PPU ppu)
+        internal static void ANDC(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ppu.GPR[instruction.Rs].Value64 & (~ppu.GPR[instruction.Rb].Value64);
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void ORC(PPUInstruction instruction, PPU ppu)
+        internal static void ORC(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Ra].Value64 = ppu.GPR[instruction.Rs].Value64 | (~ppu.GPR[instruction.Rb].Value64);
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void NEG(PPUInstruction instruction, PPU ppu)
+        internal static void NEG(PPUInstruction instruction, PPUThread ppu)
         {
             //RT = ¬(RA) + 1
             ppu.GPR[instruction.Rt].SValue64 = -ppu.GPR[instruction.Ra].SValue64;
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
 
             if (instruction.Oe == 1)
@@ -372,7 +372,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
         }
 
         // Condition register bit logic opcodes
-        internal static (uint ba, uint bb) GetBitsAB(PPUInstruction instruction, PPU ppu)
+        internal static (uint ba, uint bb) GetBitsAB(PPUInstruction instruction, PPUThread ppu)
         {
             //Helper for condition register bit opcodes
             uint ba = (ppu.State->CR.Raw >> (int)(31 - instruction.Ba)) & 1;
@@ -380,56 +380,56 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             return (ba, bb);
         }
 
-        internal static void CROR(PPUInstruction instruction, PPU ppu)
+        internal static void CROR(PPUInstruction instruction, PPUThread ppu)
         {
             (uint ba, uint bb) = GetBitsAB(instruction, ppu);
             uint bt_value = ba | bb; //OR
             ppu.State->CR.WriteCRBit(instruction.Bt, bt_value & 1);
         }
 
-        internal static void CRORC(PPUInstruction instruction, PPU ppu)
+        internal static void CRORC(PPUInstruction instruction, PPUThread ppu)
         {
             (uint ba, uint bb) = GetBitsAB(instruction, ppu);
             uint bt_value = ba | (~bb); //ORC
             ppu.State->CR.WriteCRBit(instruction.Bt, bt_value & 1);
         }
 
-        internal static void CRAND(PPUInstruction instruction, PPU ppu)
+        internal static void CRAND(PPUInstruction instruction, PPUThread ppu)
         {
             (uint ba, uint bb) = GetBitsAB(instruction, ppu);
             uint bt_value = ba & bb; //AND
             ppu.State->CR.WriteCRBit(instruction.Bt, bt_value & 1);
         }
 
-        internal static void CRANDC(PPUInstruction instruction, PPU ppu)
+        internal static void CRANDC(PPUInstruction instruction, PPUThread ppu)
         {
             (uint ba, uint bb) = GetBitsAB(instruction, ppu);
             uint bt_value = ba & (~bb); //ANDC
             ppu.State->CR.WriteCRBit(instruction.Bt, bt_value & 1);
         }
 
-        internal static void CRXOR(PPUInstruction instruction, PPU ppu)
+        internal static void CRXOR(PPUInstruction instruction, PPUThread ppu)
         {
             (uint ba, uint bb) = GetBitsAB(instruction, ppu);
             uint bt_value = ba ^ bb; //XOR
             ppu.State->CR.WriteCRBit(instruction.Bt, bt_value & 1);
         }
 
-        internal static void CRNAND(PPUInstruction instruction, PPU ppu)
+        internal static void CRNAND(PPUInstruction instruction, PPUThread ppu)
         {
             (uint ba, uint bb) = GetBitsAB(instruction, ppu);
             uint bt_value = ~(ba & bb); //NAND
             ppu.State->CR.WriteCRBit(instruction.Bt, bt_value & 1);
         }
 
-        internal static void CRNOR(PPUInstruction instruction, PPU ppu)
+        internal static void CRNOR(PPUInstruction instruction, PPUThread ppu)
         {
             (uint ba, uint bb) = GetBitsAB(instruction, ppu);
             uint bt_value = ~(ba | bb); //NOR
             ppu.State->CR.WriteCRBit(instruction.Bt, bt_value & 1);
         }
 
-        internal static void CREQV(PPUInstruction instruction, PPU ppu)
+        internal static void CREQV(PPUInstruction instruction, PPUThread ppu)
         {
             (uint ba, uint bb) = GetBitsAB(instruction, ppu);
             uint bt_value = ~(ba ^ bb); //EQV (~XOR)
@@ -438,18 +438,18 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
 
         // Multiply instructions
-        internal static void MULLI(PPUInstruction instruction, PPU ppu)
+        internal static void MULLI(PPUInstruction instruction, PPUThread ppu)
         { //Multiply low immediate
             ppu.GPR[instruction.Rt].SValue64 = ppu.GPR[instruction.Ra].SValue64 * instruction.SI_64;
             //No special registers affected
         }
 
-        internal static void MULLW(PPUInstruction instruction, PPU ppu)
+        internal static void MULLW(PPUInstruction instruction, PPUThread ppu)
         { //Multiply word, write 64-bit result (signed)
             ppu.GPR[instruction.Rt].SValue64 = (long)ppu.GPR[instruction.Ra].SValue32 * (long)ppu.GPR[instruction.Rb].SValue32;
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
 
             if (instruction.Oe == 1)
@@ -458,14 +458,14 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        internal static void MULHW(PPUInstruction instruction, PPU ppu)
+        internal static void MULHW(PPUInstruction instruction, PPUThread ppu)
         { //Multiply word, write high 32-bit (signed)
             long result = ((long)ppu.GPR[instruction.Ra].SValue32) * ((long)ppu.GPR[instruction.Rb].SValue32);
             ppu.GPR[instruction.Rt].SValue64 = (int)(result >> 32);
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
 
             if (instruction.Oe == 1)
@@ -474,14 +474,14 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        internal static void MULHWU(PPUInstruction instruction, PPU ppu)
+        internal static void MULHWU(PPUInstruction instruction, PPUThread ppu)
         { //Multiply word, write high 32-bit (unsigned)
             ulong result = ((ulong)ppu.GPR[instruction.Ra].Value32) * ((ulong)ppu.GPR[instruction.Rb].Value32);
             ppu.GPR[instruction.Rt].Value64 = (uint)(result >> 32);
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
 
             if (instruction.Oe == 1)
@@ -490,12 +490,12 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        internal static void MULLD(PPUInstruction instruction, PPU ppu)
+        internal static void MULLD(PPUInstruction instruction, PPUThread ppu)
         { //Multiply double word (signed)
             ppu.GPR[instruction.Rt].SValue64 = ppu.GPR[instruction.Ra].SValue64 * ppu.GPR[instruction.Rb].SValue64;
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
 
             if (instruction.Oe == 1)
@@ -504,13 +504,13 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        internal static void MULHD(PPUInstruction instruction, PPU ppu)
+        internal static void MULHD(PPUInstruction instruction, PPUThread ppu)
         { //Multiply double word, write high 64-bit (signed)
             Int128 result = ((Int128)ppu.GPR[instruction.Ra].SValue64) * ((Int128)ppu.GPR[instruction.Rb].SValue64);
             ppu.GPR[instruction.Rt].SValue64 = (long)(result >> 64);
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
 
             if (instruction.Oe == 1)
@@ -519,13 +519,13 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        internal static void MULHDU(PPUInstruction instruction, PPU ppu)
+        internal static void MULHDU(PPUInstruction instruction, PPUThread ppu)
         { //Multiply double word, write high 64-bit (unsigned)
             UInt128 result = ((UInt128)ppu.GPR[instruction.Ra].Value64) * ((UInt128)ppu.GPR[instruction.Rb].Value64);
             ppu.GPR[instruction.Rt].Value64 = (ulong)(result >> 64);
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
 
             if (instruction.Oe == 1)
@@ -535,7 +535,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
         }
 
         // Divide instructions
-        internal static void DIVD(PPUInstruction instruction, PPU ppu)
+        internal static void DIVD(PPUInstruction instruction, PPUThread ppu)
         {
             long a = ppu.GPR[instruction.Ra].SValue64;
             long b = ppu.GPR[instruction.Rb].SValue64;
@@ -551,7 +551,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
 
             if (instruction.Oe == 1)
@@ -560,7 +560,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        internal static void DIVDU(PPUInstruction instruction, PPU ppu)
+        internal static void DIVDU(PPUInstruction instruction, PPUThread ppu)
         {
             ulong a = ppu.GPR[instruction.Ra].Value64;
             ulong b = ppu.GPR[instruction.Rb].Value64;
@@ -576,7 +576,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
 
             if (instruction.Oe == 1)
@@ -585,7 +585,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        internal static void DIVW(PPUInstruction instruction, PPU ppu)
+        internal static void DIVW(PPUInstruction instruction, PPUThread ppu)
         {
             int a = ppu.GPR[instruction.Ra].SValue32;
             int b = ppu.GPR[instruction.Rb].SValue32;
@@ -603,7 +603,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
 
             if (instruction.Oe == 1)
@@ -612,7 +612,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        internal static void DIVWU(PPUInstruction instruction, PPU ppu)
+        internal static void DIVWU(PPUInstruction instruction, PPUThread ppu)
         {
             uint a = ppu.GPR[instruction.Ra].Value32;
             uint b = ppu.GPR[instruction.Rb].Value32;
@@ -628,7 +628,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Rt].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
 
             if (instruction.Oe == 1)
@@ -638,7 +638,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
         }
 
         // Shift instructions
-        internal static void SLD(PPUInstruction instruction, PPU ppu)
+        internal static void SLD(PPUInstruction instruction, PPUThread ppu)
         {
             int shift = (int)(ppu.GPR[instruction.Rb].Value64 & 0x7F);
             ulong result = shift >= 64 ? 0 : ppu.GPR[instruction.Rs].Value64 << shift;
@@ -646,11 +646,11 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void SLW(PPUInstruction instruction, PPU ppu)
+        internal static void SLW(PPUInstruction instruction, PPUThread ppu)
         {
             int shift = (int)(ppu.GPR[instruction.Rb].Value64 & 0x3F);
             ulong result = shift >= 32 ? 0 : ppu.GPR[instruction.Rs].Value32 << shift;
@@ -658,11 +658,11 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void SRAD(PPUInstruction instruction, PPU ppu)
+        internal static void SRAD(PPUInstruction instruction, PPUThread ppu)
         {
             int shift = (int)(ppu.GPR[instruction.Rb].Value32 & 0x7F);
             int mask = (1 << shift) - 1;
@@ -701,11 +701,11 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void SRADI(PPUInstruction instruction, PPU ppu)
+        internal static void SRADI(PPUInstruction instruction, PPUThread ppu)
         {
             int mask = (1 << instruction.SH) - 1;
             bool hasOnes = (ppu.GPR[instruction.Rs].SValue64 & mask) > 0;
@@ -731,11 +731,11 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void SRAW(PPUInstruction instruction, PPU ppu)
+        internal static void SRAW(PPUInstruction instruction, PPUThread ppu)
         {
             int shift = (int)(ppu.GPR[instruction.Rb].Value32 & 0x3F);
             int mask = (1 << shift) - 1;
@@ -774,11 +774,11 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void SRAWI(PPUInstruction instruction, PPU ppu)
+        internal static void SRAWI(PPUInstruction instruction, PPUThread ppu)
         {
             int shift = instruction.SH & 0x1F; //5 bits
             int mask = (1 << (shift)) - 1;
@@ -806,11 +806,11 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void SRD(PPUInstruction instruction, PPU ppu)
+        internal static void SRD(PPUInstruction instruction, PPUThread ppu)
         {
             int shift = (int)(ppu.GPR[instruction.Rb].Value64 & 0x7F);
             ulong result = shift >= 64 ? 0 : ppu.GPR[instruction.Rs].Value64 >> shift;
@@ -818,11 +818,11 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void SRW(PPUInstruction instruction, PPU ppu)
+        internal static void SRW(PPUInstruction instruction, PPUThread ppu)
         {
             int shift = (int)(ppu.GPR[instruction.Rb].Value64 & 0x3F);
             ulong result = shift >= 32 ? 0 : ppu.GPR[instruction.Rs].Value32 >> shift;
@@ -830,12 +830,12 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
         // Rotate instructions
-        private static void RotateLeft(PPUInstruction instruction, PPU ppu)
+        private static void RotateLeft(PPUInstruction instruction, PPUThread ppu)
         {
             uint field = (instruction.Raw >> 1) & 0xF; // bits 27 - 30 in BE
 
@@ -905,7 +905,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             return (actualStart, actualEnd);
         }
 
-        internal static void RLDCL(PPUInstruction instruction, PPU ppu)
+        internal static void RLDCL(PPUInstruction instruction, PPUThread ppu)
         {
             int amount = (int)(ppu.GPR[instruction.Rb].Value32 & 0x3F); //6-bits
             ulong rotated = BitOperations.RotateLeft(ppu.GPR[instruction.Rs].Value64, amount);
@@ -915,11 +915,11 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void RLDCR(PPUInstruction instruction, PPU ppu)
+        internal static void RLDCR(PPUInstruction instruction, PPUThread ppu)
         {
             int amount = (int)(ppu.GPR[instruction.Rb].Value32 & 0x3F); //6-bits
             ulong rotated = BitOperations.RotateLeft(ppu.GPR[instruction.Rs].Value64, amount);
@@ -929,11 +929,11 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void RLDIC(PPUInstruction instruction, PPU ppu)
+        internal static void RLDIC(PPUInstruction instruction, PPUThread ppu)
         {
             ulong mask = GetRotationMask(instruction.MB_6, 63 - instruction.SH);
             ulong rotated = BitOperations.RotateLeft(ppu.GPR[instruction.Rs].Value64, instruction.SH);
@@ -941,11 +941,11 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void RLDICL(PPUInstruction instruction, PPU ppu)
+        internal static void RLDICL(PPUInstruction instruction, PPUThread ppu)
         {
             ulong rotated = BitOperations.RotateLeft(ppu.GPR[instruction.Rs].Value64, instruction.SH);
             ulong mask = GetRotationMask(instruction.MB_6, 63);
@@ -954,11 +954,11 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void RLDICR(PPUInstruction instruction, PPU ppu)
+        internal static void RLDICR(PPUInstruction instruction, PPUThread ppu)
         {
             ulong rotated = BitOperations.RotateLeft(ppu.GPR[instruction.Rs].Value64, instruction.SH);
             ulong mask = GetRotationMask(0, instruction.ME_6);
@@ -966,11 +966,11 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             ppu.GPR[instruction.Ra].Value64 = rotated & mask;
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void RLDIMI(PPUInstruction instruction, PPU ppu)
+        internal static void RLDIMI(PPUInstruction instruction, PPUThread ppu)
         {
             ulong mask = GetRotationMask(instruction.MB_6, 63 - instruction.SH);
             ulong rotated = BitOperations.RotateLeft(ppu.GPR[instruction.Rs].Value64, instruction.SH);
@@ -980,11 +980,11 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void RLWIMI(PPUInstruction instruction, PPU ppu)
+        internal static void RLWIMI(PPUInstruction instruction, PPUThread ppu)
         {
             int n = instruction.SH & 0x1F; //Rotate 32 takes only 5 bits of SH
 
@@ -999,11 +999,11 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void RLWINM(PPUInstruction instruction, PPU ppu)
+        internal static void RLWINM(PPUInstruction instruction, PPUThread ppu)
         {
             int n = instruction.SH & 0x1F; //Rotate 32 takes only 5 bits of SH
 
@@ -1015,11 +1015,11 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             ppu.GPR[instruction.Ra].Value64 = rotated & mask;
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        internal static void RLWNM(PPUInstruction instruction, PPU ppu)
+        internal static void RLWNM(PPUInstruction instruction, PPUThread ppu)
         {
             int n = (int)(ppu.GPR[instruction.Rb].Value32 & 0x1F); //Rotate 32 takes only 5 bits of RB
 
@@ -1032,7 +1032,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
     }

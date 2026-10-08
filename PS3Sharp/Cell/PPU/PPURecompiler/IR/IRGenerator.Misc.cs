@@ -1,6 +1,6 @@
-﻿using static PS3Sharp.Cell.PPU.PPU;
+using static PS3Sharp.Cell.PPU.PPUThread;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
+namespace PS3Sharp.Cell.PPU.Recompiler.IR
 {
     internal sealed partial class IRGenerator
     {
@@ -95,7 +95,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             {
                 if (((fxm >> i) & 1) == 1)
                 {
-                    PPU.CRNumber cr = (PPU.CRNumber)(7 - i);
+                    PPUThread.CRNumber cr = (PPUThread.CRNumber)(7 - i);
 
                     // uint value = (rs >> (i * 4)) & 0xF;
                     Value srcShifted = ShiftRight(src, Constant(i * 4));

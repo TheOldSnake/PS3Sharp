@@ -1,13 +1,13 @@
-﻿using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
+namespace PS3Sharp.Cell.PPU.Recompiler.IR
 {
     internal sealed partial class IRGenerator
     {
         private IRContext _irContext;
         private readonly IROptimizer _irOptimizer = new();
 
-        internal IRBlock GenerateIRBlock(uint address)
+        internal IRBlock GenerateIRBlock(uint address, MemoryManager memoryManager)
         {
             // Console.WriteLine($"Generating IR - address = 0x{address:X8}");
 
@@ -20,12 +20,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             {
                 instruction = new PPUInstruction
                 {
-                    Raw = MemoryManager.ReadPPUInstruction(_irContext.CurrentPC)
+                    Raw = memoryManager.ReadPPUInstruction(_irContext.CurrentPC)
                 };
 
                 _irContext.CurrentPC += 4;
 
-                if (instruction.Raw != PPUInterpreter.PPUInterpreter.NOP)
+                if (instruction.Raw != Interpreter.PPUInterpreter.NOP)
                 {
                     GenerateIR(instruction);
                 }

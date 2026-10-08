@@ -1,8 +1,8 @@
-﻿using System.Numerics;
+using System.Numerics;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
-namespace PS3Sharp.Cell.PPU.PPUInterpreter
+namespace PS3Sharp.Cell.PPU.Interpreter
 {
     internal static unsafe partial class PPUInterpreter
     {

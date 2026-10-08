@@ -1,6 +1,6 @@
-﻿using static PS3Sharp.Cell.PPU.PPURotationMasks;
+using static PS3Sharp.Cell.PPU.PPURotationMasks;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
+namespace PS3Sharp.Cell.PPU.Recompiler.IR
 {
     internal sealed partial class IRGenerator
     {
@@ -43,7 +43,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -67,7 +67,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(finalSum, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(finalSum, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -85,7 +85,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -104,7 +104,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -122,7 +122,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -144,7 +144,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(finalSum, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(finalSum, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -164,7 +164,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -188,7 +188,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(finalSum, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(finalSum, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -230,7 +230,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(finalSum, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(finalSum, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -249,7 +249,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -271,7 +271,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(finalSum, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(finalSum, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -286,7 +286,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             Value result = And(s, imm);
 
             _irContext.SetGPR(ra, result);
-            _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);  // Always updates CR0
+            _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);  // Always updates CR0
         }
 
         internal void ANDIS(PPUInstruction instruction)
@@ -299,7 +299,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             Value result = And(s, imm);
 
             _irContext.SetGPR(ra, result);
-            _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0); // Always updates CR0
+            _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0); // Always updates CR0
         }
 
         internal void ORI(PPUInstruction instruction)
@@ -368,7 +368,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -386,7 +386,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -404,7 +404,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -422,7 +422,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -440,7 +440,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -458,7 +458,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -476,7 +476,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -494,7 +494,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -512,7 +512,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -622,7 +622,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -641,7 +641,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -660,7 +660,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -679,7 +679,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -698,7 +698,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -717,7 +717,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -736,7 +736,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -754,7 +754,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -772,7 +772,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -790,7 +790,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -882,7 +882,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -903,7 +903,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -927,7 +927,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -951,7 +951,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -978,7 +978,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -1016,7 +1016,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -1050,7 +1050,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -1092,7 +1092,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result64, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result64, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -1112,7 +1112,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -1132,7 +1132,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -1152,7 +1152,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -1179,7 +1179,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -1201,7 +1201,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -1223,7 +1223,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -1249,7 +1249,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -1271,7 +1271,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
 
@@ -1293,7 +1293,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPU.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
             }
         }
     }

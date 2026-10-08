@@ -1,14 +1,14 @@
-﻿using PS3Sharp.Cell;
+using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal static class SysMemory
+    internal class SysMemory
     {
 
         [StructLayout(LayoutKind.Sequential)]
@@ -18,11 +18,18 @@ namespace PS3Sharp.OS.Syscall
             internal BigEndian<uint> AvailableUserMemory;
         }
 
-        internal static ulong SysMemoryAllocate(PPU ppu)
+        private readonly MemoryManager _memoryManager;
+
+        internal SysMemory(MemoryManager memoryManager)
+        {
+            _memoryManager = memoryManager;
+        }
+
+        internal ulong SysMemoryAllocate(PPUThread ppu)
         {
             //int sys_memory_allocate(size_t size, uint64_t flags, sys_addr_t * alloc_addr); 
 
-            size_t size = ppu.ReadArg<size_t>(ARG0);
+            uint size = ppu.ReadArg<uint>(ARG0);
             ulong flags = ppu.ReadArg<ulong>(ARG1);
             GuestVoidPtr alloc_addr = ppu.ReadArg<GuestVoidPtr>(ARG2);
 
@@ -32,11 +39,11 @@ namespace PS3Sharp.OS.Syscall
 
             if (size > 0 && !alloc_addr.IsNullPtr)
             {
-                MemoryManager.MemoryBlock block = MemoryManager.AllocateVirtualMemory(size, 0);
+                MemoryManager.MemoryBlock block = _memoryManager.AllocateVirtualMemory(size, 0);
                 Console.WriteLine($"[SysMemory] sys_memory_allocate: [0x{block.VirtualAddress:X8} - 0x{block.End:X8}]");
 
                 //Write the handle at the alloc_addr*
-                MemoryManager.Write<uint>(alloc_addr, (uint)block.VirtualAddress);
+                _memoryManager.Write<uint>(alloc_addr, (uint)block.VirtualAddress);
             }
             else
             {
@@ -46,20 +53,20 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        internal static ulong SysMemoryFree(PPU ppu)
+        internal ulong SysMemoryFree(PPUThread ppu)
         {
             GuestVoidPtr ptr = ppu.ReadArg<GuestVoidPtr>(ARG0);
 
             if (!ptr.IsNullPtr)
             {
-                MemoryManager.FreeByVirtualAddress(ptr);
+                _memoryManager.FreeByVirtualAddress(ptr);
             }
 
             Console.WriteLine($"[SysMemory] sys_Memory_Free");
             return CELL_OK;
         }
 
-        internal static ulong SysMemoryGetUserMemorySize(PPU ppu)
+        internal ulong SysMemoryGetUserMemorySize(PPUThread ppu)
         {
             GuestPtr<SysMemoryInfo> memory_info_ptr = ppu.ReadArg<GuestPtr<SysMemoryInfo>>(ARG0);
 
@@ -67,7 +74,7 @@ namespace PS3Sharp.OS.Syscall
 
             unsafe
             {
-                SysMemoryInfo* memory_info = memory_info_ptr.AsNativePtr();
+                SysMemoryInfo* memory_info = _memoryManager.GetPtr(memory_info_ptr);
                 memory_info->TotalUserMemory = total_size;
                 memory_info->AvailableUserMemory = total_size; //stub
             }

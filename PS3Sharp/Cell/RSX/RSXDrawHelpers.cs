@@ -1,6 +1,5 @@
-﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Graphics.OpenGL4;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
@@ -59,11 +58,11 @@ namespace PS3Sharp.Cell.RSX
             {
                 if (i == 0)
                 {
-                    vertexChecksum = VertexShaderGenerator.CalculateChecksum();
+                    vertexChecksum = _vertexShaderGenerator.CalculateChecksum();
                 }
                 else
                 {
-                    fragmentChecksum = FragmentShaderGenerator.CalculateChecksum();
+                    fragmentChecksum = _fragmentShaderGenerator.CalculateChecksum();
                 }
             });
 
@@ -86,7 +85,7 @@ namespace PS3Sharp.Cell.RSX
             if (!GLRenderer.CompiledVertexShaders.TryGetValue(vertexChecksum, out vertexHandle))
             {
                 // Generate and compile vertex shader
-                string vertexSource = VertexShaderGenerator.GenerateVertexShader();
+                string vertexSource = _vertexShaderGenerator.GenerateVertexShader();
                 Console.WriteLine($"vertex shader source: \n{vertexSource}");
 
                 if (LogShaders && Directory.Exists(LogShadersDirectory))
@@ -111,7 +110,7 @@ namespace PS3Sharp.Cell.RSX
             {
 
                 // Generate and compile fragment shader
-                string fragmentSource = FragmentShaderGenerator.GenerateFragmentShader();
+                string fragmentSource = _fragmentShaderGenerator.GenerateFragmentShader();
                 Console.WriteLine($"fragment shader source: \n{fragmentSource}");
 
 
@@ -157,10 +156,10 @@ namespace PS3Sharp.Cell.RSX
             foreach (KeyValuePair<uint, OpenTK.Mathematics.Vector4> uniform_pair in CurrentState.AllUniforms)
             {
                 uint address = uniform_pair.Key;
-                if (FragmentShaderGenerator.IsUniformInUse(address))
+                if (_fragmentShaderGenerator.IsUniformInUse(address))
                 {
                     OpenTK.Mathematics.Vector4 value = uniform_pair.Value;
-                    string name = FragmentShaderGenerator.AddressToUniform(address);
+                    string name = _fragmentShaderGenerator.AddressToUniform(address);
                     GLRenderer.UploadUniform4(name, value);
                 }
             }
@@ -223,7 +222,7 @@ namespace PS3Sharp.Cell.RSX
             for (uint i = 0; i < indicesCount; i++)
             {
                 uint address = elementBufferAddress + (i * sizeOfT);
-                T data = MemoryManager.Read<T>(address);
+                T data = _memoryManager.Read<T>(address);
                 indexList.Add(data);
 
                 if (i == 0 || data > max)
@@ -457,7 +456,7 @@ namespace PS3Sharp.Cell.RSX
                     return;
                 }
 
-                texture.FetchTextureData();
+                texture.FetchTextureData(_memoryManager);
                 texture.UpdateHashKey();
             });
 

@@ -1,4 +1,5 @@
-﻿using PS3Sharp.Memory_Manager;
+using PS3Sharp.Cell.PPU;
+using PS3Sharp.Memory;
 
 using static PS3Sharp.Cell.ErrorCode;
 
@@ -14,14 +15,17 @@ namespace PS3Sharp.OS.LV2
             SYS_EVENT_FLAG_WAIT_CLEAR_ALL = 0x20
         }
 
-
+        private readonly MemoryManager _memoryManager;
         private readonly object _lock = new();
         private ulong _value;
-        internal uint Handle { get; } = MemoryManager.GetHandle();
 
-        internal LV2EventFlag(ulong initialValue)
+        internal uint Handle { get; }
+
+        internal LV2EventFlag(ulong initialValue, MemoryManager memoryManager)
         {
             _value = initialValue;
+            _memoryManager = memoryManager;
+            Handle = _memoryManager.GetHandle();
         }
 
         internal void Set(ulong value)
@@ -42,7 +46,7 @@ namespace PS3Sharp.OS.LV2
             }
         }
 
-        internal ulong Wait(SysEventFlagMode mode, ulong pattern, ulong us_timeout, out ulong resultValue)
+        internal ulong Wait(PPUThread ppu, SysEventFlagMode mode, ulong pattern, ulong us_timeout, out ulong resultValue)
         {
 
             lock (_lock)
@@ -79,7 +83,13 @@ namespace PS3Sharp.OS.LV2
                     }
                     else
                     {
-                        Monitor.Wait(_lock);
+                        bool ok = InterruptableWait(ppu);
+
+                        if (!ok)
+                        {
+                            resultValue = 0;
+                            return CELL_OK;
+                        }
                     }
                 }
 
@@ -88,6 +98,25 @@ namespace PS3Sharp.OS.LV2
                 Monitor.PulseAll(_lock);
 
                 return CELL_OK;
+            }
+        }
+
+        private bool InterruptableWait(PPUThread ppu)
+        {
+            // Return true if the lock is acquired, false if the thread was interrupted
+            while (true)
+            {
+                // Wait for 100ms
+                if (Monitor.Wait(_lock, TimeSpan.FromMilliseconds(100)))
+                {
+                    return true;
+                }
+
+                // Check if the thread is interrupted by shutdown signal and must return immediately
+                if (ppu.ShouldExit)
+                {
+                    return false;
+                }
             }
         }
 

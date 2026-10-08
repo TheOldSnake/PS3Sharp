@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace PS3Sharp.Common
@@ -7,10 +7,9 @@ namespace PS3Sharp.Common
     {
         // This buffer is ment to be reused and hence it can grow if needed,
         // and will stay at the maximum size.
-
-        private byte[] _data;
         internal int CurrentCapacity => _data.Length;
         internal int LastLength { get; private set; } = 0;
+        private byte[] _data;
 
         internal ScratchBuffer(int initialByteSize = 4 * 1024)
         {

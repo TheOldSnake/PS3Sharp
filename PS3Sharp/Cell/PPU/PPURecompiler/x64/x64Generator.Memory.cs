@@ -1,10 +1,10 @@
-﻿using Iced.Intel;
+using Iced.Intel;
 using System.Buffers.Binary;
 using static Iced.Intel.AssemblerRegisters;
-using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
-using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAllocator;
+using static PS3Sharp.Cell.PPU.Recompiler.IR.IRGenerator;
+using static PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator.X64RegisterAllocator;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
+namespace PS3Sharp.Cell.PPU.Recompiler.x64
 {
     internal unsafe sealed partial class X64Generator
     {

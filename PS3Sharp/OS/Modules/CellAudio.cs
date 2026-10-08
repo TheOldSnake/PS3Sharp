@@ -1,8 +1,8 @@
-﻿using NAudio.Wave;
+using NAudio.Wave;
 using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using PS3Sharp.OS.LV2;
 using PS3Sharp.OS.Syscall;
 using System.Runtime.InteropServices;
@@ -11,7 +11,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal static class CellAudio
+    internal class CellAudio
     {
         internal const uint AUDIO_PORT_COUNT = 8;
         internal const uint AUDIO_MAX_BLOCK_COUNT = 32;
@@ -50,9 +50,9 @@ namespace PS3Sharp.OS.Modules
             internal BigEndian<float> Level;
         }
 
-
+        // todo
         internal sealed class AudioPort
-        { // todo
+        {
             internal uint Number;
             internal uint Status;
             internal ulong NumberOfChannels;
@@ -65,13 +65,38 @@ namespace PS3Sharp.OS.Modules
             internal byte[] SampleBuffer;         // 16-bit samples buffer
         }
 
-        private static bool _initialized;
-        private static uint _readPositionsAddress;  //An array of 8 ulongs, each entry contains the current block position for the corrosponding port
+        private readonly MemoryManager _memoryManager;
+        private readonly SysEvent _sysEvent;
+        private bool _initialized;
+        private uint _readPositionsAddress;  //An array of 8 ulongs, each entry contains the current block position for the corrosponding port
 
-        private static readonly AudioPort[] _audioPorts = new AudioPort[AUDIO_PORT_COUNT];
-        private static readonly Lock _audioThreadLock = new();
+        private readonly AudioPort[] _audioPorts = new AudioPort[AUDIO_PORT_COUNT];
+        private readonly Lock _audioThreadLock = new();
 
-        internal static ulong CellAudioInit(PPU ppu)
+        private static readonly WaveFormat waveFormat = new(48000, 2);
+
+        private readonly BufferedWaveProvider provider = new(waveFormat)
+        {
+            DiscardOnBufferOverflow = true
+        };
+
+        private readonly WaveOutEvent output = new();
+        private uint AttachedEventID = 0;
+
+        private readonly LV2EventPort.SysEventData AudioEvent = new()
+        {
+            Data1 = EVENT_QUEUE_KEY,
+            Data2 = 0,
+            Data3 = 0,
+        };
+
+        internal CellAudio(MemoryManager memoryManager, SysEvent sysEvent)
+        {
+            _memoryManager = memoryManager;
+            _sysEvent = sysEvent;
+        }
+
+        internal ulong CellAudioInit(PPUThread ppu)
         {
             Console.WriteLine("[CellAudio] cellAudioInit");
 
@@ -81,7 +106,7 @@ namespace PS3Sharp.OS.Modules
             }
 
             _initialized = true;
-            _readPositionsAddress = MemoryManager.AllocateVirtualMemory(AUDIO_PORT_COUNT * sizeof(ulong)).VirtualAddress;
+            _readPositionsAddress = _memoryManager.AllocateVirtualMemory(AUDIO_PORT_COUNT * sizeof(ulong)).VirtualAddress;
 
             for (uint i = 0; i < _audioPorts.Length; i++)
             {
@@ -99,7 +124,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        internal static ulong CellAudioPortOpen(PPU ppu)
+        internal ulong CellAudioPortOpen(PPUThread ppu)
         {
             if (!_initialized)
             {
@@ -132,7 +157,7 @@ namespace PS3Sharp.OS.Modules
 
             unsafe
             {
-                CellAudioPortParam* param = param_ptr.AsNativePtr();
+                CellAudioPortParam* param = _memoryManager.GetPtr(param_ptr);
                 port.NumberOfChannels = param->NumberOfChannels;
                 port.NumberOfBlocks = param->NumberOfBlocks;
             }
@@ -142,18 +167,18 @@ namespace PS3Sharp.OS.Modules
             // Allocate memory for the port
             // Each channel has a number of blocks, each block has 256 samples (floats)
             port.Size = (uint)(port.NumberOfChannels * port.NumberOfBlocks * CELL_AUDIO_BLOCK_SAMPLES * sizeof(float));
-            port.BaseAddress = MemoryManager.AllocateVirtualMemory(port.Size).VirtualAddress;
+            port.BaseAddress = _memoryManager.AllocateVirtualMemory(port.Size).VirtualAddress;
 
             // Create the sample buffer for the port
             port.SampleBuffer = new byte[port.TotalSamplesPerBlock * sizeof(short)];
 
-            MemoryManager.Write<uint>(portNumber_ptr, port.Number);
+            _memoryManager.Write<uint>(portNumber_ptr, port.Number);
 
             Console.WriteLine($"[CellAudio] cellAudioPortOpen opened port = {port.Number}");
             return CELL_OK;
         }
 
-        internal static ulong CellAudioGetPortConfig(PPU ppu)
+        internal ulong CellAudioGetPortConfig(PPUThread ppu)
         {
             uint port_number = ppu.ReadArg<uint>(ARG0);
             GuestPtr<CellAudioPortConfig> config_ptr = ppu.ReadArg<GuestPtr<CellAudioPortConfig>>(ARG1);
@@ -173,7 +198,7 @@ namespace PS3Sharp.OS.Modules
 
                 unsafe
                 {
-                    CellAudioPortConfig* config = config_ptr.AsNativePtr();
+                    CellAudioPortConfig* config = _memoryManager.GetPtr(config_ptr);
                     config->ReadAddress = _readPositionsAddress + (port_number * sizeof(ulong));
                     config->Status = port.Status;
                     config->NumberOfChannels = port.NumberOfChannels;
@@ -187,7 +212,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        internal static ulong CellAudioPortStart(PPU ppu)
+        internal ulong CellAudioPortStart(PPUThread ppu)
         {
             uint port_number = ppu.ReadArg<uint>(ARG0);
 
@@ -208,7 +233,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        internal static ulong CellAudioPortStop(PPU ppu)
+        internal ulong CellAudioPortStop(PPUThread ppu)
         {
             uint port_number = ppu.ReadArg<uint>(ARG0);
             Console.WriteLine($"[CellAudio] cellAudioPortStop port = {port_number}");
@@ -237,28 +262,28 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        internal static ulong CellAudioQuit(PPU ppu)
+        internal ulong CellAudioQuit(PPUThread ppu)
         {
             // TODO
             Console.WriteLine("[CellAudio] cellAudioQuit");
             return CELL_OK;
         }
 
-        internal static ulong CellAudioCreateNotifyEventQueue(PPU ppu)
+        internal ulong CellAudioCreateNotifyEventQueue(PPUThread ppu)
         {
             // TODO
             GuestPtr<uint> equeue_id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             GuestPtr<ulong> key_ptr = ppu.ReadArg<GuestPtr<ulong>>(ARG1);
 
             // Create a lv2_event_queue
-            LV2EventQueue eventQueue = new(1024, EVENT_QUEUE_KEY, default);
+            LV2EventQueue eventQueue = new(1024, EVENT_QUEUE_KEY, default, _memoryManager);
 
             // Register it in SysEvent
-            SysEvent.AddEventQueue(eventQueue.Handle, eventQueue);
+            _sysEvent.AddEventQueue(eventQueue.Handle, eventQueue);
 
             // Write the ID and the key
-            MemoryManager.Write<uint>(equeue_id_ptr, eventQueue.Handle);
-            MemoryManager.Write<ulong>(key_ptr, EVENT_QUEUE_KEY);
+            _memoryManager.Write<uint>(equeue_id_ptr, eventQueue.Handle);
+            _memoryManager.Write<ulong>(key_ptr, EVENT_QUEUE_KEY);
 
             lock (_audioThreadLock)
             {
@@ -269,7 +294,7 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-        internal static ulong CellAudioSetNotifyEventQueue(PPU ppu)
+        internal ulong CellAudioSetNotifyEventQueue(PPUThread ppu)
         {
             // TODO
             ulong key = ppu.ReadArg<ulong>(ARG0);
@@ -277,36 +302,18 @@ namespace PS3Sharp.OS.Modules
             return CELL_OK;
         }
 
-
-        static WaveFormat waveFormat = new(48000, 2);
-
-        static BufferedWaveProvider provider = new(waveFormat)
-        {
-            DiscardOnBufferOverflow = true
-        };
-
-        static WaveOutEvent output = new();
-        static uint AttachedEventID = 0;
-
-        static LV2EventPort.SysEventData AudioEvent = new()
-        {
-            Data1 = EVENT_QUEUE_KEY,
-            Data2 = 0,
-            Data3 = 0,
-        };
-
-        private static void InitNAudio()
+        private void InitNAudio()
         {
             output.Init(provider);
             output.Play();
         }
 
-        private static void PlayAudio(byte[] samples)
+        private void PlayAudio(byte[] samples)
         {
             provider.AddSamples(samples, 0, samples.Length);
         }
 
-        internal static byte[] GetSamplesWaveData(float[] samples, int samplesCount)
+        private byte[] GetSamplesWaveData(float[] samples, int samplesCount)
         {
             byte[] pcm = new byte[samplesCount * 2];
             int sampleIndex = 0,
@@ -325,7 +332,7 @@ namespace PS3Sharp.OS.Modules
             return pcm;
         }
 
-        private static void AudioThreadMain()
+        private void AudioThreadMain()
         {
             while (true)
             {
@@ -345,7 +352,7 @@ namespace PS3Sharp.OS.Modules
                         FillSampleBuffer(port);
 
                         // Update the current block in the array
-                        MemoryManager.Write<ulong>(_readPositionsAddress + ((uint)i * sizeof(ulong)), port.CurrentBlock);
+                        _memoryManager.Write<ulong>(_readPositionsAddress + ((uint)i * sizeof(ulong)), port.CurrentBlock);
 
                         // Play the samples
                         PlayAudio(port.SampleBuffer);
@@ -355,7 +362,7 @@ namespace PS3Sharp.OS.Modules
                 // Send audio event
                 if (AttachedEventID > 0)
                 {
-                    if (SysEvent.GetEventQueueByID(AttachedEventID, out LV2EventQueue? eventQueue))
+                    if (_sysEvent.TryGetEventQueueByID(AttachedEventID, out LV2EventQueue? eventQueue))
                     {
                         eventQueue.Send(AudioEvent);
 
@@ -371,7 +378,7 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        private static void FillSampleBuffer(AudioPort port)
+        private void FillSampleBuffer(AudioPort port)
         {
             uint samplesPerBlock = port.TotalSamplesPerBlock;
             uint bufferIndex = 0;
@@ -385,7 +392,7 @@ namespace PS3Sharp.OS.Modules
             for (int i = 0; i < samplesPerBlock; i++)
             {
                 // Read a float sample from memory
-                float floatSample = MemoryManager.Read<float>(sampleAddress);
+                float floatSample = _memoryManager.Read<float>(sampleAddress);
                 sampleAddress += sizeof(float);
 
                 // Convert from float to short on the fly -- can we use floats directly with NAudio ??

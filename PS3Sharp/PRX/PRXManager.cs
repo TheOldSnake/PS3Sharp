@@ -1,8 +1,8 @@
-﻿using PS3Sharp.Cell;
+using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
-using PS3Sharp.Cell.PPU.PPUInterpreter;
+using PS3Sharp.Cell.PPU.Interpreter;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using PS3Sharp.OS.Modules;
 using PS3Sharp.OS.NID;
 using System.Runtime.CompilerServices;
@@ -10,74 +10,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using static PS3Sharp.ElfLoader;
 
-namespace PS3Sharp.PRXManager
+namespace PS3Sharp.PRX
 {
-    internal static class PRXManager
-    {    // todo
-
-        // List of function that are forced to be HLE
-        internal static List<string> ForceHLE = [
-            "sys_process_exit",
-            "sys_initialize_tls",
-
-            "_sys_process_atexitspawn",
-            "_sys_process_at_Exitspawn",
-
-            "sys_time_get_system_time",
-
-           // "_sys_malloc",
-           // "_sys_free",
-
-            "sys_lwmutex_lock",
-            "sys_lwmutex_unlock",
-            "sys_lwmutex_create",
-            "sys_lwmutex_trylock",
-            "sys_lwmutex_destroy",
-
-            "sys_ppu_thread_create",
-            "sys_ppu_thread_get_id",
-            "sys_ppu_thread_once",
-            "sys_ppu_thread_exit",
-
-            "sys_spu_image_import",
-        ];
-
-        // List of LLEd libraries file names
-        internal static readonly List<string> PRXList = [
-            "liblv2",
-            "libsync2",
-            "libfiber",
-            "libl10n",
-
-            "libfont",
-            "libfontFT",
-            "libfreetype",
-
-            "libsre",    // Needed for probably every game in existence other than arkedo and gta
-            "libjpgdec", // Needed for Minecraft
-            "libpngdec"  // Needed for Minecraft
-
-           // "libgcm_sys"
-        ];
-
-        // List of loaded libraries
-        internal static List<LibraryInfo> LoadedLibraries = [];
-
-        // List of library initialization functions to be called at startup
-        internal static List<LibraryInitialization> LibraryInitializations = [];
-
-        internal struct LibraryInitialization
-        {
-            internal string LibName;
-            internal uint Prologue;
-            internal uint Epilogue;
-            internal uint Start;
-            internal uint Stop;
-        }
-
-        internal static Dictionary<uint, uint> ExportedFunctions = new();
-
-
+    internal class PRXManager
+    {
         [StructLayout(LayoutKind.Sequential)]
         internal readonly struct LibraryInfo : IPS3Struct
         {
@@ -123,13 +59,82 @@ namespace PS3Sharp.PRXManager
             internal readonly BigEndian<uint> Unk5;
         }
 
-        internal static void LoadPRXLibraries()
+        internal struct LibraryInitialization
+        {
+            internal string LibName;
+            internal uint Prologue;
+            internal uint Epilogue;
+            internal uint Start;
+            internal uint Stop;
+        }
+
+        // List of function that are forced to be HLE
+        private readonly List<string> ForceHLE = [
+            "sys_process_exit",
+            "sys_initialize_tls",
+
+            "_sys_process_atexitspawn",
+            "_sys_process_at_Exitspawn",
+
+            "sys_time_get_system_time",
+
+           // "_sys_malloc",
+           // "_sys_free",
+
+            "sys_lwmutex_lock",
+            "sys_lwmutex_unlock",
+            "sys_lwmutex_create",
+            "sys_lwmutex_trylock",
+            "sys_lwmutex_destroy",
+
+            "sys_ppu_thread_create",
+            "sys_ppu_thread_get_id",
+            "sys_ppu_thread_once",
+            "sys_ppu_thread_exit",
+
+            "sys_spu_image_import",
+        ];
+
+        // List of LLEd libraries file names
+        private readonly List<string> PRXList = [
+            "liblv2",
+            "libsync2",
+            "libfiber",
+            "libl10n",
+
+            "libfont",
+            "libfontFT",
+            "libfreetype",
+
+            //"libsre",    // Needed for probably every game in existence other than arkedo and gta
+            //"libjpgdec", // Needed for Minecraft
+            //"libpngdec"  // Needed for Minecraft
+
+           // "libgcm_sys"
+        ];
+
+        private readonly List<LibraryInfo> LoadedLibraries = [];                    // List of loaded libraries
+        private readonly List<LibraryInitialization> LibraryInitializations = [];   // List of library initialization functions to be called at startup
+        private readonly Dictionary<uint, uint> ExportedFunctions = [];             // List of exported functions from the libraries
+        private readonly MemoryManager _memoryManager;
+
+        internal PRXManager(MemoryManager memoryManager)
+        {
+            _memoryManager = memoryManager;
+        }
+
+        internal bool TryGetFunction(uint nid, out uint address)
+        {
+            return ExportedFunctions.TryGetValue(nid, out address);
+        }
+
+        internal void LoadPRXLibraries(ElfLoader elfLoader, ModulePatcher modulePatcher)
         {
             // Load all segments
             for (int i = 0; i < PRXList.Count; i++)
             {
                 string name = PRXList[i];
-                LibraryInfo lib = LoadLibrary(name);
+                LibraryInfo lib = LoadLibrary(name, elfLoader);
                 LoadedLibraries.Add(lib);
             }
 
@@ -142,15 +147,15 @@ namespace PS3Sharp.PRXManager
             // Handle All imports
             for (int i = 0; i < LoadedLibraries.Count; i++)
             {
-                HandleImports(LoadedLibraries[i]);
+                HandleImports(LoadedLibraries[i], modulePatcher, _memoryManager);
             }
 
             //throw new Exception("done");
         }
 
-        private static LibraryInfo LoadLibrary(string name)
+        private LibraryInfo LoadLibrary(string name, ElfLoader elfLoader)
         {
-            string path = PS3Sharp.FileSystemBase + @"dev_flash\sys\external\" + name + ".prx";
+            string path = @"dev_flash\sys\external\" + name + ".prx";
             if (!File.Exists(path))
             {
                 throw new FileNotFoundException($"Can't find file: {path}");
@@ -159,19 +164,19 @@ namespace PS3Sharp.PRXManager
             BinaryReader reader = new(File.OpenRead(path));
 
             // Load the loadable segments
-            List<LoadedPRXSegment> loadedSegments = ElfLoader.LoadPRXElf(reader);
+            List<LoadedPRXSegment> loadedSegments = elfLoader.LoadPRXElf(reader, _memoryManager);
 
             // From PS3DevWiki: The Module Info is at offset Elf32_Phdrs[text_seg_id].p_paddr - Elf32_Phdrs[text_seg_id].p_offset
             LoadedPRXSegment text = loadedSegments[0];
             uint address = (uint)(text.ActualEntry + text.ProgramHeader.p_paddr - text.ProgramHeader.p_offset);
-            LibraryInfo library_info = MemoryManager.ReadStruct<LibraryInfo>(address);
+            LibraryInfo library_info = _memoryManager.ReadStruct<LibraryInfo>(address);
 
             return library_info;
             // HandleExports(library_info);
             // HandleImports(library_info);
         }
 
-        private static void HandleExports(LibraryInfo lib_info)
+        private void HandleExports(LibraryInfo lib_info)
         {
             //Console.WriteLine($"Exports start = 0x{lib_info.ExportsStart:X8}");
             //Console.WriteLine($"Exports end = 0x{lib_info.ExportsEnd:X8}");
@@ -187,12 +192,12 @@ namespace PS3Sharp.PRXManager
 
             while (currentAddress < end)
             {
-                PRXModuleInfo module_info = MemoryManager.ReadStruct<PRXModuleInfo>(currentAddress);
+                PRXModuleInfo module_info = _memoryManager.ReadStruct<PRXModuleInfo>(currentAddress);
                 uint size = (uint)(module_info.Size > 0 ? module_info.Size : Unsafe.SizeOf<PRXModuleInfo>());
 
                 if (module_info.Name_Ptr != 0)
                 {
-                    string name = MemoryManager.ReadString(module_info.Name_Ptr);
+                    string name = _memoryManager.ReadString(module_info.Name_Ptr);
                 }
 
                 uint nid_table = module_info.NIDs_Ptr;
@@ -201,14 +206,12 @@ namespace PS3Sharp.PRXManager
                 for (uint i = 0; i < module_info.FunctionCount; i++)
                 {
                     uint offset = i * sizeof(uint);
-                    uint nid = MemoryManager.Read<uint>(nid_table + offset);
-                    uint address = MemoryManager.Read<uint>(address_table + offset);
-
+                    uint nid = _memoryManager.Read<uint>(nid_table + offset);
+                    uint address = _memoryManager.Read<uint>(address_table + offset);
 
                     // Special module
                     if ((module_info.Attributes & 0x8000) > 0)
                     {
-
                         switch (nid)
                         {
                             case 0x0d10fd3f: libraryInitialization.Prologue = address; break;
@@ -216,11 +219,11 @@ namespace PS3Sharp.PRXManager
                             case 0xab779874: libraryInitialization.Stop = address; break;
                             case 0xbc9a0086: libraryInitialization.Start = address; break;
                         }
-
                     }
                     else
                     {
                         string function_name;
+
                         if (NIDManager.NIDList.TryGetValue(nid, out string? value))
                         {
                             function_name = value;
@@ -236,7 +239,6 @@ namespace PS3Sharp.PRXManager
                             Console.WriteLine($"[{libname}] export at address: 0x{address:X8} function name = {function_name}");
                         }
                     }
-
                 }
 
                 currentAddress += size;
@@ -245,11 +247,8 @@ namespace PS3Sharp.PRXManager
             LibraryInitializations.Add(libraryInitialization);
         }
 
-        private static void HandleImports(LibraryInfo lib_info)
+        private void HandleImports(LibraryInfo lib_info, ModulePatcher modulePatcher, MemoryManager memoryManager)
         {
-            //Console.WriteLine($"Imports start = 0x{lib_info.ImportsStart:X8}");
-            //Console.WriteLine($"Imports end = 0x{lib_info.ImportsEnd:X8}");
-
             string libname = GetLibName(lib_info);
 
             uint start = lib_info.ImportsStart;
@@ -258,10 +257,10 @@ namespace PS3Sharp.PRXManager
 
             while (currentAddress < end)
             {
-                PRXModuleInfo module_info = MemoryManager.ReadStruct<PRXModuleInfo>(currentAddress);
+                PRXModuleInfo module_info = _memoryManager.ReadStruct<PRXModuleInfo>(currentAddress);
                 uint size = (uint)(module_info.Size > 0 ? module_info.Size : Unsafe.SizeOf<PRXModuleInfo>());
 
-                string moduleName = MemoryManager.ReadString(module_info.Name_Ptr);
+                string moduleName = _memoryManager.ReadString(module_info.Name_Ptr);
 
                 uint nid_table = module_info.NIDs_Ptr;
                 uint address_table = module_info.Addresses_Ptr;
@@ -270,11 +269,11 @@ namespace PS3Sharp.PRXManager
                 {
                     uint offset = i * sizeof(uint);
 
-                    uint nid = MemoryManager.Read<uint>(nid_table + offset);
-                    uint address = MemoryManager.Read<uint>(address_table + offset);
+                    uint nid = _memoryManager.Read<uint>(nid_table + offset);
+                    uint address = _memoryManager.Read<uint>(address_table + offset);
 
                     string functionName = NIDManager.NIDList.GetValueOrDefault(nid, "unknown_function");
-                    ModulePatcher.PatchModuleCallHLE(moduleName, functionName, nid, address);
+                    modulePatcher.PatchModuleCallHLE(moduleName, functionName, nid, address, memoryManager);
 
                     Console.WriteLine($"[{libname}] import at address: 0x{address:X8} function: {functionName}");
                 }
@@ -283,10 +282,8 @@ namespace PS3Sharp.PRXManager
             }
         }
 
-        internal static void InitializeLibraries(PPU ppu)
+        internal void InitializeLibraries(PPUThread ppu)
         {
-            uint pc;
-
             for (int i = 0; i < LibraryInitializations.Count; i++)
             {
                 LibraryInitialization libraryInitialization = LibraryInitializations[i];
@@ -297,6 +294,7 @@ namespace PS3Sharp.PRXManager
                 }
 
                 Console.WriteLine($"Initializing lib: {libraryInitialization.LibName}");
+
                 if (libraryInitialization.Prologue != 0)
                 {
                     PPUInterpreter.ExecuteFunction(ppu, libraryInitialization.Prologue, toc: true, []);
@@ -309,7 +307,7 @@ namespace PS3Sharp.PRXManager
             }
         }
 
-        internal static string GetLibName(LibraryInfo lib_info)
+        internal string GetLibName(LibraryInfo lib_info)
         {
             ReadOnlySpan<byte> name_buffer = lib_info.Name;
             int name_end = name_buffer.IndexOf((byte)0);

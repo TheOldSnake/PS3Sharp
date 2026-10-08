@@ -1,16 +1,16 @@
-﻿using PS3Sharp.Common;
+using PS3Sharp.Common;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace PS3Sharp
 {
-    internal static partial class ElfLoader
+    internal partial class ElfLoader
     {
-        //Structs
+        // Structs
         [StructLayout(LayoutKind.Sequential)]
         internal readonly struct ElfHeader
         {
-            //e_ident constants
+            // e_ident constants
             internal const int EI_NIDENT = 16;
 
             // ELFMAG bytes - these must appear at the beginning of every valid ELF file

@@ -1,17 +1,17 @@
-﻿using Iced.Intel;
-using PS3Sharp.Memory_Manager;
+using Iced.Intel;
+using PS3Sharp.Memory;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using static Iced.Intel.AssemblerRegisters;
-using static PS3Sharp.Cell.PPU.PPU;
-using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
-using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAllocator;
+using static PS3Sharp.Cell.PPU.PPUThread;
+using static PS3Sharp.Cell.PPU.Recompiler.IR.IRGenerator;
+using static PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator.X64RegisterAllocator;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
+namespace PS3Sharp.Cell.PPU.Recompiler.x64
 {
     internal unsafe sealed partial class X64Generator
     {
-        private RegisterAllocator.RegisterAllocator _registerAllocator = new();
+        private RegisterAllocator.X64RegisterAllocator _registerAllocator = new();
 
         private List<AssemblerRegister64> _borrowPool { get; set; }                  // List of all borrowable registers for this block, based on the allocator
         private readonly List<AssemblerRegister64> _inUseVolatileRegisters = new();  // Currently active volatile registers (across the block)
@@ -22,7 +22,6 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
         private Dictionary<Value, ulong> _knownConstants;              // Current constants dictionary
 
         private int _currentStackOffset = 0;                           // Current stack offset in bytes
-
 
         // Helpers
         private AssemblerRegister64 PPUState => _registerAllocator.PPUStatePointer;
@@ -35,7 +34,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
 
         private bool IsConst(Value value) => _knownConstants.ContainsKey(value);
         private ulong GetConst(Value value) => _knownConstants[value];
-        private bool TryGetConst(Value value, out ulong result) => _knownConstants.TryGetValue(value, out result);
+        private bool TryGetConst(Value value, out ulong result) => _knownConstants.TryGetValue(value, out result);  // TODO: Use this helper to avoid double lookup
         private Location GetLocation(Value value) => _registerMap[value];
 
         private void PrintNativeCode(Assembler asm)
@@ -71,7 +70,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
             _knownConstants = block.Constants;
         }
 
-        internal Span<byte> GenerateNativeCode(IRBlock block, PPU ppuThread)
+        internal Span<byte> GenerateNativeCode(IRBlock block, PPUThread ppuThread)
         {
             ResetState();
             SetupState(block);
@@ -84,7 +83,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
             bool hasCalls = HasCalls(block.IRCode);
             bool hasMemoryOp = HasMemoryOp(block.IRCode);
 
-            EmitBlockEntry(asm, stackSlots, allocatedNonVolatileRegisters, hasMemoryOp);
+            EmitBlockEntry(asm, stackSlots, allocatedNonVolatileRegisters, hasMemoryOp, ppuThread.MemoryManager);
 
             for (int i = 0; i < block.IRCode.Count; i++)
             {
@@ -145,7 +144,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
             _currentStackOffset -= 8;
         }
 
-        private void EmitBlockEntry(Assembler asm, int spillSlotCount, List<AssemblerRegister64> nonVolatileRegs, bool hasMemoryOp)
+        private void EmitBlockEntry(Assembler asm, int spillSlotCount, List<AssemblerRegister64> nonVolatileRegs, bool hasMemoryOp, MemoryManager memoryManager)
         {
 
             // Size of spill array
@@ -172,7 +171,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
                     asm.push(MemoryBase);
                 }
 
-                UIntPtr addr = (UIntPtr)MemoryManager.GetGuestMemoryBase();
+                UIntPtr addr = (UIntPtr)memoryManager.GetGuestMemoryBase();
                 asm.mov(MemoryBase, addr);
             }
 
@@ -280,37 +279,37 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
 
         private int GetPCOffset()
         {
-            int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPU.PPUState.PC));
+            int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPUThread.PPUState.PC));
             return offset;
         }
 
         private int GetLROffset()
         {
-            int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPU.PPUState.LR));
+            int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPUThread.PPUState.LR));
             return offset;
         }
 
         private int GetCROffset()
         {
-            int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPU.PPUState.CR));
+            int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPUThread.PPUState.CR));
             return offset;
         }
 
         private int GetCTROffset()
         {
-            int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPU.PPUState.CTR));
+            int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPUThread.PPUState.CTR));
             return offset;
         }
 
         private int GetXEROffset()
         {
-            int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPU.PPUState.XER));
+            int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPUThread.PPUState.XER));
             return offset;
         }
 
         private int GetGPROffset(int index)
         {
-            int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPU.PPUState.GPR)) + (index * Unsafe.SizeOf<PPUGPR>());
+            int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPUThread.PPUState.GPR)) + (index * Unsafe.SizeOf<PPUGPR>());
             return offset;
         }
 

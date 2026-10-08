@@ -1,11 +1,10 @@
-﻿using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Common;
 using System.Diagnostics;
 using System.Numerics;
 using static PS3Sharp.Cell.Arguments;
-using static PS3Sharp.Cell.PPU.PPU;
+using static PS3Sharp.Cell.PPU.PPUThread;
 
-namespace PS3Sharp.Cell.PPU.PPUInterpreter
+namespace PS3Sharp.Cell.PPU.Interpreter
 {
     internal static unsafe partial class PPUInterpreter
     {
@@ -14,7 +13,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
         internal static bool Log = false; //debug
         static bool lastBranch;         //debug
         static bool crash = false;
-        internal static void CrashAt(PPU ppu, uint address, bool printRegisters = false, bool printTrace = false, bool dumpMemory = false)
+        internal static void CrashAt(PPUThread ppu, uint address, bool printRegisters = false, bool printTrace = false, bool dumpMemory = false)
         {
             if (ppu.State->PC == address)
             {
@@ -32,7 +31,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
                     for (uint i = 0; i < length; i += 1)
                     {
                         uint addr = base_addr + i;
-                        uint w = MemoryManager.Read<byte>(addr);
+                        uint w = ppu.MemoryManager.Read<byte>(addr);
                         Console.Write($"0x{w:X2} ");
 
                         counter++;
@@ -52,7 +51,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        internal static void Step(PPU ppu)
+        internal static void Step(PPUThread ppu)
         {
             //if (ppu.State->PC == 0x0005d918 || ppu.State->PC == 0x00876858) {
             //    ppu.State->PC = ppu.State->LR;
@@ -62,7 +61,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
 
             PPUInstruction instruction;
-            instruction.Raw = MemoryManager.ReadPPUInstruction(ppu.State->PC);
+            instruction.Raw = ppu.MemoryManager.ReadPPUInstruction(ppu.State->PC);
 
             ppu.AddTrace(ppu.State->PC, instruction);
 
@@ -87,7 +86,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        internal static void PrintAllGPRs(PPU ppu)
+        internal static void PrintAllGPRs(PPUThread ppu)
         {
             for (int i = 0; i < 32; i++)
             {
@@ -100,7 +99,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             Console.WriteLine($"CA = 0x{ppu.State->XER.CA:X8}");
         }
 
-        internal static void PrintCallstack(PPU ppu)
+        internal static void PrintCallstack(PPUThread ppu)
         {
             int length = ppu.CallStack.Count;
             int lastIndex = length - 1;
@@ -111,7 +110,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        private static void Execute(PPUInstruction instruction, PPU ppu)
+        private static void Execute(PPUInstruction instruction, PPUThread ppu)
         {
             switch (instruction.Op)
             {
@@ -183,7 +182,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
         }
 
 
-        private static void Group13(PPUInstruction instruction, PPU ppu)
+        private static void Group13(PPUInstruction instruction, PPUThread ppu)
         {
             switch (instruction.G13)
             {
@@ -206,7 +205,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        private static void Group1F(PPUInstruction instruction, PPU ppu)
+        private static void Group1F(PPUInstruction instruction, PPUThread ppu)
         {
             switch (instruction.G1F)
             {
@@ -333,7 +332,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        private static void UpdateCRRegister(ulong a, ulong b, PPU.CRNumber cr, PPU ppu)
+        private static void UpdateCRRegister(ulong a, ulong b, PPUThread.CRNumber cr, PPUThread ppu)
         {
             //Compare a with b and set CR value based on the result
             uint result;
@@ -354,7 +353,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             ppu.State->CR.WriteCRField(cr, result);
         }
 
-        private static void UpdateCRRegister(long a, long b, PPU.CRNumber cr, PPU ppu)
+        private static void UpdateCRRegister(long a, long b, PPUThread.CRNumber cr, PPUThread ppu)
         {
             //Compare a with b and set CR value based on the result
             uint result;
@@ -375,7 +374,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             ppu.State->CR.WriteCRField(cr, result);
         }
 
-        private static void UpdateCRRegister(double a, double b, PPU.CRNumber cr, PPU ppu)
+        private static void UpdateCRRegister(double a, double b, PPUThread.CRNumber cr, PPUThread ppu)
         {
             //Compare a with b and set CR value based on the result
             uint result;
@@ -400,7 +399,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             ppu.State->CR.WriteCRField(cr, result);
         }
 
-        private static void Branch(PPUInstruction instruction, PPU ppu)
+        private static void Branch(PPUInstruction instruction, PPUThread ppu)
         {
             // Branch L form 
 
@@ -431,7 +430,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
         }
 
         // Helper for conditional branches
-        internal static bool TestBranchCondition(uint bo, uint bi, PPU ppu)
+        internal static bool TestBranchCondition(uint bo, uint bi, PPUThread ppu)
         {
             //Based on PPC manual page 34
 
@@ -462,7 +461,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             return ctr_condition && cr_condition;
         }
 
-        internal static void BC(PPUInstruction instruction, PPU ppu)
+        internal static void BC(PPUInstruction instruction, PPUThread ppu)
         {    //Branch Conditional
             bool lk = (instruction.Raw & 1) == 1;
             bool aa = ((instruction.Raw >> 1) & 1) == 1;
@@ -494,7 +493,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        internal static void BCLR(PPUInstruction instruction, PPU ppu)
+        internal static void BCLR(PPUInstruction instruction, PPUThread ppu)
         { //Branch Conditional to link register
             bool lk = (instruction.Raw & 1) == 1;
             long currentPC = ppu.State->PC - 4;  //Not needed
@@ -514,7 +513,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        internal static void BCCTR(PPUInstruction instruction, PPU ppu)
+        internal static void BCCTR(PPUInstruction instruction, PPUThread ppu)
         { //Branch Conditional to CTR
             bool lk = (instruction.Raw & 1) == 1;
             long currentPC = ppu.State->PC - 4;  //Not needed
@@ -534,7 +533,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
         }
 
         // Compare instructions
-        internal static void CMPI(PPUInstruction instruction, PPU ppu)
+        internal static void CMPI(PPUInstruction instruction, PPUThread ppu)
         {
             bool l = ((instruction.Raw >> 21) & 0x1) == 1;
             uint bf = ((instruction.Raw >> 23) & 0x7);
@@ -551,10 +550,10 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
 
             //Console.WriteLine($"bf = {bf} si = {si64} r{instruction.Ra} a = {a:X}");
-            UpdateCRRegister(a, si64, (PPU.CRNumber)bf, ppu);
+            UpdateCRRegister(a, si64, (PPUThread.CRNumber)bf, ppu);
         }
 
-        internal static void CMPLI(PPUInstruction instruction, PPU ppu)
+        internal static void CMPLI(PPUInstruction instruction, PPUThread ppu)
         {
             bool l = ((instruction.Raw >> 21) & 0x1) == 1;
             uint bf = ((instruction.Raw >> 23) & 0x7);
@@ -572,10 +571,10 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
 
             //Console.WriteLine($"bf = {bf} r{instruction.Ra} a = {a:X}");
-            UpdateCRRegister(a, ui, (PPU.CRNumber)bf, ppu);
+            UpdateCRRegister(a, ui, (PPUThread.CRNumber)bf, ppu);
         }
 
-        internal static void CMPL(PPUInstruction instruction, PPU ppu)
+        internal static void CMPL(PPUInstruction instruction, PPUThread ppu)
         {
             bool l = ((instruction.Raw >> 21) & 0x1) == 1;
             uint bf = ((instruction.Raw >> 23) & 0x7);
@@ -595,10 +594,10 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
 
             //Console.WriteLine($"bf = {bf} r{instruction.Ra} a = {a:X}");
-            UpdateCRRegister(a, b, (PPU.CRNumber)bf, ppu);
+            UpdateCRRegister(a, b, (PPUThread.CRNumber)bf, ppu);
         }
 
-        internal static void CMP(PPUInstruction instruction, PPU ppu)
+        internal static void CMP(PPUInstruction instruction, PPUThread ppu)
         {
             bool l = ((instruction.Raw >> 21) & 0x1) == 1;
             uint bf = ((instruction.Raw >> 23) & 0x7);
@@ -617,38 +616,38 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
                 b = ppu.GPR[instruction.Rb].SValue32;
             }
 
-            UpdateCRRegister(a, b, (PPU.CRNumber)bf, ppu);
+            UpdateCRRegister(a, b, (PPUThread.CRNumber)bf, ppu);
         }
 
         // Sign Extension instructions
-        private static void EXTSB(PPUInstruction instruction, PPU ppu)
+        private static void EXTSB(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Ra].SValue64 = ppu.GPR[instruction.Rs].SValue8;
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        private static void EXTSH(PPUInstruction instruction, PPU ppu)
+        private static void EXTSH(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Ra].SValue64 = ppu.GPR[instruction.Rs].SValue16;
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        private static void EXTSW(PPUInstruction instruction, PPU ppu)
+        private static void EXTSW(PPUInstruction instruction, PPUThread ppu)
         {
             ppu.GPR[instruction.Ra].SValue64 = ppu.GPR[instruction.Rs].SValue32;
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPU.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
             }
         }
 
-        private static void CNTLZD(PPUInstruction instruction, PPU ppu)
+        private static void CNTLZD(PPUInstruction instruction, PPUThread ppu)
         {
             ulong value = ppu.GPR[instruction.Rs].Value64;
             uint zeroesCount = (uint)BitOperations.LeadingZeroCount(value); // Use Intrinsic
@@ -656,11 +655,11 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].Value64, 0, PPU.CRNumber.CR0, ppu); // Unsigned compare
+                UpdateCRRegister(ppu.GPR[instruction.Ra].Value64, 0, PPUThread.CRNumber.CR0, ppu); // Unsigned compare
             }
         }
 
-        private static void CNTLZW(PPUInstruction instruction, PPU ppu)
+        private static void CNTLZW(PPUInstruction instruction, PPUThread ppu)
         {
             uint value = ppu.GPR[instruction.Rs].Value32;
             uint zeroesCount = (uint)BitOperations.LeadingZeroCount(value); // Use Intrinsics
@@ -668,12 +667,12 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].Value64, 0, PPU.CRNumber.CR0, ppu);  // Unsigned compare
+                UpdateCRRegister(ppu.GPR[instruction.Ra].Value64, 0, PPUThread.CRNumber.CR0, ppu);  // Unsigned compare
             }
         }
 
         //Execute a function from a function pointer
-        internal static ulong ExecuteFunction(PPU ppu, GuestVoidPtr ptr_to_pc, bool toc, ReadOnlySpan<ulong> args)
+        internal static ulong ExecuteFunction(PPUThread ppu, GuestVoidPtr ptr_to_pc, bool toc, ReadOnlySpan<ulong> args)
         {
             if (ptr_to_pc.IsNullPtr)
             {
@@ -707,12 +706,12 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
 
             // Set PC
-            ppu.State->PC = MemoryManager.Read<uint>(ptr_to_pc);
+            ppu.State->PC = ppu.MemoryManager.Read<uint>(ptr_to_pc);
 
             // Set TOC if needed
             if (toc)
             {
-                ppu.GPR[2].Value64 = MemoryManager.Read<uint>(ptr_to_pc + 4);
+                ppu.GPR[2].Value64 = ppu.MemoryManager.Read<uint>(ptr_to_pc + 4);
             }
 
             // Set LR

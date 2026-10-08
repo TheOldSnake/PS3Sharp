@@ -1,7 +1,7 @@
-﻿using System.Numerics;
-using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
+using System.Numerics;
+using static PS3Sharp.Cell.PPU.Recompiler.IR.IRGenerator;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
+namespace PS3Sharp.Cell.PPU.Recompiler.IR
 {
     internal sealed class IROptimizer
     {

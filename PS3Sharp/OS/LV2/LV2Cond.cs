@@ -1,6 +1,7 @@
-﻿using PS3Sharp.Cell;
+using PS3Sharp.Cell;
+using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.ErrorCode;
@@ -19,19 +20,22 @@ namespace PS3Sharp.OS.LV2
             internal InlineData.InlineArray8<byte> Name;
         }
 
-        internal uint Handle { get; } = MemoryManager.GetHandle();
+        private readonly MemoryManager _memoryManager;
         private readonly SysCondAttribute _attribute;
         private readonly LV2Mutex _mutex;
         private static readonly ConcurrentDictionary<uint, LV2CondWaiter> _threadCondWaiters = [];
         private readonly List<LV2CondWaiter> Waiters = new();
+        internal uint Handle { get; }
 
-        internal LV2Cond(SysCondAttribute attribute, LV2Mutex mutex)
+        internal LV2Cond(SysCondAttribute attribute, LV2Mutex mutex, MemoryManager memoryManager)
         {
             _attribute = attribute;
             _mutex = mutex;
+            _memoryManager = memoryManager;
+            Handle = _memoryManager.GetHandle();
         }
 
-        internal ulong Wait(uint callerThreadID, ulong us_timeout = 0)
+        internal ulong Wait(PPUThread ppu, ulong us_timeout = 0)
         {
             if (!_mutex.IsEntered)
             {
@@ -39,7 +43,7 @@ namespace PS3Sharp.OS.LV2
             }
 
             // Add the thread to the wait list
-            LV2CondWaiter waiter = GetThreadCondWaiter(callerThreadID);
+            LV2CondWaiter waiter = GetThreadCondWaiter(ppu.ThreadID);
 
             lock (Waiters)
             {
@@ -49,10 +53,9 @@ namespace PS3Sharp.OS.LV2
             // Unlock the mutex
             _mutex.Unlock();
 
-            bool ok;
+            bool ok = false;
             try
             {
-
                 // Wait for a signal
                 if (us_timeout > 0)
                 {
@@ -60,19 +63,16 @@ namespace PS3Sharp.OS.LV2
                 }
                 else
                 {
-                    waiter.Event.Wait();
-                    ok = true;
+                    ok = InterruptableWait(ppu, waiter);
                 }
-
             }
             finally
             {
-
                 // Reset the event
                 waiter.Event.Reset();
 
                 // Re aquire the lock
-                _mutex.Lock();
+                _mutex.Lock(ppu);
 
                 // Remove the waiter from the list
                 lock (Waiters)
@@ -119,6 +119,27 @@ namespace PS3Sharp.OS.LV2
 
             waiter?.Event.Set();
             return CELL_OK;
+        }
+
+        private bool InterruptableWait(PPUThread ppu, LV2CondWaiter waiter)
+        {
+            // Return true if the event was signaled, false if the thread was interrupted
+            while (true)
+            {
+                // Wait for 100ms
+                bool ok = waiter.Event.Wait(TimeSpan.FromMilliseconds(100));
+
+                if (ok)
+                {
+                    return true;
+                }
+
+                // Check if the thread is interrupted by shutdown signal and must return immediately
+                if (ppu.ShouldExit)
+                {
+                    return false;
+                }
+            }
         }
 
         private LV2CondWaiter GetThreadCondWaiter(uint threadID)

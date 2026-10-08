@@ -1,6 +1,6 @@
-﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Graphics.OpenGL4;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using System.IO.Hashing;
 using static PS3Sharp.Cell.RSX.RSXCommand;
 
@@ -24,7 +24,7 @@ namespace PS3Sharp.Cell.RSX
         internal bool IsEnabled { get; set; }
 
         internal uint PixelFormatValue => Format & 0x00001F00;
-        internal bool IsSurface => GLRenderer.AddressIsSurface(Address);
+        internal bool IsSurface => rsx.AddressIsSurface(Address);
 
         internal ScratchBuffer ScratchBuffer { get; } = new ScratchBuffer();
         internal TextureCacheKey CacheKey = new();
@@ -331,12 +331,12 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        internal void FetchTextureData()
+        internal void FetchTextureData(MemoryManager memoryManager)
         {
             Span<byte> destination = GetScratchData();
 
             // Read a copy of the texture into the scratch buffer
-            MemoryManager.ReadBufferFromVirtualMemory(Address, destination);
+            memoryManager.ReadBufferFromVirtualMemory(Address, destination);
         }
 
         internal void UpdateHashKey()

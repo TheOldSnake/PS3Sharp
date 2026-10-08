@@ -1,6 +1,6 @@
-﻿using static PS3Sharp.Cell.PPU.PPUInterpreter.PPUInterpreter;
+using static PS3Sharp.Cell.PPU.Interpreter.PPUInterpreter;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
+namespace PS3Sharp.Cell.PPU.Recompiler.IR
 {
     internal sealed partial class IRGenerator
     {
@@ -27,7 +27,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             Value b = _irContext.GetFPR(instruction.Frb);
             uint bf = (instruction.Raw >> 23) & 0x7;
 
-            _irContext.UpdateCR(a, b, (PPU.CRNumber)bf); // need to compare floats.. 
+            _irContext.UpdateCR(a, b, (PPUThread.CRNumber)bf); // need to compare floats.. 
         }
 
         internal void FCMPO(PPUInstruction instruction)

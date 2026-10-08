@@ -1,6 +1,6 @@
-﻿using static PS3Sharp.Cell.PPU.PPUInterpreter.PPUInterpreter;
+using static PS3Sharp.Cell.PPU.Interpreter.PPUInterpreter;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
+namespace PS3Sharp.Cell.PPU.Recompiler.IR
 {
     internal sealed partial class IRGenerator
     {
@@ -157,7 +157,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             Value src = _irContext.GetGPR(instruction.Rs);
             Value success = Store32Conditional(ea, Truncate(src, Value.ValueType.I32));
             Value cr0 = Select(success, _irContext.CompareResult_Eq, _irContext.Zero);
-            _irContext.WriteCRField(PPU.CRNumber.CR0, cr0);
+            _irContext.WriteCRField(PPUThread.CRNumber.CR0, cr0);
         }
 
         // Store Double Word Instructions
@@ -205,7 +205,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
             Value src = _irContext.GetGPR(instruction.Rs);
             Value success = Store64Conditional(ea, src);
             Value cr0 = Select(success, _irContext.CompareResult_Eq, _irContext.Zero);
-            _irContext.WriteCRField(PPU.CRNumber.CR0, cr0);
+            _irContext.WriteCRField(PPUThread.CRNumber.CR0, cr0);
         }
 
         // Load Byte Instructions

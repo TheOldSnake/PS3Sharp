@@ -1,4 +1,4 @@
-﻿using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using SkiaSharp;
 using System.Diagnostics;
 using System.IO.Hashing;
@@ -90,13 +90,13 @@ namespace PS3Sharp.Common
             return BitConverter.ToUInt64(XxHash64.Hash(data));
         }
 
-        internal static void DumpMemoryAsImage(uint address, int width, int height, string path)
+        internal static void DumpMemoryAsImage(uint address, int width, int height, string path, MemoryManager memoryManager)
         { // As BRGA8888
             SKBitmap bitmap = new(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
 
             unsafe
             {
-                Span<byte> data = MemoryManager.CreateSpan<byte>(address, width * height * 4);
+                Span<byte> data = memoryManager.CreateSpan<byte>(address, width * height * 4);
 
                 for (int y = 0; y < height; y++)
                 {

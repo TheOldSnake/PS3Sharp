@@ -1,15 +1,22 @@
-﻿using PS3Sharp.Cell.PPU;
-using PS3Sharp.Cell.PPU.PPUInterpreter;
+using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.PPU.Interpreter;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal static class SysProcess
+    internal class SysProcess
     {
-        internal static ulong SysProcessExit(PPU ppu)
+        private readonly MemoryManager _memoryManager;
+
+        internal SysProcess(MemoryManager memoryManager)
+        {
+            _memoryManager = memoryManager;
+        }
+
+        internal ulong SysProcessExit(PPUThread ppu)
         {
             int exitCode = ppu.ReadArg<int>(ARG0);
             ppu.StopThread();
@@ -22,29 +29,31 @@ namespace PS3Sharp.OS.Syscall
                 PPUInterpreter.PrintCallstack(ppu);
             }
 
-            PS3Sharp.TerminateEmulator(exitCode);
+            ppu.SetExitCode(exitCode);
+            ppu.ThreadManager.RequestShutdown();
+
             return CELL_OK;
         }
 
-        internal static ulong SysProcessExit2(PPU ppu)
+        internal ulong SysProcessExit2(PPUThread ppu)
         {
             return SysProcessExit(ppu);
         }
 
-        internal static ulong SysProcessGetPID(PPU ppu)
+        internal ulong SysProcessGetPID(PPUThread ppu)
         {
             return 0x1000500;
         }
 
-        internal static ulong SysProcessGetSDKVersion(PPU ppu)
+        internal ulong SysProcessGetSDKVersion(PPUThread ppu)
         {
             uint pid = ppu.ReadArg<uint>(ARG0);
             GuestPtr<uint> ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
-            MemoryManager.Write<uint>(ptr, 0x00360001);
+            _memoryManager.Write<uint>(ptr, 0x00360001);
             return CELL_OK;
         }
 
-        internal static ulong SysProcessIsSPULockLineReservationAddress(PPU ppu)
+        internal ulong SysProcessIsSPULockLineReservationAddress(PPUThread ppu)
         {
             uint address = ppu.ReadArg<uint>(ARG0);
             ulong flags = ppu.ReadArg<ulong>(ARG1);

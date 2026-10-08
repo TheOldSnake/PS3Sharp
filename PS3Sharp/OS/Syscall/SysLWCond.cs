@@ -1,6 +1,6 @@
-﻿using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using PS3Sharp.OS.LV2;
 using System.Collections.Concurrent;
 using static PS3Sharp.Cell.Arguments;
@@ -8,34 +8,21 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal static class SysLWCond
+    internal class SysLWCond
     {     // This is incomplete 
 
 
-        private static readonly ConcurrentDictionary<uint, LV2LWCond> _conds = [];
-        internal static bool GetLWCond(uint cond_id, out LV2LWCond cond) => _conds.TryGetValue(cond_id, out cond);
+        private readonly MemoryManager _memoryManager;
+        private readonly ConcurrentDictionary<uint, LV2LWCond> _conds;
 
-        internal static void AddLWCond(uint id, LV2LWCond cond)
+        internal SysLWCond(MemoryManager memoryManager)
         {
-            bool success = _conds.TryAdd(id, cond);
-            if (!success)
-            {
-                throw new Exception($"[SysLWCond] Could not add cond 0x{id:X8} to dictionary");
-            }
+            _memoryManager = memoryManager;
         }
 
-        internal static void RemoveLWCond(uint cond_id)
+        internal ulong SysLWCondCreate(PPUThread ppu)
         {
-            bool success = _conds.TryRemove(cond_id, out _);
-            if (!success)
-            {
-                throw new Exception($"[SysLWCond] Could not remove cond 0x{cond_id:X8} from dictionary");
-            }
-        }
-
-        internal static ulong SysLWCondCreate(PPU ppu)
-        {
-            uint handle = MemoryManager.GetHandle();
+            uint handle = _memoryManager.GetHandle();
 
             GuestPtr<uint> id_ptr = ppu.ReadArg<uint>(ARG0);
             //uint lwmutexId = ppu.ReadArg<uint>(ARG1);           // do we use this to bind ??
@@ -57,10 +44,28 @@ namespace PS3Sharp.OS.Syscall
             //LV2LWCond lv2lwcond = new LV2LWCond(control_ptr, attribute);
             //AddLWCond(handle, lv2lwcond);
 
-            MemoryManager.Write<uint>(id_ptr, handle);
+            _memoryManager.Write<uint>(id_ptr, handle);
             return CELL_OK;
         }
 
+        internal bool TryGetLWCond(uint cond_id, out LV2LWCond cond) => _conds.TryGetValue(cond_id, out cond);
 
+        private void AddLWCond(uint id, LV2LWCond cond)
+        {
+            bool success = _conds.TryAdd(id, cond);
+            if (!success)
+            {
+                throw new Exception($"[SysLWCond] Could not add cond 0x{id:X8} to dictionary");
+            }
+        }
+
+        private void RemoveLWCond(uint cond_id)
+        {
+            bool success = _conds.TryRemove(cond_id, out _);
+            if (!success)
+            {
+                throw new Exception($"[SysLWCond] Could not remove cond 0x{cond_id:X8} from dictionary");
+            }
+        }
     }
 }

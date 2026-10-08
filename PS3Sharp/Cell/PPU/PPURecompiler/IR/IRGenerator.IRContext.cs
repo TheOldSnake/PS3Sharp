@@ -1,6 +1,6 @@
-﻿using static PS3Sharp.Cell.PPU.PPU;
+using static PS3Sharp.Cell.PPU.PPUThread;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
+namespace PS3Sharp.Cell.PPU.Recompiler.IR
 {
     internal sealed partial class IRGenerator
     {
@@ -52,12 +52,12 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
                 Zero = irGenerator.Constant(0);
                 One = irGenerator.Constant(1);
                 MinusOne = irGenerator.Constant(ulong.MaxValue);
-                CompareResult_Eq = irGenerator.Constant(PPU.ConditionRegister.EQ);
-                CompareResult_Gt = irGenerator.Constant(PPU.ConditionRegister.GT);
-                CompareResult_Lt = irGenerator.Constant(PPU.ConditionRegister.LT);
-                SOBit = irGenerator.Constant(PPU.XERRegister.SOBit);
-                OVBit = irGenerator.Constant(PPU.XERRegister.OVBit);
-                CABit = irGenerator.Constant(PPU.XERRegister.CABit);
+                CompareResult_Eq = irGenerator.Constant(PPUThread.ConditionRegister.EQ);
+                CompareResult_Gt = irGenerator.Constant(PPUThread.ConditionRegister.GT);
+                CompareResult_Lt = irGenerator.Constant(PPUThread.ConditionRegister.LT);
+                SOBit = irGenerator.Constant(PPUThread.XERRegister.SOBit);
+                OVBit = irGenerator.Constant(PPUThread.XERRegister.OVBit);
+                CABit = irGenerator.Constant(PPUThread.XERRegister.CABit);
 
                 // Initialize special registers
                 CurrentPC = address;
@@ -205,17 +205,17 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
 
             internal void SetCA(Value flag)
             {
-                SetXER(irGenerator.WriteBit(GetXER(), PPU.XERRegister.CABit, flag));
+                SetXER(irGenerator.WriteBit(GetXER(), PPUThread.XERRegister.CABit, flag));
             }
 
             internal void SetOV(Value flag)
             {
-                SetXER(irGenerator.WriteBit(GetXER(), PPU.XERRegister.OVBit, flag));
+                SetXER(irGenerator.WriteBit(GetXER(), PPUThread.XERRegister.OVBit, flag));
             }
 
             internal void SetSO(Value flag)
             {
-                SetXER(irGenerator.WriteBit(GetXER(), PPU.XERRegister.SOBit, flag));
+                SetXER(irGenerator.WriteBit(GetXER(), PPUThread.XERRegister.SOBit, flag));
             }
 
             internal Value GetCA()
@@ -233,7 +233,7 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.IR
                 return irGenerator.ReadBit(GetXER(), SOBit);
             }
 
-            internal void UpdateCR(Value a, Value b, PPU.CRNumber cr, bool signed = true)
+            internal void UpdateCR(Value a, Value b, PPUThread.CRNumber cr, bool signed = true)
             {
                 Value isLess = signed ? irGenerator.SetLessThanSigned(a, b) : irGenerator.SetLessThanUnsigned(a, b);
                 Value isGreater = signed ? irGenerator.SetGreaterThanSigned(a, b) : irGenerator.SetGreaterThanUnsigned(a, b);

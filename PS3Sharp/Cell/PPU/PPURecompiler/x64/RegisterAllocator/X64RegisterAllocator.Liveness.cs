@@ -1,9 +1,9 @@
 ﻿
-using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
+using static PS3Sharp.Cell.PPU.Recompiler.IR.IRGenerator;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator
+namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
 {
-    internal sealed partial class RegisterAllocator
+    internal sealed partial class X64RegisterAllocator
     {
         internal sealed class Liveness
         {

@@ -1,9 +1,9 @@
-﻿using Iced.Intel;
+using Iced.Intel;
 using static Iced.Intel.AssemblerRegisters;
-using static PS3Sharp.Cell.PPU.PPURecompiler.IR.IRGenerator;
-using static PS3Sharp.Cell.PPU.PPURecompiler.x64.RegisterAllocator.RegisterAllocator;
+using static PS3Sharp.Cell.PPU.Recompiler.IR.IRGenerator;
+using static PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator.X64RegisterAllocator;
 
-namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
+namespace PS3Sharp.Cell.PPU.Recompiler.x64
 {
     internal sealed partial class X64Generator
     {
@@ -722,7 +722,6 @@ namespace PS3Sharp.Cell.PPU.PPURecompiler.x64
                 {
                     asm.shr(dest, (byte)GetConst(op2));
                 }
-
             }
             else
             {

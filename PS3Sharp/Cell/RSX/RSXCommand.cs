@@ -1,8 +1,7 @@
-﻿namespace PS3Sharp.Cell.RSX
+namespace PS3Sharp.Cell.RSX
 {
     internal struct RSXCommand
     {
-        internal uint Raw;
 
         //Constant masks/shifts based on PSL1GHT
         internal const uint RSX_METHOD_FLAG_NO_INCREMENT = 0x40000000;
@@ -12,18 +11,6 @@
         internal const uint RSX_MAX_METHOD_COUNT = 0x000007FF;
         internal const int RSX_METHOD_COUNT_SHIFT = 18;
         internal const int RSX_SUBCHANNEL_SHIFT = 13;
-
-        internal bool NonIncrement => (Raw & RSX_METHOD_FLAG_NO_INCREMENT) != 0;
-        internal bool Jump => (Raw & RSX_METHOD_FLAG_JUMP) != 0;
-        internal bool Call => (Raw & RSX_METHOD_FLAG_CALL) != 0;
-        internal bool Return => (Raw & RSX_METHOD_FLAG_RETURN) != 0;
-
-
-        internal uint MethodCount => (Raw >> RSX_METHOD_COUNT_SHIFT) & RSX_MAX_METHOD_COUNT;
-        internal uint MethodRegister => Raw & 0xFFFF;
-        internal uint MethodSubChannel => (Raw >> RSX_SUBCHANNEL_SHIFT) & 0x7;
-        internal uint JumpOffset => Raw & 0x1FFFFFFF; // >> (31 - 31)
-        internal uint CallOffset => Raw >> 2;         // >> (31 - 29)         
 
         // Commands values:
 
@@ -396,5 +383,18 @@
 
         internal const uint NV40TCL_FP_PACKER = 0x00001fec;
         internal const uint NV40TCL_DIVIDER_FREQUENCY_OP = 0x00001fc0;
+
+        internal uint Raw { get; set; }
+
+        internal bool NonIncrement => (Raw & RSX_METHOD_FLAG_NO_INCREMENT) != 0;
+        internal bool Jump => (Raw & RSX_METHOD_FLAG_JUMP) != 0;
+        internal bool Call => (Raw & RSX_METHOD_FLAG_CALL) != 0;
+        internal bool Return => (Raw & RSX_METHOD_FLAG_RETURN) != 0;
+
+        internal uint MethodCount => (Raw >> RSX_METHOD_COUNT_SHIFT) & RSX_MAX_METHOD_COUNT;
+        internal uint MethodRegister => Raw & 0xFFFF;
+        internal uint MethodSubChannel => (Raw >> RSX_SUBCHANNEL_SHIFT) & 0x7;
+        internal uint JumpOffset => Raw & 0x1FFFFFFF; // >> (31 - 31)
+        internal uint CallOffset => Raw >> 2;         // >> (31 - 29)    
     }
 }

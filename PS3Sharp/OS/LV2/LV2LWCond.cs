@@ -1,5 +1,7 @@
-﻿using PS3Sharp.Cell;
+using PS3Sharp.Cell;
+using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
+using PS3Sharp.Memory;
 using PS3Sharp.OS.Modules;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
@@ -27,14 +29,17 @@ namespace PS3Sharp.OS.LV2
             internal BigEndian<uint> LWCondQueue;
         }
 
-        private static readonly ConcurrentDictionary<uint, LV2CondWaiter> _threadCondWaiters = [];
-        private readonly List<LV2CondWaiter> Waiters = new();
-
+        private readonly MemoryManager _memoryManager;
+        private readonly SysLwMutex _sysLwMutex;
+        private readonly ConcurrentDictionary<uint, LV2CondWaiter> _threadCondWaiters = [];
+        private readonly List<LV2CondWaiter> _waiters = new();
         private readonly GuestPtr<SysLWCond> _instancePtr;
         private readonly SysLWCondAttribute _attribute;
 
-        internal LV2LWCond(GuestPtr<SysLWCond> ptr, SysLWCondAttribute attribute)
+        internal LV2LWCond(GuestPtr<SysLWCond> ptr, SysLWCondAttribute attribute, MemoryManager memoryManager, SysLwMutex sysLwMutex)
         {
+            _memoryManager = memoryManager;
+            _sysLwMutex = sysLwMutex;
             _instancePtr = ptr;
             _attribute = attribute;
         }
@@ -47,13 +52,13 @@ namespace PS3Sharp.OS.LV2
             uint id;
             unsafe
             {
-                SysLWCond* cond = _instancePtr.AsNativePtr();
+                SysLWCond* cond = _memoryManager.GetPtr(_instancePtr);
                 GuestPtr<LV2LWMutex.LWMutex> lwmutexPtr = cond->LWMutex;
-                LV2LWMutex.LWMutex* lwmutex = lwmutexPtr.AsNativePtr();
+                LV2LWMutex.LWMutex* lwmutex = _memoryManager.GetPtr(lwmutexPtr);
                 id = lwmutex->SleepQueue;
             }
 
-            if (SysLwMutex.GetLWMutex(id, out LV2LWMutex? mutex))
+            if (_sysLwMutex.GetLWMutex(id, out LV2LWMutex? mutex))
             {
                 return mutex;
 
@@ -64,7 +69,7 @@ namespace PS3Sharp.OS.LV2
             }
         }
 
-        internal ulong Wait(uint callerThreadID, ulong us_timeout = 0)
+        internal ulong Wait(PPUThread ppu, ulong us_timeout = 0)
         {
             LV2LWMutex lwmutex = GetLWMutex();
 
@@ -74,20 +79,19 @@ namespace PS3Sharp.OS.LV2
             }
 
             // Add the thread to the wait list
-            LV2CondWaiter waiter = GetThreadCondWaiter(callerThreadID);
+            LV2CondWaiter waiter = GetThreadCondWaiter(ppu.ThreadID);
 
-            lock (Waiters)
+            lock (_waiters)
             {
-                Waiters.Add(waiter);
+                _waiters.Add(waiter);
             }
 
             // Unlock the mutex
-            lwmutex.Unlock(callerThreadID);
+            lwmutex.Unlock();
 
             bool ok;
             try
             {
-
                 // Wait for a signal
                 if (us_timeout > 0)
                 {
@@ -95,10 +99,8 @@ namespace PS3Sharp.OS.LV2
                 }
                 else
                 {
-                    waiter.Event.Wait();
-                    ok = true;
+                    ok = InterruptableWait(ppu, waiter);
                 }
-
             }
             finally
             {
@@ -107,12 +109,12 @@ namespace PS3Sharp.OS.LV2
                 waiter.Event.Reset();
 
                 // Re aquire the lock
-                lwmutex.Lock(callerThreadID, 0);
+                lwmutex.Lock(ppu, 0);
 
                 // Remove the waiter from the list
-                lock (Waiters)
+                lock (_waiters)
                 {
-                    Waiters.Remove(waiter);
+                    _waiters.Remove(waiter);
                 }
             }
 
@@ -123,9 +125,9 @@ namespace PS3Sharp.OS.LV2
 
         internal ulong Signal()
         {
-            lock (Waiters)
+            lock (_waiters)
             {
-                LV2CondWaiter? waiter = Waiters.FirstOrDefault();
+                LV2CondWaiter? waiter = _waiters.FirstOrDefault();
                 waiter?.Event.Set();
             }
 
@@ -134,15 +136,36 @@ namespace PS3Sharp.OS.LV2
 
         internal ulong SignalAll()
         {
-            lock (Waiters)
+            lock (_waiters)
             {
-                foreach (LV2CondWaiter? waiter in Waiters)
+                foreach (LV2CondWaiter? waiter in _waiters)
                 {
                     waiter.Event.Set();
                 }
             }
 
             return CELL_OK;
+        }
+
+        private bool InterruptableWait(PPUThread ppu, LV2CondWaiter waiter)
+        {
+            // Return true if the event is set, false if the thread was interrupted
+            while (true)
+            {
+                // Wait for 100ms
+                bool ok = waiter.Event.Wait(TimeSpan.FromMilliseconds(100));
+
+                if (ok)
+                {
+                    return true;
+                }
+
+                // Check if the thread is interrupted by shutdown signal and must return immediately
+                if (ppu.ShouldExit)
+                {
+                    return false;
+                }
+            }
         }
 
         private LV2CondWaiter GetThreadCondWaiter(uint threadID)

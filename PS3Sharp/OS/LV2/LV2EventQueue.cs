@@ -1,6 +1,7 @@
-﻿using PS3Sharp.Cell;
+using PS3Sharp.Cell;
+using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.ErrorCode;
@@ -10,10 +11,6 @@ namespace PS3Sharp.OS.LV2
 {
     internal sealed class LV2EventQueue
     {
-        // Event Queue attributes
-        internal const uint SYS_PPU_QUEUE = 1;
-        internal const uint SYS_SPU_QUEUE = 2;
-
         [StructLayout(LayoutKind.Sequential)]
         internal struct SysEventQueueAttribute : IPS3Struct
         {
@@ -22,18 +19,25 @@ namespace PS3Sharp.OS.LV2
             internal InlineData.InlineArray8<byte> Name;
         }
 
-        private readonly BlockingCollection<SysEventData> _queue;
-        internal readonly SysEventQueueAttribute _attribute;
-        internal readonly ulong IPCKey;
-        internal uint Handle { get; } = MemoryManager.GetHandle();
+        // Event Queue attributes
+        internal const uint SYS_PPU_QUEUE = 1;
+        internal const uint SYS_SPU_QUEUE = 2;
 
+        internal readonly ulong IPCKey;
+        internal uint Handle { get; }
         internal bool IsSPUQueue => _attribute.Type == SYS_SPU_QUEUE;
 
-        internal LV2EventQueue(int size, ulong ipc, SysEventQueueAttribute attribute)
+        private readonly MemoryManager _memoryManager;
+        private readonly BlockingCollection<SysEventData> _queue;
+        private readonly SysEventQueueAttribute _attribute;
+
+        internal LV2EventQueue(int size, ulong ipc, SysEventQueueAttribute attribute, MemoryManager memoryManager)
         {
             _queue = new BlockingCollection<SysEventData>(size);
             IPCKey = ipc;
             _attribute = attribute;
+            _memoryManager = memoryManager;
+            Handle = _memoryManager.GetHandle();
         }
 
         internal void Send(SysEventData evt)
@@ -41,20 +45,18 @@ namespace PS3Sharp.OS.LV2
             _queue.Add(evt);
         }
 
-        internal ulong Receive(ulong us_timeout, out SysEventData sysEvent)
+        internal ulong Receive(PPUThread ppu, ulong us_timeout, out SysEventData sysEvent)
         {
             bool ok;
 
             if (us_timeout > 0)
             {
                 ok = _queue.TryTake(out sysEvent, TimeSpan.FromMicroseconds(us_timeout));
-
             }
             else
             {
-                // Blocks until event available
-                sysEvent = _queue.Take();
-                ok = true;
+                // Blocks until event available or thread is interrupted
+                ok = InterruptableWait(ppu, out sysEvent);
             }
 
             return ok ? CELL_OK : CELL_ETIMEDOUT;
@@ -89,6 +91,28 @@ namespace PS3Sharp.OS.LV2
             while (_queue.TryTake(out _))
             {
 
+            }
+        }
+
+        private bool InterruptableWait(PPUThread ppu, out SysEventData sysEvent)
+        {
+            // Return true if it could take from the queue, false if the thread was interrupted
+            while (true)
+            {
+
+                // Wait for 100ms
+                bool ok = _queue.TryTake(out sysEvent, TimeSpan.FromMilliseconds(100));
+
+                if (ok)
+                {
+                    return true;
+                }
+
+                // Check if the thread is interrupted by shutdown signal and must return immediately
+                if (ppu.ShouldExit)
+                {
+                    return false;
+                }
             }
         }
     }

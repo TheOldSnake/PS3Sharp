@@ -1,19 +1,18 @@
-﻿using PS3Sharp.Common;
-using PS3Sharp.Syscall;
-using static PS3Sharp.Cell.PPU.PPU;
+using PS3Sharp.Common;
+using static PS3Sharp.Cell.PPU.PPUThread;
 
-namespace PS3Sharp.Cell.PPU.PPUInterpreter
+namespace PS3Sharp.Cell.PPU.Interpreter
 {
     internal static unsafe partial class PPUInterpreter
     {
 
         //Syscall
-        private static void SC(PPUInstruction instruction, PPU ppu)
+        private static void SC(PPUInstruction instruction, PPUThread ppu)
         {
-            SyscallHandler.HandleSyscall(ppu, instruction.LEV);
+            ppu.SyscallDispatcher.DispatchSyscall(ppu, instruction.LEV);
         }
 
-        private static void MFSPR(PPUInstruction instruction, PPU ppu)
+        private static void MFSPR(PPUInstruction instruction, PPUThread ppu)
         {
             uint spr = ((instruction.SPR & 0x1F) << 5) | ((instruction.SPR >> 5) & 0x1F);
 
@@ -27,7 +26,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        private static void MTSPR(PPUInstruction instruction, PPU ppu)
+        private static void MTSPR(PPUInstruction instruction, PPUThread ppu)
         {
             uint spr = ((instruction.SPR & 0x1F) << 5) | ((instruction.SPR >> 5) & 0x1F);
 
@@ -41,7 +40,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             }
         }
 
-        private static void MFCR(PPUInstruction instruction, PPU ppu)
+        private static void MFCR(PPUInstruction instruction, PPUThread ppu)
         {
             /*bool isOneField = ((instruction.Raw >> 20) & 1) == 1;
             if (isOneField) {
@@ -55,7 +54,7 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
         }
 
 
-        private static void MTCRF(PPUInstruction instruction, PPU ppu)
+        private static void MTCRF(PPUInstruction instruction, PPUThread ppu)
         {
             bool isOneField = ((instruction.Raw >> 20) & 1) == 1;
             uint fxm = instruction.Fxm;
@@ -70,21 +69,21 @@ namespace PS3Sharp.Cell.PPU.PPUInterpreter
             {
                 if (((fxm >> i) & 1) == 1)
                 {
-                    PPU.CRNumber cr = (PPU.CRNumber)(7 - i);
+                    PPUThread.CRNumber cr = (PPUThread.CRNumber)(7 - i);
                     uint value = (rs >> (i * 4)) & 0xF;
                     ppu.State->CR.WriteCRField(cr, value);
                 }
             }
         }
 
-        private static void MCRF(PPUInstruction instruction, PPU ppu)
+        private static void MCRF(PPUInstruction instruction, PPUThread ppu)
         {
             //CR_BF = CR_BFA
             uint bfa = ppu.State->CR.GetCRField((CRNumber)instruction.BFA);
             ppu.State->CR.WriteCRField((CRNumber)instruction.BF, bfa);
         }
 
-        private static void MFTB(PPUInstruction instruction, PPU ppu)
+        private static void MFTB(PPUInstruction instruction, PPUThread ppu)
         {
             uint spr = ((instruction.SPR & 0x1F) << 5) | ((instruction.SPR >> 5) & 0x1F);
             //ulong value = Utility.GetCurrentTickSince1970() * 80;

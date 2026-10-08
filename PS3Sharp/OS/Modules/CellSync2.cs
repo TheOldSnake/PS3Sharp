@@ -1,4 +1,4 @@
-﻿using PS3Sharp.Cell;
+using PS3Sharp.Cell;
 using PS3Sharp.Common;
 using System.Runtime.InteropServices;
 

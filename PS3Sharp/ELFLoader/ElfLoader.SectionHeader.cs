@@ -1,9 +1,9 @@
-﻿using PS3Sharp.Common;
+using PS3Sharp.Common;
 using System.Runtime.InteropServices;
 
 namespace PS3Sharp
 {
-    internal static partial class ElfLoader
+    internal partial class ElfLoader
     {
         [StructLayout(LayoutKind.Sequential)]
         internal readonly struct SectionHeader
