@@ -1,8 +1,8 @@
-﻿using PS3Sharp.Common;
+using PS3Sharp.Common;
 
 namespace PS3Sharp.Cell.RSX
 {
-    internal static partial class VertexShaderGenerator
+    internal partial class VertexShaderGenerator
     {
         private static readonly string VertexProgramBase = @"
             #version 460        
@@ -95,14 +95,14 @@ namespace PS3Sharp.Cell.RSX
 
 
         private static readonly string WhiteSpace = @"                ";
-        private static string CurrentVetrexShader = VertexProgramBase;
-        internal static string LastVertexShader;
-        internal static uint VertexShaderShaderStart { get; set; }   // Index of the first instruction
-        internal static uint VertexShaderLoadIndex { get; set; }    // Index to load instructions from
+        private string CurrentVetrexShader = VertexProgramBase;
+        internal string LastVertexShader;
+        internal uint VertexShaderShaderStart { get; set; }   // Index of the first instruction
+        internal uint VertexShaderLoadIndex { get; set; }    // Index to load instructions from
 
-        private static readonly uint[] VertexShaderBuffer = new uint[512 * 4];  // 512 qwords
+        private readonly uint[] VertexShaderBuffer = new uint[512 * 4];  // 512 qwords
 
-        private static string FinalizeVertexShader()
+        private string FinalizeVertexShader()
         {
             //Add the base
             string shader = VertexProgramBase;
@@ -124,7 +124,7 @@ namespace PS3Sharp.Cell.RSX
             return shader;
         }
 
-        internal static VertexInstruction GetVertexInstruction(ReadOnlySpan<uint> data)
+        internal VertexInstruction GetVertexInstruction(ReadOnlySpan<uint> data)
         {
             VertexInstruction v;
             v.Raw_0 = data[0];
@@ -134,7 +134,7 @@ namespace PS3Sharp.Cell.RSX
             return v;
         }
 
-        internal static void UploadInstructions(Queue<BigEndian<uint>> data)
+        internal void UploadInstructions(Queue<BigEndian<uint>> data)
         {
             while (data.Count > 0)
             {
@@ -144,7 +144,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        internal static ulong CalculateChecksum()
+        internal ulong CalculateChecksum()
         {
             ulong checksum = 0;
             for (uint i = VertexShaderShaderStart; i < VertexShaderBuffer.Length; i += 4)
@@ -163,7 +163,7 @@ namespace PS3Sharp.Cell.RSX
             return checksum;
         }
 
-        internal static string GenerateVertexShader()
+        internal string GenerateVertexShader()
         {
             CurrentVetrexShader = string.Empty;
 
@@ -190,7 +190,7 @@ namespace PS3Sharp.Cell.RSX
             return LastVertexShader;
         }
 
-        internal static string HandleVectorInstruction(VertexInstruction instruction)
+        internal string HandleVectorInstruction(VertexInstruction instruction)
         {
             string src0 = GetSource(0, instruction);
             string src1 = GetSource(1, instruction);
@@ -321,7 +321,7 @@ namespace PS3Sharp.Cell.RSX
             return WhiteSpace + output;
         }
 
-        internal static string HandleScalarInstruction(VertexInstruction instruction)
+        internal string HandleScalarInstruction(VertexInstruction instruction)
         {
             // Not sure how scalar work
             // Big TODO
@@ -376,7 +376,7 @@ namespace PS3Sharp.Cell.RSX
             return WhiteSpace + output;
         }
 
-        internal static string GetSource(int sourceNumber, VertexInstruction instruction)
+        internal string GetSource(int sourceNumber, VertexInstruction instruction)
         {
             //some information like "abs" are not in the common "src" fields 
 
@@ -471,7 +471,7 @@ namespace PS3Sharp.Cell.RSX
             return srcName;
         }
 
-        internal static (string, string) GetDestination(VertexInstruction instruction, bool isScalar = false)
+        internal (string, string) GetDestination(VertexInstruction instruction, bool isScalar = false)
         {
             string destName = string.Empty;
 
@@ -577,7 +577,7 @@ namespace PS3Sharp.Cell.RSX
 
         const string xyzw = "xyzw";
 
-        internal static string ConditionalSelect(VertexInstruction instruction, string destination, string destinationMask, string source)
+        internal string ConditionalSelect(VertexInstruction instruction, string destination, string destinationMask, string source)
         { // dest and source are already masked
             // Select CC
             string cc = $"cc{instruction.Cond_Reg_Sel}";
@@ -602,7 +602,7 @@ namespace PS3Sharp.Cell.RSX
             return final;
         }
 
-        internal static string GetCast(int numberOfChannels)
+        internal string GetCast(int numberOfChannels)
         {
             switch (numberOfChannels)
             {

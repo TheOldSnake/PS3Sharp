@@ -1,6 +1,7 @@
-﻿using PS3Sharp.Cell;
+using PS3Sharp.Cell;
+using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.ErrorCode;
 
@@ -8,7 +9,6 @@ namespace PS3Sharp.OS.LV2
 {
     internal sealed class LV2RWLock
     {
-
         [StructLayout(LayoutKind.Sequential)]
         internal struct SysRWLockAttribute : IPS3Struct
         {
@@ -20,30 +20,31 @@ namespace PS3Sharp.OS.LV2
             internal InlineData.InlineArray8<byte> Name;
         }
 
+        internal uint Handle { get; }
+
+        private readonly MemoryManager _memoryManager;
         private readonly object _rlock = new(); // Read Lock
         private readonly object _wlock = new(); // Write Lock
-
         private readonly SysRWLockAttribute _attribute;
-        internal uint Handle { get; } = MemoryManager.GetHandle();
 
-        internal LV2RWLock(SysRWLockAttribute attribute)
+        internal LV2RWLock(SysRWLockAttribute attribute, MemoryManager memoryManager)
         {
             _attribute = attribute;
+            _memoryManager = memoryManager;
+            Handle = _memoryManager.GetHandle();
         }
 
-        internal ulong RLock(ulong us_timeout)
+        internal ulong RLock(PPUThread ppu, ulong us_timeout)
         {
             bool ok;
 
             if (us_timeout > 0)
             {
                 ok = Monitor.TryEnter(_rlock, TimeSpan.FromMicroseconds(us_timeout));
-
             }
             else
             {
-                Monitor.Enter(_rlock);
-                ok = true;
+                ok = InterruptableWait(ppu, _rlock);
             }
 
             return ok ? CELL_OK : CELL_ETIMEDOUT;
@@ -66,19 +67,17 @@ namespace PS3Sharp.OS.LV2
             return CELL_OK;
         }
 
-        internal ulong WLock(ulong us_timeout)
+        internal ulong WLock(PPUThread ppu, ulong us_timeout)
         {
             bool ok;
 
             if (us_timeout > 0)
             {
                 ok = Monitor.TryEnter(_wlock, TimeSpan.FromMicroseconds(us_timeout));
-
             }
             else
             {
-                Monitor.Enter(_wlock);
-                ok = true;
+                ok = InterruptableWait(ppu, _wlock);
             }
 
             return ok ? CELL_OK : CELL_ETIMEDOUT;
@@ -99,6 +98,27 @@ namespace PS3Sharp.OS.LV2
 
             Monitor.Exit(_wlock);
             return CELL_OK;
+        }
+
+        private bool InterruptableWait(PPUThread ppu, object lockObject)
+        {
+            // Return true if the lock is acquired, false if the thread was interrupted
+            while (true)
+            {
+                // Wait for 100ms
+                bool ok = Monitor.TryEnter(lockObject, TimeSpan.FromMilliseconds(100));
+
+                if (ok)
+                {
+                    return true;
+                }
+
+                // Check if the thread is interrupted by shutdown signal and must return immediately
+                if (ppu.ShouldExit)
+                {
+                    return false;
+                }
+            }
         }
     }
 }

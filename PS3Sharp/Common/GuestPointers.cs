@@ -1,6 +1,4 @@
 ﻿using PS3Sharp.Cell;
-using PS3Sharp.Memory_Manager;
-using System.Runtime.CompilerServices;
 
 namespace PS3Sharp.Common
 {
@@ -174,25 +172,25 @@ namespace PS3Sharp.Common
 
     internal static class PS3PointersExtensions
     {
-        // Gets a native pointer to a struct in guest memory using the GuestPtr
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe T* AsNativePtr<T>(this GuestPtr<T> ptr) where T : unmanaged, IPS3Struct
-        {
-            return MemoryManager.GetPtr(ptr);
-        }
+        //// Gets a native pointer to a struct in guest memory using the GuestPtr
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //internal static unsafe T* AsNativePtr<T>(this GuestPtr<T> ptr) where T : unmanaged, IPS3Struct
+        //{
+        //    return MemoryManager.GetPtr(ptr);
+        //}
 
-        // Gets a managed reference to a struct in guest memory using the GuestPtr -- Avoid using this and prefer explicit T* with unsafe block
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static ref T AsRef<T>(this GuestPtr<T> ptr) where T : unmanaged, IPS3Struct
-        {
-            return ref MemoryManager.GetRef(ptr);
-        }
+        //// Gets a managed reference to a struct in guest memory using the GuestPtr -- Avoid using this and prefer explicit T* with unsafe block
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //internal static ref T AsRef<T>(this GuestPtr<T> ptr) where T : unmanaged, IPS3Struct
+        //{
+        //    return ref MemoryManager.GetRef(ptr);
+        //}
 
-        // Gets the struct by value from guest memory using the GuestPtr - This is an atomic read.
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static T Read<T>(this GuestPtr<T> ptr) where T : unmanaged, IPS3Struct
-        {
-            return MemoryManager.ReadStruct<T>(ptr);
-        }
+        //// Gets the struct by value from guest memory using the GuestPtr - This is an atomic read.
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //internal static T Read<T>(this GuestPtr<T> ptr) where T : unmanaged, IPS3Struct
+        //{
+        //    return MemoryManager.ReadStruct<T>(ptr);
+        //}
     }
 }

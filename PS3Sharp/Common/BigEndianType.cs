@@ -1,4 +1,4 @@
-﻿using PS3Sharp.Cell;
+using PS3Sharp.Cell;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -37,7 +37,6 @@ namespace PS3Sharp.Common
         {
             // TODO: Find the most efficient way to do this
             int size = Unsafe.SizeOf<T>();
-
             T result = default;
 
             ref byte src = ref Unsafe.As<T, byte>(ref value);
@@ -45,7 +44,7 @@ namespace PS3Sharp.Common
 
             switch (size)
             {
-                // byte / sbyte, and bool
+                // byte / sbyte
                 // Nothing to reverse
                 case 1:
                     return value;
@@ -57,14 +56,14 @@ namespace PS3Sharp.Common
                             Unsafe.ReadUnaligned<ushort>(ref src)));
                     break;
 
-                // int / uint
+                // int / uint / float
                 case 4:
                     Unsafe.WriteUnaligned(ref dst,
                         BinaryPrimitives.ReverseEndianness(
                             Unsafe.ReadUnaligned<uint>(ref src)));
                     break;
 
-                // long / ulong
+                // long / ulong / double
                 case 8:
                     Unsafe.WriteUnaligned(ref dst,
                         BinaryPrimitives.ReverseEndianness(

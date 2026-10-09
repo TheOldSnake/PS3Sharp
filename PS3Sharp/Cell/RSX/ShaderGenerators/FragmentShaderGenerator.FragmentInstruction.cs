@@ -2,7 +2,7 @@
 
 namespace PS3Sharp.Cell.RSX
 {
-    internal static partial class FragmentShaderGenerator
+    internal partial class FragmentShaderGenerator
     {
         // Based on nvfx_shader.h in PSL1GHT
 
@@ -91,8 +91,6 @@ namespace PS3Sharp.Cell.RSX
             "fs_tex9",
             "fs_ssa"
         ];
-
-
 
         /* NV30/NV40 fragment program opcodes */
         internal const uint NVFX_FP_OP_OPCODE_NOP = 0x00;

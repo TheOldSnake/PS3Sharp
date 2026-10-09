@@ -1,44 +1,51 @@
 ﻿using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal static class SysTime
+    internal class SysTime
     {
-        internal static uint SysTimeGetCurrentTime(PPU ppu)
+        private readonly MemoryManager _memoryManager;
+
+        internal SysTime(MemoryManager memoryManager)
+        {
+            _memoryManager = memoryManager;
+        }
+
+        internal ulong SysTimeGetCurrentTime(PPUThread ppu)
         {
             GuestPtr<long> sec = ppu.ReadArg<GuestPtr<long>>(ARG0);   //sys_time_sec_t*
             GuestPtr<long> nsec = ppu.ReadArg<GuestPtr<long>>(ARG1);  //sys_time_nsec_t* 
 
-            MemoryManager.Write<long>(sec, (long)Utility.GetCurrentSecondsSince1970());
-            MemoryManager.Write<long>(nsec, (long)Utility.GetCurrentNanosecondsSince1970());
+            _memoryManager.Write<long>(sec, (long)Utility.GetCurrentSecondsSince1970());
+            _memoryManager.Write<long>(nsec, (long)Utility.GetCurrentNanosecondsSince1970());
 
             //Console.WriteLine("[SysTime] SysTimeGetCurrentTime");
             return CELL_OK;
         }
 
-        internal static ulong SysTimeGetSystemTime(PPU ppu)
+        internal ulong SysTimeGetSystemTime(PPUThread ppu)
         {
             //Console.WriteLine($"[SysPrxForUser] sys_time_get_system_time");
             return Utility.GetCurrentMicrosecondSince1970(); //in microseconds
         }
 
-        internal static ulong SysTimeGetTimeZone(PPU ppu)
+        internal ulong SysTimeGetTimeZone(PPUThread ppu)
         {
             GuestPtr<uint> timezone_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             GuestPtr<uint> summertime_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
 
             // todo: get actual timezone values
 
-            MemoryManager.Write<uint>(timezone_ptr, 60);
-            MemoryManager.Write<uint>(summertime_ptr, 00);
+            _memoryManager.Write<uint>(timezone_ptr, 60);
+            _memoryManager.Write<uint>(summertime_ptr, 00);
             return CELL_OK;
         }
 
-        internal static ulong SysTimeGetTimebaseFrequency(PPU ppu)
+        internal ulong SysTimeGetTimebaseFrequency(PPUThread ppu)
         {
             //Console.WriteLine("[SysTime] SysTimeGetTimebaseFrequency");
             return 80000000UL; //80 Mhz

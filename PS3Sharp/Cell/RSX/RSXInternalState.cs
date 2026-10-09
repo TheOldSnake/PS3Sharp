@@ -1,15 +1,17 @@
-﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
+using PS3Sharp.Memory;
 
 namespace PS3Sharp.Cell.RSX
 {
     internal sealed partial class RSXInternalState
     {
+        private readonly MemoryManager _memoryManager;
         internal uint CurrentSemaphoreOffset { get; set; }
         internal uint CurrentSemaphoreLocation { get; set; }
         internal RSXVertexBuffer[] VertexBuffers { get; } = new RSXVertexBuffer[16];
         internal RSXTexture[] Textures { get; } = new RSXTexture[16];
-        internal RSXElementBuffer ElementBuffer { get; } = new RSXElementBuffer();
+        internal RSXElementBuffer ElementBuffer { get; }
 
         //internal uint ElementBufferAddress { get; set; }          // Indices list address
         //internal DrawElementsType ElementBufferType { get; set; } // Indices list type
@@ -53,7 +55,7 @@ namespace PS3Sharp.Cell.RSX
         internal uint Surface_A_Location;
         internal bool FrameDirty { get; set; }
 
-        internal static readonly BeginMode[] BeginModeLookup = [
+        internal static ReadOnlySpan<BeginMode> BeginModeLookup => [
             BeginMode.Points,        // 1
             BeginMode.Lines,         // 2
             BeginMode.LineLoop,      // 3
@@ -66,7 +68,7 @@ namespace PS3Sharp.Cell.RSX
             BeginMode.Polygon        // 10
         ];
 
-        internal static readonly PrimitiveType[] PrimitiveTypeLookup = [
+        internal static ReadOnlySpan<PrimitiveType> PrimitiveTypeLookup => [
             PrimitiveType.Points,        // 1
             PrimitiveType.Lines,         // 2
             PrimitiveType.LineLoop,      // 3
@@ -133,5 +135,11 @@ namespace PS3Sharp.Cell.RSX
 
             // Few more
         };
+
+        internal RSXInternalState(MemoryManager memoryManager)
+        {
+            _memoryManager = memoryManager;
+            ElementBuffer = new RSXElementBuffer(_memoryManager);
+        }
     }
 }

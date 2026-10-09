@@ -1,77 +1,39 @@
-﻿using PS3Sharp.Memory_Manager;
-using PS3Sharp.OS.Modules;
+using PS3Sharp.Memory;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using static PS3Sharp.ELFLoader.ElfLoader;
 
 namespace PS3Sharp
 {
-    internal static partial class ElfLoader
+    internal partial class ElfLoader
     {
-
+        // Custom struct - not from ELF spec
         internal struct LoadedPRXSegment
-        { // Custom struct - not from ELF spec
+        {
             internal ProgramHeader ProgramHeader;
             internal uint ActualEntry;
         }
 
-        internal static byte[] GetSegmentData(BinaryReader reader, ref ProgramHeader programHeader)
+        private long _stringTableLocation;
+
+        internal ElfHeader LoadMainElf(BinaryReader reader, MemoryManager memoryManager)
         {
-            ulong offset = programHeader.p_offset;
-            ulong size = programHeader.p_filesz;
-
-            reader.BaseStream.Seek((long)offset, SeekOrigin.Begin);
-            return reader.ReadBytes((int)size);
-        }
-
-        internal static bool IsValidELF(ReadOnlySpan<byte> ident)
-        {
-            // Ensure ELFMAG is present in the first 4 bytes
-            int length = ElfHeader.ELFMAG_ROS.Length;
-            ReadOnlySpan<byte> mag = ident.Slice(0, length);
-            return mag.SequenceEqual<byte>(ElfHeader.ELFMAG_ROS);
-        }
-
-        private static long StringTableLocation;
-        internal static uint LoadMainElf(string path)
-        {
-            BinaryReader reader = new(File.OpenRead(path));
-
-            Console.WriteLine($"ELF Size: {reader.BaseStream.Length}");
-
-            //Read Main Header 
+            // Read Main Header 
             ElfHeader mainHeader = ReadElfStruct<ElfHeader>(reader, 0);
-
             ReadOnlySpan<byte> ident = mainHeader.e_ident;
+
             if (!IsValidELF(ident))
             {
                 throw new Exception("Invalid ELF");
             }
 
-            byte bitSize = ident[4];     // 1 = 32bit, 2 = 64bit
-            byte endianness = ident[5];     // endianness
-            bool is64 = bitSize == ElfHeader.ELFCLASS64;
+            HandleELFLoadableSegments(reader, ref mainHeader, memoryManager);
+            HandleTLSSegment(reader, ref mainHeader, memoryManager);
 
-            // Console.WriteLine($"ELF {(is64 ? "64" : "32")}-bit");
-            // Console.WriteLine($"Machine: 0x{mainHeader.e_machine:X}");
-            // Console.WriteLine($"Endianness: 0x{endianness:X}");
-            Console.WriteLine($"Program Headers: 0x{mainHeader.e_phnum:X}");
-            Console.WriteLine($"Fake Entry: 0x{mainHeader.e_entry:X}");
-
-            HandleELFLoadableSegments(reader, ref mainHeader);
-            HandleTLSSegment(reader, ref mainHeader);
-            HandlePRXPARAMSegment(reader, ref mainHeader);
-
-            //---Not needed---
-            //StringTableLocation = FindStringTable(fileStream, reader, ref mainHeader);
-            //PrintSections(fileStream, reader, ref mainHeader);
-            //---------------
-
-            Console.WriteLine($"[ELFLoader] ELF loaded");
-            return (uint)mainHeader.e_entry;
+            Console.WriteLine($"[ELFLoader] ELF loaded!");
+            return mainHeader;
         }
 
-        internal static List<LoadedPRXSegment> LoadPRXElf(BinaryReader reader)
+        internal List<LoadedPRXSegment> LoadPRXElf(BinaryReader reader, MemoryManager memoryManager)
         {
             List<LoadedPRXSegment> loadedSegments = new();
 
@@ -98,17 +60,45 @@ namespace PS3Sharp
                     {
                         LoadedPRXSegment loadedSegment;
                         loadedSegment.ProgramHeader = programHeader;
-                        loadedSegment.ActualEntry = LoadSegmentPRX(reader, ref programHeader);
+                        loadedSegment.ActualEntry = LoadSegmentPRX(reader, ref programHeader, memoryManager);
                         loadedSegments.Add(loadedSegment);
                     }
                 }
             }
 
-            HandleRelocations(reader, ref mainHeader, loadedSegments);
+            HandleRelocations(reader, ref mainHeader, loadedSegments, memoryManager);
             return loadedSegments;
         }
 
-        internal static ReadOnlySpan<ProgramHeader> GetProgramHeadersArray(BinaryReader reader, ref ElfHeader header)
+        internal ProgramHeader? FindProgram(BinaryReader reader, ref ElfHeader header, uint p_type)
+        {
+            //Search for requested p_type
+            for (uint i = 0; i < header.e_phnum; i++)
+            {
+                long phOff = (long)(header.e_phoff + (i * header.e_phentsize));
+                ProgramHeader programHeader = ReadElfStruct<ProgramHeader>(reader, phOff);
+                if (programHeader.p_type == p_type)
+                {
+                    return programHeader;
+                }
+            }
+
+            return null;
+        }
+
+        internal T ReadElfStruct<T>(BinaryReader reader, long offset) where T : unmanaged
+        {
+            int size = Unsafe.SizeOf<T>();
+            Span<byte> buffer = size >= 1024 ? new byte[size] : stackalloc byte[size];
+
+            reader.BaseStream.Seek(offset, SeekOrigin.Begin);
+            reader.ReadExactly(buffer);
+
+            // do not return the Span itself as it could have been allocated on the stack
+            return MemoryMarshal.Read<T>(buffer);
+        }
+
+        private ReadOnlySpan<ProgramHeader> GetProgramHeadersArray(BinaryReader reader, ref ElfHeader header)
         {
             // Get the array of program headers in the ELF
             ushort numberOfProgramHeaders = header.e_phnum; // how many program headers
@@ -117,7 +107,7 @@ namespace PS3Sharp
             return ReadElfSpan<ProgramHeader>(reader, (long)programHeadersOffset, numberOfProgramHeaders);
         }
 
-        internal static void HandleELFLoadableSegments(BinaryReader reader, ref ElfHeader mainHeader)
+        internal void HandleELFLoadableSegments(BinaryReader reader, ref ElfHeader mainHeader, MemoryManager memoryManager)
         {
             ReadOnlySpan<ProgramHeader> programHeaders = GetProgramHeadersArray(reader, ref mainHeader);
 
@@ -128,21 +118,21 @@ namespace PS3Sharp
 
                 if (programHeader.p_type == ProgramHeader.PT_LOAD && programHeader.p_memsz > 0)
                 {
-                    LoadSegment(reader, ref programHeader);
+                    LoadSegment(reader, ref programHeader, memoryManager);
                 }
             }
         }
 
-        private static uint LoadSegmentPRX(BinaryReader reader, ref ProgramHeader programHeader)
+        private uint LoadSegmentPRX(BinaryReader reader, ref ProgramHeader programHeader, MemoryManager memoryManager)
         {
             // Relocatable segments, not loaded at a specific virtual addreess
             byte[] segmentData = GetSegmentData(reader, ref programHeader);
-            MemoryManager.MemoryBlock block = MemoryManager.AllocateVirtualMemory((uint)(ulong)programHeader.p_memsz);
-            MemoryManager.CopyBufferToVirtualMemory(segmentData, block.VirtualAddress);
+            MemoryManager.MemoryBlock block = memoryManager.AllocateVirtualMemory((uint)(ulong)programHeader.p_memsz);
+            memoryManager.CopyBufferToVirtualMemory(segmentData, block.VirtualAddress);
             return block.VirtualAddress;
         }
 
-        private static uint LoadSegment(BinaryReader reader, ref ProgramHeader programHeader)
+        private uint LoadSegment(BinaryReader reader, ref ProgramHeader programHeader, MemoryManager memoryManager)
         {
             string pt_name = ProgramHeader.GetName(programHeader);
 
@@ -150,9 +140,9 @@ namespace PS3Sharp
             byte[] segmentData = GetSegmentData(reader, ref programHeader);
             uint dest;
 
-            if (!MemoryManager.IsVirtualAddressAllocated((uint)programHeader.p_vaddr))
+            if (!memoryManager.IsVirtualAddressAllocated((uint)programHeader.p_vaddr))
             {
-                MemoryManager.MemoryBlock block = MemoryManager.AllocateVirtualAddress((uint)programHeader.p_vaddr, (uint)programHeader.p_memsz);
+                MemoryManager.MemoryBlock block = memoryManager.AllocateVirtualAddress((uint)programHeader.p_vaddr, (uint)programHeader.p_memsz);
                 dest = block.VirtualAddress;
             }
             else
@@ -161,24 +151,24 @@ namespace PS3Sharp
 
                 // Make sure the block has enough size
                 uint programEnd = (uint)(dest + programHeader.p_memsz);
-                MemoryManager.MemoryBlock block = MemoryManager.GetAllocationByVirtualAddress((uint)programHeader.p_vaddr);
+                MemoryManager.MemoryBlock block = memoryManager.GetAllocationByVirtualAddress((uint)programHeader.p_vaddr);
                 int extraBytes = (int)(programEnd - block.End);
 
                 if (extraBytes > 0)
                 {
                     uint newSize = (uint)(block.Size + extraBytes);
-                    block = MemoryManager.ResizeBlock(block, newSize);
+                    block = memoryManager.ResizeBlock(block, newSize);
                 }
 
                 Console.WriteLine($"[Loader] Warning: Segment overwrite at vaddr = 0x{programHeader.p_vaddr:X8} size = 0x{programHeader.p_memsz:X8} segment: {pt_name}");
             }
 
-            MemoryManager.CopyBufferToVirtualMemory(segmentData, dest);
+            memoryManager.CopyBufferToVirtualMemory(segmentData, dest);
 
             if ((ulong)segmentData.Length < programHeader.p_memsz)
             {
                 uint zeroesCount = (uint)programHeader.p_memsz - (uint)segmentData.Length;
-                MemoryManager.ClearMemory(dest + (uint)segmentData.Length, zeroesCount);
+                memoryManager.ClearMemory(dest + (uint)segmentData.Length, zeroesCount);
             }
 
             Console.WriteLine(
@@ -192,7 +182,7 @@ namespace PS3Sharp
             return dest;
         }
 
-        private static void HandleRelocations(BinaryReader reader, ref ElfHeader header, List<LoadedPRXSegment> loadedSegments)
+        private void HandleRelocations(BinaryReader reader, ref ElfHeader header, List<LoadedPRXSegment> loadedSegments, MemoryManager memoryManager)
         {
             for (uint i = 0; i < header.e_phnum; i++)
             {
@@ -224,20 +214,20 @@ namespace PS3Sharp
                         switch (type)
                         {
                             case 1:
-                                MemoryManager.Write<uint>(address, data);
+                                memoryManager.Write<uint>(address, data);
                                 break;
 
                             case 4:
-                                MemoryManager.Write<ushort>(address, (ushort)data);
+                                memoryManager.Write<ushort>(address, (ushort)data);
                                 break;
 
                             case 5:
-                                MemoryManager.Write<ushort>(address, (ushort)(data >> 16));
+                                memoryManager.Write<ushort>(address, (ushort)(data >> 16));
                                 break;
 
                             case 6:
                                 data = (ushort)(data >> 16) + ((data >> 15) & 1);
-                                MemoryManager.Write<ushort>(address, (ushort)data);
+                                memoryManager.Write<ushort>(address, (ushort)data);
                                 break;
 
                             default:
@@ -246,14 +236,13 @@ namespace PS3Sharp
                                 break;
                         }
 
-
                         //Console.WriteLine($"[ELFLoader] mem[0x{address:X8}] = 0x{MemoryManager.Read<uint>(address):X8}");
                     }
                 }
             }
         }
 
-        private static void HandleTLSSegment(BinaryReader reader, ref ElfHeader header)
+        private void HandleTLSSegment(BinaryReader reader, ref ElfHeader header, MemoryManager memoryManager)
         {
             //Handle TLS segment
             ProgramHeader? tlsImage = FindProgram(reader, ref header, ProgramHeader.PT_TLS);
@@ -264,8 +253,8 @@ namespace PS3Sharp
                 uint tlsSize = (uint)(tlsImage_casted.p_memsz);
 
                 //Load directly
-                LoadSegment(reader, ref tlsImage_casted);
-                MemoryManager.SetTLS(tlsvaddr, tlsSize);
+                LoadSegment(reader, ref tlsImage_casted, memoryManager);
+                memoryManager.SetTLS(tlsvaddr, tlsSize);
 
                 Console.WriteLine("Found TLS");
             }
@@ -275,43 +264,27 @@ namespace PS3Sharp
             }
         }
 
-        private static void HandlePRXPARAMSegment(BinaryReader reader, ref ElfHeader header)
-        {
-            //Handle PRX_PARAM (module imports) for main elf
-            ProgramHeader? prxParam = FindProgram(reader, ref header, ProgramHeader.PRX_PARAM);
-            if (prxParam != null)
-            {
-                ModulePatcher.HandlePRXImports(reader, (ProgramHeader)prxParam);
-            }
-            else
-            {
-                //throw new Exception($"Could not find PRX_PARAM");
-            }
-        }
+        //private void HandlePRXPARAMSegment(BinaryReader reader, ref ElfHeader header, ModulePatcher modulePatcher, PRXManager.PRXManager prxManager, MemoryManager memoryManager)
+        //{
+        //    //Handle PRX_PARAM (module imports) for main elf
+        //    ProgramHeader? prxParam = FindProgram(reader, ref header, ProgramHeader.PRX_PARAM);
+        //    if (prxParam != null)
+        //    {
+        //        modulePatcher.HandlePRXImports(reader, (ProgramHeader)prxParam, memoryManager, prxManager, this);
+        //    }
+        //    else
+        //    {
+        //        //throw new Exception($"Could not find PRX_PARAM");
+        //    }
+        //}
 
-        private static ProgramHeader? FindProgram(BinaryReader reader, ref ElfHeader header, uint p_type)
-        {
-            //Search for requested p_type
-            for (uint i = 0; i < header.e_phnum; i++)
-            {
-                long phOff = (long)(header.e_phoff + (i * header.e_phentsize));
-                ProgramHeader programHeader = ReadElfStruct<ProgramHeader>(reader, phOff);
-                if (programHeader.p_type == p_type)
-                {
-                    return programHeader;
-                }
-            }
-
-            return null;
-        }
-
-        private static void PrintSections(BinaryReader reader, ref ElfHeader header)
+        private void PrintSections(BinaryReader reader, ref ElfHeader header)
         {
             for (uint i = 0; i < header.e_shnum; i++)
             {
                 long secOff = (long)(header.e_shoff + (i * header.e_shentsize));
                 SectionHeader sec = ReadElfStruct<SectionHeader>(reader, secOff);
-                string actualName = StringTableLocation > 0 ? ResolveSectionName(reader, sec.sh_name) : string.Empty;
+                string actualName = _stringTableLocation > 0 ? ResolveSectionName(reader, sec.sh_name) : string.Empty;
                 Console.WriteLine(
                     $"Section name: {actualName,-20} -- " +
                     $"Section type: {sec.sh_type,8:X} -- " +
@@ -321,7 +294,7 @@ namespace PS3Sharp
             }
         }
 
-        private static long FindStringTable(BinaryReader reader, ref ElfHeader header)
+        private long FindStringTable(BinaryReader reader, ref ElfHeader header)
         {
             long stringTableOffset = -1;
             for (uint i = 0; i < header.e_shnum; i++)
@@ -338,19 +311,7 @@ namespace PS3Sharp
             return stringTableOffset;
         }
 
-        internal static T ReadElfStruct<T>(BinaryReader reader, long offset) where T : unmanaged
-        {
-            int size = Unsafe.SizeOf<T>();
-            Span<byte> buffer = size >= 1024 ? new byte[size] : stackalloc byte[size];
-
-            reader.BaseStream.Seek(offset, SeekOrigin.Begin);
-            reader.ReadExactly(buffer);
-
-            // do not return the Span itself as it could have been allocated on the stack
-            return MemoryMarshal.Read<T>(buffer);
-        }
-
-        internal static ReadOnlySpan<T> ReadElfSpan<T>(BinaryReader reader, long offset, uint numberOfElements) where T : unmanaged
+        private ReadOnlySpan<T> ReadElfSpan<T>(BinaryReader reader, long offset, uint numberOfElements) where T : unmanaged
         {
             int size = (int)(Unsafe.SizeOf<T>() * numberOfElements);
             Span<byte> buffer = new byte[size];
@@ -361,10 +322,10 @@ namespace PS3Sharp
             return MemoryMarshal.Cast<byte, T>(buffer);
         }
 
-        internal static string ResolveSectionName(BinaryReader reader, uint sectionName)
+        private string ResolveSectionName(BinaryReader reader, uint sectionName)
         {
             string name = string.Empty;
-            reader.BaseStream.Seek(StringTableLocation + sectionName, SeekOrigin.Begin);
+            reader.BaseStream.Seek(_stringTableLocation + sectionName, SeekOrigin.Begin);
             byte c = reader.ReadByte();
             while (c != 0)
             {
@@ -373,6 +334,37 @@ namespace PS3Sharp
             }
 
             return name;
+        }
+
+        private byte[] GetSegmentData(BinaryReader reader, ref ProgramHeader programHeader)
+        {
+            ulong offset = programHeader.p_offset;
+            ulong size = programHeader.p_filesz;
+
+            reader.BaseStream.Seek((long)offset, SeekOrigin.Begin);
+            return reader.ReadBytes((int)size);
+        }
+
+        private bool IsValidELF(ReadOnlySpan<byte> ident)
+        {
+            // Ensure ELFMAG is present in the first 4 bytes
+            int length = ElfHeader.ELFMAG_ROS.Length;
+            ReadOnlySpan<byte> mag = ident.Slice(0, length);
+            return mag.SequenceEqual<byte>(ElfHeader.ELFMAG_ROS);
+        }
+
+        private void PrintElfInfo(ElfHeader mainHeader)
+        {
+            ReadOnlySpan<byte> ident = mainHeader.e_ident;
+            byte bitSize = ident[4];     // 1 = 32bit, 2 = 64bit
+            byte endianness = ident[5];  // endianness
+            bool is64 = bitSize == ElfHeader.ELFCLASS64;
+
+            Console.WriteLine($"ELF {(is64 ? "64" : "32")}-bit");
+            Console.WriteLine($"Machine: 0x{mainHeader.e_machine:X}");
+            Console.WriteLine($"Endianness: 0x{endianness:X}");
+            Console.WriteLine($"Program Headers: 0x{mainHeader.e_phnum:X}");
+            Console.WriteLine($"Fake Entry: 0x{mainHeader.e_entry:X}");
         }
     }
 }

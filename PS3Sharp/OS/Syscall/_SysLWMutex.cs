@@ -1,6 +1,6 @@
-﻿using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using PS3Sharp.OS.LV2;
 using System.Collections.Concurrent;
 
@@ -10,37 +10,19 @@ using static PS3Sharp.OS.LV2.LV2LWMutex;
 
 namespace PS3Sharp.OS.Syscall
 {
-
     // This is for _sys_lwmutex syscalls, not sys_lwmutex (the module)
     // These syscalls gets called when we LLE the module, from liblv2
-
-    internal static class _SysLWMutex
+    internal class _SysLWMutex
     {
-        private static readonly ConcurrentDictionary<uint, LV2LWMutex> _lwMutexes = new();
+        private readonly MemoryManager _memoryManager;
+        private readonly ConcurrentDictionary<uint, LV2LWMutex> _lwMutexes = new();
 
-        internal static bool GetLWMutex(uint id, out LV2LWMutex lwmutex) => _lwMutexes.TryGetValue(id, out lwmutex);
-
-        internal static void AddLWMutex(uint id, LV2LWMutex mutex)
+        private _SysLWMutex(MemoryManager memoryManager)
         {
-            bool success = _lwMutexes.TryAdd(id, mutex);
-
-            if (!success)
-            {
-                throw new Exception($"[_SysLWMutex] Could not add lwmutex 0x{id:X8} to dictionary");
-            }
+            _memoryManager = memoryManager;
         }
 
-        internal static void RemoveLWMutex(uint id)
-        {
-            bool success = _lwMutexes.TryRemove(id, out _);
-
-            if (!success)
-            {
-                throw new Exception($"[_SysLWMutex] Could not remove lwmutex 0x{id:X8} from dictionary");
-            }
-        }
-
-        internal static ulong _SysLWmutexCreate(PPU ppu)
+        internal ulong _SysLWmutexCreate(PPUThread ppu)
         {
             // TODO
 
@@ -50,7 +32,7 @@ namespace PS3Sharp.OS.Syscall
             int hasName = ppu.ReadArg<int>(ARG3);
             ulong name = ppu.ReadArg<ulong>(ARG4);
 
-            uint handle = MemoryManager.GetHandle();
+            uint handle = _memoryManager.GetHandle();
             LWMutexAttrib attribute = default;     // not needed for these syscalls i guess
 
             Console.WriteLine($"[_SysLWMutex] _sys_lwmutex_create id: 0x{handle:X8}");
@@ -61,16 +43,16 @@ namespace PS3Sharp.OS.Syscall
             }
 
             // Create the lwmutex
-            LV2LWMutex mutex = new(control, attribute);
+            LV2LWMutex mutex = new(control, attribute, _memoryManager);
             AddLWMutex(handle, mutex);
 
             // Write the handle
-            MemoryManager.Write<uint>(id_ptr, handle);
+            _memoryManager.Write<uint>(id_ptr, handle);
 
             return CELL_OK;
         }
 
-        internal static ulong _SysLWmutexDestroy(PPU ppu)
+        internal ulong _SysLWmutexDestroy(PPUThread ppu)
         {
             // TODO
             uint id = ppu.ReadArg<uint>(ARG0);
@@ -81,7 +63,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        internal static ulong _SysLWmutexLock(PPU ppu)
+        internal ulong _SysLWmutexLock(PPUThread ppu)
         {
             // TODO
             uint id = ppu.ReadArg<uint>(ARG0);
@@ -89,7 +71,7 @@ namespace PS3Sharp.OS.Syscall
 
             Console.WriteLine($"[_SysLWMutex] _sys_lwmutex_lock id: 0x{id:X8}");
 
-            if (GetLWMutex(id, out LV2LWMutex lwmutex))
+            if (TryGetLWMutex(id, out LV2LWMutex lwmutex))
             {
                 return lwmutex._Sys_Lock(us_timeout);
 
@@ -100,14 +82,14 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal static ulong _SysLWmutexTryLock(PPU ppu)
+        internal ulong _SysLWmutexTryLock(PPUThread ppu)
         {
             // TODO
             uint id = ppu.ReadArg<uint>(ARG0);
 
             Console.WriteLine($"[_SysLWMutex] _sys_lwmutex_trylock id: 0x{id:X8}");
 
-            if (GetLWMutex(id, out LV2LWMutex lwmutex))
+            if (TryGetLWMutex(id, out LV2LWMutex lwmutex))
             {
                 return lwmutex._Sys_TryLock();
 
@@ -118,14 +100,14 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal static ulong _SysLWmutexUnlock(PPU ppu)
+        internal ulong _SysLWmutexUnlock(PPUThread ppu)
         {
             // TODO
             uint id = ppu.ReadArg<uint>(ARG0);
 
             Console.WriteLine($"[_SysLWMutex] _sys_lwmutex_unlock id: 0x{id:X8}");
 
-            if (GetLWMutex(id, out LV2LWMutex lwmutex))
+            if (TryGetLWMutex(id, out LV2LWMutex lwmutex))
             {
                 return lwmutex._Sys_Unlock();
 
@@ -133,6 +115,28 @@ namespace PS3Sharp.OS.Syscall
             else
             {
                 return CELL_ESRCH;
+            }
+        }
+
+        internal bool TryGetLWMutex(uint id, out LV2LWMutex lwmutex) => _lwMutexes.TryGetValue(id, out lwmutex);
+
+        private void AddLWMutex(uint id, LV2LWMutex mutex)
+        {
+            bool success = _lwMutexes.TryAdd(id, mutex);
+
+            if (!success)
+            {
+                throw new Exception($"[_SysLWMutex] Could not add lwmutex 0x{id:X8} to dictionary");
+            }
+        }
+
+        private void RemoveLWMutex(uint id)
+        {
+            bool success = _lwMutexes.TryRemove(id, out _);
+
+            if (!success)
+            {
+                throw new Exception($"[_SysLWMutex] Could not remove lwmutex 0x{id:X8} from dictionary");
             }
         }
     }

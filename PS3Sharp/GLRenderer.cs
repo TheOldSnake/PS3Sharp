@@ -1,4 +1,4 @@
-﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Desktop;
 using PS3Sharp.Cell.RSX;
@@ -7,67 +7,10 @@ using System.Runtime.InteropServices;
 
 namespace PS3Sharp
 {
-    internal static class GLRenderer
+    internal class GLRenderer : IDisposable
     {
-        internal static bool IsInitialized { get; private set; }
-
-        // Handles for VAO / EBO / Depth texture
-        internal static int VertexArrayObject { get; private set; }
-        internal static int ElementBufferObject { get; private set; }
-        internal static int DepthTexture { get; private set; }
-
-        // Current shaders / program handles
-        internal static int DefaultGLProgram { get; private set; }
-        internal static int CurrentProgramHandle { get; private set; }
-        internal static int CurrentVertexShaderHandle { get; private set; }
-        internal static int CurrentFragmentShaderHandle { get; private set; }
-
-        // Dictionaries probable need their own cache sealed class
-
-        // Shader checksum to handle lookup dictionaries
-        internal static Dictionary<(ulong vertexChecksum, ulong fragmentChecksum), int> CompiledPrograms { get; private set; } = [];
-        internal static Dictionary<ulong, int> CompiledVertexShaders { get; private set; } = [];
-        internal static Dictionary<ulong, int> CompiledFragmentShaders { get; private set; } = [];
-
-        // Surface to fbo/texture lookup dictionary
-        internal static Dictionary<uint, (int fbo, int texture)> Surfaces { get; private set; } = [];
-
-        // Texture cache lookup dictionary
-        internal static Dictionary<RSXTexture.TextureCacheKey, int> TextureCache { get; private set; } = [];
-
-        // Texture swizzle cache lookup dictionary (lookup by gl tex handle)
-        internal static Dictionary<int, RSXTexture.Swizzle> TextureSwizzleCache { get; private set; } = [];
-
-        // Vertex buffer cache lookup dictionary
-        internal static Dictionary<RSXVertexBuffer.VertexCacheKey, int> VertexCache { get; private set; } = [];
-
-        // Last framebuffer that was bound
-        internal static int LastBoundFBO { get; private set; }
-
-        private static readonly int FBOTextureUnit = 20; // or anything more than 15
-
-        // Global GL states (probaly need their own sealed class)
-        internal static float ClearColorR { get; private set; } = 0.0f;
-        internal static float ClearColorG { get; private set; } = 0.0f;
-        internal static float ClearColorB { get; private set; } = 0.0f;
-        internal static float ClearColorA { get; private set; } = 1.0f;
-
-        internal static float BlendColorR { get; private set; } = 0.0f;
-        internal static float BlendColorG { get; private set; } = 0.0f;
-        internal static float BlendColorB { get; private set; } = 0.0f;
-        internal static float BlendColorA { get; private set; } = 1.0f;
-
-        internal static bool ColorMaskR { get; private set; } = false;
-        internal static bool ColorMaskG { get; private set; } = false;
-        internal static bool ColorMaskB { get; private set; } = false;
-        internal static bool ColorMaskA { get; private set; } = false;
-
-
-        private static GameWindow Window => WindowManager.WindowInstance;
-
         // Default shaders that sample a given texture and draw it on screen - unused -
-
-        private static string DefaultVertexShader = @"
+        private const string DEFAULT_VERTEX_SHADER = @"
             #version 460
             out vec2 uv;
 
@@ -90,7 +33,7 @@ namespace PS3Sharp
                 uv = texcoords[gl_VertexID];
             }";
 
-        private static string DefaultFragmentShader = @"
+        private const string DEFAULT_FRAGMENT_SHADER = @"
             #version 460
 
             in vec2 uv;
@@ -101,20 +44,68 @@ namespace PS3Sharp
                 FragColor = texture(sourceTexture, uv);
             }";
 
-        private static readonly float[] BlackPixel = [0.0f, 0.0f, 0.0f, 0.0f];
+        internal const int FBO_TEXTURE_UNIT = 20; // or anything more than 15
 
-        internal static void InitializeRenderer()
+        // Handles for VAO / EBO / Depth texture
+        internal int VertexArrayObject { get; private set; }
+        internal int ElementBufferObject { get; private set; }
+        internal int DepthTexture { get; private set; }
+
+        // Current shaders / program handles
+        internal int DefaultGLProgram { get; private set; }
+        internal int CurrentProgramHandle { get; private set; }
+        internal int CurrentVertexShaderHandle { get; private set; }
+        internal int CurrentFragmentShaderHandle { get; private set; }
+
+        // Dictionaries probable need their own cache sealed class
+
+        // Shader checksum to handle lookup dictionaries
+        internal Dictionary<(ulong vertexChecksum, ulong fragmentChecksum), int> CompiledPrograms { get; private set; } = [];
+        internal Dictionary<ulong, int> CompiledVertexShaders { get; private set; } = [];
+        internal Dictionary<ulong, int> CompiledFragmentShaders { get; private set; } = [];
+
+        // Surface to fbo/texture lookup dictionary
+        internal Dictionary<uint, (int fbo, int texture)> Surfaces { get; private set; } = [];
+
+        // Texture cache lookup dictionary
+        internal Dictionary<RSXTexture.TextureCacheKey, int> TextureCache { get; private set; } = [];
+
+        // Texture swizzle cache lookup dictionary (lookup by gl tex handle)
+        internal Dictionary<int, RSXTexture.Swizzle> TextureSwizzleCache { get; private set; } = [];
+
+        // Vertex buffer cache lookup dictionary
+        internal Dictionary<RSXVertexBuffer.VertexCacheKey, int> VertexCache { get; private set; } = [];
+
+        // Last framebuffer that was bound
+        internal int LastBoundFBO { get; private set; }
+
+        // Global GL states (probaly need their own sealed class)
+        internal float ClearColorR { get; private set; } = 0.0f;
+        internal float ClearColorG { get; private set; } = 0.0f;
+        internal float ClearColorB { get; private set; } = 0.0f;
+        internal float ClearColorA { get; private set; } = 1.0f;
+
+        internal float BlendColorR { get; private set; } = 0.0f;
+        internal float BlendColorG { get; private set; } = 0.0f;
+        internal float BlendColorB { get; private set; } = 0.0f;
+        internal float BlendColorA { get; private set; } = 1.0f;
+
+        internal bool ColorMaskR { get; private set; } = false;
+        internal bool ColorMaskG { get; private set; } = false;
+        internal bool ColorMaskB { get; private set; } = false;
+        internal bool ColorMaskA { get; private set; } = false;
+
+        private readonly GameWindow _gameWindow;
+
+        internal GLRenderer(GameWindow gameWindow)
         {
-            if (Window == null)
-            {
-                throw new Exception("Must initialize the window manager first");
-            }
+            _gameWindow = gameWindow;
 
             CreateGLObjects();
 
             // Compile the default program
-            int vertex = CompileShader(ShaderType.VertexShader, DefaultVertexShader);
-            int fragment = CompileShader(ShaderType.FragmentShader, DefaultFragmentShader);
+            int vertex = CompileShader(ShaderType.VertexShader, DEFAULT_VERTEX_SHADER);
+            int fragment = CompileShader(ShaderType.FragmentShader, DEFAULT_FRAGMENT_SHADER);
             DefaultGLProgram = CreateAndUseProgram(vertex, fragment);
 
             // Bind VAO
@@ -136,12 +127,10 @@ namespace PS3Sharp
             // Clear the screen
             GL.ClearColor(ClearColorR, ClearColorG, ClearColorB, ClearColorA);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
-            Window.SwapBuffers();
-
-            IsInitialized = true;
+            _gameWindow.SwapBuffers();
         }
 
-        internal static void CreateGLObjects()
+        internal void CreateGLObjects()
         {
             // Create VAO and EBO
             VertexArrayObject = GL.GenVertexArray();
@@ -157,7 +146,7 @@ namespace PS3Sharp
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.DepthComponent24, 1280, 720, 0, PixelFormat.DepthComponent, PixelType.Float, 0);
         }
 
-        internal static int CreateAndUseProgram(int vertexHandle, int fragmentHandle)
+        internal int CreateAndUseProgram(int vertexHandle, int fragmentHandle)
         {
             CurrentVertexShaderHandle = vertexHandle;
             CurrentFragmentShaderHandle = fragmentHandle;
@@ -173,7 +162,7 @@ namespace PS3Sharp
             return CurrentProgramHandle;
         }
 
-        internal static void SwitchProgram(int handle)
+        internal void SwitchProgram(int handle)
         {
             if (CurrentProgramHandle != handle)
             {
@@ -182,7 +171,7 @@ namespace PS3Sharp
             }
         }
 
-        internal static int CompileShader(ShaderType type, string source)
+        internal int CompileShader(ShaderType type, string source)
         {
             int shader = GL.CreateShader(type);
             GL.ShaderSource(shader, source);
@@ -201,7 +190,7 @@ namespace PS3Sharp
             return shader;
         }
 
-        private static void Link(int program)
+        private void Link(int program)
         {
             //Link the program
             GL.LinkProgram(program);
@@ -212,7 +201,7 @@ namespace PS3Sharp
             }
         }
 
-        internal static void BlitFBO()
+        internal void BlitFBO()
         {
             // Just blit the last draw FBO into the screen, this is probably inaccurate
             // we can also draw a square instrad of GL.BlitFramebuffer
@@ -223,7 +212,7 @@ namespace PS3Sharp
             SwapBuffers();
         }
 
-        internal static void DrawFrame(uint surface_a)
+        internal void DrawFrame(uint surface_a)
         {          // unused
             // Draw a quad that uses surface A as a texture
             int surface_a_tex = GetSurfaceTexture(surface_a);
@@ -239,16 +228,16 @@ namespace PS3Sharp
             GL.Uniform1(GL.GetUniformLocation(DefaultGLProgram, "sourceTexture"), 0);
 
             GL.DrawArrays(PrimitiveType.TriangleStrip, 0, 4);
-            GLRenderer.SwapBuffers();
+            SwapBuffers();
 
             SwitchProgram(currentProgram);
             SetSurface(surface_a); // Rebinds surface a fbo
         }
 
-        internal static void SetSurface(uint address)
+        internal void SetSurface(uint address)
         {
             // Activate the fbo texture unit, we don't want to bind to one of the 16 units accidentally
-            GL.ActiveTexture(TextureUnit.Texture0 + FBOTextureUnit);
+            GL.ActiveTexture(TextureUnit.Texture0 + FBO_TEXTURE_UNIT);
 
             // If we created it before we can bind directly 
             if (Surfaces.TryGetValue(address, out (int fbo, int texture) surface))
@@ -288,7 +277,7 @@ namespace PS3Sharp
             GL.ActiveTexture(TextureUnit.Texture0);
         }
 
-        internal static int GetSurfaceTexture(uint address)
+        internal int GetSurfaceTexture(uint address)
         {
             int handle = -1;
 
@@ -300,12 +289,12 @@ namespace PS3Sharp
             return handle;
         }
 
-        internal static bool AddressIsSurface(uint address)
+        internal bool AddressIsSurface(uint address)
         {
             return Surfaces.ContainsKey(address);
         }
 
-        internal static bool UploadConstant(float[] values)
+        internal bool UploadConstant(float[] values)
         {
             int c_location = GL.GetUniformLocation(CurrentProgramHandle, $"c[0]");
             const int count = 468;
@@ -319,7 +308,7 @@ namespace PS3Sharp
             return false;
         }
 
-        internal static bool UploadUniform4(string name, Vector4 value)
+        internal bool UploadUniform4(string name, Vector4 value)
         {
             int location = GL.GetUniformLocation(CurrentProgramHandle, name);
 
@@ -332,7 +321,7 @@ namespace PS3Sharp
             return false;
         }
 
-        internal static void UploadUniform3(string name, Vector3 value)
+        internal void UploadUniform3(string name, Vector3 value)
         {
 
             int location = GL.GetUniformLocation(CurrentProgramHandle, name);
@@ -344,7 +333,7 @@ namespace PS3Sharp
             GL.Uniform3(location, value);
         }
 
-        internal static void UploadUniform2I(string name, Vector2i value)
+        internal void UploadUniform2I(string name, Vector2i value)
         {
             int location = GL.GetUniformLocation(CurrentProgramHandle, name);
 
@@ -356,17 +345,17 @@ namespace PS3Sharp
             GL.Uniform2(location, value);
         }
 
-        internal static int CreateGLTexture()
+        internal int CreateGLTexture()
         {
             return GL.GenTexture();
         }
 
-        internal static void SetTextureView(int tex, PixelInternalFormat pixelInternalFormat, int numLevels, int numLayers)
+        internal void SetTextureView(int tex, PixelInternalFormat pixelInternalFormat, int numLevels, int numLayers)
         {
             GL.TextureView(tex, TextureTarget.Texture2D, 0, pixelInternalFormat, 0, numLevels, 0, numLayers);
         }
 
-        internal static void BindTextureByHandle(int textureIndex, int glTexHandle, int flip)
+        internal void BindTextureByHandle(int textureIndex, int glTexHandle, int flip)
         {
             int samplerLocation = GL.GetUniformLocation(CurrentProgramHandle, $"u_tex{textureIndex}");
             int flipBoolLocation = GL.GetUniformLocation(CurrentProgramHandle, $"u_flip_tex_flags[{textureIndex}]");
@@ -383,7 +372,7 @@ namespace PS3Sharp
             GL.Uniform1(flipBoolLocation, flip);
         }
 
-        internal static void UploadTextureData<T>(PixelInternalFormat internalFormat, int width, int height, int pitch_pixels,
+        internal void UploadTextureData<T>(PixelInternalFormat internalFormat, int width, int height, int pitch_pixels,
             PixelFormat format, PixelType type, ReadOnlySpan<T> data, bool swapBytes) where T : unmanaged
         {
 
@@ -400,7 +389,7 @@ namespace PS3Sharp
             GL.TexImage2D<T>(TextureTarget.Texture2D, 0, internalFormat, width, height, 0, format, type, ref dataReference);
         }
 
-        internal static void UploadCompressedTextureData<T>(InternalFormat internalFormat, int width, int height, ReadOnlySpan<T> data) where T : unmanaged
+        internal void UploadCompressedTextureData<T>(InternalFormat internalFormat, int width, int height, ReadOnlySpan<T> data) where T : unmanaged
         {
 
             if (data.IsEmpty)
@@ -414,12 +403,12 @@ namespace PS3Sharp
             GL.CompressedTexImage2D(TextureTarget.Texture2D, 0, internalFormat, width, height, 0, data.Length, ref dataReference);
         }
 
-        internal static void GenerateMipMap()
+        internal void GenerateMipMap()
         {
             GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
         }
 
-        internal static void SetPixelStoreParameters(int swapBytes, int unpackRowLength)
+        internal void SetPixelStoreParameters(int swapBytes, int unpackRowLength)
         {
             GL.PixelStore(PixelStoreParameter.UnpackSwapBytes, swapBytes);
             GL.PixelStore(PixelStoreParameter.UnpackRowLength, unpackRowLength);
@@ -430,7 +419,7 @@ namespace PS3Sharp
             //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
         }
 
-        internal static void SetWrapParameters(TextureWrapMode wrapS, TextureWrapMode wrapT)
+        internal void SetWrapParameters(TextureWrapMode wrapS, TextureWrapMode wrapT)
         {
             //Console.WriteLine($"wrapS = {wrapS}");
             //Console.WriteLine($"wrapT = {wrapT}");
@@ -438,7 +427,7 @@ namespace PS3Sharp
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)wrapT);
         }
 
-        internal static void SetFilterParameters(TextureMinFilter minFilter, TextureMagFilter magFilter)
+        internal void SetFilterParameters(TextureMinFilter minFilter, TextureMagFilter magFilter)
         {
             //Console.WriteLine($"minFilter = {minFilter}");
             //Console.WriteLine($"magFilter = {magFilter}");
@@ -446,7 +435,7 @@ namespace PS3Sharp
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)magFilter);
         }
 
-        internal static void SetTextureSwizzle(RSXTexture.Swizzle swizzle)
+        internal void SetTextureSwizzle(RSXTexture.Swizzle swizzle)
         {
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleA, swizzle.A);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleR, swizzle.R);
@@ -454,27 +443,27 @@ namespace PS3Sharp
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleB, swizzle.B);
         }
 
-        internal static void SetTextureSwizzleA(int value)
+        internal void SetTextureSwizzleA(int value)
         {
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleA, value);
         }
 
-        internal static void SetTextureSwizzleR(int value)
+        internal void SetTextureSwizzleR(int value)
         {
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleR, value);
         }
 
-        internal static void SetTextureSwizzleG(int value)
+        internal void SetTextureSwizzleG(int value)
         {
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleG, value);
         }
 
-        internal static void SetTextureSwizzleB(int value)
+        internal void SetTextureSwizzleB(int value)
         {
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleB, value);
         }
 
-        internal static void ResetTextureSwizzle()
+        internal void ResetTextureSwizzle()
         {
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleA, (int)All.Alpha);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleR, (int)All.Red);
@@ -482,22 +471,22 @@ namespace PS3Sharp
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleB, (int)All.Blue);
         }
 
-        internal static void ClearColorBuffer()
+        internal void ClearColorBuffer()
         {
             GL.Clear(ClearBufferMask.ColorBufferBit);
         }
 
-        internal static void ClearDepthBuffer()
+        internal void ClearDepthBuffer()
         {
             GL.Clear(ClearBufferMask.DepthBufferBit);
         }
 
-        internal static void ClearStencilBuffer()
+        internal void ClearStencilBuffer()
         {
             GL.Clear(ClearBufferMask.StencilBufferBit);
         }
 
-        internal static void SetClearColor(float r, float g, float b, float a)
+        internal void SetClearColor(float r, float g, float b, float a)
         {
             ClearColorR = r;
             ClearColorG = g;
@@ -506,7 +495,7 @@ namespace PS3Sharp
             GL.ClearColor(r, g, b, a);
         }
 
-        internal static void SetBlendColor(float r, float g, float b, float a)
+        internal void SetBlendColor(float r, float g, float b, float a)
         {
             BlendColorR = r;
             BlendColorG = g;
@@ -515,7 +504,7 @@ namespace PS3Sharp
             GL.BlendColor(r, g, b, a);
         }
 
-        internal static void SetColorMask(bool r, bool g, bool b, bool a)
+        internal void SetColorMask(bool r, bool g, bool b, bool a)
         {
             ColorMaskR = r;
             ColorMaskG = g;
@@ -524,80 +513,80 @@ namespace PS3Sharp
             GL.ColorMask(r, g, b, a);
         }
 
-        internal static void EnableAttrib(int index)
+        internal void EnableAttrib(int index)
         {
             GL.EnableVertexAttribArray(index);
         }
 
-        internal static void DisableAttrib(int index)
+        internal void DisableAttrib(int index)
         {
             GL.DisableVertexAttribArray(index);
         }
 
-        internal static void EnableBlending()
+        internal void EnableBlending()
         {
             GL.Enable(EnableCap.Blend);
         }
 
-        internal static void DisableBlending()
+        internal void DisableBlending()
         {
             GL.Disable(EnableCap.Blend);
         }
 
-        internal static void SetBlendFactors(BlendingFactorSrc srcFactor, BlendingFactorDest dstFactor, BlendingFactorSrc srcAlpha, BlendingFactorDest dstAlpha)
+        internal void SetBlendFactors(BlendingFactorSrc srcFactor, BlendingFactorDest dstFactor, BlendingFactorSrc srcAlpha, BlendingFactorDest dstAlpha)
         {
             GL.BlendFuncSeparate(srcFactor, dstFactor, srcAlpha, dstAlpha);
         }
 
-        internal static void SetBlendEquation(BlendEquationMode rgb, BlendEquationMode alpha)
+        internal void SetBlendEquation(BlendEquationMode rgb, BlendEquationMode alpha)
         {
             GL.BlendEquationSeparate(rgb, alpha);
         }
 
-        internal static void EnabelDepthTest()
+        internal void EnabelDepthTest()
         {
             GL.Enable(EnableCap.DepthTest);
         }
 
-        internal static void DisableDepthTest()
+        internal void DisableDepthTest()
         {
             GL.Disable(EnableCap.DepthTest);
         }
 
-        internal static void SetDepthFunction(DepthFunction function)
+        internal void SetDepthFunction(DepthFunction function)
         {
             GL.DepthFunc(function);
         }
 
-        internal static void SetDepthMask(bool mask)
+        internal void SetDepthMask(bool mask)
         {
             GL.DepthMask(mask);
         }
 
-        internal static void SetScissor(int x, int y, int width, int height)
+        internal void SetScissor(int x, int y, int width, int height)
         {
             GL.Scissor(x, y, width, height);
         }
 
-        internal static int CreateGLVertexBuffer()
+        internal int CreateGLVertexBuffer()
         {
             return GL.GenBuffer();
         }
 
-        internal static void SetIndexList<T>(Span<T> indices) where T : unmanaged
+        internal void SetIndexList<T>(Span<T> indices) where T : unmanaged
         {
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
             GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * Unsafe.SizeOf<T>(), ref indices[0], BufferUsageHint.StreamDraw);
         }
 
-        internal static void SetIndexList<T>(List<T> indices) where T : unmanaged
+        internal void SetIndexList<T>(List<T> indices) where T : unmanaged
         {
             Span<T> indicesAsSpan = CollectionsMarshal.AsSpan<T>(indices);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
             GL.BufferData(BufferTarget.ElementArrayBuffer, indicesAsSpan.Length * Unsafe.SizeOf<T>(), ref indicesAsSpan[0], BufferUsageHint.StreamDraw);
         }
 
-        internal static void SetVertexAttrib(int location, int size, VertexAttribPointerType dtype, bool isNormalized)
+        internal void SetVertexAttrib(int location, int size, VertexAttribPointerType dtype, bool isNormalized)
         {
             GL.VertexAttribPointer(
                index: location,          // layout(location = X)
@@ -609,30 +598,70 @@ namespace PS3Sharp
             );
         }
 
-        internal static void BindBuffer(int handle)
+        internal void BindBuffer(int handle)
         {
             GL.BindBuffer(BufferTarget.ArrayBuffer, handle);
         }
 
-        internal static void UploadBuffer<T>(Span<T> data) where T : unmanaged
+        internal void UploadBuffer<T>(Span<T> data) where T : unmanaged
         {
             GL.BufferData(BufferTarget.ArrayBuffer, data.Length * Unsafe.SizeOf<T>(), ref data[0], BufferUsageHint.StreamDraw);
         }
 
-        internal static void DrawElements(BeginMode mode, int count, DrawElementsType drawElementsType)
+        internal void DrawElements(BeginMode mode, int count, DrawElementsType drawElementsType)
         {
             GL.DrawElements(mode, count, drawElementsType, 0);
         }
 
-        internal static void DrawArrays(PrimitiveType mode, int first, int count)
+        internal void DrawArrays(PrimitiveType mode, int first, int count)
         {
             GL.DrawArrays(mode, first, count);
         }
 
-        internal static void SwapBuffers()
+        internal void SwapBuffers()
         {
-            Window.SwapBuffers();
+            _gameWindow.SwapBuffers();
+        }
+
+        public void Dispose()
+        {
+            // TODO
+            Console.WriteLine($"[GLRenderer] Disposing GL objects");
+
+            GL.DeleteVertexArray(VertexArrayObject);
+            GL.DeleteTexture(DepthTexture);
+            GL.DeleteBuffer(ElementBufferObject);
+
+            foreach (int vertexBuffer in VertexCache.Values)
+            {
+                GL.DeleteBuffer(vertexBuffer);
+            }
+
+            foreach (int texture in TextureCache.Values)
+            {
+                GL.DeleteTexture(texture);
+            }
+
+            foreach ((int fbo, int texture) in Surfaces.Values)
+            {
+                GL.DeleteFramebuffer(fbo);
+                GL.DeleteTexture(texture);
+            }
+
+            foreach (int vertexShader in CompiledVertexShaders.Values)
+            {
+                GL.DeleteShader(vertexShader);
+            }
+
+            foreach (int fragmentShader in CompiledFragmentShaders.Values)
+            {
+                GL.DeleteShader(fragmentShader);
+            }
+
+            foreach (int program in CompiledPrograms.Values)
+            {
+                GL.DeleteProgram(program);
+            }
         }
     }
 }
-

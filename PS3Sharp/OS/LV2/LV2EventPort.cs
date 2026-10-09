@@ -1,6 +1,6 @@
-﻿using PS3Sharp.Cell;
+using PS3Sharp.Cell;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using System.Runtime.InteropServices;
 
 namespace PS3Sharp.OS.LV2
@@ -27,17 +27,20 @@ namespace PS3Sharp.OS.LV2
             internal BigEndian<int> Type;
             internal BigEndian<ulong> EqueueID;
         }
+        private readonly MemoryManager _memoryManager;
 
         internal readonly int Type;
         internal readonly ulong Name;
-        internal uint Handle { get; } = MemoryManager.GetHandle();
+        internal uint Handle { get; }
 
         private LV2EventQueue? _qonnectedQueue;
 
-        internal LV2EventPort(ulong name, int type)
+        internal LV2EventPort(ulong name, int type, MemoryManager memoryManager)
         {
             Name = name;
             Type = type;
+            _memoryManager = memoryManager;
+            Handle = _memoryManager.GetHandle();
         }
 
         internal void Connect(LV2EventQueue queue)
@@ -71,7 +74,6 @@ namespace PS3Sharp.OS.LV2
                 };
 
                 _qonnectedQueue.Send(data);
-
             }
             else
             {

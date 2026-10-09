@@ -1,8 +1,8 @@
 ﻿using PS3Sharp.Common;
 
-namespace PS3Sharp.ELFLoader
+namespace PS3Sharp
 {
-    internal static partial class ElfLoader
+    internal partial class ElfLoader
     {
         internal struct PRXRelocation
         {

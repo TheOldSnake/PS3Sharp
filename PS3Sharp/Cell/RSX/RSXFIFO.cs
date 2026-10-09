@@ -1,9 +1,7 @@
-﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using PS3Sharp.Cell.PPU.PPUInterpreter;
+using PS3Sharp.Cell.PPU.Interpreter;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
-using PS3Sharp.OS.Modules;
 using System.Runtime.CompilerServices;
 using static PS3Sharp.Cell.RSX.RSXCommand;
 
@@ -18,7 +16,7 @@ namespace PS3Sharp.Cell.RSX
 
             unsafe
             {
-                ReadOnlySpan<BigEndian<uint>> param_span = MemoryManager.CreateSpan<BigEndian<uint>>(CellGcmSys.IoToEa(ctrl->Get), (int)command.MethodCount);
+                ReadOnlySpan<BigEndian<uint>> param_span = _memoryManager.CreateSpan<BigEndian<uint>>(_cellGcmSys.IoToEa(ctrl->Get), (int)command.MethodCount);
                 ctrl->Get += command.MethodCount * 4;
 
                 // this is very bad and slow
@@ -609,25 +607,25 @@ namespace PS3Sharp.Cell.RSX
                 CurrentState.FrameDirty = false;
             }
 
-            if (!CellGcmSys.FlipHandler.IsNullPtr)
+            if (!_cellGcmSys.FlipHandler.IsNullPtr)
             {
-                PPUInterpreter.ExecuteFunction(_RSX_PPU_Thread, CellGcmSys.FlipHandler, toc: true, [1, 0, 0, 0, 0]);
+                PPUInterpreter.ExecuteFunction(_RSX_PPU_Thread, _cellGcmSys.FlipHandler, toc: true, [1, 0, 0, 0, 0]);
             }
 
-            MemoryManager.Write<ulong>(LabelsPtr + 0x10, 0);
-            MemoryManager.Write<ulong>(LabelsPtr + 0x10 + 0x8, 0);
+            _memoryManager.Write<ulong>(LabelsPtr + 0x10, 0);
+            _memoryManager.Write<ulong>(LabelsPtr + 0x10 + 0x8, 0);
 
             //Console.WriteLine($"[RSX] Flipped");
 
             LastFlipTime = Utility.ReadTime_Microseconds() * 8;
-            Interlocked.Exchange<ulong>(ref CellGcmSys.FlipStatus, 0);
+            Interlocked.Exchange<ulong>(ref _cellGcmSys.FlipStatus, 0);
         }
 
         private void Vblank()
         {
-            if (!CellGcmSys.VblankHandler.IsNullPtr)
+            if (!_cellGcmSys.VblankHandler.IsNullPtr)
             {
-                PPUInterpreter.ExecuteFunction(_RSX_PPU_Thread, CellGcmSys.VblankHandler, toc: true, [1, 0, 0, 0, 0]);
+                PPUInterpreter.ExecuteFunction(_RSX_PPU_Thread, _cellGcmSys.VblankHandler, toc: true, [1, 0, 0, 0, 0]);
             }
         }
 
@@ -637,7 +635,7 @@ namespace PS3Sharp.Cell.RSX
 
             unsafe
             {
-                CellGcmCtrlRegister* ctrl = CtrlPtr.AsNativePtr();
+                CellGcmCtrlRegister* ctrl = _memoryManager.GetPtr(CtrlPtr);
                 ctrl->Ref = ref_value;
             }
         }
@@ -659,7 +657,7 @@ namespace PS3Sharp.Cell.RSX
             // Reverse it
             uint wvalue = param.Dequeue();
             uint value = (wvalue & 0xff00ff00) | ((wvalue & 0xff) << 16) | ((wvalue >> 16) & 0xff);
-            MemoryManager.Write<uint>(LabelsPtr + CurrentState.CurrentSemaphoreOffset, value);
+            _memoryManager.Write<uint>(LabelsPtr + CurrentState.CurrentSemaphoreOffset, value);
             //Console.WriteLine($"[RSX] SemaphoreBackendwriteRelease [{CurrentState.CurrentSemaphoreOffset}] = 0x{value:X8}");
         }
 
@@ -674,7 +672,7 @@ namespace PS3Sharp.Cell.RSX
 
             // GuestPtr<uint> ptr = OffsetToAddress(CurrentState.CurrentSemaphoreOffset, CurrentState.CurrentSemaphoreLocation);
             GuestPtr<uint> ptr = LabelsPtr + CurrentState.CurrentSemaphoreOffset;
-            ref uint be_val = ref MemoryManager.DangerousBigEndianRef<uint>(ptr);
+            ref uint be_val = ref _memoryManager.DangerousBigEndianRef<uint>(ptr);
 
             //while (Volatile.Read(ref be_val) != arg.RawBE) {
             //    Thread.Yield();
@@ -684,7 +682,7 @@ namespace PS3Sharp.Cell.RSX
         private void SemaphoreRelease(Queue<BigEndian<uint>> param)
         {
             uint value = param.Dequeue();
-            MemoryManager.Write<uint>(LabelsPtr + CurrentState.CurrentSemaphoreOffset, value);
+            _memoryManager.Write<uint>(LabelsPtr + CurrentState.CurrentSemaphoreOffset, value);
             //Console.WriteLine($"[RSX] SemaphoreRelease [{CurrentState.CurrentSemaphoreOffset}] = 0x{value:X8}");
         }
 
@@ -999,19 +997,19 @@ namespace PS3Sharp.Cell.RSX
         private void VP_UploadFromID(Queue<BigEndian<uint>> param)
         {
             uint loadIndex = param.Dequeue() * 4; // Index of instruction to load at in the buffer
-            VertexShaderGenerator.VertexShaderLoadIndex = loadIndex;
+            _vertexShaderGenerator.VertexShaderLoadIndex = loadIndex;
         }
 
         private void VP_StartFromID(Queue<BigEndian<uint>> param)
         {
             uint startIndex = param.Dequeue() * 4; // Index of the first instruction in the program
-            VertexShaderGenerator.VertexShaderShaderStart = startIndex;
+            _vertexShaderGenerator.VertexShaderShaderStart = startIndex;
         }
 
         private void VP_UploadInstructions(Queue<BigEndian<uint>> param)
         {
             //Console.WriteLine($"RSX NV40TCL_VP_UPLOAD_INST param_count = {param.Count}");
-            VertexShaderGenerator.UploadInstructions(param);
+            _vertexShaderGenerator.UploadInstructions(param);
         }
 
         private void VP_AttributeEnable(Queue<BigEndian<uint>> param)
@@ -1089,7 +1087,7 @@ namespace PS3Sharp.Cell.RSX
             uint loc = (offset_loc & 3) - 1;
 
             uint address = OffsetToAddress(offset, loc);
-            FragmentShaderGenerator.FragmentShaderStartAddress = address;
+            _fragmentShaderGenerator.FragmentShaderStartAddress = address;
         }
 
         private void FP_Control(Queue<BigEndian<uint>> param)
@@ -1383,7 +1381,7 @@ namespace PS3Sharp.Cell.RSX
             //Console.WriteLine($"RSX NV40TCL_VTXBUF_ADDRESS location = {location} - offset = 0x{offset:X8} address = 0x{CurrentState.VertexAttributes[location].BufferAddress:X}");
         }
 
-        internal void VertexImmediate4F(uint methodRegister, Queue<BigEndian<uint>> param)
+        private void VertexImmediate4F(uint methodRegister, Queue<BigEndian<uint>> param)
         {
             uint location = (methodRegister - NV40TCL_VTX_ATTR_4F_0) >> 4;
 
@@ -1405,7 +1403,7 @@ namespace PS3Sharp.Cell.RSX
             //Console.WriteLine($"vertex buffer {location} imm: ({x}. {y}, {z}, {w})");
         }
 
-        internal void VertexImmediate2F(uint methodRegister, Queue<BigEndian<uint>> param)
+        private void VertexImmediate2F(uint methodRegister, Queue<BigEndian<uint>> param)
         {
             uint location = (methodRegister - NV40TCL_VTX_ATTR_2F_0) >> 3;
 
@@ -1451,7 +1449,7 @@ namespace PS3Sharp.Cell.RSX
             {
                 if (mode >= 1 && mode <= RSXInternalState.BeginModeLookup.Length)
                 {
-                    CurrentState.BeginMode = RSXInternalState.BeginModeLookup[mode - 1];
+                    CurrentState.BeginMode = RSXInternalState.BeginModeLookup[(int)(mode - 1)];
                 }
 
             }

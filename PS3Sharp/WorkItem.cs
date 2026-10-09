@@ -1,4 +1,4 @@
-﻿namespace PS3Sharp
+namespace PS3Sharp
 {
     internal sealed class WorkItem
     {

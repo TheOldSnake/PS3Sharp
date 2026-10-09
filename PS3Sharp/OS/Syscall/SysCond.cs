@@ -1,6 +1,6 @@
-﻿using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using PS3Sharp.OS.LV2;
 using System.Collections.Concurrent;
 
@@ -10,55 +10,44 @@ using static PS3Sharp.OS.LV2.LV2Cond;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal static class SysCond
+    internal class SysCond
     {
-        private static readonly ConcurrentDictionary<uint, LV2Cond> _conds = [];
-        internal static bool GetCond(uint cond_id, out LV2Cond cond) => _conds.TryGetValue(cond_id, out cond);
+        private readonly MemoryManager _memoryManager;
+        private readonly SysMutex _sysMutex;
+        private readonly ConcurrentDictionary<uint, LV2Cond> _conds = new();
 
-        internal static void AddCond(LV2Cond cond)
+        internal SysCond(MemoryManager memoryManager, SysMutex sysMutex)
         {
-            bool success = _conds.TryAdd(cond.Handle, cond);
-            if (!success)
-            {
-                throw new Exception($"[SysCond] Could not add cond 0x{cond.Handle:X8} to dictionary");
-            }
+            _memoryManager = memoryManager;
+            _sysMutex = sysMutex;
         }
 
-        internal static void RemoveCond(uint cond_id)
-        {
-            bool success = _conds.TryRemove(cond_id, out _);
-            if (!success)
-            {
-                throw new Exception($"[SysCond] Could not remove cond 0x{cond_id:X8} from dictionary");
-            }
-        }
-
-        internal static ulong SysCondCreate(PPU ppu)
+        internal ulong SysCondCreate(PPUThread ppu)
         {
             GuestPtr<uint> cond_id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             uint mutex_id = ppu.ReadArg<uint>(ARG1);
             GuestPtr<SysCondAttribute> attribute_ptr = ppu.ReadArg<GuestPtr<SysCondAttribute>>(ARG2);
 
             // Get the requested sys_mutex 
-            if (!SysMutex.GetMutex(mutex_id, out LV2Mutex? mutex))
+            if (!_sysMutex.TryGetMutex(mutex_id, out LV2Mutex? mutex))
             {
                 return CELL_ESRCH;
             }
 
             // Get the attribute
-            SysCondAttribute attribute = attribute_ptr.Read();
+            SysCondAttribute attribute = _memoryManager.ReadStruct<SysCondAttribute>(attribute_ptr);
 
             // Create and add the cond
-            LV2Cond cond = new(attribute, mutex);
+            LV2Cond cond = new(attribute, mutex, _memoryManager);
             AddCond(cond);
 
             // Write the cond id
-            MemoryManager.Write<uint>(cond_id_ptr, cond.Handle);
+            _memoryManager.Write<uint>(cond_id_ptr, cond.Handle);
 
             return CELL_OK;
         }
 
-        internal static ulong SysCondDestroy(PPU ppu)
+        internal ulong SysCondDestroy(PPUThread ppu)
         {
             uint cond_id = ppu.ReadArg<uint>(ARG0);
 
@@ -66,15 +55,14 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        internal static ulong SysCondWait(PPU ppu)
+        internal ulong SysCondWait(PPUThread ppu)
         {
             uint cond_id = ppu.ReadArg<uint>(ARG0);
             ulong us_timeout = ppu.ReadArg<ulong>(ARG1);
 
-            if (GetCond(cond_id, out LV2Cond cond))
+            if (TryGetCond(cond_id, out LV2Cond cond))
             {
-                return cond.Wait(ppu.ThreadID, us_timeout);
-
+                return cond.Wait(ppu, us_timeout);
             }
             else
             {
@@ -82,12 +70,12 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal static ulong SysCondSignal(PPU ppu)
+        internal ulong SysCondSignal(PPUThread ppu)
         {
             uint cond_id = ppu.ReadArg<uint>(ARG0);
 
 
-            if (GetCond(cond_id, out LV2Cond cond))
+            if (TryGetCond(cond_id, out LV2Cond cond))
             {
                 return cond.Signal();
 
@@ -98,11 +86,11 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal static ulong SysCondSignalAll(PPU ppu)
+        internal ulong SysCondSignalAll(PPUThread ppu)
         {
             uint cond_id = ppu.ReadArg<uint>(ARG0);
 
-            if (GetCond(cond_id, out LV2Cond cond))
+            if (TryGetCond(cond_id, out LV2Cond cond))
             {
                 return cond.SignalAll();
 
@@ -113,12 +101,12 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal static ulong SysCondSignalTo(PPU ppu)
+        internal ulong SysCondSignalTo(PPUThread ppu)
         {
             uint cond_id = ppu.ReadArg<uint>(ARG0);
             uint thread_id = ppu.ReadArg<uint>(ARG1);
 
-            if (GetCond(cond_id, out LV2Cond cond))
+            if (TryGetCond(cond_id, out LV2Cond cond))
             {
                 return cond.SignalTo(thread_id);
 
@@ -126,6 +114,26 @@ namespace PS3Sharp.OS.Syscall
             else
             {
                 return CELL_ESRCH;
+            }
+        }
+
+        internal bool TryGetCond(uint cond_id, out LV2Cond cond) => _conds.TryGetValue(cond_id, out cond);
+
+        private void AddCond(LV2Cond cond)
+        {
+            bool success = _conds.TryAdd(cond.Handle, cond);
+            if (!success)
+            {
+                throw new Exception($"[SysCond] Could not add cond 0x{cond.Handle:X8} to dictionary");
+            }
+        }
+
+        private void RemoveCond(uint cond_id)
+        {
+            bool success = _conds.TryRemove(cond_id, out _);
+            if (!success)
+            {
+                throw new Exception($"[SysCond] Could not remove cond 0x{cond_id:X8} from dictionary");
             }
         }
     }

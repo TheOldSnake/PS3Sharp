@@ -1,6 +1,7 @@
-﻿using PS3Sharp.Cell;
+using PS3Sharp.Cell;
+using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.ErrorCode;
 
@@ -24,24 +25,27 @@ namespace PS3Sharp.OS.LV2
             internal InlineData.InlineArray8<byte> Name;
         }
 
+        private readonly MemoryManager _memoryManager;
         private readonly SysMutexAttribute _attribute;
         private readonly object _mutex = new();
-        internal uint Handle { get; } = MemoryManager.GetHandle();
 
+        internal uint Handle { get; }
         internal SysMutexAttribute Attribute => _attribute;
         private bool _isRecursive => _attribute.protocol == SYS_SYNC_RECURSIVE;
         internal bool IsEntered => Monitor.IsEntered(_mutex);
 
-        internal LV2Mutex(SysMutexAttribute attribute)
+        internal LV2Mutex(SysMutexAttribute attribute, MemoryManager memoryManager)
         {
             _attribute = attribute;
+            _memoryManager = memoryManager;
+            Handle = _memoryManager.GetHandle();
         }
 
-        internal ulong Lock(ulong timeout = 0)
+        internal ulong Lock(PPUThread ppu, ulong timeout = 0)
         {
             if (Monitor.IsEntered(_mutex))
             {
-                return ReEnter();
+                return ReEnter(ppu);
             }
             else
             {
@@ -53,15 +57,14 @@ namespace PS3Sharp.OS.LV2
                 }
                 else
                 {
-                    Monitor.Enter(_mutex);
-                    ok = true;
+                    ok = InterruptableWait(ppu);
                 }
 
                 return ok ? CELL_OK : CELL_EBUSY;
             }
         }
 
-        private ulong ReEnter()
+        private ulong ReEnter(PPUThread ppu)
         {
             // Check if we're allowed to re-enter
             if (!_isRecursive)
@@ -69,7 +72,7 @@ namespace PS3Sharp.OS.LV2
                 return CELL_EDEADLK;
             }
 
-            Monitor.Enter(_mutex);
+            bool ok = InterruptableWait(ppu);
             return CELL_OK;
         }
 
@@ -88,6 +91,27 @@ namespace PS3Sharp.OS.LV2
 
             Monitor.Exit(_mutex);
             return CELL_OK;
+        }
+
+        private bool InterruptableWait(PPUThread ppu)
+        {
+            // Return true if the lock is acquired, false if the thread was interrupted
+            while (true)
+            {
+                // Wait for 100ms
+                bool ok = Monitor.TryEnter(_mutex, TimeSpan.FromMilliseconds(100));
+
+                if (ok)
+                {
+                    return true;
+                }
+
+                // Check if the thread is interrupted by shutdown signal and must return immediately
+                if (ppu.ShouldExit)
+                {
+                    return false;
+                }
+            }
         }
     }
 }

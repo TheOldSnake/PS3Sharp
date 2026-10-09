@@ -2,7 +2,7 @@
 
 namespace PS3Sharp.Cell.RSX
 {
-    internal static partial class VertexShaderGenerator
+    internal partial class VertexShaderGenerator
     {
 
         // Based on nv40_vertprog.h in PSL1GHT

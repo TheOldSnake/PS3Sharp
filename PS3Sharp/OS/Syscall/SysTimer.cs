@@ -1,13 +1,21 @@
-﻿using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
+using PS3Sharp.Memory;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal static class SysTimer
+    internal class SysTimer
     {
-        internal static uint SysTimerUSleep(PPU ppu)
+        private readonly MemoryManager _memoryManager;
+
+        internal SysTimer(MemoryManager memoryManager)
+        {
+            _memoryManager = memoryManager;
+        }
+
+        internal ulong SysTimerUSleep(PPUThread ppu)
         {
             ulong time_us = ppu.ReadArg<ulong>(ARG0);
             // SleepMicroseconds((long)time_us);
@@ -24,7 +32,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        internal static uint SysTimerSleep(PPU ppu)
+        internal ulong SysTimerSleep(PPUThread ppu)
         {
             ulong time_s = ppu.ReadArg<ulong>(ARG0);
             //int time_ms = (int)time_s * 1000;

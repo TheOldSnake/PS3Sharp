@@ -1,6 +1,6 @@
-﻿using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using PS3Sharp.OS.LV2;
 using System.Collections.Concurrent;
 using static PS3Sharp.Cell.Arguments;
@@ -9,48 +9,32 @@ using static PS3Sharp.OS.LV2.LV2EventFlag;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal static class SysEventFlag
+    internal class SysEventFlag
     {
-        private static readonly ConcurrentDictionary<uint, LV2EventFlag> _eventFlags = [];
+        private readonly MemoryManager _memoryManager;
+        private readonly ConcurrentDictionary<uint, LV2EventFlag> _eventFlags = new();
 
-        internal static bool GetEventFlag(uint handle, out LV2EventFlag? eventFlag) => _eventFlags.TryGetValue(handle, out eventFlag);
-
-        internal static void AddEventFlag(uint handle, LV2EventFlag eventFlag)
+        internal SysEventFlag(MemoryManager memoryManager)
         {
-            bool success = _eventFlags.TryAdd(handle, eventFlag);
-
-            if (!success)
-            {
-                throw new Exception($"[SysEventFlag] Could not add event flag: 0x{handle:X8} to dictionary");
-            }
+            _memoryManager = memoryManager;
         }
 
-        internal static void RemoveEventFlag(uint handle)
-        {
-            bool success = _eventFlags.TryRemove(handle, out _);
-
-            if (!success)
-            {
-                throw new Exception($"[SysEventFlag] Could not remove event flag: 0x{handle:X8} from dictionary");
-            }
-        }
-
-        internal static ulong SysEventFlagCreate(PPU ppu)
+        internal ulong SysEventFlagCreate(PPUThread ppu)
         {
             GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             GuestVoidPtr attributes_ptr = ppu.ReadArg<GuestVoidPtr>(ARG1);
             ulong initialValue = ppu.ReadArg<ulong>(ARG2);
 
-            LV2EventFlag eventFlag = new(initialValue);
+            LV2EventFlag eventFlag = new(initialValue, _memoryManager);
             AddEventFlag(eventFlag.Handle, eventFlag);
 
-            MemoryManager.Write<uint>(id_ptr, eventFlag.Handle);
+            _memoryManager.Write<uint>(id_ptr, eventFlag.Handle);
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_flag_create id = 0x{eventFlag.Handle:X8}");
             return CELL_OK;
         }
 
-        internal static ulong SysEventFlagDestroy(PPU ppu)
+        internal ulong SysEventFlagDestroy(PPUThread ppu)
         {
             uint id = ppu.ReadArg<uint>(ARG0);
             RemoveEventFlag(id);
@@ -59,7 +43,7 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        internal static ulong SysEventFlagWait(PPU ppu)
+        internal ulong SysEventFlagWait(PPUThread ppu)
         {
             uint id = ppu.ReadArg<uint>(ARG0);
             ulong bitPattern = ppu.ReadArg<ulong>(ARG1);
@@ -69,15 +53,15 @@ namespace PS3Sharp.OS.Syscall
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_flag_wait id = 0x{id:X8} mode = 0x{mode:X8} bp = 0x{bitPattern:X8}");
 
-            if (GetEventFlag(id, out LV2EventFlag? eventFlag))
+            if (TryGetEventFlag(id, out LV2EventFlag? eventFlag))
             {
-                ulong errorCode = eventFlag.Wait((SysEventFlagMode)mode, bitPattern, timeout_us, out ulong result);
+                ulong errorCode = eventFlag.Wait(ppu, (SysEventFlagMode)mode, bitPattern, timeout_us, out ulong result);
 
                 //Console.WriteLine($"[{ppu.ThreadName}] sys_event_flag_wait: woke up - returned: 0x{result:X8}");
 
                 if (errorCode == CELL_OK)
                 {
-                    MemoryManager.Write<ulong>(result_ptr, result);
+                    _memoryManager.Write<ulong>(result_ptr, result);
                 }
 
                 return errorCode;
@@ -89,14 +73,14 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal static ulong SysEventFlagSet(PPU ppu)
+        internal ulong SysEventFlagSet(PPUThread ppu)
         {
             uint id = ppu.ReadArg<uint>(ARG0);
             ulong bitPattern = ppu.ReadArg<ulong>(ARG1);
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_flag_set id = 0x{id:X} bp = 0x{bitPattern:X8}");
 
-            if (GetEventFlag(id, out LV2EventFlag? eventFlag))
+            if (TryGetEventFlag(id, out LV2EventFlag? eventFlag))
             {
                 eventFlag.Set(bitPattern);
 
@@ -109,14 +93,14 @@ namespace PS3Sharp.OS.Syscall
             return CELL_OK;
         }
 
-        internal static ulong SysEventFlagClear(PPU ppu)
+        internal ulong SysEventFlagClear(PPUThread ppu)
         {
             uint id = ppu.ReadArg<uint>(ARG0);
             ulong bitPattern = ppu.ReadArg<ulong>(ARG1);
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_flag_clear id = 0x{id:X} bp = 0x{bitPattern:X8}");
 
-            if (GetEventFlag(id, out LV2EventFlag? eventFlag))
+            if (TryGetEventFlag(id, out LV2EventFlag? eventFlag))
             {
                 eventFlag.Clear(bitPattern);
 
@@ -127,6 +111,28 @@ namespace PS3Sharp.OS.Syscall
             }
 
             return CELL_OK;
+        }
+
+        internal bool TryGetEventFlag(uint handle, out LV2EventFlag? eventFlag) => _eventFlags.TryGetValue(handle, out eventFlag);
+
+        private void AddEventFlag(uint handle, LV2EventFlag eventFlag)
+        {
+            bool success = _eventFlags.TryAdd(handle, eventFlag);
+
+            if (!success)
+            {
+                throw new Exception($"[SysEventFlag] Could not add event flag: 0x{handle:X8} to dictionary");
+            }
+        }
+
+        private void RemoveEventFlag(uint handle)
+        {
+            bool success = _eventFlags.TryRemove(handle, out _);
+
+            if (!success)
+            {
+                throw new Exception($"[SysEventFlag] Could not remove event flag: 0x{handle:X8} from dictionary");
+            }
         }
     }
 }

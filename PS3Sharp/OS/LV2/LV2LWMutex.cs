@@ -1,6 +1,7 @@
-﻿using PS3Sharp.Cell;
+using PS3Sharp.Cell;
+using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using System.Runtime.InteropServices;
 
 using static PS3Sharp.Cell.ErrorCode;
@@ -37,17 +38,19 @@ namespace PS3Sharp.OS.LV2
         internal const uint SYS_SYNC_PRIORITY_INHERIT = 0x3;      // Basic Priority Inheritance Protocol
         internal const uint SYS_SYNC_RETRY = 0x4;                 // Not selected while unlocking
 
+        private readonly MemoryManager _memoryManager;
         private readonly object _mutex = new();
-
-        internal readonly GuestPtr<LWMutex> InstancePtr;
         private readonly LWMutexAttrib _attributes;
         private readonly bool _isRecursive;
 
-        internal LV2LWMutex(GuestPtr<LWMutex> ptr, LWMutexAttrib attribute)
+        internal readonly GuestPtr<LWMutex> InstancePtr;
+
+        internal LV2LWMutex(GuestPtr<LWMutex> ptr, LWMutexAttrib attribute, MemoryManager memoryManager)
         {
             InstancePtr = ptr;
             _attributes = attribute;
             _isRecursive = attribute.Recursive == SYS_SYNC_RECURSIVE;
+            _memoryManager = memoryManager;
         }
 
         internal bool IsEntered()
@@ -91,7 +94,7 @@ namespace PS3Sharp.OS.LV2
 
 
         // functions for sys_lwmutex module:
-        internal ulong Lock(uint threadID, ulong us_timeout)
+        internal ulong Lock(PPUThread ppu, ulong us_timeout)
         {
             //bool canLock = CanLock(ref mutex, threadID);
 
@@ -102,26 +105,23 @@ namespace PS3Sharp.OS.LV2
             }
             else
             {
-
                 // Acquire the Mutex, with timeout if set
                 bool ok;
+
                 if (us_timeout > 0)
                 {
                     ok = Monitor.TryEnter(_mutex, TimeSpan.FromMicroseconds(us_timeout));
-
                 }
                 else
                 {
-                    Monitor.Enter(_mutex);
-                    ok = true;
+                    ok = InterruptableWait(ppu);
                 }
 
                 if (ok)
                 {
                     // if acquiring succeeds, set the owner to the current thread
-                    SetOwnerFirstTime(threadID);
+                    SetOwnerFirstTime(ppu.ThreadID);
                     return CELL_OK;
-
                 }
                 else
                 {
@@ -130,7 +130,7 @@ namespace PS3Sharp.OS.LV2
             }
         }
 
-        internal ulong TryLock(uint threadID)
+        internal ulong TryLock(PPUThread ppu)
         {
 
             if (Monitor.IsEntered(_mutex))
@@ -146,7 +146,7 @@ namespace PS3Sharp.OS.LV2
                 if (ok)
                 {
                     // if acquiring succeeds, set the owner to the current thread
-                    SetOwnerFirstTime(threadID);
+                    SetOwnerFirstTime(ppu.ThreadID);
                     return CELL_OK;
 
                 }
@@ -166,11 +166,11 @@ namespace PS3Sharp.OS.LV2
 
             Monitor.Enter(_mutex);
 
-            using (MemoryManager.AcquireTemporaryLock())
+            using (_memoryManager.AcquireTemporaryLock())
             {
                 unsafe
                 {
-                    LWMutex* mutex = InstancePtr.AsNativePtr();
+                    LWMutex* mutex = _memoryManager.GetPtr(InstancePtr);
                     uint currentCount = mutex->RecursiveCount;
                     mutex->RecursiveCount = currentCount + 1;
                 }
@@ -183,18 +183,18 @@ namespace PS3Sharp.OS.LV2
         {
             // For when we get the lock for the first time, not a re-entrance
 
-            using (MemoryManager.AcquireTemporaryLock())
+            using (_memoryManager.AcquireTemporaryLock())
             {
                 unsafe
                 {
-                    LWMutex* mutex = InstancePtr.AsNativePtr();
+                    LWMutex* mutex = _memoryManager.GetPtr(InstancePtr);
                     mutex->Owner = threadID;
                     mutex->RecursiveCount = _isRecursive ? 1u : 0u;
                 }
             }
         }
 
-        internal ulong Unlock(uint threadID)
+        internal ulong Unlock()
         {
             // Error if we did not lock the mutex before
             if (!Monitor.IsEntered(_mutex))
@@ -204,11 +204,11 @@ namespace PS3Sharp.OS.LV2
 
             // Handle updating the state before unlocking
             bool becameFree;
-            using (MemoryManager.AcquireTemporaryLock())
+            using (_memoryManager.AcquireTemporaryLock())
             {
                 unsafe
                 {
-                    LWMutex* mutex = InstancePtr.AsNativePtr();
+                    LWMutex* mutex = _memoryManager.GetPtr(InstancePtr);
 
                     if (_isRecursive && mutex->RecursiveCount > 0)
                     {
@@ -246,47 +246,26 @@ namespace PS3Sharp.OS.LV2
             return CELL_OK;
         }
 
+        private bool InterruptableWait(PPUThread ppu)
+        {
+            // Return true if the lock is acquired, false if the thread was interrupted
+            while (true)
+            {
 
-        /*private bool CanLock(ref SysLwMutex.LwMutex mutex, uint threadID) {
-            bool isFree = mutex.Owner == 0xFFFFFFFF;
-            bool ok;
+                // Wait for 100ms
+                bool ok = Monitor.TryEnter(_mutex, TimeSpan.FromMilliseconds(100));
 
-            using (MemoryManager.AcquireTemporaryLock()) {
-                if (isFree) {
-                    // If the mutex is free then we can lock
-                    ok = true;
-
-                } else {
-
-                    if (mutex.Owner == threadID) {
-                        // If the same thread tries to lock twice then it depends on "IsRecursive"
-                        ok = _isRecursive;
-
-                    } else {
-                        // Fially, if a different thread tries to lock a locked mutex it will wait
-                        ok = true;
-                    }
+                if (ok)
+                {
+                    return true;
                 }
 
+                // Check if the thread is interrupted by shutdown signal and must return immediately
+                if (ppu.ShouldExit)
+                {
+                    return false;
+                }
             }
-
-            return ok;
         }
-
-        private void UpdateMutexState(ref SysLwMutex.LwMutex mutex) {
-            MemoryManager.EnsureHoldingMemoryLock(); //caller must be in a memory lock block
-
-            if (_isRecursive && mutex.RecursiveCount > 0) {
-                mutex.RecursiveCount--;
-
-                if (mutex.RecursiveCount == 0) {
-                    mutex.Owner = 0xFFFFFFFF;
-                }
-
-            } else {
-                mutex.Owner = 0xFFFFFFFF;
-                mutex.RecursiveCount = 0;
-            }
-        }*/
     }
 }

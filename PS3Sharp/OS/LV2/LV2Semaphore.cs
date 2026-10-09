@@ -1,6 +1,7 @@
-﻿using PS3Sharp.Cell;
+using PS3Sharp.Cell;
+using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.ErrorCode;
 
@@ -20,16 +21,20 @@ namespace PS3Sharp.OS.LV2
             internal InlineData.InlineArray8<byte> Name;
         }
 
+        private readonly MemoryManager _memoryManager;
         private readonly SemaphoreSlim _semaphore;
         private readonly SysSemaphoreAttribute _attribute;
         private readonly int _maxCount;
-        internal uint Handle { get; } = MemoryManager.GetHandle();
 
-        internal LV2Semaphore(int initialCount, int maxCount, SysSemaphoreAttribute attribute)
+        internal uint Handle { get; }
+
+        internal LV2Semaphore(int initialCount, int maxCount, SysSemaphoreAttribute attribute, MemoryManager memoryManager)
         {
             _semaphore = new SemaphoreSlim(initialCount, maxCount);
             _attribute = attribute;
             _maxCount = maxCount;
+            _memoryManager = memoryManager;
+            Handle = _memoryManager.GetHandle();
         }
 
         internal ulong Release(int count)
@@ -58,7 +63,7 @@ namespace PS3Sharp.OS.LV2
             return ok ? CELL_OK : CELL_EBUSY;
         }
 
-        internal ulong Wait(ulong us_timeout)
+        internal ulong Wait(PPUThread ppu, ulong us_timeout)
         {
             bool ok;
 
@@ -68,11 +73,30 @@ namespace PS3Sharp.OS.LV2
             }
             else
             {
-                _semaphore.Wait();
-                ok = true;
+                ok = InterruptableWait(ppu);
             }
 
             return ok ? CELL_OK : CELL_ETIMEDOUT;
+        }
+
+        private bool InterruptableWait(PPUThread ppu)
+        {
+            while (true)
+            {
+                // Wait for 100ms
+                bool ok = _semaphore.Wait(TimeSpan.FromMilliseconds(100));
+
+                if (ok)
+                {
+                    return true;
+                }
+
+                // Check if the thread is interrupted by shutdown signal and must return immediately
+                if (ppu.ShouldExit)
+                {
+                    return false;
+                }
+            }
         }
     }
 }

@@ -1,11 +1,14 @@
-﻿using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace PS3Sharp.Cell.RSX
 {
-    internal static partial class FragmentShaderGenerator
+    internal partial class FragmentShaderGenerator
     {
+        private readonly MemoryManager _memoryManager;
+        private readonly RealitySynthesizer _rsx;
+
         private static readonly string FragmentProgramBase = @"
             #version 460        
 
@@ -97,21 +100,28 @@ namespace PS3Sharp.Cell.RSX
             }";
 
 
-        private static string[] Globals = ["r0", "r1", "r2", "r3", "r4", "cc0", "cc1"];
-        private static List<string> Locals = [];
-        private static List<uint> CurrentUniforms = [];                  // uniformes names that are in use for this current shader
-        private static string CurrentImmediate = string.Empty;
+        private string[] Globals = ["r0", "r1", "r2", "r3", "r4", "cc0", "cc1"];
+        private List<string> Locals = [];
+        private List<uint> CurrentUniforms = [];                  // uniformes names that are in use for this current shader
+        private string CurrentImmediate = string.Empty;
 
-        private static readonly string WhiteSpace = @"                ";
-        private static string CurrentFragmentShaderBody = string.Empty;
+        private readonly string WhiteSpace = @"                ";
+        private string CurrentFragmentShaderBody = string.Empty;
 
-        internal const uint INSTRUCTION_SIZE = 4 * sizeof(uint);          //4 32-bit words
-        internal static uint FragmentShaderStartAddress { get; set; }     // Address of the fragment shader program
-        private static uint CurrentAddress;
+        internal uint INSTRUCTION_SIZE = 4 * sizeof(uint);          //4 32-bit words
+        internal uint FragmentShaderStartAddress { get; set; }     // Address of the fragment shader program
+        private uint CurrentAddress;
 
-        private static List<FragmentInstruction> Buf = new();
-        internal static string AddressToUniform(uint address) => $"u_{address:x}";
-        internal static bool IsUniformInUse(uint address) => CurrentUniforms.Contains(address);
+        private List<FragmentInstruction> Buf = new();
+
+        internal FragmentShaderGenerator(MemoryManager memoryManager, RealitySynthesizer rsx)
+        {
+            _memoryManager = memoryManager;
+            _rsx = rsx;
+        }
+
+        internal string AddressToUniform(uint address) => $"u_{address:x}";
+        internal bool IsUniformInUse(uint address) => CurrentUniforms.Contains(address);
 
         //internal static string AddUniform(uint address) {
         //    if (!CurrentUniforms.Contains(address)) {
@@ -121,7 +131,7 @@ namespace PS3Sharp.Cell.RSX
         //    return ToUniform(address);
         //}
 
-        internal static string FinalizeFragmentShader()
+        internal string FinalizeFragmentShader()
         {
 
             //Add the base
@@ -159,13 +169,13 @@ namespace PS3Sharp.Cell.RSX
             return shader;
         }
 
-        private static uint Read32(uint address)
+        private uint Read32(uint address)
         {
-            uint value = MemoryManager.Read<uint>(address);
+            uint value = _memoryManager.Read<uint>(address);
             return (value >> 16) | (value << 16); // for some reason 16-bits are swapped
         }
 
-        private static Vector4 ReadVector4(uint address)
+        private Vector4 ReadVector4(uint address)
         {
             Vector4 v = new();
             v.X = Unsafe.BitCast<uint, float>(Read32(address + 0));
@@ -175,7 +185,7 @@ namespace PS3Sharp.Cell.RSX
             return v;
         }
 
-        internal static FragmentInstruction GetFragmentInstruction(uint address)
+        internal FragmentInstruction GetFragmentInstruction(uint address)
         {
             uint raw0 = Read32(address + 0);
             uint raw1 = Read32(address + 4);
@@ -193,7 +203,7 @@ namespace PS3Sharp.Cell.RSX
             return instruction;
         }
 
-        internal static ulong CalculateChecksum()
+        internal ulong CalculateChecksum()
         {
             uint currentAddress = FragmentShaderStartAddress;
             int instructionCount = 0;
@@ -232,7 +242,7 @@ namespace PS3Sharp.Cell.RSX
         }
 
         static bool stop = false;
-        internal static string GenerateFragmentShader()
+        internal string GenerateFragmentShader()
         {
             CurrentAddress = FragmentShaderStartAddress;
             CurrentFragmentShaderBody = string.Empty;
@@ -260,7 +270,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        internal static string HandleFragmentInstruction(FragmentInstruction instruction)
+        internal string HandleFragmentInstruction(FragmentInstruction instruction)
         {
 
             if (instruction.Opcode == NVFX_FP_OP_OPCODE_NOP)
@@ -507,7 +517,7 @@ namespace PS3Sharp.Cell.RSX
             return WhiteSpace + output;
         }
 
-        internal static string GetSource(int sourceNumber, FragmentInstruction instruction)
+        internal string GetSource(int sourceNumber, FragmentInstruction instruction)
         {
 
             FragmentInstruction.SRC src;
@@ -577,7 +587,7 @@ namespace PS3Sharp.Cell.RSX
                     const uint sizeOfVector = (4 * sizeof(uint));
 
                     //Check if there's a uniform for this address
-                    Dictionary<uint, OpenTK.Mathematics.Vector4> uniformsDict = PS3Sharp.RSX.CurrentState.AllUniforms;
+                    Dictionary<uint, OpenTK.Mathematics.Vector4> uniformsDict = _rsx.CurrentState.AllUniforms;
                     if (uniformsDict.ContainsKey(CurrentAddress))
                     {
 
@@ -641,7 +651,7 @@ namespace PS3Sharp.Cell.RSX
             return srcName;
         }
 
-        internal static (string, string) GetDestination(FragmentInstruction instruction)
+        internal (string, string) GetDestination(FragmentInstruction instruction)
         {
             string destName = string.Empty;
 
@@ -698,7 +708,7 @@ namespace PS3Sharp.Cell.RSX
             return (destName, channels);
         }
 
-        internal static string AssignConditionally(string destination, string destinationChannels, string generatedSource, FragmentInstruction instruction)
+        internal string AssignConditionally(string destination, string destinationChannels, string generatedSource, FragmentInstruction instruction)
         {
             // Generate the comparison operator
             string condition = string.Empty;
@@ -778,7 +788,7 @@ namespace PS3Sharp.Cell.RSX
             return resultCode;
         }
 
-        internal static void AddLocalVariable(string name)
+        internal void AddLocalVariable(string name)
         {
             if (!Locals.Contains(name))
             {
@@ -786,7 +796,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        internal static float GetScale(FragmentInstruction instruction)
+        internal float GetScale(FragmentInstruction instruction)
         {
             float scale = 1.000f;
 
@@ -805,7 +815,7 @@ namespace PS3Sharp.Cell.RSX
             return scale;
         }
 
-        internal static string GetCast(int numberOfChannels)
+        internal string GetCast(int numberOfChannels)
         {
             switch (numberOfChannels)
             {

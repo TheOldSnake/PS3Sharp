@@ -1,6 +1,6 @@
-﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Graphics.OpenGL4;
 using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Memory;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
@@ -8,12 +8,16 @@ namespace PS3Sharp.Cell.RSX
 {
     internal sealed class RSXElementBuffer
     {
+        private readonly MemoryManager _memoryManager;
         internal uint BufferAddress { get; set; }                 // Index list address
         internal DrawElementsType ElementBufferType { get; set; } // Index list element type
-
         internal int TotalElements { get; private set; }
-
         internal ScratchBuffer ScratchBuffer = new();
+
+        internal RSXElementBuffer(MemoryManager memoryManager)
+        {
+            _memoryManager = memoryManager;
+        }
 
         // I don't like passing the Queue here
         internal uint SetupElementBuffer(Queue<BigEndian<uint>> param)
@@ -32,6 +36,32 @@ namespace PS3Sharp.Cell.RSX
             }
 
             return max;
+        }
+
+        internal T GetMax<T>() where T : unmanaged, INumber<T>
+        {
+            Span<T> buffer = ScratchBuffer.GetLastRequestedBuffer<T>();
+            T max = buffer[0];
+
+            for (int i = 0; i < buffer.Length; i++)
+            {
+                if (buffer[i] > max)
+                {
+                    max = buffer[i];
+                }
+            }
+
+            return max;
+        }
+
+        internal Span<byte> GetLastScratchData()
+        {
+            return ScratchBuffer.GetLastRequestedBuffer<byte>();
+        }
+
+        internal void Reset()
+        {
+            TotalElements = 0;
         }
 
         private void DecodeAndFill<T>(Queue<BigEndian<uint>> param) where T : unmanaged, INumber<T>
@@ -59,37 +89,11 @@ namespace PS3Sharp.Cell.RSX
 
             for (uint i = 0; i < buffer.Length; i++)
             {
-                buffer[(int)i] = MemoryManager.Read<T>(currentAddress);
+                buffer[(int)i] = _memoryManager.Read<T>(currentAddress);
                 currentAddress += sizeOfT;
             }
 
             TotalElements = newTotal;
-        }
-
-        internal T GetMax<T>() where T : unmanaged, INumber<T>
-        {
-            Span<T> buffer = ScratchBuffer.GetLastRequestedBuffer<T>();
-            T max = buffer[0];
-
-            for (int i = 0; i < buffer.Length; i++)
-            {
-                if (buffer[i] > max)
-                {
-                    max = buffer[i];
-                }
-            }
-
-            return max;
-        }
-
-        internal Span<byte> GetLastScratchData()
-        {
-            return ScratchBuffer.GetLastRequestedBuffer<byte>();
-        }
-
-        internal void Reset()
-        {
-            TotalElements = 0;
         }
     }
 }

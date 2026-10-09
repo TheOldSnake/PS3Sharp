@@ -1,6 +1,7 @@
-﻿using PS3Sharp.Common;
-using PS3Sharp.Memory_Manager;
+using PS3Sharp.Common;
+using PS3Sharp.Memory;
 using PS3Sharp.OS.Syscall;
+using PS3Sharp.SFOLoader;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -8,61 +9,21 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.FileSystem
 {
-    internal static class FileSystemManager
+    internal sealed partial class FileSystemManager
     {
-        private static readonly ConcurrentDictionary<int, GuestFile> _openFiles = new();
-        private static readonly ConcurrentDictionary<int, GuestDirectory> _openDirectories = new();
-        internal sealed class GuestFile : IDisposable
+        private readonly MemoryManager _memoryManager;
+        private readonly ConcurrentDictionary<int, GuestFile> _openFiles = new();
+        private readonly ConcurrentDictionary<int, GuestDirectory> _openDirectories = new();
+        private SFO? _currentSFO;
+
+        internal string CurrentContentDirectory { get; private set; } = string.Empty;
+        internal string CurrentELFDirectory { get; private set; } = string.Empty;
+        internal string CurrentSFODirectory { get; private set; } = string.Empty;
+
+        internal FileSystemManager(MemoryManager memoryManager)
         {
-            internal readonly string Path;
-            internal readonly int FileDescriptor;
-            internal readonly uint OwnerThread;
-            internal readonly FileStream Stream;
-            internal readonly BinaryReader Reader;
-            internal readonly BinaryWriter Writer;
+            _memoryManager = memoryManager;
 
-            internal readonly ulong Size;
-
-            internal GuestFile(string path, int fileDescriptor, uint ownerThread)
-            {
-                Path = path;
-                FileDescriptor = fileDescriptor;
-                Size = GetFileSize(path);
-                OwnerThread = ownerThread;
-                Stream = File.OpenRead(path); // todo: open or create flag
-                Reader = new BinaryReader(Stream);
-                //Writer = new BinaryWriter(Stream);
-                Stream.Seek(0, SeekOrigin.Begin);
-            }
-
-            public void Dispose()
-            {
-                Reader.Dispose();
-                Stream.Dispose();
-            }
-        }
-
-        internal sealed class GuestDirectory
-        {
-            internal readonly string Path;
-            internal readonly int FileDescriptor;
-            internal readonly uint OwnerThread;
-            internal readonly ulong Size;
-            internal int CurrentEntry = 0;
-            internal DirectoryInfo DirectoryInfo { get; private set; }
-
-            internal GuestDirectory(string path, int fileDescriptor, uint ownerThread)
-            {
-                Path = path;
-                FileDescriptor = fileDescriptor;
-                OwnerThread = ownerThread;
-                Size = GetDirectorySize(path);
-                DirectoryInfo = new DirectoryInfo(path);
-            }
-        }
-
-        internal static void InitializeFileSystem()
-        {
             if (!Directory.Exists(@"dev_hdd0\game"))
             {
                 Console.WriteLine(@"Creating dev_hdd0\game");
@@ -76,20 +37,40 @@ namespace PS3Sharp.FileSystem
             }
         }
 
-        internal static bool IsDirectory(string path) => Directory.Exists(path);
-        internal static bool IsDirectoryOpen(int fd) => _openDirectories.ContainsKey(fd);
-        internal static bool IsDirectoryOpen(string path) => _openDirectories.Values.Any(f => f.Path == path);
-        internal static bool GetDirectory(int fd, out GuestDirectory? directory) => _openDirectories.TryGetValue(fd, out directory);
+        internal bool IsDirectory(string path) => Directory.Exists(path);
+        internal bool IsDirectoryOpen(int fd) => _openDirectories.ContainsKey(fd);
+        internal bool IsDirectoryOpen(string path) => _openDirectories.Values.Any(f => f.Path == path);
+        internal bool GetDirectory(int fd, out GuestDirectory? directory) => _openDirectories.TryGetValue(fd, out directory);
 
-        internal static bool IsFile(string path) => File.Exists(path);
-        internal static bool IsFileOpen(int fd) => _openFiles.ContainsKey(fd);
-        internal static bool IsFileOpen(string path) => _openFiles.Values.Any(f => f.Path == path);
-        internal static bool IsEncryptedFile(string path) => path.EndsWith(".edat", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".sdat", StringComparison.OrdinalIgnoreCase);
-        internal static bool HasBeenDecrypted(string path) => File.Exists(path + ".unedat");
-        internal static GuestFile GetFileByPath(string path) => _openFiles.Values.First(f => f.Path == path); // Normally not used
-        internal static bool GetFile(int fd, out GuestFile? file) => _openFiles.TryGetValue(fd, out file);
+        internal bool IsFile(string path) => File.Exists(path);
+        internal bool IsFileOpen(int fd) => _openFiles.ContainsKey(fd);
+        internal bool IsFileOpen(string path) => _openFiles.Values.Any(f => f.Path == path);
+        internal bool IsEncryptedFile(string path) => path.EndsWith(".edat", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".sdat", StringComparison.OrdinalIgnoreCase);
+        internal bool HasBeenDecrypted(string path) => File.Exists(path + ".unedat");
+        internal GuestFile GetFileByPath(string path) => _openFiles.Values.First(f => f.Path == path); // Normally not used
+        internal bool GetFile(int fd, out GuestFile? file) => _openFiles.TryGetValue(fd, out file);
 
-        internal static ulong GetFileSize(string filePath)
+        internal static bool IsGuestAbsolutePath(string guestPath) => guestPath.StartsWith('/');
+
+        internal static string GetHostPath(string guestPath)
+        {
+            //Assuming absolute paths 
+            if (!IsGuestAbsolutePath(guestPath))
+            {
+                throw new Exception($"[FileSystem] path is not absolute -- path = {guestPath}");
+            }
+
+            string hostPath = guestPath.Substring(1).Replace($"/", $"\\");
+            return hostPath;
+        }
+
+        internal static string GetGuestPath(string hostPath)
+        {
+            string guestPath = "/" + hostPath.Replace($"\\", $"/");
+            return guestPath;
+        }
+
+        internal ulong GetFileSize(string filePath)
         {
             if (!File.Exists(filePath))
             {
@@ -100,7 +81,7 @@ namespace PS3Sharp.FileSystem
             return (ulong)fileInfo.Length; // size in bytes
         }
 
-        internal static ulong GetDirectorySize(string directoryPath)
+        internal ulong GetDirectorySize(string directoryPath)
         {
             if (!Directory.Exists(directoryPath))
             {
@@ -111,7 +92,7 @@ namespace PS3Sharp.FileSystem
             return (ulong)dir.GetFiles("*", SearchOption.AllDirectories).Sum(file => file.Length);
         }
 
-        internal static ulong OpenFile(string host_path, int fd, uint ownerThread)
+        internal ulong OpenFile(string host_path, int fd, uint ownerThread)
         {
 
             // Error if it's a directory
@@ -127,13 +108,13 @@ namespace PS3Sharp.FileSystem
             }
 
             // Open file
-            GuestFile file = new(host_path, fd, ownerThread);
+            GuestFile file = new(host_path, GetFileSize(host_path), fd, ownerThread);
             _openFiles.TryAdd(fd, file);
 
             return CELL_OK;
         }
 
-        internal static ulong OpenDirectory(string host_path, int fd, uint ownerThread)
+        internal ulong OpenDirectory(string host_path, int fd, uint ownerThread)
         {
 
             // Error if it's a file
@@ -149,19 +130,19 @@ namespace PS3Sharp.FileSystem
             }
 
             // Open directory
-            GuestDirectory directory = new(host_path, fd, ownerThread);
+            GuestDirectory directory = new(host_path, GetDirectorySize(host_path), fd, ownerThread);
             _openDirectories.TryAdd(fd, directory);
 
             return CELL_OK;
         }
 
-        internal static void Close(int fd)
+        internal void Close(int fd)
         {
             _openFiles.Remove(fd, out GuestFile? file);
-            file?.Dispose();
+            file?.Close();
         }
 
-        internal static long Seek(int fd, long offset, int mode)
+        internal long Seek(int fd, long offset, int mode)
         {
             if (mode < 0 || mode > 2)
             {
@@ -180,7 +161,7 @@ namespace PS3Sharp.FileSystem
             return file.Stream.Position;
         }
 
-        internal static ulong Read(int fd, ulong nbytes, GuestVoidPtr destinationBuffer)
+        internal ulong Read(int fd, ulong nbytes, GuestVoidPtr destinationBuffer)
         {
             if (nbytes > int.MaxValue)
             {
@@ -189,7 +170,7 @@ namespace PS3Sharp.FileSystem
 
             unsafe
             {
-                Span<byte> nativeBuffer = MemoryManager.CreateSpan<byte>(destinationBuffer, (int)nbytes);
+                Span<byte> nativeBuffer = _memoryManager.CreateSpan<byte>(destinationBuffer, (int)nbytes);
 
                 if (_openFiles.TryGetValue(fd, out GuestFile? file))
                 {
@@ -216,7 +197,7 @@ namespace PS3Sharp.FileSystem
             return nbytes;
         }
 
-        internal static Span<byte> ReadSpan(int fd, ulong nbytes)
+        internal Span<byte> ReadSpan(int fd, ulong nbytes)
         {
             if (nbytes > int.MaxValue)
             {
@@ -234,7 +215,7 @@ namespace PS3Sharp.FileSystem
             }
         }
 
-        internal static ulong Write(int fd, int nBytes, GuestVoidPtr sourceBuffer)
+        internal ulong Write(int fd, int nBytes, GuestVoidPtr sourceBuffer)
         {
             if (_openFiles.TryGetValue(fd, out GuestFile? file))
             {
@@ -247,15 +228,15 @@ namespace PS3Sharp.FileSystem
 
                 unsafe
                 {
-                    Span<byte> nativeBuffer = MemoryManager.CreateSpan<byte>(sourceBuffer, nBytes);
-                    file.Writer.Write(nativeBuffer);
+                    Span<byte> nativeBuffer = _memoryManager.CreateSpan<byte>(sourceBuffer, nBytes);
+                    file.Writer!.Write(nativeBuffer);
                 }
             }
 
             return (ulong)nBytes;
         }
 
-        internal static ulong ReadDir(int fd, GuestPtr<SysFs.CellFsDirent> dirent_ptr)
+        internal ulong ReadDir(int fd, GuestPtr<SysFs.CellFsDirent> dirent_ptr)
         {
             // Todo: move constants 
             const byte CELL_FS_TYPE_DIRECTORY = 1;
@@ -269,12 +250,12 @@ namespace PS3Sharp.FileSystem
                 throw new InvalidOperationException("[FileSystem] Directory was not open!");
             }
 
-            DirectoryInfo dir_info = directory.DirectoryInfo;
+            DirectoryInfo dir_info = directory!.DirectoryInfo;
             IEnumerable<FileSystemInfo> fs_info_list = dir_info.EnumerateFileSystemInfos();
 
             unsafe
             {
-                SysFs.CellFsDirent* dirent = dirent_ptr.AsNativePtr();
+                SysFs.CellFsDirent* dirent = _memoryManager.GetPtr(dirent_ptr);
 
                 Span<byte> name_buffer;
                 Span<byte> name_dest = dirent->Name;
@@ -326,6 +307,100 @@ namespace PS3Sharp.FileSystem
             }
 
             return dirent_size;
+        }
+
+        internal string GetRequestedExecutable()
+        {
+            List<(string content, string elf)> executables = GetAllExecutables();
+
+            if (executables.Count == 0)
+            {
+                Console.WriteLine($"Did not find executables");
+                return string.Empty;
+            }
+
+            Console.WriteLine($"Select which executable to launch:");
+
+            for (int i = 0; i < executables.Count; i++)
+            {
+                (string content, string elf) executable = executables[i];
+                Console.WriteLine($@"{i}: {executable.content}\{executable.elf}");
+            }
+
+            int index;
+
+            while (true)
+            {
+                if (int.TryParse(Console.ReadLine(), out index))
+                {
+                    if (index < executables.Count)
+                    {
+                        break;
+                    }
+                }
+
+                Console.WriteLine($"Invalid input, please try again");
+            }
+
+            (string content, string elf) = executables[index];
+
+            CurrentContentDirectory = $@"dev_hdd0\game\{content}";
+            Console.WriteLine($"Content: {CurrentContentDirectory}");
+
+            CurrentELFDirectory = $"{CurrentContentDirectory}{@"\USRDIR\"}{elf}";
+            Console.WriteLine($"Elf: {CurrentELFDirectory}");
+
+            string expectedSFOPath = $"{CurrentContentDirectory}{@"\PARAM.SFO"}";
+            CurrentSFODirectory = File.Exists(expectedSFOPath) ? expectedSFOPath : string.Empty;
+
+            if (CurrentSFODirectory != string.Empty)
+            {
+                Console.WriteLine($"Sfo: {CurrentSFODirectory}");
+            }
+
+            return CurrentELFDirectory;
+        }
+
+        internal SFO GetCurrentSFO()
+        {
+            if (_currentSFO == null)
+            {
+                if (File.Exists(CurrentSFODirectory))
+                {
+                    _currentSFO = SFO.LoadSFO(CurrentSFODirectory);
+                }
+                else
+                {
+                    throw new Exception($"[FileSystemManager] PARAM.SFO was not found");
+                }
+            }
+
+            return _currentSFO!;
+        }
+
+        private List<(string content, string elf)> GetAllExecutables()
+        {
+            DirectoryInfo allContents = new(@"dev_hdd0\game");
+            List<(string content, string elf)> executables = [];
+
+            foreach (DirectoryInfo content in allContents.GetDirectories())
+            {
+                foreach (DirectoryInfo contentSubDirectory in content.GetDirectories())
+                {
+                    if (contentSubDirectory.Name == "USRDIR")
+                    {
+                        foreach (FileInfo usrDirFile in contentSubDirectory.GetFiles())
+                        {
+                            if (usrDirFile.Name.EndsWith($".elf"))
+                            {
+                                executables.Add((content.Name, usrDirFile.Name));
+                            }
+                        }
+                    }
+                }
+            }
+
+            return executables;
         }
     }
 }
