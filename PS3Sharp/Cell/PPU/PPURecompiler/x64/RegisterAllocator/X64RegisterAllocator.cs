@@ -6,9 +6,9 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
 {
     internal sealed partial class X64RegisterAllocator
     {
-
         // Register pools
-        private readonly AssemblerRegister64[] StaticRegisterPool64 = [
+        private readonly AssemblerRegister64[] StaticRegisterPool64 =
+        [
            rax,
            rcx,
            rdx,
@@ -27,7 +27,8 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
            r15,
         ];
 
-        private readonly AssemblerRegister64[] StaticNonVolatileRegisterPool64 = [
+        private readonly AssemblerRegister64[] StaticNonVolatileRegisterPool64 = 
+        [
             rbx,
             rbp,
             rsi,
@@ -38,7 +39,8 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
             r15,
         ];
 
-        private readonly AssemblerRegister64[] StaticVolatileRegisterPool64 = [
+        private readonly AssemblerRegister64[] StaticVolatileRegisterPool64 = 
+        [
             rax,
             rcx,
             rdx,
@@ -57,24 +59,12 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
         internal ReadOnlySpan<AssemblerRegister64> AllNonVolatileRegisters => StaticNonVolatileRegisterPool64;
         internal ReadOnlySpan<AssemblerRegister64> AllVolatileRegisters => StaticVolatileRegisterPool64;
 
-        private List<AssemblerRegister64> CurrentRegisterPool = new();
+        private List<AssemblerRegister64> CurrentRegisterPool = [];
         private bool _canAllocate => CurrentRegisterPool.Count > 0;
         private int _spillIndex = 0;
 
         internal bool IsVolatile(AssemblerRegister64 reg) => StaticVolatileRegisterPool64.Contains(reg);
         internal bool IsNonVolatile(AssemblerRegister64 reg) => StaticNonVolatileRegisterPool64.Contains(reg);
-
-        private AssemblerRegister64 RequestRegister64()
-        {
-            AssemblerRegister64 reg = CurrentRegisterPool[0];
-            CurrentRegisterPool.Remove(reg);
-            return reg;
-        }
-
-        private void FreeRegister64(AssemblerRegister64 reg)
-        {
-            CurrentRegisterPool.Add(reg);
-        }
 
         internal void ResetAllocatorState()
         {
@@ -82,17 +72,16 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
             CurrentRegisterPool.Clear();
         }
 
-        private static bool RequiresReservedRaxRdx(IRInstruction instruction)
+        internal Dictionary<Value, Location> AllocateHostRegisters(List<IRInstruction> code, Dictionary<Value, ulong> knownConstants)
         {
-            bool isSpecialMulDiv =
-                instruction.Opcode == IRInstruction.Op.IMulHD ||
-                instruction.Opcode == IRInstruction.Op.MulHD ||
-                instruction.Opcode == IRInstruction.Op.CheckedIDivD ||
-                instruction.Opcode == IRInstruction.Op.CheckedDivD ||
-                instruction.Opcode == IRInstruction.Op.CheckedIDivW ||
-                instruction.Opcode == IRInstruction.Op.CheckedDivW;
+            // Reset
+            ResetAllocatorState();
+            CurrentRegisterPool = CreateRegisterPool(code);
 
-            return isSpecialMulDiv;
+            List<Liveness> livenessList = BuildLivenessList(code, knownConstants);
+            Dictionary<Value, Location> allocatedRegs = AssignHostRegs(livenessList);
+
+            return allocatedRegs;
         }
 
         internal List<AssemblerRegister64> CreateRegisterPool(List<IRInstruction> code)
@@ -134,25 +123,38 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
             return regs;
         }
 
-        internal Dictionary<Value, Location> AllocateHostRegisters(List<IRInstruction> code, Dictionary<Value, ulong> knownConstants)
+        private AssemblerRegister64 RequestRegister64()
         {
-            // Reset
-
-            ResetAllocatorState();
-            CurrentRegisterPool = CreateRegisterPool(code);
-
-            List<Liveness> livenessList = BuildLivenessList(code, knownConstants);
-            Dictionary<Value, Location> allocatedRegs = new();
-
-            AssignHostRegs(allocatedRegs, livenessList);
-
-            return allocatedRegs;
+            AssemblerRegister64 reg = CurrentRegisterPool[0];
+            CurrentRegisterPool.Remove(reg);
+            return reg;
         }
 
-        private void AssignHostRegs(Dictionary<Value, Location> locations, List<Liveness> intervals)
+        private void FreeRegister64(AssemblerRegister64 reg)
         {
+            CurrentRegisterPool.Add(reg);
+        }
+
+        private static bool RequiresReservedRaxRdx(IRInstruction instruction)
+        {
+            bool isSpecialMulDiv =
+                instruction.Opcode == IRInstruction.Op.IMulHD ||
+                instruction.Opcode == IRInstruction.Op.MulHD ||
+                instruction.Opcode == IRInstruction.Op.CheckedIDivD ||
+                instruction.Opcode == IRInstruction.Op.CheckedDivD ||
+                instruction.Opcode == IRInstruction.Op.CheckedIDivW ||
+                instruction.Opcode == IRInstruction.Op.CheckedDivW;
+
+            return isSpecialMulDiv;
+        }
+
+        private Dictionary<Value, Location> AssignHostRegs(List<Liveness> intervals)
+        {
+            // Final locations
+            Dictionary<Value, Location> locations = [];
+
             // Values that currently occupy host registers.
-            List<Location> currentActiveIntervals = new();
+            List<Location> currentActiveIntervals = [];
 
             foreach (Liveness currentInterval in intervals)
             {
@@ -174,7 +176,6 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
                 if (currentInterval.LastUse < victim.Liveness.LastUse)
                 {
                     Spill(locations, currentInterval);
-
                 }
                 else
                 {
@@ -183,6 +184,8 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
                     EvictAndSpill(locations, currentActiveIntervals, currentInterval, victim);
                 }
             }
+
+            return locations;
         }
 
         private void RemoveExpiredIntervals(List<Location> active, Liveness currentInterval)
