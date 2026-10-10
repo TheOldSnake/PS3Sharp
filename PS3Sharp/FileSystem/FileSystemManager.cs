@@ -221,7 +221,7 @@ namespace PS3Sharp.FileSystem
             {
 
                 // Hacky check to ensure we don't write something outside app_home
-                if (!file.Path.StartsWith(@"D:\RPCS3\app_home\"))
+                if (!file.Path.StartsWith(@"app_home\"))
                 {
                     throw new Exception($"Attempt to write to file outside app_home, path = {file.Path}");
                 }
@@ -361,21 +361,56 @@ namespace PS3Sharp.FileSystem
             return CurrentELFDirectory;
         }
 
-        internal SFO GetCurrentSFO()
+        internal string GetCurrentTitleString()
         {
+            if (TryGetCurrentSFO(out SFO? sfo))
+            {
+                return sfo!.Title;
+            }
+            else
+            {
+                return Path.GetFileName(CurrentELFDirectory);
+            }
+        }
+
+        internal string GetCurrentTitleID()
+        {
+            if (TryGetCurrentSFO(out SFO? sfo))
+            {
+                return sfo!.TitleID;
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        internal bool TryGetCurrentSFO(out SFO? sfo)
+        {
+            bool success;
+
             if (_currentSFO == null)
             {
-                if (File.Exists(CurrentSFODirectory))
-                {
-                    _currentSFO = SFO.LoadSFO(CurrentSFODirectory);
-                }
-                else
-                {
-                    throw new Exception($"[FileSystemManager] PARAM.SFO was not found");
-                }
+                success = TryLoadSFO();
+            }
+            else
+            {
+                success = true;
             }
 
-            return _currentSFO!;
+            sfo = _currentSFO;
+            return success;
+        }
+
+        private bool TryLoadSFO()
+        {
+            if (!File.Exists(CurrentSFODirectory))
+            {
+                return false;
+            }
+
+            _currentSFO = SFO.LoadSFO(CurrentSFODirectory);
+            return true;
         }
 
         private List<(string content, string elf)> GetAllExecutables()

@@ -159,18 +159,25 @@ namespace PS3Sharp.OS.Modules
             GuestPtr<uint> value_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
 
             string key = CellGameParamId[id];
-            SFO sfo = _fileSystemManager.GetCurrentSFO();
 
-            if (sfo.UIntLookup(key, out uint value))
+            if (_fileSystemManager.TryGetCurrentSFO(out SFO? sfo))
             {
-                _memoryManager.Write<uint>(value_ptr, value);
+                if (sfo!.UIntLookup(key, out uint value))
+                {
+                    _memoryManager.Write<uint>(value_ptr, value);
+                }
+                else
+                {
+                    throw new Exception($"[CellGame] CellGameGetParamInt cannot find key = {key}");
+                }
+
+                Console.WriteLine($"[CellGame] CellGameGetParamInt key = {key} value = {value}");
             }
             else
             {
-                throw new Exception($"[CellGame] CellGameGetParamInt cannot find key = {key}");
+                throw new Exception($"[CellGame] Could not get SFO for the current executable");
             }
 
-            Console.WriteLine($"[CellGame] CellGameGetParamInt key = {key} value = {value}");
             return CELL_OK;
         }
 
@@ -181,30 +188,35 @@ namespace PS3Sharp.OS.Modules
             uint bufferSize = ppu.ReadArg<uint>(ARG2);
 
             string key = CellGameParamId[id];
-            SFO sfo = _fileSystemManager.GetCurrentSFO();
 
-            if (sfo.StringLookup(key, out string value))
+            if (_fileSystemManager.TryGetCurrentSFO(out SFO? sfo))
             {
-                byte[] str = Encoding.UTF8.GetBytes(value + "\0");
-
-                for (uint i = 0; i < bufferSize; i++)
+                if (sfo!.StringLookup(key, out string value))
                 {
-                    uint offset = buffer_ptr + i;
-                    _memoryManager.Write<byte>(offset, str[i]);
-                    if (str[i] == 0)
-                    {
-                        break;
-                    }
-                }
+                    byte[] str = Encoding.UTF8.GetBytes(value + "\0");
 
+                    for (uint i = 0; i < bufferSize; i++)
+                    {
+                        uint offset = buffer_ptr + i;
+                        _memoryManager.Write<byte>(offset, str[i]);
+                        if (str[i] == 0)
+                        {
+                            break;
+                        }
+                    }
+
+                    Console.WriteLine($"[CellGame] CellGameGetParamString key = {key} value = {value}");
+                }
+                else
+                {
+                    throw new Exception($"[CellGame] CellGameGetParamString cannot find key = {key}");
+                }
             }
             else
             {
-                throw new Exception($"[CellGame] CellGameGetParamString cannot find key = {key}");
+                throw new Exception($"[CellGame] Could not get SFO for the current executable");
             }
 
-
-            Console.WriteLine($"[CellGame] CellGameGetParamString key = {key} value = {value}");
             return CELL_OK;
         }
 

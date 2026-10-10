@@ -39,8 +39,9 @@ namespace PS3Sharp
                 }
 
                 GLFWProvider.CheckForMainThread = false;
-                SFO sfo = _fileSystemManager.GetCurrentSFO();
-                NativeWindowSettings nativeSettings = CreateNativeWindowSettings(sfo.Title, sfo.TitleID);
+                string title = _fileSystemManager.GetCurrentTitleString();
+                string titleID = _fileSystemManager.GetCurrentTitleID();
+                NativeWindowSettings nativeSettings = CreateNativeWindowSettings(title, titleID);
                 GameWindow = CreateGameWindow(VSyncMode.Off, 0, nativeSettings);
                 GameWindow.MakeCurrent();
                 GLRenderer = new(GameWindow);
@@ -109,12 +110,14 @@ namespace PS3Sharp
             return new Vector2i(newX, newY);
         }
 
-        private static NativeWindowSettings CreateNativeWindowSettings(string? title, string? titleID)
+        private static NativeWindowSettings CreateNativeWindowSettings(string title, string titleID)
         {
             Version version = Version.Parse("4.6.0");
             Vector2i size = new(1280, 720);
             Vector2i location = GetCenterOfScreen(size);
-            string windowTitle = $"OpenGL | {title} [{titleID}]";
+
+            string id = string.IsNullOrEmpty(titleID) ? string.Empty : $"[{titleID}]";
+            string windowTitle = $"OpenGL | {title} {id}";
 
             NativeWindowSettings nativeSettings = new()
             {
