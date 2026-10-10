@@ -176,6 +176,7 @@
         CMP = 0x000,
         LVEBX = 0x007,
         LVSL = 0x006,
+        LVSR = 0x026,
         SUBFC = 0x008,
         MULHDU = 0x009,
         ADDC = 0x00A,

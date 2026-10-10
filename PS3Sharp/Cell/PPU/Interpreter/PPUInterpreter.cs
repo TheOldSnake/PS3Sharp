@@ -221,6 +221,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
                 case G1F.CMP: CMP(instruction, ppu); break;
                 case G1F.LVEBX: LVEBX(instruction, ppu); break;
                 case G1F.LVSL: LVSL(instruction, ppu); break;
+                case G1F.LVSR: LVSR(instruction, ppu); break;
                 case G1F.SUBFC: SUBFC(instruction, ppu); break;
                 case G1F.MULHDU: MULHDU(instruction, ppu); break;
                 case G1F.ADDC: ADDC(instruction, ppu); break;

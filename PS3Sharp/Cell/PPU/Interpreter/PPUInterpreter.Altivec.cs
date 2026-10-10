@@ -250,24 +250,17 @@ namespace PS3Sharp.Cell.PPU.Interpreter
         internal static void LVSL(PPUInstruction instruction, PPUThread ppu)
         {
             uint addr = GetEA(instruction, ppu, MemAccessForm.XForm, true);
-            uint sh = addr & 0xF;
+            int sh = (int)(addr & 0xF);
 
-            ppu.VRF[instruction.Vd].Value128 = GenerateShift(sh);
+            ppu.VRF[instruction.Vd].Value128 = LVSLShiftTable[sh];
+        }
 
-            static UInt128 GenerateShift(uint sh)
-            { //or use a lookup table
-                UInt128 value = 0;
+        internal static void LVSR(PPUInstruction instruction, PPUThread ppu)
+        {
+            uint addr = GetEA(instruction, ppu, MemAccessForm.XForm, true);
+            int sh = (int)(addr & 0xF);
 
-                for (int i = 0; i < 16; i++)
-                {
-                    value = (value << 8) | (byte)(sh + i);
-                }
-
-                //Console.WriteLine($"LVSL sh: {sh} -> {value:X32}");
-                return value;
-            }
-
-            //Console.WriteLine($"LVSL vd = {instruction.Vd} val = {ppu.VRF[instruction.Vd].Value128:X}");
+            ppu.VRF[instruction.Vd].Value128 = LVSRShiftTable[sh];
         }
 
         internal static void LVLX(PPUInstruction instruction, PPUThread ppu)
