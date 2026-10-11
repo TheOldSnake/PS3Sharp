@@ -4,8 +4,8 @@ using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
-using static PS3Sharp.Cell.PPU.Recompiler.IR.IRGenerator;
 using static PS3Sharp.Cell.PPU.PPUThread;
+using static PS3Sharp.Cell.PPU.Recompiler.IR.IRGenerator;
 
 namespace PS3Sharp.Cell.PPU.Recompiler
 {

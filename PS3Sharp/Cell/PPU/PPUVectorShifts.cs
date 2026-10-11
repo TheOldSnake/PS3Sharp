@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace PS3Sharp.Cell.PPU
+﻿namespace PS3Sharp.Cell.PPU
 {
     internal partial class PPUThread
     {
@@ -10,7 +6,7 @@ namespace PS3Sharp.Cell.PPU
         internal static ReadOnlySpan<UInt128> LVSRShiftTable => LVSRShiftValues;
 
         private static UInt128 U128(ulong hi, ulong lo) => new(hi, lo);
-        
+
         private static readonly UInt128[] LVSLShiftValues =
         [
             U128(0x0001020304050607, 0x08090A0B0C0D0E0F),

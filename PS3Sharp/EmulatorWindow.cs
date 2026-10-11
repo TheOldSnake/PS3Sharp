@@ -5,7 +5,6 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using PS3Sharp.Cell.PPU.Interpreter;
 using PS3Sharp.FileSystem;
-using PS3Sharp.SFOLoader;
 
 namespace PS3Sharp
 {
