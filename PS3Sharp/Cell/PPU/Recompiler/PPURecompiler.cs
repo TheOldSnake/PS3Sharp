@@ -13,7 +13,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler
     {
         internal struct X64Block
         {
-            internal delegate* unmanaged[Stdcall]<PPUState*, void> Code;
+            internal delegate* unmanaged<PPUState*, void> Code;
             internal int IsSyscallExit;
         }
 
@@ -110,7 +110,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler
             nativeCode.CopyTo(destSpan);
 
             // Set the address
-            nativeBlock->Code = (delegate* unmanaged[Stdcall]<PPUState*, void>)dest;
+            nativeBlock->Code = (delegate* unmanaged<PPUState*, void>)dest;
 
             // Advance next block address and align to 16-byte
             _nextBlockAddress += length;
