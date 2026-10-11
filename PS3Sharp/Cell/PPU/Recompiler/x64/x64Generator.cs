@@ -18,9 +18,9 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
         private readonly Stack<AssemblerRegister64> _borrowedRegisters = new();      // Currently borrowed registers by the current instruction operands/handler
         private readonly List<AssemblerRegister64> _reservedRegisters = new();       // Currently reserved registers by the current instruction permenant registers mapping
 
+        private Assembler _asm;                                        // Current assembler
         private Dictionary<Value, Location> _registerMap;              // Current register mapping
-        private Dictionary<Value, ulong> _knownConstants;              // Current constants dictionary
-
+        private Dictionary<Value, ulong> _knownConstants;              // Current constants dictionary                                        
         private int _currentStackOffset = 0;                           // Current stack offset in bytes
 
         // Helpers
@@ -57,16 +57,17 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private Span<byte> AssembleBlock(Assembler asm)
+        private Span<byte> AssembleBlock()
         {
             MemoryStream stream = new();
-            AssemblerResult result = asm.Assemble(new StreamCodeWriter(stream), 0);
+            AssemblerResult result = _asm.Assemble(new StreamCodeWriter(stream), 0);
             byte[] buffer = stream.GetBuffer();
             return buffer.AsSpan().Slice(0, (int)stream.Position);
         }
 
         private void SetupState(IRBlock block)
         {
+            _asm = new(64);
             _registerMap = _registerAllocator.AllocateHostRegisters(block.IRCode, block.Constants);
             _borrowPool = _registerAllocator.CreateRegisterPool(block.IRCode);
             _knownConstants = block.Constants;
@@ -77,24 +78,22 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ResetState();
             SetupState(block);
 
-            Assembler asm = new(64);
-
             int stackSlots = GetRequiredStackSlots();
             List<AssemblerRegister64> allocatedNonVolatileRegisters = GetNonVolatileMappedRegisters();
 
             bool hasCalls = HasCalls(block.IRCode);
             bool hasMemoryOp = HasMemoryOp(block.IRCode);
 
-            EmitBlockEntry(asm, stackSlots, allocatedNonVolatileRegisters, hasMemoryOp, ppuThread.MemoryManager);
+            EmitBlockEntry(stackSlots, allocatedNonVolatileRegisters, hasMemoryOp, ppuThread.MemoryManager);
 
             for (int i = 0; i < block.IRCode.Count; i++)
             {
-                IRToX64(asm, block.IRCode[i]);
+                IRToX64(block.IRCode[i]);
             }
 
-            EmitBlockExit(asm, allocatedNonVolatileRegisters, stackSlots, hasMemoryOp);
+            EmitBlockExit(allocatedNonVolatileRegisters, stackSlots, hasMemoryOp);
 
-            return AssembleBlock(asm);
+            return AssembleBlock();
         }
 
         private void ResetState()
@@ -105,6 +104,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             _borrowPool = null;
             _registerMap = null;
             _knownConstants = null;
+            _asm = null;
         }
 
         private AssemblerRegister64 BorrowRegister(Assembler asm)
@@ -130,7 +130,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             throw new Exception($"[x64 Generator] Too many borrows");
         }
 
-        private void ReturnBorrowedRegister(Assembler asm, AssemblerRegister64 tmp)
+        private void ReturnBorrowedRegister(AssemblerRegister64 tmp)
         {
             // Ensure that the register was borrowed and that is is the most recent borrow
             bool validReturn = _borrowedRegisters.Contains(tmp) && _borrowedRegisters.Peek() == tmp;
@@ -141,12 +141,12 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
 
             _borrowedRegisters.Pop();
-            asm.pop(tmp);
+            _asm.pop(tmp);
 
             _currentStackOffset -= 8;
         }
 
-        private void EmitBlockEntry(Assembler asm, int spillSlotCount, List<AssemblerRegister64> nonVolatileRegs, bool hasMemoryOp, MemoryManager memoryManager)
+        private void EmitBlockEntry(int spillSlotCount, List<AssemblerRegister64> nonVolatileRegs, bool hasMemoryOp, MemoryManager memoryManager)
         {
 
             // Size of spill array
@@ -157,12 +157,12 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
             if (IsNonVolatile(PPUState))
             {
-                asm.push(PPUState);
+                _asm.push(PPUState);
             }
 
             if (IsNonVolatile(SpillArray))
             {
-                asm.push(SpillArray);
+                _asm.push(SpillArray);
             }
 
             if (hasMemoryOp)
@@ -170,32 +170,32 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
                 if (IsNonVolatile(MemoryBase))
                 {
-                    asm.push(MemoryBase);
+                    _asm.push(MemoryBase);
                 }
 
                 UIntPtr addr = (UIntPtr)memoryManager.GetGuestMemoryBase();
-                asm.mov(MemoryBase, addr);
+                _asm.mov(MemoryBase, addr);
             }
 
             foreach (AssemblerRegister64 reg in nonVolatileRegs)
             {
-                asm.push(reg);
+                _asm.push(reg);
             }
 
             if (spillBytes > 0)
             {
-                asm.sub(Stack, spillBytes);     // Allocate array for spill slots
-                asm.mov(SpillArray, Stack);     // SpillArray Points at array[0]
+                _asm.sub(Stack, spillBytes);     // Allocate array for spill slots
+                _asm.mov(SpillArray, Stack);     // SpillArray Points at array[0]
             }
 
             // Move ppu state pointer argument from rcx 
-            asm.mov(PPUState, rcx);
+            _asm.mov(PPUState, rcx);
 
             // Current offset includes the 8 bytes for the return address
             _currentStackOffset = 8 + pushedBytes + spillBytes;
         }
 
-        private void EmitBlockExit(Assembler asm, List<AssemblerRegister64> nonVolatileRegs, int spillSlotCount, bool hasMemoryOp)
+        private void EmitBlockExit(List<AssemblerRegister64> nonVolatileRegs, int spillSlotCount, bool hasMemoryOp)
         {
             // Reverse everything
 
@@ -204,34 +204,34 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
             if (spillBytes > 0)
             {
-                asm.add(Stack, spillBytes);
+                _asm.add(Stack, spillBytes);
             }
 
             // Pop pushed registers in reverse order
             for (int i = nonVolatileRegs.Count - 1; i >= 0; i--)
             {
-                asm.pop(nonVolatileRegs[i]);
+                _asm.pop(nonVolatileRegs[i]);
             }
 
             if (hasMemoryOp)
             {
                 if (IsNonVolatile(MemoryBase))
                 {
-                    asm.pop(MemoryBase);
+                    _asm.pop(MemoryBase);
                 }
             }
 
             if (IsNonVolatile(SpillArray))
             {
-                asm.pop(SpillArray);
+                _asm.pop(SpillArray);
             }
 
             if (IsNonVolatile(PPUState))
             {
-                asm.pop(PPUState);
+                _asm.pop(PPUState);
             }
 
-            asm.ret();
+            _asm.ret();
         }
 
         private int GetRequiredStackSlots()
@@ -336,7 +336,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             return true;
         }
 
-        private void LoadOperands(Assembler asm, IRInstruction instruction)
+        private void LoadOperands(IRInstruction instruction)
         {
             // Ensure that all valid operands are present in hardware registers
             // This is slightly inefficient, but it simplifies the handlers a lot
@@ -355,8 +355,8 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
                     if (!location.IsSpilled)
                     {
-                        ReserveRegister(asm, location);
-                        MarkActiveVolatile(asm, location);
+                        ReserveRegister(location);
+                        MarkActiveVolatile(location);
                     }
                 }
             }
@@ -370,13 +370,13 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
                     if (location.IsSpilled)
                     {
-                        LoadOperand(asm, location);
+                        LoadOperand(location);
                     }
                 }
             }
         }
 
-        private void ReserveRegister(Assembler asm, Location location)
+        private void ReserveRegister(Location location)
         {
             AssemblerRegister64 reg = location.GetRegister();
             if (!_reservedRegisters.Contains(reg))
@@ -385,7 +385,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void MarkActiveVolatile(Assembler asm, Location location)
+        private void MarkActiveVolatile(Location location)
         {
             // permenant mapped volatile register need to be added to this list
             // to be able to save them before calls
@@ -402,14 +402,14 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void LoadOperand(Assembler asm, Location location)
+        private void LoadOperand(Location location)
         {
-            AssemblerRegister64 temp = BorrowRegister(asm);
-            asm.mov(temp, __qword_ptr[rbp + SpillOffset(location)]);
+            AssemblerRegister64 temp = BorrowRegister(_asm);
+            _asm.mov(temp, __qword_ptr[rbp + SpillOffset(location)]);
             location.AssignRegister(temp);
         }
 
-        private void FreeOperands(Assembler asm, IRInstruction instruction)
+        private void FreeOperands(IRInstruction instruction)
         {
             Value[] values = [instruction.Destination, instruction.Operand1, instruction.Operand2, instruction.Operand3];
 
@@ -425,7 +425,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
                     if (location.IsSpilled)
                     {
-                        WriteBackOperand(asm, location);
+                        WriteBackOperand(location);
                     }
                 }
             }
@@ -438,18 +438,18 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             _reservedRegisters.Clear();
         }
 
-        private void WriteBackOperand(Assembler asm, Location location)
+        private void WriteBackOperand(Location location)
         {
             // Write back
             AssemblerRegister64 temp = location.GetRegister();
-            asm.mov(__qword_ptr[rbp + SpillOffset(location)], temp);
+            _asm.mov(__qword_ptr[rbp + SpillOffset(location)], temp);
 
             // Return the register
-            ReturnBorrowedRegister(asm, temp);
+            ReturnBorrowedRegister(temp);
             location.UnassignRegister();
         }
 
-        private void PrepareForCall(Assembler asm, AssemblerRegister64 skippedRegister)
+        private void PrepareForCall(AssemblerRegister64 skippedRegister)
         {
             // Note, on Windows x64:
 
@@ -466,7 +466,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             {
                 if (_inUseVolatileRegisters[i] != skippedRegister)
                 {
-                    asm.push(_inUseVolatileRegisters[i]);
+                    _asm.push(_inUseVolatileRegisters[i]);
                     _currentStackOffset += 8;
                 }
             }
@@ -476,7 +476,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // todo: align stack and shadow space
         }
 
-        private void ReturnFromCall(Assembler asm, AssemblerRegister64 skippedRegister)
+        private void ReturnFromCall(AssemblerRegister64 skippedRegister)
         {
             // todo: undo shadow space first
 
@@ -488,236 +488,236 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
                 if (_inUseVolatileRegisters[i] != skippedRegister)
                 {
-                    asm.pop(_inUseVolatileRegisters[i]);
+                    _asm.pop(_inUseVolatileRegisters[i]);
                     _currentStackOffset -= 8;
                 }
             }
         }
 
-        private void IRToX64(Assembler asm, IRInstruction instruction)
+        private void IRToX64(IRInstruction instruction)
         {
             if (instruction.Opcode == IRInstruction.Op.Ret)
             {
                 return;
             }
 
-            LoadOperands(asm, instruction);
+            LoadOperands(instruction);
 
             switch (instruction.Opcode)
             {
                 case IRInstruction.Op.PCStore:
-                    PCStore(asm, instruction);
+                    PCStore(instruction);
                     break;
 
                 case IRInstruction.Op.LRLoad:
-                    LRLoad(asm, instruction);
+                    LRLoad(instruction);
                     break;
 
                 case IRInstruction.Op.LRStore:
-                    LRStore(asm, instruction);
+                    LRStore(instruction);
                     break;
 
                 case IRInstruction.Op.CRLoad:
-                    CRLoad(asm, instruction);
+                    CRLoad(instruction);
                     break;
 
                 case IRInstruction.Op.CRStore:
-                    CRStore(asm, instruction);
+                    CRStore(instruction);
                     break;
 
                 case IRInstruction.Op.CTRLoad:
-                    CTRLoad(asm, instruction);
+                    CTRLoad(instruction);
                     break;
 
                 case IRInstruction.Op.CTRStore:
-                    CTRStore(asm, instruction);
+                    CTRStore(instruction);
                     break;
 
                 case IRInstruction.Op.XERLoad:
-                    XERLoad(asm, instruction);
+                    XERLoad(instruction);
                     break;
 
                 case IRInstruction.Op.XERStore:
-                    XERStore(asm, instruction);
+                    XERStore(instruction);
                     break;
 
                 case IRInstruction.Op.GPRLoad:
-                    GPRLoad(asm, instruction);
+                    GPRLoad(instruction);
                     break;
 
                 case IRInstruction.Op.GPRStore:
-                    GPRStore(asm, instruction);
+                    GPRStore(instruction);
                     break;
 
                 case IRInstruction.Op.Add:
                 case IRInstruction.Op.And:
                 case IRInstruction.Op.Or:
                 case IRInstruction.Op.Xor:
-                    CommutativeOp(asm, instruction);
+                    CommutativeOp(instruction);
                     break;
 
                 case IRInstruction.Op.Not:
-                    Not(asm, instruction);
+                    Not(instruction);
                     break;
 
                 case IRInstruction.Op.Sub:
-                    Sub(asm, instruction);
+                    Sub(instruction);
                     break;
 
 
                 case IRInstruction.Op.IMulLD:
-                    IMulLD(asm, instruction);
+                    IMulLD(instruction);
                     break;
 
                 case IRInstruction.Op.IMulHD:
-                    IMulHD(asm, instruction);
+                    IMulHD(instruction);
                     break;
 
                 case IRInstruction.Op.MulHD:
-                    MulHD(asm, instruction);
+                    MulHD(instruction);
                     break;
 
                 case IRInstruction.Op.IMulLW:
-                    IMulLW(asm, instruction);
+                    IMulLW(instruction);
                     break;
 
                 case IRInstruction.Op.IMulHW:
-                    IMulHW(asm, instruction);
+                    IMulHW(instruction);
                     break;
 
                 case IRInstruction.Op.MulHW:
-                    MulHW(asm, instruction);
+                    MulHW(instruction);
                     break;
 
                 case IRInstruction.Op.CheckedDivD:
-                    CheckedDivD(asm, instruction);
+                    CheckedDivD(instruction);
                     break;
 
                 case IRInstruction.Op.CheckedIDivD:
-                    CheckedIDivD(asm, instruction);
+                    CheckedIDivD(instruction);
                     break;
 
                 case IRInstruction.Op.CheckedDivW:
-                    CheckedDivW(asm, instruction);
+                    CheckedDivW(instruction);
                     break;
 
                 case IRInstruction.Op.CheckedIDivW:
-                    CheckedIDivW(asm, instruction);
+                    CheckedIDivW(instruction);
                     break;
 
                 case IRInstruction.Op.ShiftLeft:
-                    ShiftLeft(asm, instruction);
+                    ShiftLeft(instruction);
                     break;
 
                 case IRInstruction.Op.ShiftRight:
-                    ShiftRight(asm, instruction, arithmetic: false);
+                    ShiftRight(instruction, arithmetic: false);
                     break;
 
                 case IRInstruction.Op.ShiftRightArithmetic:
-                    ShiftRight(asm, instruction, arithmetic: true);
+                    ShiftRight(instruction, arithmetic: true);
                     break;
 
                 case IRInstruction.Op.RotateLeft:
-                    RotateLeft(asm, instruction);
+                    RotateLeft(instruction);
                     break;
 
                 case IRInstruction.Op.RotateRight:
-                    RotateRight(asm, instruction);
+                    RotateRight(instruction);
                     break;
 
                 case IRInstruction.Op.Load64:
-                    Load64(asm, instruction);
+                    Load64(instruction);
                     break;
 
                 case IRInstruction.Op.Store64:
-                    Store64(asm, instruction);
+                    Store64(instruction);
                     break;
 
                 case IRInstruction.Op.Load32:
-                    Load32(asm, instruction);
+                    Load32(instruction);
                     break;
 
                 case IRInstruction.Op.Store32:
-                    Store32(asm, instruction);
+                    Store32(instruction);
                     break;
 
                 case IRInstruction.Op.Load16:
-                    Load16(asm, instruction);
+                    Load16(instruction);
                     break;
 
                 case IRInstruction.Op.Store16:
-                    Store16(asm, instruction);
+                    Store16(instruction);
                     break;
 
                 case IRInstruction.Op.Load8:
-                    Load8(asm, instruction);
+                    Load8(instruction);
                     break;
 
                 case IRInstruction.Op.Store8:
-                    Store8(asm, instruction);
+                    Store8(instruction);
                     break;
 
                 case IRInstruction.Op.Select:
-                    Select(asm, instruction);
+                    Select(instruction);
                     break;
 
                 case IRInstruction.Op.SetEq:
-                    SetEq(asm, instruction);
+                    SetEq(instruction);
                     break;
 
                 case IRInstruction.Op.SetNotEq:
-                    SetNotEq(asm, instruction);
+                    SetNotEq(instruction);
                     break;
 
                 case IRInstruction.Op.SetLessThanSigned:
-                    SetLessThan(asm, instruction, signed: true);
+                    SetLessThan(instruction, signed: true);
                     break;
 
                 case IRInstruction.Op.SetGreaterThanSigned:
-                    SetGreaterThan(asm, instruction, signed: true);
+                    SetGreaterThan(instruction, signed: true);
                     break;
 
                 case IRInstruction.Op.SetLessThanUnsigned:
-                    SetLessThan(asm, instruction, signed: false);
+                    SetLessThan(instruction, signed: false);
                     break;
 
                 case IRInstruction.Op.SetGreaterThanUnsigned:
-                    SetGreaterThan(asm, instruction, signed: false);
+                    SetGreaterThan(instruction, signed: false);
                     break;
 
                 case IRInstruction.Op.SetLessThanEqSigned:
-                    SetLessThanEq(asm, instruction, signed: true);
+                    SetLessThanEq(instruction, signed: true);
                     break;
 
                 case IRInstruction.Op.SetGreaterThanEqSigned:
-                    SetGreaterThanEq(asm, instruction, signed: true);
+                    SetGreaterThanEq(instruction, signed: true);
                     break;
 
                 case IRInstruction.Op.SetLessThanEqUnsigned:
-                    SetLessThanEq(asm, instruction, signed: false);
+                    SetLessThanEq(instruction, signed: false);
                     break;
 
                 case IRInstruction.Op.SetGreaterThanEqUnsigned:
-                    SetGreaterThanEq(asm, instruction, signed: false);
+                    SetGreaterThanEq(instruction, signed: false);
                     break;
 
                 case IRInstruction.Op.ZeroExtend:
-                    ZeroExtend(asm, instruction);
+                    ZeroExtend(instruction);
                     break;
 
                 case IRInstruction.Op.SignExtend:
-                    SignExtend(asm, instruction);
+                    SignExtend(instruction);
                     break;
 
                 case IRInstruction.Op.Truncate:
-                    Truncate(asm, instruction);
+                    Truncate(instruction);
                     break;
 
                 default:
                     throw new Exception($"TODO: IR [{instruction.Opcode}] -> x64");
             }
 
-            FreeOperands(asm, instruction);
+            FreeOperands(instruction);
         }
 
 
@@ -729,7 +729,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             return (high != 0 && high != 0xFFFFFFFF);
         }
 
-        /*   private static void MovLocation(Assembler asm, AssemblerRegister64 destReg, Location location, Dictionary<Value, ulong> knownConstants) {
+        /*   private static void MovLocation(AssemblerRegister64 destReg, Location location, Dictionary<Value, ulong> knownConstants) {
                bool isConst = knownConstants.ContainsKey(location.Value);
 
                if (isConst) {
@@ -746,11 +746,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                }
            }
 
-           private static void AddLocation(Assembler asm, AssemblerRegister64 destReg, Location location, Dictionary<Value, ulong> knownConstants) {
+           private static void AddLocation(AssemblerRegister64 destReg, Location location, Dictionary<Value, ulong> knownConstants) {
                bool isConst = knownConstants.ContainsKey(location.Value);
 
                if (isConst) {
-                   AddConst(asm, destReg, knownConstants[location.Value]);
+                   AddConst(destReg, knownConstants[location.Value]);
 
                } else {
                    if (!location.IsSpilled) {
@@ -763,7 +763,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                }
            }
 
-           private static void AddConst(Assembler asm, AssemblerRegister64 destReg, ulong constant) {
+           private static void AddConst(AssemblerRegister64 destReg, ulong constant) {
                if (ImmediateRequiresRegister(constant)) {
                    (AssemblerRegister64 temp, bool preserve) = BorrowRegister();
 
