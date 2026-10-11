@@ -27,7 +27,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
            r15,
         ];
 
-        private readonly AssemblerRegister64[] StaticNonVolatileRegisterPool64 = 
+        private readonly AssemblerRegister64[] StaticNonVolatileRegisterPool64 =
         [
             rbx,
             rbp,
@@ -39,7 +39,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
             r15,
         ];
 
-        private readonly AssemblerRegister64[] StaticVolatileRegisterPool64 = 
+        private readonly AssemblerRegister64[] StaticVolatileRegisterPool64 =
         [
             rax,
             rcx,
