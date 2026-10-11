@@ -19,7 +19,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                 }
                 else
                 {
-                    _asm.mov(addr, 0);
+                    Asm.mov(addr, 0);
                 }
 
             }
@@ -32,15 +32,15 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                 }
                 else
                 {
-                    _asm.mov(addr, (int)value);
+                    Asm.mov(addr, (int)value);
                 }
             }
 
             void BorrowAndWrite()
             {
-                AssemblerRegister64 reg = BorrowRegister(_asm);
-                _asm.mov(reg, value);
-                _asm.mov(addr, reg);
+                AssemblerRegister64 reg = BorrowRegister(Asm);
+                Asm.mov(reg, value);
+                Asm.mov(addr, reg);
                 ReturnBorrowedRegister(reg);
             }
         }
@@ -53,13 +53,13 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // PC is 32-bit
             if (TryGetConst(src, out ulong value))
             {
-                _asm.mov(__dword_ptr[PPUState + offset], (uint)value);
+                Asm.mov(__dword_ptr[PPUState + offset], (uint)value);
             }
             else
             {
                 Location dest = GetLocation(instruction.Destination);
                 AssemblerRegister64 reg = dest.GetRegister();
-                _asm.mov(__dword_ptr[PPUState + offset], Reg64ToReg32(reg));
+                Asm.mov(__dword_ptr[PPUState + offset], Reg64ToReg32(reg));
             }
         }
 
@@ -71,7 +71,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             AssemblerRegister64 reg = dest.GetRegister();
 
             // LR is 32-bit
-            _asm.mov(reg, __dword_ptr[PPUState + offset]);
+            Asm.mov(reg, __dword_ptr[PPUState + offset]);
         }
 
         private void LRStore(IRInstruction instruction)
@@ -82,14 +82,14 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // LR is 32-bit
             if (TryGetConst(src, out ulong value))
             {
-                _asm.mov(__dword_ptr[PPUState + offset], (uint)value);
+                Asm.mov(__dword_ptr[PPUState + offset], (uint)value);
 
             }
             else
             {
                 Location dest = GetLocation(instruction.Destination);
                 AssemblerRegister64 reg = dest.GetRegister();
-                _asm.mov(__dword_ptr[PPUState + offset], Reg64ToReg32(reg));
+                Asm.mov(__dword_ptr[PPUState + offset], Reg64ToReg32(reg));
             }
         }
 
@@ -101,7 +101,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             AssemblerRegister64 reg = dest.GetRegister();
 
             // CR is 32-bit
-            _asm.mov(reg, __dword_ptr[PPUState + offset]);
+            Asm.mov(reg, __dword_ptr[PPUState + offset]);
         }
 
         private void CRStore(IRInstruction instruction)
@@ -112,14 +112,14 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // CR is 32-bit
             if (TryGetConst(src, out ulong value))
             {
-                _asm.mov(__dword_ptr[PPUState + offset], (uint)value);
+                Asm.mov(__dword_ptr[PPUState + offset], (uint)value);
 
             }
             else
             {
                 Location dest = GetLocation(instruction.Destination);
                 AssemblerRegister64 reg = dest.GetRegister();
-                _asm.mov(__dword_ptr[PPUState + offset], Reg64ToReg32(reg));
+                Asm.mov(__dword_ptr[PPUState + offset], Reg64ToReg32(reg));
             }
         }
 
@@ -131,7 +131,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             AssemblerRegister64 reg = dest.GetRegister();
 
             // CTR is 64-bit
-            _asm.mov(reg, __qword_ptr[PPUState + offset]);
+            Asm.mov(reg, __qword_ptr[PPUState + offset]);
         }
 
         private void CTRStore(IRInstruction instruction)
@@ -148,7 +148,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             {
                 Location dest = GetLocation(instruction.Destination);
                 AssemblerRegister64 reg = dest.GetRegister();
-                _asm.mov(__dword_ptr[PPUState + offset], reg);
+                Asm.mov(__dword_ptr[PPUState + offset], reg);
             }
         }
 
@@ -160,7 +160,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             AssemblerRegister64 reg = dest.GetRegister();
 
             // XER is 64-bit
-            _asm.mov(reg, __qword_ptr[PPUState + offset]);
+            Asm.mov(reg, __qword_ptr[PPUState + offset]);
         }
 
         private void XERStore(IRInstruction instruction)
@@ -177,7 +177,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             {
                 Location dest = GetLocation(instruction.Destination);
                 AssemblerRegister64 reg = dest.GetRegister();
-                _asm.mov(__dword_ptr[PPUState + offset], reg);
+                Asm.mov(__dword_ptr[PPUState + offset], reg);
             }
         }
 
@@ -189,7 +189,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // Destination is always a register
             Location dest = GetLocation(instruction.Destination);
             AssemblerRegister64 reg = dest.GetRegister();
-            _asm.mov(reg, __qword_ptr[PPUState + gprOffset]);
+            Asm.mov(reg, __qword_ptr[PPUState + gprOffset]);
         }
 
         private void GPRStore(IRInstruction instruction)
@@ -207,7 +207,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             else
             {
                 AssemblerRegister64 reg = GetLocation(src).GetRegister();
-                _asm.mov(__qword_ptr[PPUState + gprOffset], reg);
+                Asm.mov(__qword_ptr[PPUState + gprOffset], reg);
             }
         }
 
@@ -273,7 +273,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                 // Value is in a register 
                 // use movbe to swap bytes
                 AssemblerRegister64 valueReg = GetLocation(src).GetRegister();
-                _asm.movbe(dest, valueReg);
+                Asm.movbe(dest, valueReg);
             }
         }
 
@@ -284,7 +284,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
             // Destination is always a register
             // use movbe to swap bytes
-            _asm.movbe(GetLocation(instruction.Destination).GetRegister(), src);
+            Asm.movbe(GetLocation(instruction.Destination).GetRegister(), src);
         }
 
         private void Store32(IRInstruction instruction)
@@ -299,7 +299,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                 // Immediate value
                 // convert to BE in place
                 uint swapped = BinaryPrimitives.ReverseEndianness((uint)value);
-                _asm.mov(dest, swapped);
+                Asm.mov(dest, swapped);
 
             }
             else
@@ -307,7 +307,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                 // Value is in a register 
                 // use movbe to swap bytes
                 AssemblerRegister64 valueReg = GetLocation(src).GetRegister();
-                _asm.movbe(dest, Reg64ToReg32(valueReg));
+                Asm.movbe(dest, Reg64ToReg32(valueReg));
             }
         }
 
@@ -323,7 +323,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // use movbe to swap bytes
             // automatically zero extends to 64-bits
 
-            _asm.movbe(dest32, src);
+            Asm.movbe(dest32, src);
         }
 
         private void Store16(IRInstruction instruction)
@@ -338,7 +338,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                 // Immediate value
                 // convert to BE in place
                 ushort swapped = BinaryPrimitives.ReverseEndianness((ushort)value);
-                _asm.mov(dest, swapped);
+                Asm.mov(dest, swapped);
 
             }
             else
@@ -346,7 +346,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                 // Value is in a register 
                 // use movbe to swap bytes
                 AssemblerRegister64 valueReg = GetLocation(src).GetRegister();
-                _asm.movbe(dest, Reg64ToReg16(valueReg));
+                Asm.movbe(dest, Reg64ToReg16(valueReg));
             }
         }
 
@@ -360,10 +360,10 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             AssemblerRegister16 dest16 = Reg64ToReg16(dest64);
 
             // use movbe to swap bytes
-            _asm.movbe(dest16, src);
+            Asm.movbe(dest16, src);
 
             // zero extend to 64-bits
-            _asm.movzx(dest64, dest16);
+            Asm.movzx(dest64, dest16);
         }
 
         private void Store8(IRInstruction instruction)
@@ -376,14 +376,14 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             if (TryGetConst(instruction.Operand1, out ulong value))
             {
                 // Immediate value
-                _asm.mov(dest, (byte)value);
+                Asm.mov(dest, (byte)value);
 
             }
             else
             {
                 // Value is in a register 
                 AssemblerRegister64 valueReg = GetLocation(src).GetRegister();
-                _asm.mov(dest, Reg64ToReg8(valueReg));
+                Asm.mov(dest, Reg64ToReg8(valueReg));
             }
         }
 
@@ -394,7 +394,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
             // Destination is always a register
             // use movzx zero extend
-            _asm.movzx(GetLocation(instruction.Destination).GetRegister(), src);
+            Asm.movzx(GetLocation(instruction.Destination).GetRegister(), src);
         }
     }
 

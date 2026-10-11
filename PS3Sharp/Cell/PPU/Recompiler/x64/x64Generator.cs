@@ -1,4 +1,5 @@
 using Iced.Intel;
+using PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator;
 using PS3Sharp.Memory;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -11,19 +12,38 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 {
     internal unsafe sealed partial class X64Generator
     {
-        private RegisterAllocator.X64RegisterAllocator _registerAllocator = new();
+        private class X64GeneratorState
+        {
+            internal List<AssemblerRegister64> BorrowPool { get; }                    // List of all borrowable registers for this block, based on the allocator
+            internal List<AssemblerRegister64> InUseVolatileRegisters { get; } = [];  // Currently active volatile registers (across the block)
+            internal Stack<AssemblerRegister64> BorrowedRegisters { get; } = [];      // Currently borrowed registers by the current instruction operands/handler
+            internal List<AssemblerRegister64> ReservedRegisters { get; } = [];       // Currently reserved registers by the current instruction permenant registers mapping
+            internal Dictionary<Value, Location> RegisterMap { get; }                 // Current register mapping
+            internal Dictionary<Value, ulong> KnownConstants { get; }                 // Current constants dictionary                                        
+            internal int CurrentStackOffset { get; set; }                             // Current stack offset in bytes
+            internal Assembler Asm { get; }                                           // Current assembler
 
-        private List<AssemblerRegister64> _borrowPool { get; set; }                  // List of all borrowable registers for this block, based on the allocator
-        private readonly List<AssemblerRegister64> _inUseVolatileRegisters = new();  // Currently active volatile registers (across the block)
-        private readonly Stack<AssemblerRegister64> _borrowedRegisters = new();      // Currently borrowed registers by the current instruction operands/handler
-        private readonly List<AssemblerRegister64> _reservedRegisters = new();       // Currently reserved registers by the current instruction permenant registers mapping
+            internal X64GeneratorState(List<AssemblerRegister64> borrowPool, Dictionary<Value, Location> registerMap, Dictionary<Value, ulong> constants)
+            {
+                BorrowPool = borrowPool;
+                RegisterMap = registerMap;
+                KnownConstants = constants;
+                Asm = new(64);
+            }
+        }
 
-        private Assembler _asm;                                        // Current assembler
-        private Dictionary<Value, Location> _registerMap;              // Current register mapping
-        private Dictionary<Value, ulong> _knownConstants;              // Current constants dictionary                                        
-        private int _currentStackOffset = 0;                           // Current stack offset in bytes
+        private X64GeneratorState _currentState = null!;
+        private X64RegisterAllocator _registerAllocator = new();
 
         // Helpers
+        private Assembler Asm => _currentState.Asm;
+        private List<AssemblerRegister64> BorrowPool => _currentState.BorrowPool;
+        private List<AssemblerRegister64> InUseVolatileRegisters => _currentState.InUseVolatileRegisters;
+        private Stack<AssemblerRegister64> BorrowedRegisters => _currentState.BorrowedRegisters;
+        private List<AssemblerRegister64> ReservedRegisters => _currentState.ReservedRegisters;
+        private Dictionary<Value, Location> RegisterMap => _currentState.RegisterMap;
+        private Dictionary<Value, ulong> KnownConstants => _currentState.KnownConstants;
+
         private AssemblerRegister64 PPUState => _registerAllocator.PPUStatePointer;
         private AssemblerRegister64 Stack => _registerAllocator.StackPointer;
         private AssemblerRegister64 SpillArray => _registerAllocator.SpillArrayPointer;
@@ -33,11 +53,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
         private bool IsNonVolatile(AssemblerRegister64 reg) => _registerAllocator.IsNonVolatile(reg);
 
-        private bool IsConst(Value value) => _knownConstants.ContainsKey(value);
+        private bool IsConst(Value value) => KnownConstants.ContainsKey(value);
 
-        private bool TryGetConst(Value value, out ulong result) => _knownConstants.TryGetValue(value, out result);
+        private bool TryGetConst(Value value, out ulong result) => KnownConstants.TryGetValue(value, out result);
 
-        private Location GetLocation(Value value) => _registerMap[value];
+        private Location GetLocation(Value value) => RegisterMap[value];
 
         private void PrintNativeCode(Assembler asm)
         {
@@ -60,22 +80,21 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
         private Span<byte> AssembleBlock()
         {
             MemoryStream stream = new();
-            AssemblerResult result = _asm.Assemble(new StreamCodeWriter(stream), 0);
+            AssemblerResult result = Asm.Assemble(new StreamCodeWriter(stream), 0);
             byte[] buffer = stream.GetBuffer();
             return buffer.AsSpan().Slice(0, (int)stream.Position);
         }
 
         private void SetupState(IRBlock block)
         {
-            _asm = new(64);
-            _registerMap = _registerAllocator.AllocateHostRegisters(block.IRCode, block.Constants);
-            _borrowPool = _registerAllocator.CreateRegisterPool(block.IRCode);
-            _knownConstants = block.Constants;
+            Dictionary<Value, Location> registerMap = _registerAllocator.AllocateHostRegisters(block.IRCode, block.Constants);
+            List<AssemblerRegister64> borrowPool = _registerAllocator.CreateRegisterPool(block.IRCode);
+            Dictionary<Value, ulong> constants = block.Constants;
+            _currentState = new(borrowPool, registerMap, constants);
         }
 
         internal Span<byte> GenerateNativeCode(IRBlock block, PPUThread ppuThread)
         {
-            ResetState();
             SetupState(block);
 
             int stackSlots = GetRequiredStackSlots();
@@ -96,30 +115,19 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             return AssembleBlock();
         }
 
-        private void ResetState()
-        {
-            _currentStackOffset = 0;
-            _borrowedRegisters.Clear();
-            _inUseVolatileRegisters.Clear();
-            _borrowPool = null;
-            _registerMap = null;
-            _knownConstants = null;
-            _asm = null;
-        }
-
         private AssemblerRegister64 BorrowRegister(Assembler asm)
         {
-            for (int i = 0; i < _borrowPool.Count; i++)
+            for (int i = 0; i < BorrowPool.Count; i++)
             {
-                AssemblerRegister64 reg = _borrowPool[i];
+                AssemblerRegister64 reg = BorrowPool[i];
 
                 // Borrow a register that was not borrowed before and is not reserved by the current instruction
-                if (!_borrowedRegisters.Contains(reg) && !_reservedRegisters.Contains(reg))
+                if (!BorrowedRegisters.Contains(reg) && !ReservedRegisters.Contains(reg))
                 {
-                    _borrowedRegisters.Push(reg);
+                    BorrowedRegisters.Push(reg);
                     asm.push(reg);
 
-                    _currentStackOffset += 8;
+                    _currentState.CurrentStackOffset += 8;
                     return reg;
                 }
             }
@@ -133,17 +141,17 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
         private void ReturnBorrowedRegister(AssemblerRegister64 tmp)
         {
             // Ensure that the register was borrowed and that is is the most recent borrow
-            bool validReturn = _borrowedRegisters.Contains(tmp) && _borrowedRegisters.Peek() == tmp;
+            bool validReturn = BorrowedRegisters.Contains(tmp) && BorrowedRegisters.Peek() == tmp;
 
             if (!validReturn)
             {
                 throw new Exception($"[x64 Generator] Invalid return for register: {tmp.Value}");
             }
 
-            _borrowedRegisters.Pop();
-            _asm.pop(tmp);
+            BorrowedRegisters.Pop();
+            Asm.pop(tmp);
 
-            _currentStackOffset -= 8;
+            _currentState.CurrentStackOffset -= 8;
         }
 
         private void EmitBlockEntry(int spillSlotCount, List<AssemblerRegister64> nonVolatileRegs, bool hasMemoryOp, MemoryManager memoryManager)
@@ -157,12 +165,12 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
             if (IsNonVolatile(PPUState))
             {
-                _asm.push(PPUState);
+                Asm.push(PPUState);
             }
 
             if (IsNonVolatile(SpillArray))
             {
-                _asm.push(SpillArray);
+                Asm.push(SpillArray);
             }
 
             if (hasMemoryOp)
@@ -170,29 +178,29 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
                 if (IsNonVolatile(MemoryBase))
                 {
-                    _asm.push(MemoryBase);
+                    Asm.push(MemoryBase);
                 }
 
                 UIntPtr addr = (UIntPtr)memoryManager.GetGuestMemoryBase();
-                _asm.mov(MemoryBase, addr);
+                Asm.mov(MemoryBase, addr);
             }
 
             foreach (AssemblerRegister64 reg in nonVolatileRegs)
             {
-                _asm.push(reg);
+                Asm.push(reg);
             }
 
             if (spillBytes > 0)
             {
-                _asm.sub(Stack, spillBytes);     // Allocate array for spill slots
-                _asm.mov(SpillArray, Stack);     // SpillArray Points at array[0]
+                Asm.sub(Stack, spillBytes);     // Allocate array for spill slots
+                Asm.mov(SpillArray, Stack);     // SpillArray Points at array[0]
             }
 
             // Move ppu state pointer argument from rcx 
-            _asm.mov(PPUState, rcx);
+            Asm.mov(PPUState, rcx);
 
             // Current offset includes the 8 bytes for the return address
-            _currentStackOffset = 8 + pushedBytes + spillBytes;
+            _currentState.CurrentStackOffset = 8 + pushedBytes + spillBytes;
         }
 
         private void EmitBlockExit(List<AssemblerRegister64> nonVolatileRegs, int spillSlotCount, bool hasMemoryOp)
@@ -204,41 +212,41 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
             if (spillBytes > 0)
             {
-                _asm.add(Stack, spillBytes);
+                Asm.add(Stack, spillBytes);
             }
 
             // Pop pushed registers in reverse order
             for (int i = nonVolatileRegs.Count - 1; i >= 0; i--)
             {
-                _asm.pop(nonVolatileRegs[i]);
+                Asm.pop(nonVolatileRegs[i]);
             }
 
             if (hasMemoryOp)
             {
                 if (IsNonVolatile(MemoryBase))
                 {
-                    _asm.pop(MemoryBase);
+                    Asm.pop(MemoryBase);
                 }
             }
 
             if (IsNonVolatile(SpillArray))
             {
-                _asm.pop(SpillArray);
+                Asm.pop(SpillArray);
             }
 
             if (IsNonVolatile(PPUState))
             {
-                _asm.pop(PPUState);
+                Asm.pop(PPUState);
             }
 
-            _asm.ret();
+            Asm.ret();
         }
 
         private int GetRequiredStackSlots()
         {
             int lastIndex = -1;
 
-            foreach (KeyValuePair<Value, Location> item in _registerMap)
+            foreach (KeyValuePair<Value, Location> item in RegisterMap)
             {
                 Location location = item.Value;
                 if (location.IsSpilled)
@@ -254,7 +262,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
         {
             List<AssemblerRegister64> regs = new();
 
-            foreach (KeyValuePair<Value, Location> item in _registerMap)
+            foreach (KeyValuePair<Value, Location> item in RegisterMap)
             {
                 Location location = item.Value;
 
@@ -379,9 +387,9 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
         private void ReserveRegister(Location location)
         {
             AssemblerRegister64 reg = location.GetRegister();
-            if (!_reservedRegisters.Contains(reg))
+            if (!ReservedRegisters.Contains(reg))
             {
-                _reservedRegisters.Add(reg);
+                ReservedRegisters.Add(reg);
             }
         }
 
@@ -395,17 +403,17 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             if (IsVolatile(reg))
             {
 
-                if (!_inUseVolatileRegisters.Contains(reg))
+                if (!InUseVolatileRegisters.Contains(reg))
                 {
-                    _inUseVolatileRegisters.Add(reg);
+                    InUseVolatileRegisters.Add(reg);
                 }
             }
         }
 
         private void LoadOperand(Location location)
         {
-            AssemblerRegister64 temp = BorrowRegister(_asm);
-            _asm.mov(temp, __qword_ptr[rbp + SpillOffset(location)]);
+            AssemblerRegister64 temp = BorrowRegister(Asm);
+            Asm.mov(temp, __qword_ptr[rbp + SpillOffset(location)]);
             location.AssignRegister(temp);
         }
 
@@ -435,14 +443,14 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
         private void UnreserveAllRegisters()
         {
-            _reservedRegisters.Clear();
+            ReservedRegisters.Clear();
         }
 
         private void WriteBackOperand(Location location)
         {
             // Write back
             AssemblerRegister64 temp = location.GetRegister();
-            _asm.mov(__qword_ptr[rbp + SpillOffset(location)], temp);
+            Asm.mov(__qword_ptr[rbp + SpillOffset(location)], temp);
 
             // Return the register
             ReturnBorrowedRegister(temp);
@@ -462,12 +470,12 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
             // Push all currently active volatile registers
 
-            for (int i = 0; i < _inUseVolatileRegisters.Count; i++)
+            for (int i = 0; i < InUseVolatileRegisters.Count; i++)
             {
-                if (_inUseVolatileRegisters[i] != skippedRegister)
+                if (InUseVolatileRegisters[i] != skippedRegister)
                 {
-                    _asm.push(_inUseVolatileRegisters[i]);
-                    _currentStackOffset += 8;
+                    Asm.push(InUseVolatileRegisters[i]);
+                    _currentState.CurrentStackOffset += 8;
                 }
             }
 
@@ -483,13 +491,13 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // Then:
             // Pop all currently active volatile registers in reverse 
 
-            for (int i = _inUseVolatileRegisters.Count - 1; i >= 0; i--)
+            for (int i = InUseVolatileRegisters.Count - 1; i >= 0; i--)
             {
 
-                if (_inUseVolatileRegisters[i] != skippedRegister)
+                if (InUseVolatileRegisters[i] != skippedRegister)
                 {
-                    _asm.pop(_inUseVolatileRegisters[i]);
-                    _currentStackOffset -= 8;
+                    Asm.pop(InUseVolatileRegisters[i]);
+                    _currentState.CurrentStackOffset -= 8;
                 }
             }
         }
