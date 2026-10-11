@@ -26,6 +26,10 @@ namespace PS3Sharp.OS.Syscall
             while ((Utility.ReadTime_Microseconds() - start) < duration)
             {
                 Thread.Yield();
+                if (ppu.ShouldExit)
+                {
+                    break;
+                }
             }
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_timer_usleep: {time_us} us -- pc: {ppu.PC:X8} lr: {ppu.LR:X8}");
@@ -44,6 +48,10 @@ namespace PS3Sharp.OS.Syscall
             while ((Utility.ReadTime_Microseconds() - start) < duration)
             {
                 Thread.Yield();
+                if (ppu.ShouldExit)
+                {
+                    break;
+                }
             }
 
             //Console.WriteLine($"sys_timer_sleep: {time_s} s");
