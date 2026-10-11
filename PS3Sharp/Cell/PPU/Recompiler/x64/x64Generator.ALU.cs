@@ -25,23 +25,18 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
-
             AssemblerRegister64 dest = destination.GetRegister();
             AssemblerRegister64 reg2;
 
-            if (op1Const)
+            if (TryGetConst(op1, out ulong op1Value))
             {
-                asm.mov(dest, GetConst(op1));
+                asm.mov(dest, op1Value);
                 reg2 = GetLocation(op2).GetRegister();
-
             }
-            else if (op2Const)
+            else if (TryGetConst(op2, out ulong op2Value))
             {
-                asm.mov(dest, GetConst(op2));
+                asm.mov(dest, op2Value);
                 reg2 = GetLocation(op1).GetRegister();
-
             }
             else
             {
@@ -78,26 +73,19 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
-
             AssemblerRegister64 dest = destination.GetRegister();
-            AssemblerRegister64 reg2;
 
-
-            if (op1Const)
+            if (TryGetConst(op1, out ulong op1Value))
             {
                 // A - B
-                asm.mov(dest, GetConst(op1));
+                asm.mov(dest, op1Value);
                 asm.sub(dest, GetLocation(op2).GetRegister());
-
             }
-            else if (op2Const)
+            else if (TryGetConst(op2, out ulong op2Value))
             {
                 // - B + A
-                asm.mov(dest, -(long)GetConst(op2));
+                asm.mov(dest, -(long)op2Value);
                 asm.add(dest, GetLocation(op1).GetRegister());
-
             }
             else
             {
@@ -111,14 +99,12 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
         {
             Location destination = GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
-            bool op1Const = IsConst(op1);
 
             AssemblerRegister64 dest = destination.GetRegister();
 
-            if (op1Const)
+            if (TryGetConst(op1, out ulong op1Value))
             {
-                asm.mov(dest, ~GetConst(op1));
-
+                asm.mov(dest, ~op1Value);
             }
             else
             {
@@ -135,24 +121,19 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
-
             AssemblerRegister64 dest = destination.GetRegister();
 
-            if (op1Const)
+            if (TryGetConst(op1, out ulong op1Value))
             {
-                asm.mov(dest, GetConst(op1));
+                asm.mov(dest, op1Value);
                 AssemblerRegister64 op2Reg = GetLocation(op2).GetRegister();
                 asm.imul(dest, op2Reg);
-
             }
-            else if (op2Const)
+            else if (TryGetConst(op2, out ulong op2Value))
             {
-                asm.mov(dest, GetConst(op2));
+                asm.mov(dest, op2Value);
                 AssemblerRegister64 op1Reg = GetLocation(op1).GetRegister();
                 asm.imul(dest, op1Reg);
-
             }
             else
             {
@@ -173,24 +154,19 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
-
             AssemblerRegister64 dest = destination.GetRegister();
 
             // Use imul(reg) form
 
-            if (op1Const)
+            if (TryGetConst(op1, out ulong op1Value))
             {
-                asm.mov(rax, GetConst(op1));
+                asm.mov(rax, op1Value);
                 asm.imul(GetLocation(op2).GetRegister());
-
             }
-            else if (op2Const)
+            else if (TryGetConst(op2, out ulong op2Value))
             {
-                asm.mov(rax, GetConst(op2));
+                asm.mov(rax, op2Value);
                 asm.imul(GetLocation(op1).GetRegister());
-
             }
             else
             {
@@ -212,24 +188,19 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
-
             AssemblerRegister64 dest = destination.GetRegister();
 
             // Use mul(reg) form
 
-            if (op1Const)
+            if (TryGetConst(op1, out ulong op1Value))
             {
-                asm.mov(rax, GetConst(op1));
+                asm.mov(rax, op1Value);
                 asm.mul(GetLocation(op2).GetRegister());
-
             }
-            else if (op2Const)
+            else if (TryGetConst(op2, out ulong op2Value))
             {
-                asm.mov(rax, GetConst(op2));
+                asm.mov(rax, op2Value);
                 asm.mul(GetLocation(op1).GetRegister());
-
             }
             else
             {
@@ -249,17 +220,13 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
-
             AssemblerRegister64 dest = destination.GetRegister();
             AssemblerRegister64 temp = BorrowRegister(asm);
 
-            if (op1Const)
+            if (TryGetConst(op1, out ulong op1Value))
             {
-                long signExtended = (long)(int)GetConst(op1);
+                long signExtended = (int)op1Value;
                 asm.mov(dest, signExtended);
-
             }
             else
             {
@@ -267,11 +234,10 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                 asm.movsxd(dest, Reg64ToReg32(op1Reg));
             }
 
-            if (op2Const)
+            if (TryGetConst(op2, out ulong op2Value))
             {
-                long signExtended = (long)(int)GetConst(op2);
+                long signExtended = (int)op2Value;
                 asm.mov(temp, signExtended);
-
             }
             else
             {
@@ -293,17 +259,13 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
-
             AssemblerRegister64 dest = destination.GetRegister();
             AssemblerRegister64 temp = BorrowRegister(asm);
 
-            if (op1Const)
+            if (TryGetConst(op1, out ulong op1Value))
             {
-                long signExtended = (long)(int)GetConst(op1);
+                long signExtended = (int)op1Value;
                 asm.mov(dest, signExtended);
-
             }
             else
             {
@@ -311,11 +273,10 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                 asm.movsxd(dest, Reg64ToReg32(op1Reg));
             }
 
-            if (op2Const)
+            if (TryGetConst(op2, out ulong op2Value))
             {
-                long signExtended = (long)(int)GetConst(op2);
+                long signExtended = (int)op2Value;
                 asm.mov(temp, signExtended);
-
             }
             else
             {
@@ -337,17 +298,13 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
-
             AssemblerRegister64 dest = destination.GetRegister();
             AssemblerRegister64 temp = BorrowRegister(asm);
 
-            if (op1Const)
+            if (TryGetConst(op1, out ulong op1Value))
             {
-                uint zeroExtended = (uint)GetConst(op1);
+                uint zeroExtended = (uint)op1Value;
                 asm.mov(dest, zeroExtended);
-
             }
             else
             {
@@ -355,11 +312,10 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                 asm.mov(Reg64ToReg32(dest), Reg64ToReg32(op1Reg)); // automatic zero extend
             }
 
-            if (op2Const)
+            if (TryGetConst(op2, out ulong op2Value))
             {
-                long signExtended = (long)(int)GetConst(op2);
+                long signExtended = (int)op2Value;
                 asm.mov(temp, signExtended);
-
             }
             else
             {
@@ -383,15 +339,15 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
-
             AssemblerRegister64 dest = destination.GetRegister();
             Label zero = asm.CreateLabel();
             Label done = asm.CreateLabel();
 
+            bool op1Const = TryGetConst(op1, out ulong op1Value);
+            bool op2Const = TryGetConst(op2, out ulong op2Value);
+
             // Special case that we can check at compile time
-            if (op2Const && GetConst(op2) == 0)
+            if (op2Const && op2Value == 0)
             {
                 asm.xor(dest, dest);
                 return;
@@ -405,7 +361,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // Mov numerator to rax
             if (op1Const)
             {
-                asm.mov(rax, GetConst(op1));
+                asm.mov(rax, op1Value);
             }
             else
             {
@@ -415,7 +371,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // if op2 is constant no runtime check is needed
             if (op2Const)
             {
-                asm.mov(dest, GetConst(op2));        // use dest to hold denominator
+                asm.mov(dest, op2Value);                    // use dest to hold denominator
                 asm.div(dest);                              // divide
                 asm.mov(dest, rax);                         // mov result and zero extend
                 return;
@@ -450,8 +406,8 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
+            bool op1Const = TryGetConst(op1, out ulong op1Value);
+            bool op2Const = TryGetConst(op2, out ulong op2Value);
 
             AssemblerRegister64 dest = destination.GetRegister();
             Label div = asm.CreateLabel();
@@ -459,7 +415,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Label done = asm.CreateLabel();
 
             // Special case that we can check at compile time
-            if (op2Const && GetConst(op2) == 0)
+            if (op2Const && op2Value == 0)
             {
                 asm.xor(dest, dest);
                 return;
@@ -470,7 +426,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // Move numerator to rax
             if (op1Const)
             {
-                asm.mov(rax, GetConst(op1));
+                asm.mov(rax, op1Value);
             }
             else
             {
@@ -480,7 +436,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // Move denominator to dest
             if (op2Const)
             {
-                asm.mov(dest, GetConst(op2));
+                asm.mov(dest, op2Value);
             }
             else
             {
@@ -528,8 +484,8 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
+            bool op1Const = TryGetConst(op1, out ulong op1Value);
+            bool op2Const = TryGetConst(op2, out ulong op2Value);
 
             AssemblerRegister64 dest_64 = destination.GetRegister();
             AssemblerRegister32 dest_32 = Reg64ToReg32(dest_64);
@@ -538,7 +494,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Label done = asm.CreateLabel();
 
             // Special case that we can check at compile time
-            if (op2Const && GetConst(op2) == 0)
+            if (op2Const && op2Value == 0)
             {
                 asm.xor(dest_64, dest_64);
                 return;
@@ -552,7 +508,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // Move numerator to eax
             if (op1Const)
             {
-                asm.mov(eax, (uint)GetConst(op1));
+                asm.mov(eax, (uint)op1Value);
             }
             else
             {
@@ -562,7 +518,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // if op2 is constant no runtime check is needed
             if (op2Const)
             {
-                asm.mov(dest_32, (uint)GetConst(op2));   // use dest to hold denominator
+                asm.mov(dest_32, (uint)op2Value);               // use dest to hold denominator
                 asm.div(dest_32);                               // divide
                 asm.mov(dest_32, eax);                          // mov result and zero extend
                 return;
@@ -595,14 +551,14 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
+            bool op1Const = TryGetConst(op1, out ulong op1Value);
+            bool op2Const = TryGetConst(op2, out ulong op2Value);
 
             AssemblerRegister64 dest_64 = destination.GetRegister();
             AssemblerRegister32 dest_32 = Reg64ToReg32(dest_64);
 
             // Special case that we can check at compile time
-            if (op2Const && ((uint)GetConst(op2)) == 0)
+            if (op2Const && ((uint)op2Value) == 0)
             {
                 asm.xor(dest_64, dest_64);
                 return;
@@ -615,7 +571,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // Move numerator to eax
             if (op1Const)
             {
-                asm.mov(eax, (uint)GetConst(op1));
+                asm.mov(eax, (uint)op2Value);
             }
             else
             {
@@ -625,7 +581,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // use dest to hold denominator 
             if (op2Const)
             {
-                asm.mov(dest_32, (uint)GetConst(op2));
+                asm.mov(dest_32, (uint)op2Value);
             }
             else
             {
@@ -668,23 +624,20 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
-
             AssemblerRegister64 dest = destination.GetRegister();
 
-            if (op1Const)
+            if (TryGetConst(op1, out ulong op1Value))
             {
-                asm.mov(dest, GetConst(op1));
+                asm.mov(dest, op1Value);
             }
             else
             {
                 asm.mov(dest, GetLocation(op1).GetRegister());
             }
 
-            if (op2Const)
+            if (TryGetConst(op2, out ulong op2Value))
             {
-                asm.shl(dest, (byte)GetConst(op2));
+                asm.shl(dest, (byte)op2Value);
             }
             else
             {
@@ -698,29 +651,26 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
-
             AssemblerRegister64 dest = destination.GetRegister();
 
-            if (op1Const)
+            if (TryGetConst(op1, out ulong op1Value))
             {
-                asm.mov(dest, GetConst(op1));
+                asm.mov(dest, op1Value);
             }
             else
             {
                 asm.mov(dest, GetLocation(op1).GetRegister());
             }
 
-            if (op2Const)
+            if (TryGetConst(op2, out ulong op2Value))
             {
                 if (arithmetic)
                 {
-                    asm.sar(dest, (byte)GetConst(op2));
+                    asm.sar(dest, (byte)op2Value);
                 }
                 else
                 {
-                    asm.shr(dest, (byte)GetConst(op2));
+                    asm.shr(dest, (byte)op2Value);
                 }
             }
             else
@@ -728,7 +678,6 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                 if (arithmetic)
                 {
                     asm.sarx(dest, dest, GetLocation(op2).GetRegister());  // BMI2 extension
-
                 }
                 else
                 {
@@ -743,23 +692,20 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
-
             AssemblerRegister64 dest = destination.GetRegister();
 
-            if (op1Const)
+            if (TryGetConst(op1, out ulong op1Value))
             {
-                asm.mov(dest, GetConst(op1));
+                asm.mov(dest, op1Value);
             }
             else
             {
                 asm.mov(dest, GetLocation(op1).GetRegister());
             }
 
-            if (op2Const)
+            if (TryGetConst(op2, out ulong op2Value))
             {
-                asm.rol(dest, (byte)GetConst(op2));
+                asm.rol(dest, (byte)op2Value);
             }
             else
             {
@@ -775,23 +721,20 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
-
             AssemblerRegister64 dest = destination.GetRegister();
 
-            if (op1Const)
+            if (TryGetConst(op1, out ulong op1Value))
             {
-                asm.mov(dest, GetConst(op1));
+                asm.mov(dest, op1Value);
             }
             else
             {
                 asm.mov(dest, GetLocation(op1).GetRegister());
             }
 
-            if (op2Const)
+            if (TryGetConst(op2, out ulong op2Value))
             {
-                asm.ror(dest, (byte)GetConst(op2));
+                asm.ror(dest, (byte)op2Value);
             }
             else
             {
@@ -807,25 +750,21 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
-
             AssemblerRegister64 dest = destination.GetRegister();
 
             // asm.xor(dest, dest);
 
             // always compare 1 vs 2
-            if (op1Const)
+            if (TryGetConst(op1, out ulong op1Value))
             {
-                asm.mov(dest, GetConst(op1));
+                asm.mov(dest, op1Value);
                 asm.cmp(dest, GetLocation(op2).GetRegister());
 
             }
-            else if (op2Const)
+            else if (TryGetConst(op2, out ulong op2Value))
             {
-                asm.mov(dest, GetConst(op2));
+                asm.mov(dest, op2Value);
                 asm.cmp(GetLocation(op1).GetRegister(), dest);
-
             }
             else
             {
@@ -843,25 +782,20 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
-
             AssemblerRegister64 dest = destination.GetRegister();
 
             // asm.xor(dest, dest);
 
             // always compare 1 vs 2
-            if (op1Const)
+            if (TryGetConst(op1, out ulong op1Value))
             {
-                asm.mov(dest, GetConst(op1));
+                asm.mov(dest, op1Value);
                 asm.cmp(dest, GetLocation(op2).GetRegister());
-
             }
-            else if (op2Const)
+            else if (TryGetConst(op2, out ulong op2Value))
             {
-                asm.mov(dest, GetConst(op2));
+                asm.mov(dest, op2Value);
                 asm.cmp(GetLocation(op1).GetRegister(), dest);
-
             }
             else
             {
@@ -879,25 +813,20 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
-
             AssemblerRegister64 dest = destination.GetRegister();
 
             // asm.xor(dest, dest);
 
             // always compare 1 vs 2
-            if (op1Const)
+            if (TryGetConst(op1, out ulong op1Value))
             {
-                asm.mov(dest, GetConst(op1));
+                asm.mov(dest, op1Value);
                 asm.cmp(dest, GetLocation(op2).GetRegister());
-
             }
-            else if (op2Const)
+            else if (TryGetConst(op2, out ulong op2Value))
             {
-                asm.mov(dest, GetConst(op2));
+                asm.mov(dest, op2Value);
                 asm.cmp(GetLocation(op1).GetRegister(), dest);
-
             }
             else
             {
@@ -923,25 +852,20 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
-
             AssemblerRegister64 dest = destination.GetRegister();
 
             // asm.xor(dest, dest);
 
             // always compare 1 vs 2
-            if (op1Const)
+            if (TryGetConst(op1, out ulong op1Value))
             {
-                asm.mov(dest, GetConst(op1));
+                asm.mov(dest, op1Value);
                 asm.cmp(dest, GetLocation(op2).GetRegister());
-
             }
-            else if (op2Const)
+            else if (TryGetConst(op2, out ulong op2Value))
             {
-                asm.mov(dest, GetConst(op2));
+                asm.mov(dest, op2Value);
                 asm.cmp(GetLocation(op1).GetRegister(), dest);
-
             }
             else
             {
@@ -967,25 +891,20 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
-
             AssemblerRegister64 dest = destination.GetRegister();
 
             // asm.xor(dest, dest);
 
             // always compare 1 vs 2
-            if (op1Const)
+            if (TryGetConst(op1, out ulong op1Value))
             {
-                asm.mov(dest, GetConst(op1));
+                asm.mov(dest, op1Value);
                 asm.cmp(dest, GetLocation(op2).GetRegister());
-
             }
-            else if (op2Const)
+            else if (TryGetConst(op2, out ulong op2Value))
             {
-                asm.mov(dest, GetConst(op2));
+                asm.mov(dest, op2Value);
                 asm.cmp(GetLocation(op1).GetRegister(), dest);
-
             }
             else
             {
@@ -1011,25 +930,20 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op1 = instruction.Operand1;
             Value op2 = instruction.Operand2;
 
-            bool op1Const = IsConst(op1);
-            bool op2Const = IsConst(op2);
-
             AssemblerRegister64 dest = destination.GetRegister();
 
             // asm.xor(dest, dest);
 
             // always compare 1 vs 2
-            if (op1Const)
+            if (TryGetConst(op1, out ulong op1Value))
             {
-                asm.mov(dest, GetConst(op1));
+                asm.mov(dest, op1Value);
                 asm.cmp(dest, GetLocation(op2).GetRegister());
-
             }
-            else if (op2Const)
+            else if (TryGetConst(op2, out ulong op2Value))
             {
-                asm.mov(dest, GetConst(op2));
+                asm.mov(dest, op2Value);
                 asm.cmp(GetLocation(op1).GetRegister(), dest);
-
             }
             else
             {
@@ -1059,9 +973,6 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op2 = instruction.Operand2;
             Value op3 = instruction.Operand3;
 
-            bool op2Const = IsConst(op2);
-            bool op3Const = IsConst(op3);
-
             AssemblerRegister64 cond = condition.GetRegister();
             AssemblerRegister64 dest = destination.GetRegister();
 
@@ -1069,9 +980,9 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             asm.test(cond, cond);
 
             // assume non zero
-            if (op2Const)
+            if (TryGetConst(op2, out ulong op2Value))
             {
-                asm.mov(dest, GetConst(op2));
+                asm.mov(dest, op2Value);
             }
             else
             {
@@ -1084,9 +995,9 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
             // if zero fallthough, overwrite
 
-            if (op3Const)
+            if (TryGetConst(op3, out ulong op3Value))
             {
-                asm.mov(dest, GetConst(op3));
+                asm.mov(dest, op3Value);
             }
             else
             {

@@ -30,11 +30,13 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
         private AssemblerRegister64 MemoryBase => _registerAllocator.MemoryBasePointer;
 
         private bool IsVolatile(AssemblerRegister64 reg) => _registerAllocator.IsVolatile(reg);
+
         private bool IsNonVolatile(AssemblerRegister64 reg) => _registerAllocator.IsNonVolatile(reg);
 
         private bool IsConst(Value value) => _knownConstants.ContainsKey(value);
-        private ulong GetConst(Value value) => _knownConstants[value];
-        private bool TryGetConst(Value value, out ulong result) => _knownConstants.TryGetValue(value, out result);  // TODO: Use this helper to avoid double lookup
+
+        private bool TryGetConst(Value value, out ulong result) => _knownConstants.TryGetValue(value, out result);
+
         private Location GetLocation(Value value) => _registerMap[value];
 
         private void PrintNativeCode(Assembler asm)
@@ -317,7 +319,6 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
         {
             return location.SpillSlot * 8;
         }
-
 
         private bool ValueIsRegister(Value value)
         {
