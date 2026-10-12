@@ -255,7 +255,6 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             return regs;
         }
 
-
         private int GetPCOffset()
         {
             int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPUThread.PPUState.PC));
@@ -693,69 +692,10 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             FreeOperands(instruction);
         }
 
-
-        // unused
-
         private bool ImmediateRequiresRegister(ulong imm)
         {
             ulong high = imm >> 32;
             return (high != 0 && high != 0xFFFFFFFF);
         }
-
-        /*   private static void MovLocation(AssemblerRegister64 destReg, Location location, Dictionary<Value, ulong> knownConstants) {
-               bool isConst = knownConstants.ContainsKey(location.Value);
-
-               if (isConst) {
-                   asm.mov(destReg, knownConstants[location.Value]);
-
-               } else {
-                   if (!location.IsSpilled) {
-                       asm.mov(destReg, location.Register!.Value);
-
-                   } else {
-                       int spillOffset = SpillOffset(location);
-                       asm.mov(destReg, __qword_ptr[rbp + spillOffset]);
-                   }
-               }
-           }
-
-           private static void AddLocation(AssemblerRegister64 destReg, Location location, Dictionary<Value, ulong> knownConstants) {
-               bool isConst = knownConstants.ContainsKey(location.Value);
-
-               if (isConst) {
-                   AddConst(destReg, knownConstants[location.Value]);
-
-               } else {
-                   if (!location.IsSpilled) {
-                       asm.add(destReg, location.Register!.Value);
-
-                   } else {
-                       int spillOffset = SpillOffset(location);
-                       asm.add(destReg, __qword_ptr[rbp + spillOffset]);
-                   }
-               }
-           }
-
-           private static void AddConst(AssemblerRegister64 destReg, ulong constant) {
-               if (ImmediateRequiresRegister(constant)) {
-                   (AssemblerRegister64 temp, bool preserve) = BorrowRegister();
-
-                   if (preserve) {
-                       asm.push(temp);
-                   }
-
-                   asm.mov(temp, constant);
-                   asm.add(destReg, temp);
-
-                   if (preserve) {
-                       asm.pop(temp);
-                   }
-
-               } else {
-                   // Safe to cast
-                   asm.add(destReg, (int)constant);
-               }
-           }*/
-
     }
 }

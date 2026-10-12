@@ -386,49 +386,5 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             _currentState.Asm.movzx(GetLocation(instruction.Destination).GetRegister(), src);
         }
     }
-
-    //internal void ComputeAddress(AssemblerRegister64 addressReg, Value memoryAddress) {
-    //    if (_knownConstants.TryGetValue(memoryAddress, out ulong virtualAddress)) {
-    //        TranslateAddress(addressReg, (uint)virtualAddress);
-    //    } else {
-    //        AssemblerRegister64 virtualAddressReg = _registerMap[memoryAddress].GetRegister();
-    //        TranslateAddress(addressReg, virtualAddressReg);
-    //    }
-    //}
-
-
-    //internal void TranslateAddress(AssemblerRegister64 destination, uint address) {
-    //    UIntPtr pageTable = (UIntPtr)MemoryManager.GetPageTable();
-    //    uint page = address >> (int)Fastmem.PAGE_SHIFT;
-    //    uint offset = address & (int)Fastmem.PAGE_MASK;
-    //    //ulong pageStart = pageTable + (ulong)(page * UIntPtr.Size);
-
-    //    // We fetch the page at runtime
-    //    asm.mov(destination, __qword_ptr[r8 + (page * 8)]);
-    //    asm.add(destination, (int)offset);
-    //}
-
-    //internal void TranslateAddress(AssemblerRegister64 destination, AssemblerRegister64 address) {
-    //    // Save the original register as it's mapped to a guest register
-    //    asm.push(address);
-
-    //    // Copy 
-    //    asm.mov(destination, address);
-
-    //    // page number
-    //    asm.shr(destination, (byte)Fastmem.PAGE_SHIFT);
-
-    //    // page start pointer (r8 points to page table)
-    //    asm.mov(destination, __qword_ptr[r8 + (destination * 8)]);
-
-    //    // offset
-    //    asm.and(address, (int)Fastmem.PAGE_MASK);
-
-    //    // final address
-    //    asm.add(destination, address);
-
-    //    // Restore original register
-    //    asm.pop(address);
-    //}
 }
 
