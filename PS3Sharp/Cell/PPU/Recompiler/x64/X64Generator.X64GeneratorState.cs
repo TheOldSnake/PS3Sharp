@@ -8,7 +8,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 {
     internal sealed partial class X64Generator
     {
-        private class X64GeneratorState
+        private sealed class X64GeneratorState
         {
             internal ImmutableList<AssemblerRegister64> BorrowPool { get; }           // List of all borrowable registers for this block, based on the allocator
             internal ImmutableDictionary<Value, Location> RegisterMap { get; }        // Current register mapping
