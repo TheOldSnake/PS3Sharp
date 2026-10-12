@@ -8,40 +8,6 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 {
     internal unsafe sealed partial class X64Generator
     {
-        private void MemoryWriteImm64(AssemblerMemoryOperand addr, ulong value, bool isBE)
-        {
-            if (isBE)
-            {
-                if (value != 0)
-                {
-                    BorrowAndWrite();
-                }
-                else
-                {
-                    _currentState.Asm.mov(addr, 0);
-                }
-            }
-            else
-            {
-                if (ImmediateRequiresRegister(value))
-                {
-                    BorrowAndWrite();
-                }
-                else
-                {
-                    _currentState.Asm.mov(addr, (int)value);
-                }
-            }
-
-            void BorrowAndWrite()
-            {
-                AssemblerRegister64 reg = BorrowRegister(_currentState.Asm);
-                _currentState.Asm.mov(reg, value);
-                _currentState.Asm.mov(addr, reg);
-                ReturnBorrowedRegister(reg);
-            }
-        }
-
         private void PCStore(IRInstruction instruction)
         {
             Value src = instruction.Destination;
@@ -137,7 +103,8 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // CTR is 64-bit
             if (TryGetConst(src, out ulong value))
             {
-                MemoryWriteImm64(__qword_ptr[PPUState + offset], value, isBE: false);
+                _currentState.Asm.mov(__dword_ptr[PPUState + offset], (uint)value);
+                _currentState.Asm.mov(__dword_ptr[PPUState + (offset + 4)], (uint)(value >> 32));
             }
             else
             {
@@ -166,7 +133,8 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // XER is 64-bit
             if (TryGetConst(src, out ulong value))
             {
-                MemoryWriteImm64(__qword_ptr[PPUState + offset], value, isBE: false);
+                _currentState.Asm.mov(__dword_ptr[PPUState + offset], (uint)value);
+                _currentState.Asm.mov(__dword_ptr[PPUState + (offset + 4)], (uint)(value >> 32));
             }
             else
             {
@@ -190,58 +158,61 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
         private void GPRStore(IRInstruction instruction)
         {
             int gpr = (int)instruction.Immediate1;
-            int gprOffset = GetGPROffset(gpr);
+            int offset = GetGPROffset(gpr);
 
             Value src = instruction.Destination;
 
+            // GPR is 64-bit
             if (TryGetConst(src, out ulong value))
             {
-                MemoryWriteImm64(__qword_ptr[PPUState + gprOffset], value, isBE: false);
+                _currentState.Asm.mov(__dword_ptr[PPUState + offset], (uint)value);
+                _currentState.Asm.mov(__dword_ptr[PPUState + (offset + 4)], (uint)(value >> 32));
             }
             else
             {
                 AssemblerRegister64 reg = GetLocation(src).GetRegister();
-                _currentState.Asm.mov(__qword_ptr[PPUState + gprOffset], reg);
+                _currentState.Asm.mov(__qword_ptr[PPUState + offset], reg);
             }
         }
 
-        internal AssemblerMemoryOperand GetPointer<T>(Value memoryAddress) where T : unmanaged
+        internal AssemblerMemoryOperand GetPointer<T>(Value memoryAddress, uint offset = 0) where T : unmanaged
         {
             if (TryGetConst(memoryAddress, out ulong virtualAddress))
             {
-                return GetPointerImmOffset<T>((uint)virtualAddress);
+                return GetPointerImmOffset<T>((uint)virtualAddress, offset);
             }
             else
             {
                 AssemblerRegister64 virtualAddressReg = GetLocation(memoryAddress).GetRegister();
-                return GetPointerRegOffset<T>(virtualAddressReg);
+                return GetPointerRegOffset<T>(virtualAddressReg, offset);
             }
         }
 
-        internal AssemblerMemoryOperand GetPointerImmOffset<T>(uint offset) where T : unmanaged
+        internal AssemblerMemoryOperand GetPointerImmOffset<T>(uint baseOffset, uint extraOffset = 0) where T : unmanaged
         {
             int size = sizeof(T);
+            uint finalOffset = baseOffset + extraOffset;
 
             return size switch
             {
-                1 => __byte_ptr[MemoryBase + offset],
-                2 => __word_ptr[MemoryBase + offset],
-                4 => __dword_ptr[MemoryBase + offset],
-                8 => __qword_ptr[MemoryBase + offset],
+                1 => __byte_ptr[MemoryBase + finalOffset],
+                2 => __word_ptr[MemoryBase + finalOffset],
+                4 => __dword_ptr[MemoryBase + finalOffset],
+                8 => __qword_ptr[MemoryBase + finalOffset],
                 _ => throw new Exception($"[x64 Generator] Invalid pointer size = {size}"),
             };
         }
 
-        internal AssemblerMemoryOperand GetPointerRegOffset<T>(AssemblerRegister64 offset) where T : unmanaged
+        internal AssemblerMemoryOperand GetPointerRegOffset<T>(AssemblerRegister64 baseOffset, uint extraOffset = 0) where T : unmanaged
         {
             int size = sizeof(T);
 
             return size switch
             {
-                1 => __byte_ptr[MemoryBase + offset],
-                2 => __word_ptr[MemoryBase + offset],
-                4 => __dword_ptr[MemoryBase + offset],
-                8 => __qword_ptr[MemoryBase + offset],
+                1 => __byte_ptr[MemoryBase + baseOffset + extraOffset],
+                2 => __word_ptr[MemoryBase + baseOffset + extraOffset],
+                4 => __dword_ptr[MemoryBase + baseOffset + extraOffset],
+                8 => __qword_ptr[MemoryBase + baseOffset + extraOffset],
                 _ => throw new Exception($"[x64 Generator] Invalid pointer size = {size}"),
             };
         }
@@ -251,21 +222,23 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value memoryAddress = instruction.Destination;
             Value src = instruction.Operand1;
 
-            AssemblerMemoryOperand dest = GetPointer<ulong>(memoryAddress);
+            AssemblerMemoryOperand destPtrQ = GetPointer<ulong>(memoryAddress);
+            AssemblerMemoryOperand destPtrD0 = GetPointer<uint>(memoryAddress, offset: 0);
+            AssemblerMemoryOperand destPtrD1 = GetPointer<uint>(memoryAddress, offset: 4);
 
             if (TryGetConst(instruction.Operand1, out ulong value))
             {
-                // Immediate value
-                // convert to BE in place
+                // Immediate 64-bit value - convert to BE in place before writing
                 ulong swapped = BinaryPrimitives.ReverseEndianness(value);
-                MemoryWriteImm64(dest, swapped, isBE: true);
+                _currentState.Asm.mov(destPtrD0, (uint)swapped);
+                _currentState.Asm.mov(destPtrD1, (uint)(swapped >> 32));
             }
             else
             {
                 // Value is in a register 
                 // use movbe to swap bytes
                 AssemblerRegister64 valueReg = GetLocation(src).GetRegister();
-                _currentState.Asm.movbe(dest, valueReg);
+                _currentState.Asm.movbe(destPtrQ, valueReg);
             }
         }
 
