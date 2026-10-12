@@ -143,7 +143,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             {
                 Location dest = GetLocation(instruction.Destination);
                 AssemblerRegister64 reg = dest.GetRegister();
-                _currentState.Asm.mov(__dword_ptr[PPUState + offset], reg);
+                _currentState.Asm.mov(__qword_ptr[PPUState + offset], reg);
             }
         }
 
