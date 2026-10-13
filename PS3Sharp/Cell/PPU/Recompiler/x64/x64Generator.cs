@@ -15,44 +15,6 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
     {
         private readonly X64RegisterAllocator _registerAllocator = new();
 
-        private static void PrintNativeCode(Assembler asm)
-        {
-            MemoryStream stream = new();
-            asm.Assemble(new StreamCodeWriter(stream), 0);
-
-            stream.Position = 0;
-            StreamCodeReader reader = new(stream);
-            Decoder decoder = Decoder.Create(64, reader);
-            decoder.IP = 0;
-
-            while (stream.Position < stream.Length)
-            {
-                decoder.Decode(out Instruction instr);
-                ulong ip = instr.IP;
-                Console.WriteLine($"{instr}");
-            }
-        }
-
-        private static Span<byte> AssembleBlock(X64Context ctx)
-        {
-            MemoryStream stream = new();
-            AssemblerResult result = ctx.Asm.Assemble(new StreamCodeWriter(stream), 0);
-            byte[] buffer = stream.GetBuffer();
-            return buffer.AsSpan().Slice(0, (int)stream.Position);
-        }
-
-        private X64Context CreateContext(IRBlock block)
-        {
-            Dictionary<Value, Location> registerMap = _registerAllocator.AllocateHostRegisters(block.IRCode, block.Constants);
-            List<AssemblerRegister64> borrowPool = _registerAllocator.CreateRegisterPool(block.IRCode);
-            Dictionary<Value, ulong> constants = block.Constants;
-            AssemblerRegister64 ctx = PPUStatePointer;
-            AssemblerRegister64 stack = StackPointer;
-            AssemblerRegister64 spillArray = SpillArrayPointer;
-            AssemblerRegister64 memoryBase = MemoryBasePointer;
-            return new(borrowPool, registerMap, constants, ctx, stack, spillArray, memoryBase);
-        }
-
         internal Span<byte> GenerateNativeCode(IRBlock block, PPUThread ppuThread)
         {
             X64Context ctx = CreateContext(block);
@@ -73,6 +35,26 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             EmitBlockExit(ctx, allocatedNonVolatileRegisters, stackSlots, hasMemoryOp);
 
             return AssembleBlock(ctx);
+        }
+
+        private static Span<byte> AssembleBlock(X64Context ctx)
+        {
+            MemoryStream stream = new();
+            AssemblerResult result = ctx.Asm.Assemble(new StreamCodeWriter(stream), 0);
+            byte[] buffer = stream.GetBuffer();
+            return buffer.AsSpan().Slice(0, (int)stream.Position);
+        }
+
+        private X64Context CreateContext(IRBlock block)
+        {
+            Dictionary<Value, Location> registerMap = _registerAllocator.AllocateHostRegisters(block.IRCode, block.Constants);
+            List<AssemblerRegister64> borrowPool = _registerAllocator.CreateRegisterPool(block.IRCode);
+            Dictionary<Value, ulong> constants = block.Constants;
+            AssemblerRegister64 ctx = PPUStatePointer;
+            AssemblerRegister64 stack = StackPointer;
+            AssemblerRegister64 spillArray = SpillArrayPointer;
+            AssemblerRegister64 memoryBase = MemoryBasePointer;
+            return new(borrowPool, registerMap, constants, ctx, stack, spillArray, memoryBase);
         }
 
         private static AssemblerRegister64 BorrowRegister(X64Context ctx)
@@ -676,10 +658,22 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             FreeOperands(ctx, instruction);
         }
 
-        private static bool ImmediateRequiresRegister(ulong imm)
+        private static void PrintNativeCode(Assembler asm)
         {
-            ulong high = imm >> 32;
-            return (high != 0 && high != 0xFFFFFFFF);
+            MemoryStream stream = new();
+            asm.Assemble(new StreamCodeWriter(stream), 0);
+
+            stream.Position = 0;
+            StreamCodeReader reader = new(stream);
+            Decoder decoder = Decoder.Create(64, reader);
+            decoder.IP = 0;
+
+            while (stream.Position < stream.Length)
+            {
+                decoder.Decode(out Instruction instr);
+                ulong ip = instr.IP;
+                Console.WriteLine($"{instr}");
+            }
         }
     }
 }

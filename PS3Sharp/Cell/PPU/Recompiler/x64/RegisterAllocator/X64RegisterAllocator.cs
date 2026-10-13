@@ -61,7 +61,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
         internal static AssemblerRegister64 MemoryBasePointer => r8;
 
         private List<AssemblerRegister64> CurrentRegisterPool = [];
-        private bool _canAllocate => CurrentRegisterPool.Count > 0;
+        private bool CanAllocate => CurrentRegisterPool.Count > 0;
         private int _spillIndex = 0;
 
         internal static bool IsVolatile(AssemblerRegister64 reg) => StaticVolatileRegisterPool64.Contains(reg);
@@ -207,7 +207,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
 
         private bool TryAllocateRegisterFromPool(Dictionary<Value, Location> locations, List<Location> currentActiveIntervals, Liveness currentInterval)
         {
-            if (!_canAllocate)
+            if (!CanAllocate)
             {
                 return false;
             }
