@@ -5,7 +5,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 {
     internal sealed partial class X64Generator
     {
-        private AssemblerRegister32 Reg64ToReg32(AssemblerRegister64 reg)
+        private static AssemblerRegister32 Reg64ToReg32(AssemblerRegister64 reg)
         {
             switch (reg.Value)
             {
@@ -30,7 +30,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private AssemblerRegister8 Reg64ToReg8(AssemblerRegister64 reg)
+        private static AssemblerRegister8 Reg64ToReg8(AssemblerRegister64 reg)
         {
             switch (reg.Value)
             {
@@ -55,7 +55,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private AssemblerRegister16 Reg64ToReg16(AssemblerRegister64 reg)
+        private static AssemblerRegister16 Reg64ToReg16(AssemblerRegister64 reg)
         {
             switch (reg.Value)
             {
@@ -80,9 +80,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-
-
-        private AssemblerRegister64 Reg32ToReg64(AssemblerRegister32 reg)
+        private static AssemblerRegister64 Reg32ToReg64(AssemblerRegister32 reg)
         {
             switch (reg.Value)
             {

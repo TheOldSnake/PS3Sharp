@@ -8,7 +8,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 {
     internal unsafe sealed partial class X64Generator
     {
-        private void PCStore(X64Context ctx, IRInstruction instruction)
+        private static void PCStore(X64Context ctx, IRInstruction instruction)
         {
             Value src = instruction.Destination;
             int offset = GetPCOffset();
@@ -26,7 +26,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void LRLoad(X64Context ctx, IRInstruction instruction)
+        private static void LRLoad(X64Context ctx, IRInstruction instruction)
         {
             // Destination is always a register
             Location dest = ctx.GetLocation(instruction.Destination);
@@ -37,7 +37,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.mov(reg, __dword_ptr[ctx.PPUState + offset]);
         }
 
-        private void LRStore(X64Context ctx, IRInstruction instruction)
+        private static void LRStore(X64Context ctx, IRInstruction instruction)
         {
             Value src = instruction.Destination;
             int offset = GetLROffset();
@@ -55,7 +55,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void CRLoad(X64Context ctx, IRInstruction instruction)
+        private static void CRLoad(X64Context ctx, IRInstruction instruction)
         {
             // Destination is always a register
             Location dest = ctx.GetLocation(instruction.Destination);
@@ -66,7 +66,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.mov(reg, __dword_ptr[ctx.PPUState + offset]);
         }
 
-        private void CRStore(X64Context ctx, IRInstruction instruction)
+        private static void CRStore(X64Context ctx, IRInstruction instruction)
         {
             Value src = instruction.Destination;
             int offset = GetCROffset();
@@ -84,7 +84,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void CTRLoad(X64Context ctx, IRInstruction instruction)
+        private static void CTRLoad(X64Context ctx, IRInstruction instruction)
         {
             // Destination is always a register
             Location dest = ctx.GetLocation(instruction.Destination);
@@ -95,7 +95,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.mov(reg, __qword_ptr[ctx.PPUState + offset]);
         }
 
-        private void CTRStore(X64Context ctx, IRInstruction instruction)
+        private static void CTRStore(X64Context ctx, IRInstruction instruction)
         {
             Value src = instruction.Destination;
             int offset = GetCTROffset();
@@ -114,7 +114,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void XERLoad(X64Context ctx, IRInstruction instruction)
+        private static void XERLoad(X64Context ctx, IRInstruction instruction)
         {
             // Destination is always a register
             Location dest = ctx.GetLocation(instruction.Destination);
@@ -125,7 +125,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.mov(reg, __qword_ptr[ctx.PPUState + offset]);
         }
 
-        private void XERStore(X64Context ctx, IRInstruction instruction)
+        private static void XERStore(X64Context ctx, IRInstruction instruction)
         {
             Value src = instruction.Destination;
             int offset = GetXEROffset();
@@ -144,7 +144,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void GPRLoad(X64Context ctx, IRInstruction instruction)
+        private static void GPRLoad(X64Context ctx, IRInstruction instruction)
         {
             int gpr = (int)instruction.Immediate1;
             int gprOffset = GetGPROffset(gpr);
@@ -155,7 +155,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.mov(reg, __qword_ptr[ctx.PPUState + gprOffset]);
         }
 
-        private void GPRStore(X64Context ctx, IRInstruction instruction)
+        private static void GPRStore(X64Context ctx, IRInstruction instruction)
         {
             int gpr = (int)instruction.Immediate1;
             int offset = GetGPROffset(gpr);
@@ -175,7 +175,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private AssemblerMemoryOperand GetPointer<T>(X64Context ctx, Value memoryAddress, uint offset = 0) where T : unmanaged
+        private static AssemblerMemoryOperand GetPointer<T>(X64Context ctx, Value memoryAddress, uint offset = 0) where T : unmanaged
         {
             if (ctx.TryGetConst(memoryAddress, out ulong virtualAddress))
             {
@@ -188,7 +188,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private AssemblerMemoryOperand GetPointerImmOffset<T>(X64Context ctx, uint baseOffset, uint extraOffset = 0) where T : unmanaged
+        private static AssemblerMemoryOperand GetPointerImmOffset<T>(X64Context ctx, uint baseOffset, uint extraOffset = 0) where T : unmanaged
         {
             int size = sizeof(T);
             uint finalOffset = baseOffset + extraOffset;
@@ -203,7 +203,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             };
         }
 
-        private AssemblerMemoryOperand GetPointerRegOffset<T>(X64Context ctx, AssemblerRegister64 baseOffset, uint extraOffset = 0) where T : unmanaged
+        private static AssemblerMemoryOperand GetPointerRegOffset<T>(X64Context ctx, AssemblerRegister64 baseOffset, uint extraOffset = 0) where T : unmanaged
         {
             int size = sizeof(T);
 
@@ -217,7 +217,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             };
         }
 
-        private void Store64(X64Context ctx, IRInstruction instruction)
+        private static void Store64(X64Context ctx, IRInstruction instruction)
         {
             Value memoryAddress = instruction.Destination;
             Value src = instruction.Operand1;
@@ -242,7 +242,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void Load64(X64Context ctx, IRInstruction instruction)
+        private static void Load64(X64Context ctx, IRInstruction instruction)
         {
             Value memoryAddress = instruction.Operand1;
             AssemblerMemoryOperand src = GetPointer<ulong>(ctx, memoryAddress);
@@ -252,7 +252,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.movbe(ctx.GetLocation(instruction.Destination).GetRegister(), src);
         }
 
-        private void Store32(X64Context ctx, IRInstruction instruction)
+        private static void Store32(X64Context ctx, IRInstruction instruction)
         {
             Value memoryAddress = instruction.Destination;
             Value src = instruction.Operand1;
@@ -275,7 +275,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void Load32(X64Context ctx, IRInstruction instruction)
+        private static void Load32(X64Context ctx, IRInstruction instruction)
         {
             Value memoryAddress = instruction.Operand1;
             AssemblerMemoryOperand src = GetPointer<uint>(ctx, memoryAddress);
@@ -290,7 +290,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.movbe(dest32, src);
         }
 
-        private void Store16(X64Context ctx, IRInstruction instruction)
+        private static void Store16(X64Context ctx, IRInstruction instruction)
         {
             Value memoryAddress = instruction.Destination;
             Value src = instruction.Operand1;
@@ -313,7 +313,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void Load16(X64Context ctx, IRInstruction instruction)
+        private static void Load16(X64Context ctx, IRInstruction instruction)
         {
             Value memoryAddress = instruction.Operand1;
             AssemblerMemoryOperand src = GetPointer<ushort>(ctx, memoryAddress);
@@ -329,7 +329,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.movzx(dest64, dest16);
         }
 
-        private void Store8(X64Context ctx, IRInstruction instruction)
+        private static void Store8(X64Context ctx, IRInstruction instruction)
         {
             Value memoryAddress = instruction.Destination;
             Value src = instruction.Operand1;
@@ -349,7 +349,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void Load8(X64Context ctx, IRInstruction instruction)
+        private static void Load8(X64Context ctx, IRInstruction instruction)
         {
             Value memoryAddress = instruction.Operand1;
             AssemblerMemoryOperand src = GetPointer<byte>(ctx, memoryAddress);

@@ -15,12 +15,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
     {
         private readonly X64RegisterAllocator _registerAllocator = new();
 
-        // Helpers
-        private bool IsVolatile(AssemblerRegister64 reg) => _registerAllocator.IsVolatile(reg);
-
-        private bool IsNonVolatile(AssemblerRegister64 reg) => _registerAllocator.IsNonVolatile(reg);
-
-        private void PrintNativeCode(Assembler asm)
+        private static void PrintNativeCode(Assembler asm)
         {
             MemoryStream stream = new();
             asm.Assemble(new StreamCodeWriter(stream), 0);
@@ -38,7 +33,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private Span<byte> AssembleBlock(X64Context ctx)
+        private static Span<byte> AssembleBlock(X64Context ctx)
         {
             MemoryStream stream = new();
             AssemblerResult result = ctx.Asm.Assemble(new StreamCodeWriter(stream), 0);
@@ -51,10 +46,10 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Dictionary<Value, Location> registerMap = _registerAllocator.AllocateHostRegisters(block.IRCode, block.Constants);
             List<AssemblerRegister64> borrowPool = _registerAllocator.CreateRegisterPool(block.IRCode);
             Dictionary<Value, ulong> constants = block.Constants;
-            AssemblerRegister64 ctx = _registerAllocator.PPUStatePointer;
-            AssemblerRegister64 stack = _registerAllocator.StackPointer;
-            AssemblerRegister64 spillArray = _registerAllocator.SpillArrayPointer;
-            AssemblerRegister64 memoryBase = _registerAllocator.MemoryBasePointer;
+            AssemblerRegister64 ctx = PPUStatePointer;
+            AssemblerRegister64 stack = StackPointer;
+            AssemblerRegister64 spillArray = SpillArrayPointer;
+            AssemblerRegister64 memoryBase = MemoryBasePointer;
             return new(borrowPool, registerMap, constants, ctx, stack, spillArray, memoryBase);
         }
 
@@ -80,7 +75,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             return AssembleBlock(ctx);
         }
 
-        private AssemblerRegister64 BorrowRegister(X64Context ctx)
+        private static AssemblerRegister64 BorrowRegister(X64Context ctx)
         {
             ImmutableList<AssemblerRegister64> pool = ctx.BorrowPool;
 
@@ -104,14 +99,14 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             throw new Exception($"[x64 Generator] Too many borrows");
         }
 
-        private void ReturnBorrowedRegister(X64Context ctx, AssemblerRegister64 tmp)
+        private static void ReturnBorrowedRegister(X64Context ctx, AssemblerRegister64 tmp)
         {
             ctx.RemoveBorrowedRegister(tmp);
             ctx.Asm.pop(tmp);
             ctx.CurrentStackOffset -= 8;
         }
 
-        private void EmitBlockEntry(X64Context ctx, int spillSlotCount, List<AssemblerRegister64> nonVolatileRegs, bool hasMemoryOp, MemoryManager memoryManager)
+        private static void EmitBlockEntry(X64Context ctx, int spillSlotCount, List<AssemblerRegister64> nonVolatileRegs, bool hasMemoryOp, MemoryManager memoryManager)
         {
             // Size of spill array
             int spillBytes = spillSlotCount * 8;
@@ -159,7 +154,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.CurrentStackOffset = 8 + pushedBytes + spillBytes;
         }
 
-        private void EmitBlockExit(X64Context ctx, List<AssemblerRegister64> nonVolatileRegs, int spillSlotCount, bool hasMemoryOp)
+        private static void EmitBlockExit(X64Context ctx, List<AssemblerRegister64> nonVolatileRegs, int spillSlotCount, bool hasMemoryOp)
         {
             // Reverse everything
 
@@ -198,7 +193,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.ret();
         }
 
-        private int GetRequiredStackSlots(X64Context ctx)
+        private static int GetRequiredStackSlots(X64Context ctx)
         {
             ImmutableDictionary<Value, Location> registerMap = ctx.RegisterMap;
             int lastIndex = -1;
@@ -215,7 +210,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             return lastIndex + 1;
         }
 
-        private List<AssemblerRegister64> GetNonVolatileMappedRegisters(X64Context ctx)
+        private static List<AssemblerRegister64> GetNonVolatileMappedRegisters(X64Context ctx)
         {
             ImmutableDictionary<Value, Location> registerMap = ctx.RegisterMap;
             List<AssemblerRegister64> regs = new();
@@ -244,48 +239,48 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             return regs;
         }
 
-        private int GetPCOffset()
+        private static int GetPCOffset()
         {
             int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPUThread.PPUState.PC));
             return offset;
         }
 
-        private int GetLROffset()
+        private static int GetLROffset()
         {
             int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPUThread.PPUState.LR));
             return offset;
         }
 
-        private int GetCROffset()
+        private static int GetCROffset()
         {
             int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPUThread.PPUState.CR));
             return offset;
         }
 
-        private int GetCTROffset()
+        private static int GetCTROffset()
         {
             int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPUThread.PPUState.CTR));
             return offset;
         }
 
-        private int GetXEROffset()
+        private static int GetXEROffset()
         {
             int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPUThread.PPUState.XER));
             return offset;
         }
 
-        private int GetGPROffset(int index)
+        private static int GetGPROffset(int index)
         {
             int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPUThread.PPUState.GPR)) + (index * Unsafe.SizeOf<PPUGPR>());
             return offset;
         }
 
-        private int SpillOffset(Location location)
+        private static int SpillOffset(Location location)
         {
             return location.SpillSlot * 8;
         }
 
-        private bool ValueIsRegister(X64Context ctx, Value value)
+        private static bool ValueIsRegister(X64Context ctx, Value value)
         {
             // Returns true if value is a valid non constant
             if (!value.IsValid)
@@ -301,7 +296,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             return true;
         }
 
-        private void LoadOperands(X64Context ctx, IRInstruction instruction)
+        private static void LoadOperands(X64Context ctx, IRInstruction instruction)
         {
             // Ensure that all valid operands are present in hardware registers
             // This is slightly inefficient, but it simplifies the handlers a lot
@@ -341,13 +336,13 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void ReserveRegister(X64Context ctx, Location location)
+        private static void ReserveRegister(X64Context ctx, Location location)
         {
             AssemblerRegister64 reg = location.GetRegister();
             ctx.AddReservedRegister(reg);
         }
 
-        private void MarkActiveVolatile(X64Context ctx, Location location)
+        private static void MarkActiveVolatile(X64Context ctx, Location location)
         {
             // permenant mapped volatile register need to be added to this list
             // to be able to save them before calls
@@ -360,14 +355,14 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void LoadOperand(X64Context ctx, Location location)
+        private static void LoadOperand(X64Context ctx, Location location)
         {
             AssemblerRegister64 temp = BorrowRegister(ctx);
             ctx.Asm.mov(temp, __qword_ptr[rbp + SpillOffset(location)]);
             location.AssignRegister(temp);
         }
 
-        private void FreeOperands(X64Context ctx, IRInstruction instruction)
+        private static void FreeOperands(X64Context ctx, IRInstruction instruction)
         {
             Value[] values = [instruction.Destination, instruction.Operand1, instruction.Operand2, instruction.Operand3];
 
@@ -391,12 +386,12 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             UnreserveAllRegisters(ctx);
         }
 
-        private void UnreserveAllRegisters(X64Context ctx)
+        private static void UnreserveAllRegisters(X64Context ctx)
         {
             ctx.ClearReservedRegister();
         }
 
-        private void WriteBackOperand(X64Context ctx, Location location)
+        private static void WriteBackOperand(X64Context ctx, Location location)
         {
             // Write back
             AssemblerRegister64 temp = location.GetRegister();
@@ -407,7 +402,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             location.UnassignRegister();
         }
 
-        private void PrepareForCall(X64Context ctx, AssemblerRegister64 skippedRegister)
+        private static void PrepareForCall(X64Context ctx, AssemblerRegister64 skippedRegister)
         {
             // Note, on Windows x64:
 
@@ -436,7 +431,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // todo: align stack and shadow space
         }
 
-        private void ReturnFromCall(X64Context ctx, AssemblerRegister64 skippedRegister)
+        private static void ReturnFromCall(X64Context ctx, AssemblerRegister64 skippedRegister)
         {
             // todo: undo shadow space first
 
@@ -455,7 +450,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void IRToX64(X64Context ctx, IRInstruction instruction)
+        private static void IRToX64(X64Context ctx, IRInstruction instruction)
         {
             if (instruction.Opcode == IRInstruction.Op.Ret)
             {
@@ -681,7 +676,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             FreeOperands(ctx, instruction);
         }
 
-        private bool ImmediateRequiresRegister(ulong imm)
+        private static bool ImmediateRequiresRegister(ulong imm)
         {
             ulong high = imm >> 32;
             return (high != 0 && high != 0xFFFFFFFF);

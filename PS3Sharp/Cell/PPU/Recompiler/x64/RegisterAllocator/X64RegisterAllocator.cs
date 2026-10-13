@@ -7,7 +7,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
     internal sealed partial class X64RegisterAllocator
     {
         // Register pools
-        private readonly AssemblerRegister64[] StaticRegisterPool64 =
+        private static readonly AssemblerRegister64[] StaticRegisterPool64 =
         [
            rax,
            rcx,
@@ -27,7 +27,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
            r15,
         ];
 
-        private readonly AssemblerRegister64[] StaticNonVolatileRegisterPool64 =
+        private static readonly AssemblerRegister64[] StaticNonVolatileRegisterPool64 =
         [
             rbx,
             rbp,
@@ -39,7 +39,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
             r15,
         ];
 
-        private readonly AssemblerRegister64[] StaticVolatileRegisterPool64 =
+        private static readonly AssemblerRegister64[] StaticVolatileRegisterPool64 =
         [
             rax,
             rcx,
@@ -50,21 +50,22 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
             r11,
         ];
 
-        internal AssemblerRegister64 PPUStatePointer => rbx;
-        internal AssemblerRegister64 StackPointer => rsp;
-        internal AssemblerRegister64 SpillArrayPointer => rbp;
-        internal AssemblerRegister64 MemoryBasePointer => r8;
+        internal static ReadOnlySpan<AssemblerRegister64> AllRegisters => StaticRegisterPool64;
+        internal static ReadOnlySpan<AssemblerRegister64> AllNonVolatileRegisters => StaticNonVolatileRegisterPool64;
+        internal static ReadOnlySpan<AssemblerRegister64> AllVolatileRegisters => StaticVolatileRegisterPool64;
 
-        internal ReadOnlySpan<AssemblerRegister64> AllRegisters => StaticRegisterPool64;
-        internal ReadOnlySpan<AssemblerRegister64> AllNonVolatileRegisters => StaticNonVolatileRegisterPool64;
-        internal ReadOnlySpan<AssemblerRegister64> AllVolatileRegisters => StaticVolatileRegisterPool64;
+        // Currently these assignments are permanent for all blocks
+        internal static AssemblerRegister64 PPUStatePointer => rbx;
+        internal static AssemblerRegister64 StackPointer => rsp;
+        internal static AssemblerRegister64 SpillArrayPointer => rbp;
+        internal static AssemblerRegister64 MemoryBasePointer => r8;
 
         private List<AssemblerRegister64> CurrentRegisterPool = [];
         private bool _canAllocate => CurrentRegisterPool.Count > 0;
         private int _spillIndex = 0;
 
-        internal bool IsVolatile(AssemblerRegister64 reg) => StaticVolatileRegisterPool64.Contains(reg);
-        internal bool IsNonVolatile(AssemblerRegister64 reg) => StaticNonVolatileRegisterPool64.Contains(reg);
+        internal static bool IsVolatile(AssemblerRegister64 reg) => StaticVolatileRegisterPool64.Contains(reg);
+        internal static bool IsNonVolatile(AssemblerRegister64 reg) => StaticNonVolatileRegisterPool64.Contains(reg);
 
         internal void ResetAllocatorState()
         {

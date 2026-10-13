@@ -7,19 +7,19 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 {
     internal sealed partial class X64Generator
     {
-        private void Add(X64Context ctx, AssemblerRegister64 destReg, AssemblerRegister64 srcReg, ulong imm)
+        private static void Add(X64Context ctx, AssemblerRegister64 destReg, AssemblerRegister64 srcReg, ulong imm)
         {
             ctx.Asm.mov(destReg, imm);
             ctx.Asm.add(destReg, srcReg);
         }
 
-        private void Add(X64Context ctx, AssemblerRegister64 destReg, AssemblerRegister64 src1Reg, AssemblerRegister64 src2Reg)
+        private static void Add(X64Context ctx, AssemblerRegister64 destReg, AssemblerRegister64 src1Reg, AssemblerRegister64 src2Reg)
         {
             ctx.Asm.mov(destReg, src1Reg);
             ctx.Asm.add(destReg, src2Reg);
         }
 
-        private void CommutativeOp(X64Context ctx, IRInstruction instruction)
+        private static void CommutativeOp(X64Context ctx, IRInstruction instruction)
         {
             Location destination = ctx.GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
@@ -67,7 +67,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void Sub(X64Context ctx, IRInstruction instruction)
+        private static void Sub(X64Context ctx, IRInstruction instruction)
         {
             Location destination = ctx.GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
@@ -95,7 +95,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void Not(X64Context ctx, IRInstruction instruction)
+        private static void Not(X64Context ctx, IRInstruction instruction)
         {
             Location destination = ctx.GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
@@ -113,7 +113,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void IMulLD(X64Context ctx, IRInstruction instruction)
+        private static void IMulLD(X64Context ctx, IRInstruction instruction)
         {
             // Signed 64 × 64 → Low 64-bit
 
@@ -144,7 +144,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void IMulHD(X64Context ctx, IRInstruction instruction)
+        private static void IMulHD(X64Context ctx, IRInstruction instruction)
         {
             // Signed 64 × 64 → High 64-bit
 
@@ -178,7 +178,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.mov(dest, rdx);
         }
 
-        private void MulHD(X64Context ctx, IRInstruction instruction)
+        private static void MulHD(X64Context ctx, IRInstruction instruction)
         {
             // Unsigned 64 × 64 → High 64-bit
 
@@ -212,7 +212,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.mov(dest, rdx);
         }
 
-        private void IMulLW(X64Context ctx, IRInstruction instruction)
+        private static void IMulLW(X64Context ctx, IRInstruction instruction)
         {
             // Signed 32 × 32 → Full 64-bit
 
@@ -251,7 +251,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ReturnBorrowedRegister(ctx, temp);
         }
 
-        private void IMulHW(X64Context ctx, IRInstruction instruction)
+        private static void IMulHW(X64Context ctx, IRInstruction instruction)
         {
             // Signed 32 × 32 → High 32-bit, Sign-Extended
 
@@ -290,7 +290,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ReturnBorrowedRegister(ctx, temp);
         }
 
-        private void MulHW(X64Context ctx, IRInstruction instruction)
+        private static void MulHW(X64Context ctx, IRInstruction instruction)
         {
             // Unsigned 32 × 32 → High 32-bit, Zero-Extended
 
@@ -329,7 +329,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ReturnBorrowedRegister(ctx, temp);
         }
 
-        private void CheckedDivD(X64Context ctx, IRInstruction instruction)
+        private static void CheckedDivD(X64Context ctx, IRInstruction instruction)
         {
             // Unsigned 64/64, result -> 0 If denominator is zero
 
@@ -394,7 +394,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.Label(ref done);
         }
 
-        private void CheckedIDivD(X64Context ctx, IRInstruction instruction)
+        private static void CheckedIDivD(X64Context ctx, IRInstruction instruction)
         {
             // Signed 64/64, result -> 0 If denominator is zero || (numerator is 0x8000_0000_0000_0000 && denominator is -1)
 
@@ -474,7 +474,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.Label(ref done);
         }
 
-        private void CheckedDivW(X64Context ctx, IRInstruction instruction)
+        private static void CheckedDivW(X64Context ctx, IRInstruction instruction)
         {
             // Unsigned 32/32, result -> 0 If denominator is zero
 
@@ -541,7 +541,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.Label(ref done);
         }
 
-        private void CheckedIDivW(X64Context ctx, IRInstruction instruction)
+        private static void CheckedIDivW(X64Context ctx, IRInstruction instruction)
         {
             // Signed 32/32, result -> 0 If denominator is zero || (numerator is 0x8000_0000 && denominator is -1)
 
@@ -618,7 +618,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.Label(ref done);
         }
 
-        private void ShiftLeft(X64Context ctx, IRInstruction instruction)
+        private static void ShiftLeft(X64Context ctx, IRInstruction instruction)
         {
             Location destination = ctx.GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
@@ -645,7 +645,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void ShiftRight(X64Context ctx, IRInstruction instruction, bool arithmetic)
+        private static void ShiftRight(X64Context ctx, IRInstruction instruction, bool arithmetic)
         {
             Location destination = ctx.GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
@@ -686,7 +686,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void RotateLeft(X64Context ctx, IRInstruction instruction)
+        private static void RotateLeft(X64Context ctx, IRInstruction instruction)
         {
             Location destination = ctx.GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
@@ -715,7 +715,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void RotateRight(X64Context ctx, IRInstruction instruction)
+        private static void RotateRight(X64Context ctx, IRInstruction instruction)
         {
             Location destination = ctx.GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
@@ -744,7 +744,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void SetEq(X64Context ctx, IRInstruction instruction)
+        private static void SetEq(X64Context ctx, IRInstruction instruction)
         {
             Location destination = ctx.GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
@@ -776,7 +776,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.movzx(dest, Reg64ToReg8(dest));
         }
 
-        private void SetNotEq(X64Context ctx, IRInstruction instruction)
+        private static void SetNotEq(X64Context ctx, IRInstruction instruction)
         {
             Location destination = ctx.GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
@@ -807,7 +807,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.movzx(dest, Reg64ToReg8(dest));
         }
 
-        private void SetLessThan(X64Context ctx, IRInstruction instruction, bool signed)
+        private static void SetLessThan(X64Context ctx, IRInstruction instruction, bool signed)
         {
             Location destination = ctx.GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
@@ -846,7 +846,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.movzx(dest, Reg64ToReg8(dest));
         }
 
-        private void SetGreaterThan(X64Context ctx, IRInstruction instruction, bool signed)
+        private static void SetGreaterThan(X64Context ctx, IRInstruction instruction, bool signed)
         {
             Location destination = ctx.GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
@@ -885,7 +885,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.movzx(dest, Reg64ToReg8(dest));
         }
 
-        private void SetLessThanEq(X64Context ctx, IRInstruction instruction, bool signed)
+        private static void SetLessThanEq(X64Context ctx, IRInstruction instruction, bool signed)
         {
             Location destination = ctx.GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
@@ -924,7 +924,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.movzx(dest, Reg64ToReg8(dest));
         }
 
-        private void SetGreaterThanEq(X64Context ctx, IRInstruction instruction, bool signed)
+        private static void SetGreaterThanEq(X64Context ctx, IRInstruction instruction, bool signed)
         {
             Location destination = ctx.GetLocation(instruction.Destination);
             Value op1 = instruction.Operand1;
@@ -963,7 +963,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.movzx(dest, Reg64ToReg8(dest));
         }
 
-        private void Select(X64Context ctx, IRInstruction instruction)
+        private static void Select(X64Context ctx, IRInstruction instruction)
         {
             Label done = ctx.Asm.CreateLabel();
 
@@ -1009,7 +1009,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.Label(ref done);
         }
 
-        private void ZeroExtend(X64Context ctx, IRInstruction instruction)
+        private static void ZeroExtend(X64Context ctx, IRInstruction instruction)
         {
             Value destination = instruction.Destination;
             Value operand = instruction.Operand1;
@@ -1041,7 +1041,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void ZeroExtendTo64(X64Context ctx, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
+        private static void ZeroExtendTo64(X64Context ctx, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
         {
             switch (operandType)
             {
@@ -1061,7 +1061,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void ZeroExtendTo32(X64Context ctx, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
+        private static void ZeroExtendTo32(X64Context ctx, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
         {
             switch (operandType)
             {
@@ -1077,7 +1077,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void ZeroExtendTo16(X64Context ctx, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
+        private static void ZeroExtendTo16(X64Context ctx, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
         {
             switch (operandType)
             {
@@ -1089,7 +1089,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void SignExtend(X64Context ctx, IRInstruction instruction)
+        private static void SignExtend(X64Context ctx, IRInstruction instruction)
         {
             Value destination = instruction.Destination;
             Value operand = instruction.Operand1;
@@ -1121,7 +1121,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void SignExtendTo64(X64Context ctx, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
+        private static void SignExtendTo64(X64Context ctx, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
         {
             switch (operandType)
             {
@@ -1141,7 +1141,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void SignExtendTo32(X64Context ctx, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
+        private static void SignExtendTo32(X64Context ctx, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
         {
             switch (operandType)
             {
@@ -1157,7 +1157,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void SignExtendTo16(X64Context ctx, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
+        private static void SignExtendTo16(X64Context ctx, AssemblerRegister64 dest, Value.ValueType operandType, AssemblerRegister64 operand)
         {
             switch (operandType)
             {
@@ -1169,7 +1169,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private void Truncate(X64Context ctx, IRInstruction instruction)
+        private static void Truncate(X64Context ctx, IRInstruction instruction)
         {
             Value destination = instruction.Destination;
             Value operand = instruction.Operand1;
