@@ -61,7 +61,15 @@ namespace PS3Sharp.OS
         private readonly ImmutableDictionary<SyscallID, Func<PPUThread, ulong>> _syscallTable;
         private readonly ImmutableDictionary<uint, Func<PPUThread, ulong>> _moduleTable;
 
-        internal LV2SyscallDispatcher(ThreadManager threadManager, MemoryManager memoryManager, ModulePatcher modulePatcher, PRX.PRXManager prxManager, FileSystemManager fileSystemManager, CellGcmSys cellGcmSys, CellPad cellPad, CellGame cellGame)
+        internal LV2SyscallDispatcher(
+            ThreadManager threadManager, 
+            MemoryManager memoryManager, 
+            ModulePatcher modulePatcher, 
+            PRX.PRXManager prxManager, 
+            FileSystemManager fileSystemManager, 
+            CellGcmSys cellGcmSys, 
+            CellPad cellPad, 
+            CellGame cellGame)
         {
             _threadManager = threadManager;
             _memoryManager = memoryManager;
