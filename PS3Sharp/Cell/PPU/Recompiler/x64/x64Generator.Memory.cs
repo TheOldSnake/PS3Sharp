@@ -16,13 +16,13 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // PC is 32-bit
             if (TryGetConst(src, out ulong value))
             {
-                _currentState.Asm.mov(__dword_ptr[PPUState + offset], (uint)value);
+                _currentState.Asm.mov(__dword_ptr[_currentState.PPUState + offset], (uint)value);
             }
             else
             {
                 Location dest = GetLocation(instruction.Destination);
                 AssemblerRegister64 reg = dest.GetRegister();
-                _currentState.Asm.mov(__dword_ptr[PPUState + offset], Reg64ToReg32(reg));
+                _currentState.Asm.mov(__dword_ptr[_currentState.PPUState + offset], Reg64ToReg32(reg));
             }
         }
 
@@ -34,7 +34,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             AssemblerRegister64 reg = dest.GetRegister();
 
             // LR is 32-bit
-            _currentState.Asm.mov(reg, __dword_ptr[PPUState + offset]);
+            _currentState.Asm.mov(reg, __dword_ptr[_currentState.PPUState + offset]);
         }
 
         private void LRStore(IRInstruction instruction)
@@ -45,13 +45,13 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // LR is 32-bit
             if (TryGetConst(src, out ulong value))
             {
-                _currentState.Asm.mov(__dword_ptr[PPUState + offset], (uint)value);
+                _currentState.Asm.mov(__dword_ptr[_currentState.PPUState + offset], (uint)value);
             }
             else
             {
                 Location dest = GetLocation(instruction.Destination);
                 AssemblerRegister64 reg = dest.GetRegister();
-                _currentState.Asm.mov(__dword_ptr[PPUState + offset], Reg64ToReg32(reg));
+                _currentState.Asm.mov(__dword_ptr[_currentState.PPUState + offset], Reg64ToReg32(reg));
             }
         }
 
@@ -63,7 +63,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             AssemblerRegister64 reg = dest.GetRegister();
 
             // CR is 32-bit
-            _currentState.Asm.mov(reg, __dword_ptr[PPUState + offset]);
+            _currentState.Asm.mov(reg, __dword_ptr[_currentState.PPUState + offset]);
         }
 
         private void CRStore(IRInstruction instruction)
@@ -74,13 +74,13 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // CR is 32-bit
             if (TryGetConst(src, out ulong value))
             {
-                _currentState.Asm.mov(__dword_ptr[PPUState + offset], (uint)value);
+                _currentState.Asm.mov(__dword_ptr[_currentState.PPUState + offset], (uint)value);
             }
             else
             {
                 Location dest = GetLocation(instruction.Destination);
                 AssemblerRegister64 reg = dest.GetRegister();
-                _currentState.Asm.mov(__dword_ptr[PPUState + offset], Reg64ToReg32(reg));
+                _currentState.Asm.mov(__dword_ptr[_currentState.PPUState + offset], Reg64ToReg32(reg));
             }
         }
 
@@ -92,7 +92,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             AssemblerRegister64 reg = dest.GetRegister();
 
             // CTR is 64-bit
-            _currentState.Asm.mov(reg, __qword_ptr[PPUState + offset]);
+            _currentState.Asm.mov(reg, __qword_ptr[_currentState.PPUState + offset]);
         }
 
         private void CTRStore(IRInstruction instruction)
@@ -103,14 +103,14 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // CTR is 64-bit
             if (TryGetConst(src, out ulong value))
             {
-                _currentState.Asm.mov(__dword_ptr[PPUState + offset], (uint)value);
-                _currentState.Asm.mov(__dword_ptr[PPUState + (offset + 4)], (uint)(value >> 32));
+                _currentState.Asm.mov(__dword_ptr[_currentState.PPUState + offset], (uint)value);
+                _currentState.Asm.mov(__dword_ptr[_currentState.PPUState + (offset + 4)], (uint)(value >> 32));
             }
             else
             {
                 Location dest = GetLocation(instruction.Destination);
                 AssemblerRegister64 reg = dest.GetRegister();
-                _currentState.Asm.mov(__qword_ptr[PPUState + offset], reg);
+                _currentState.Asm.mov(__qword_ptr[_currentState.PPUState + offset], reg);
             }
         }
 
@@ -122,7 +122,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             AssemblerRegister64 reg = dest.GetRegister();
 
             // XER is 64-bit
-            _currentState.Asm.mov(reg, __qword_ptr[PPUState + offset]);
+            _currentState.Asm.mov(reg, __qword_ptr[_currentState.PPUState + offset]);
         }
 
         private void XERStore(IRInstruction instruction)
@@ -133,14 +133,14 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // XER is 64-bit
             if (TryGetConst(src, out ulong value))
             {
-                _currentState.Asm.mov(__dword_ptr[PPUState + offset], (uint)value);
-                _currentState.Asm.mov(__dword_ptr[PPUState + (offset + 4)], (uint)(value >> 32));
+                _currentState.Asm.mov(__dword_ptr[_currentState.PPUState + offset], (uint)value);
+                _currentState.Asm.mov(__dword_ptr[_currentState.PPUState + (offset + 4)], (uint)(value >> 32));
             }
             else
             {
                 Location dest = GetLocation(instruction.Destination);
                 AssemblerRegister64 reg = dest.GetRegister();
-                _currentState.Asm.mov(__qword_ptr[PPUState + offset], reg);
+                _currentState.Asm.mov(__qword_ptr[_currentState.PPUState + offset], reg);
             }
         }
 
@@ -152,7 +152,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // Destination is always a register
             Location dest = GetLocation(instruction.Destination);
             AssemblerRegister64 reg = dest.GetRegister();
-            _currentState.Asm.mov(reg, __qword_ptr[PPUState + gprOffset]);
+            _currentState.Asm.mov(reg, __qword_ptr[_currentState.PPUState + gprOffset]);
         }
 
         private void GPRStore(IRInstruction instruction)
@@ -165,13 +165,13 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // GPR is 64-bit
             if (TryGetConst(src, out ulong value))
             {
-                _currentState.Asm.mov(__dword_ptr[PPUState + offset], (uint)value);
-                _currentState.Asm.mov(__dword_ptr[PPUState + (offset + 4)], (uint)(value >> 32));
+                _currentState.Asm.mov(__dword_ptr[_currentState.PPUState + offset], (uint)value);
+                _currentState.Asm.mov(__dword_ptr[_currentState.PPUState + (offset + 4)], (uint)(value >> 32));
             }
             else
             {
                 AssemblerRegister64 reg = GetLocation(src).GetRegister();
-                _currentState.Asm.mov(__qword_ptr[PPUState + offset], reg);
+                _currentState.Asm.mov(__qword_ptr[_currentState.PPUState + offset], reg);
             }
         }
 
@@ -195,10 +195,10 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
             return size switch
             {
-                1 => __byte_ptr[MemoryBase + finalOffset],
-                2 => __word_ptr[MemoryBase + finalOffset],
-                4 => __dword_ptr[MemoryBase + finalOffset],
-                8 => __qword_ptr[MemoryBase + finalOffset],
+                1 => __byte_ptr[_currentState.MemoryBase + finalOffset],
+                2 => __word_ptr[_currentState.MemoryBase + finalOffset],
+                4 => __dword_ptr[_currentState.MemoryBase + finalOffset],
+                8 => __qword_ptr[_currentState.MemoryBase + finalOffset],
                 _ => throw new Exception($"[x64 Generator] Invalid pointer size = {size}"),
             };
         }
@@ -209,10 +209,10 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
             return size switch
             {
-                1 => __byte_ptr[MemoryBase + baseOffset + extraOffset],
-                2 => __word_ptr[MemoryBase + baseOffset + extraOffset],
-                4 => __dword_ptr[MemoryBase + baseOffset + extraOffset],
-                8 => __qword_ptr[MemoryBase + baseOffset + extraOffset],
+                1 => __byte_ptr[_currentState.MemoryBase + baseOffset + extraOffset],
+                2 => __word_ptr[_currentState.MemoryBase + baseOffset + extraOffset],
+                4 => __dword_ptr[_currentState.MemoryBase + baseOffset + extraOffset],
+                8 => __qword_ptr[_currentState.MemoryBase + baseOffset + extraOffset],
                 _ => throw new Exception($"[x64 Generator] Invalid pointer size = {size}"),
             };
         }

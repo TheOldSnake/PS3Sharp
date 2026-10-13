@@ -17,11 +17,6 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
         private readonly X64RegisterAllocator _registerAllocator = new();
 
         // Helpers
-        private AssemblerRegister64 PPUState => _registerAllocator.PPUStatePointer;
-        private AssemblerRegister64 Stack => _registerAllocator.StackPointer;
-        private AssemblerRegister64 SpillArray => _registerAllocator.SpillArrayPointer;
-        private AssemblerRegister64 MemoryBase => _registerAllocator.MemoryBasePointer;
-
         private bool IsVolatile(AssemblerRegister64 reg) => _registerAllocator.IsVolatile(reg);
 
         private bool IsNonVolatile(AssemblerRegister64 reg) => _registerAllocator.IsNonVolatile(reg);
@@ -60,10 +55,14 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
         private void SetupState(IRBlock block)
         {
+            AssemblerRegister64 state = _registerAllocator.PPUStatePointer;
+            AssemblerRegister64 stack = _registerAllocator.StackPointer;
+            AssemblerRegister64 spillArray = _registerAllocator.SpillArrayPointer;
+            AssemblerRegister64 memoryBase = _registerAllocator.MemoryBasePointer;
             Dictionary<Value, Location> registerMap = _registerAllocator.AllocateHostRegisters(block.IRCode, block.Constants);
             List<AssemblerRegister64> borrowPool = _registerAllocator.CreateRegisterPool(block.IRCode);
             Dictionary<Value, ulong> constants = block.Constants;
-            _currentState = new(borrowPool, registerMap, constants);
+            _currentState = new(state, stack, spillArray, memoryBase, borrowPool, registerMap, constants);
         }
 
         internal Span<byte> GenerateNativeCode(IRBlock block, PPUThread ppuThread)
@@ -130,26 +129,26 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // Stack bytes to push 
             int pushedBytes = 8 * (2 + nonVolatileRegs.Count);
 
-            if (IsNonVolatile(PPUState))
+            if (IsNonVolatile(_currentState.PPUState))
             {
-                _currentState.Asm.push(PPUState);
+                _currentState.Asm.push(_currentState.PPUState);
             }
 
-            if (IsNonVolatile(SpillArray))
+            if (IsNonVolatile(_currentState.SpillArray))
             {
-                _currentState.Asm.push(SpillArray);
+                _currentState.Asm.push(_currentState.SpillArray);
             }
 
             if (hasMemoryOp)
             {
 
-                if (IsNonVolatile(MemoryBase))
+                if (IsNonVolatile(_currentState.MemoryBase))
                 {
-                    _currentState.Asm.push(MemoryBase);
+                    _currentState.Asm.push(_currentState.MemoryBase);
                 }
 
                 UIntPtr addr = (UIntPtr)memoryManager.GetGuestMemoryBase();
-                _currentState.Asm.mov(MemoryBase, addr);
+                _currentState.Asm.mov(_currentState.MemoryBase, addr);
             }
 
             foreach (AssemblerRegister64 reg in nonVolatileRegs)
@@ -159,12 +158,12 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
             if (spillBytes > 0)
             {
-                _currentState.Asm.sub(Stack, spillBytes);     // Allocate array for spill slots
-                _currentState.Asm.mov(SpillArray, Stack);     // SpillArray Points at array[0]
+                _currentState.Asm.sub(_currentState.Stack, spillBytes);                   // Allocate array for spill slots
+                _currentState.Asm.mov(_currentState.SpillArray, _currentState.Stack);     // SpillArray Points at array[0]
             }
 
             // Move ppu state pointer argument from rcx 
-            _currentState.Asm.mov(PPUState, rcx);
+            _currentState.Asm.mov(_currentState.PPUState, rcx);
 
             // Current offset includes the 8 bytes for the return address
             _currentState.CurrentStackOffset = 8 + pushedBytes + spillBytes;
@@ -179,7 +178,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
             if (spillBytes > 0)
             {
-                _currentState.Asm.add(Stack, spillBytes);
+                _currentState.Asm.add(_currentState.Stack, spillBytes);
             }
 
             // Pop pushed registers in reverse order
@@ -190,20 +189,20 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
             if (hasMemoryOp)
             {
-                if (IsNonVolatile(MemoryBase))
+                if (IsNonVolatile(_currentState.MemoryBase))
                 {
-                    _currentState.Asm.pop(MemoryBase);
+                    _currentState.Asm.pop(_currentState.MemoryBase);
                 }
             }
 
-            if (IsNonVolatile(SpillArray))
+            if (IsNonVolatile(_currentState.SpillArray))
             {
-                _currentState.Asm.pop(SpillArray);
+                _currentState.Asm.pop(_currentState.SpillArray);
             }
 
-            if (IsNonVolatile(PPUState))
+            if (IsNonVolatile(_currentState.PPUState))
             {
-                _currentState.Asm.pop(PPUState);
+                _currentState.Asm.pop(_currentState.PPUState);
             }
 
             _currentState.Asm.ret();

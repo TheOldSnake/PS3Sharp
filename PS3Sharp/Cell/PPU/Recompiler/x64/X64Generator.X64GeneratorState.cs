@@ -10,6 +10,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
     {
         private sealed class X64GeneratorState
         {
+            internal AssemblerRegister64 PPUState { get; }                            // PPU state pointer
+            internal AssemblerRegister64 Stack { get; }                               // Stack register
+            internal AssemblerRegister64 SpillArray { get; }                          // Spill array pointer
+            internal AssemblerRegister64 MemoryBase { get; }                          // Memory base pointer
+
             internal ImmutableList<AssemblerRegister64> BorrowPool { get; }           // List of all borrowable registers for this block, based on the allocator
             internal ImmutableDictionary<Value, Location> RegisterMap { get; }        // Current register mapping
             internal ImmutableDictionary<Value, ulong> KnownConstants { get; }        // Current constants dictionary                                        
@@ -20,8 +25,19 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             private readonly Stack<AssemblerRegister64> _borrowedRegisters = [];      // Currently borrowed registers by the current instruction operands/handler
             private readonly List<AssemblerRegister64> _reservedRegisters = [];       // Currently reserved registers by the current instruction permenant registers mapping
 
-            internal X64GeneratorState(List<AssemblerRegister64> borrowPool, Dictionary<Value, Location> registerMap, Dictionary<Value, ulong> constants)
+            internal X64GeneratorState(
+                AssemblerRegister64 ppuState, 
+                AssemblerRegister64 stack, 
+                AssemblerRegister64 spillArray, 
+                AssemblerRegister64 memoryBase, 
+                List<AssemblerRegister64> borrowPool, 
+                Dictionary<Value, Location> registerMap, 
+                Dictionary<Value, ulong> constants)
             {
+                PPUState = ppuState;
+                Stack = stack;
+                SpillArray = spillArray;
+                MemoryBase = memoryBase;
                 BorrowPool = borrowPool.ToImmutableList();
                 RegisterMap = registerMap.ToImmutableDictionary();
                 KnownConstants = constants.ToImmutableDictionary();
