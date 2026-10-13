@@ -53,21 +53,21 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             return buffer.AsSpan().Slice(0, (int)stream.Position);
         }
 
-        private void SetupState(IRBlock block)
+        private X64GeneratorState CreateState(IRBlock block)
         {
+            Dictionary<Value, Location> registerMap = _registerAllocator.AllocateHostRegisters(block.IRCode, block.Constants);
+            List<AssemblerRegister64> borrowPool = _registerAllocator.CreateRegisterPool(block.IRCode);
+            Dictionary<Value, ulong> constants = block.Constants;
             AssemblerRegister64 state = _registerAllocator.PPUStatePointer;
             AssemblerRegister64 stack = _registerAllocator.StackPointer;
             AssemblerRegister64 spillArray = _registerAllocator.SpillArrayPointer;
             AssemblerRegister64 memoryBase = _registerAllocator.MemoryBasePointer;
-            Dictionary<Value, Location> registerMap = _registerAllocator.AllocateHostRegisters(block.IRCode, block.Constants);
-            List<AssemblerRegister64> borrowPool = _registerAllocator.CreateRegisterPool(block.IRCode);
-            Dictionary<Value, ulong> constants = block.Constants;
-            _currentState = new(state, stack, spillArray, memoryBase, borrowPool, registerMap, constants);
+            return new(borrowPool, registerMap, constants, state, stack, spillArray, memoryBase);
         }
 
         internal Span<byte> GenerateNativeCode(IRBlock block, PPUThread ppuThread)
         {
-            SetupState(block);
+            _currentState = CreateState(block);
 
             int stackSlots = GetRequiredStackSlots();
             List<AssemblerRegister64> allocatedNonVolatileRegisters = GetNonVolatileMappedRegisters();

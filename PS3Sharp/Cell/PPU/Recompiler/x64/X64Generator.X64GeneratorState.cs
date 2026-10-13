@@ -26,21 +26,21 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             private readonly List<AssemblerRegister64> _reservedRegisters = [];       // Currently reserved registers by the current instruction permenant registers mapping
 
             internal X64GeneratorState(
-                AssemblerRegister64 ppuState, 
-                AssemblerRegister64 stack, 
-                AssemblerRegister64 spillArray, 
-                AssemblerRegister64 memoryBase, 
                 List<AssemblerRegister64> borrowPool, 
                 Dictionary<Value, Location> registerMap, 
-                Dictionary<Value, ulong> constants)
+                Dictionary<Value, ulong> constants,
+                AssemblerRegister64 ppuState,
+                AssemblerRegister64 stack,
+                AssemblerRegister64 spillArray,
+                AssemblerRegister64 memoryBase)
             {
+                BorrowPool = borrowPool.ToImmutableList();
+                RegisterMap = registerMap.ToImmutableDictionary();
+                KnownConstants = constants.ToImmutableDictionary();
                 PPUState = ppuState;
                 Stack = stack;
                 SpillArray = spillArray;
                 MemoryBase = memoryBase;
-                BorrowPool = borrowPool.ToImmutableList();
-                RegisterMap = registerMap.ToImmutableDictionary();
-                KnownConstants = constants.ToImmutableDictionary();
                 Asm = new(64);
             }
 
