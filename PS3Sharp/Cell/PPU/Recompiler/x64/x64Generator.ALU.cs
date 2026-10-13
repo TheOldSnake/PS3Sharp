@@ -221,7 +221,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op2 = instruction.Operand2;
 
             AssemblerRegister64 dest = destination.GetRegister();
-            AssemblerRegister64 temp = BorrowRegister(ctx);
+            AssemblerRegister64 temp = ctx.BorrowRegister();
 
             if (ctx.TryGetConst(op1, out ulong op1Value))
             {
@@ -248,7 +248,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // No shift needed
             ctx.Asm.imul(dest, temp);
 
-            ReturnBorrowedRegister(ctx, temp);
+            ctx.ReturnBorrowedRegister(temp);
         }
 
         private static void IMulHW(X64Context ctx, IRInstruction instruction)
@@ -260,7 +260,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op2 = instruction.Operand2;
 
             AssemblerRegister64 dest = destination.GetRegister();
-            AssemblerRegister64 temp = BorrowRegister(ctx);
+            AssemblerRegister64 temp = ctx.BorrowRegister();
 
             if (ctx.TryGetConst(op1, out ulong op1Value))
             {
@@ -287,7 +287,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.imul(dest, temp);
             ctx.Asm.sar(dest, 32);   // arithmetic shift
 
-            ReturnBorrowedRegister(ctx, temp);
+            ctx.ReturnBorrowedRegister(temp);
         }
 
         private static void MulHW(X64Context ctx, IRInstruction instruction)
@@ -299,7 +299,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             Value op2 = instruction.Operand2;
 
             AssemblerRegister64 dest = destination.GetRegister();
-            AssemblerRegister64 temp = BorrowRegister(ctx);
+            AssemblerRegister64 temp = ctx.BorrowRegister();
 
             if (ctx.TryGetConst(op1, out ulong op1Value))
             {
@@ -326,7 +326,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.imul(dest, temp);
             ctx.Asm.shr(dest, 32);   // logical shift
 
-            ReturnBorrowedRegister(ctx, temp);
+            ctx.ReturnBorrowedRegister(temp);
         }
 
         private static void CheckedDivD(X64Context ctx, IRInstruction instruction)
