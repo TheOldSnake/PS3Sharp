@@ -13,19 +13,12 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 {
     internal unsafe sealed partial class X64Generator
     {
-        private X64GeneratorState _currentState = null!;
         private readonly X64RegisterAllocator _registerAllocator = new();
 
         // Helpers
         private bool IsVolatile(AssemblerRegister64 reg) => _registerAllocator.IsVolatile(reg);
 
         private bool IsNonVolatile(AssemblerRegister64 reg) => _registerAllocator.IsNonVolatile(reg);
-
-        private bool IsConst(Value value) => _currentState.KnownConstants.ContainsKey(value);
-
-        private bool TryGetConst(Value value, out ulong result) => _currentState.KnownConstants.TryGetValue(value, out result);
-
-        private Location GetLocation(Value value) => _currentState.RegisterMap[value];
 
         private void PrintNativeCode(Assembler asm)
         {
@@ -45,131 +38,128 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
         }
 
-        private Span<byte> AssembleBlock()
+        private Span<byte> AssembleBlock(X64Context ctx)
         {
             MemoryStream stream = new();
-            AssemblerResult result = _currentState.Asm.Assemble(new StreamCodeWriter(stream), 0);
+            AssemblerResult result = ctx.Asm.Assemble(new StreamCodeWriter(stream), 0);
             byte[] buffer = stream.GetBuffer();
             return buffer.AsSpan().Slice(0, (int)stream.Position);
         }
 
-        private X64GeneratorState CreateState(IRBlock block)
+        private X64Context CreateContext(IRBlock block)
         {
             Dictionary<Value, Location> registerMap = _registerAllocator.AllocateHostRegisters(block.IRCode, block.Constants);
             List<AssemblerRegister64> borrowPool = _registerAllocator.CreateRegisterPool(block.IRCode);
             Dictionary<Value, ulong> constants = block.Constants;
-            AssemblerRegister64 state = _registerAllocator.PPUStatePointer;
+            AssemblerRegister64 ctx = _registerAllocator.PPUStatePointer;
             AssemblerRegister64 stack = _registerAllocator.StackPointer;
             AssemblerRegister64 spillArray = _registerAllocator.SpillArrayPointer;
             AssemblerRegister64 memoryBase = _registerAllocator.MemoryBasePointer;
-            return new(borrowPool, registerMap, constants, state, stack, spillArray, memoryBase);
+            return new(borrowPool, registerMap, constants, ctx, stack, spillArray, memoryBase);
         }
 
         internal Span<byte> GenerateNativeCode(IRBlock block, PPUThread ppuThread)
         {
-            _currentState = CreateState(block);
+            X64Context ctx = CreateContext(block);
 
-            int stackSlots = GetRequiredStackSlots();
-            List<AssemblerRegister64> allocatedNonVolatileRegisters = GetNonVolatileMappedRegisters();
+            int stackSlots = GetRequiredStackSlots(ctx);
+            List<AssemblerRegister64> allocatedNonVolatileRegisters = GetNonVolatileMappedRegisters(ctx);
 
             bool hasCalls = HasCalls(block.IRCode);
             bool hasMemoryOp = HasMemoryOp(block.IRCode);
 
-            EmitBlockEntry(stackSlots, allocatedNonVolatileRegisters, hasMemoryOp, ppuThread.MemoryManager);
+            EmitBlockEntry(ctx, stackSlots, allocatedNonVolatileRegisters, hasMemoryOp, ppuThread.MemoryManager);
 
             for (int i = 0; i < block.IRCode.Count; i++)
             {
-                IRToX64(block.IRCode[i]);
+                IRToX64(ctx, block.IRCode[i]);
             }
 
-            EmitBlockExit(allocatedNonVolatileRegisters, stackSlots, hasMemoryOp);
+            EmitBlockExit(ctx, allocatedNonVolatileRegisters, stackSlots, hasMemoryOp);
 
-            return AssembleBlock();
+            return AssembleBlock(ctx);
         }
 
-        private AssemblerRegister64 BorrowRegister(Assembler asm)
+        private AssemblerRegister64 BorrowRegister(X64Context ctx)
         {
-            ImmutableList<AssemblerRegister64> pool = _currentState.BorrowPool;
+            ImmutableList<AssemblerRegister64> pool = ctx.BorrowPool;
 
             for (int i = 0; i < pool.Count; i++)
             {
                 AssemblerRegister64 reg = pool[i];
 
                 // Borrow a register that was not borrowed before and is not reserved by the current instruction
-                if (!_currentState.IsBorrowedRegister(reg) && !_currentState.IsReservedRegister(reg))
+                if (!ctx.IsBorrowedRegister(reg) && !ctx.IsReservedRegister(reg))
                 {
-                    _currentState.AddBorrowedRegister(reg);
-                    asm.push(reg);
+                    ctx.AddBorrowedRegister(reg);
+                    ctx.Asm.push(reg);
 
-                    _currentState.CurrentStackOffset += 8;
+                    ctx.CurrentStackOffset += 8;
                     return reg;
                 }
             }
-
 
             // If we fail this means all registers are corrently borrowed,
             // something must gone very wrong
             throw new Exception($"[x64 Generator] Too many borrows");
         }
 
-        private void ReturnBorrowedRegister(AssemblerRegister64 tmp)
+        private void ReturnBorrowedRegister(X64Context ctx, AssemblerRegister64 tmp)
         {
-            _currentState.RemoveBorrowedRegister(tmp);
-            _currentState.Asm.pop(tmp);
-
-            _currentState.CurrentStackOffset -= 8;
+            ctx.RemoveBorrowedRegister(tmp);
+            ctx.Asm.pop(tmp);
+            ctx.CurrentStackOffset -= 8;
         }
 
-        private void EmitBlockEntry(int spillSlotCount, List<AssemblerRegister64> nonVolatileRegs, bool hasMemoryOp, MemoryManager memoryManager)
+        private void EmitBlockEntry(X64Context ctx, int spillSlotCount, List<AssemblerRegister64> nonVolatileRegs, bool hasMemoryOp, MemoryManager memoryManager)
         {
-
             // Size of spill array
             int spillBytes = spillSlotCount * 8;
 
             // Stack bytes to push 
             int pushedBytes = 8 * (2 + nonVolatileRegs.Count);
 
-            if (IsNonVolatile(_currentState.PPUState))
+            if (IsNonVolatile(ctx.PPUState))
             {
-                _currentState.Asm.push(_currentState.PPUState);
+                ctx.Asm.push(ctx.PPUState);
             }
 
-            if (IsNonVolatile(_currentState.SpillArray))
+            if (IsNonVolatile(ctx.SpillArray))
             {
-                _currentState.Asm.push(_currentState.SpillArray);
+                ctx.Asm.push(ctx.SpillArray);
             }
 
             if (hasMemoryOp)
             {
 
-                if (IsNonVolatile(_currentState.MemoryBase))
+                if (IsNonVolatile(ctx.MemoryBase))
                 {
-                    _currentState.Asm.push(_currentState.MemoryBase);
+                    ctx.Asm.push(ctx.MemoryBase);
                 }
 
                 UIntPtr addr = (UIntPtr)memoryManager.GetGuestMemoryBase();
-                _currentState.Asm.mov(_currentState.MemoryBase, addr);
+                ctx.Asm.mov(ctx.MemoryBase, addr);
             }
 
             foreach (AssemblerRegister64 reg in nonVolatileRegs)
             {
-                _currentState.Asm.push(reg);
+                ctx.Asm.push(reg);
             }
 
             if (spillBytes > 0)
             {
-                _currentState.Asm.sub(_currentState.Stack, spillBytes);                   // Allocate array for spill slots
-                _currentState.Asm.mov(_currentState.SpillArray, _currentState.Stack);     // SpillArray Points at array[0]
+                ctx.Asm.sub(ctx.Stack, spillBytes);                   // Allocate array for spill slots
+                ctx.Asm.mov(ctx.SpillArray, ctx.Stack);             // SpillArray Points at array[0]
             }
 
-            // Move ppu state pointer argument from rcx 
-            _currentState.Asm.mov(_currentState.PPUState, rcx);
+            // Move ppu ctx pointer argument from rcx 
+            ctx.Asm.mov(ctx.PPUState, rcx);
 
             // Current offset includes the 8 bytes for the return address
-            _currentState.CurrentStackOffset = 8 + pushedBytes + spillBytes;
+            ctx.CurrentStackOffset = 8 + pushedBytes + spillBytes;
         }
 
-        private void EmitBlockExit(List<AssemblerRegister64> nonVolatileRegs, int spillSlotCount, bool hasMemoryOp)
+        private void EmitBlockExit(X64Context ctx, List<AssemblerRegister64> nonVolatileRegs, int spillSlotCount, bool hasMemoryOp)
         {
             // Reverse everything
 
@@ -178,39 +168,39 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
             if (spillBytes > 0)
             {
-                _currentState.Asm.add(_currentState.Stack, spillBytes);
+                ctx.Asm.add(ctx.Stack, spillBytes);
             }
 
             // Pop pushed registers in reverse order
             for (int i = nonVolatileRegs.Count - 1; i >= 0; i--)
             {
-                _currentState.Asm.pop(nonVolatileRegs[i]);
+                ctx.Asm.pop(nonVolatileRegs[i]);
             }
 
             if (hasMemoryOp)
             {
-                if (IsNonVolatile(_currentState.MemoryBase))
+                if (IsNonVolatile(ctx.MemoryBase))
                 {
-                    _currentState.Asm.pop(_currentState.MemoryBase);
+                    ctx.Asm.pop(ctx.MemoryBase);
                 }
             }
 
-            if (IsNonVolatile(_currentState.SpillArray))
+            if (IsNonVolatile(ctx.SpillArray))
             {
-                _currentState.Asm.pop(_currentState.SpillArray);
+                ctx.Asm.pop(ctx.SpillArray);
             }
 
-            if (IsNonVolatile(_currentState.PPUState))
+            if (IsNonVolatile(ctx.PPUState))
             {
-                _currentState.Asm.pop(_currentState.PPUState);
+                ctx.Asm.pop(ctx.PPUState);
             }
 
-            _currentState.Asm.ret();
+            ctx.Asm.ret();
         }
 
-        private int GetRequiredStackSlots()
+        private int GetRequiredStackSlots(X64Context ctx)
         {
-            ImmutableDictionary<Value, Location> registerMap = _currentState.RegisterMap;
+            ImmutableDictionary<Value, Location> registerMap = ctx.RegisterMap;
             int lastIndex = -1;
 
             foreach (KeyValuePair<Value, Location> item in registerMap)
@@ -225,9 +215,9 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             return lastIndex + 1;
         }
 
-        private List<AssemblerRegister64> GetNonVolatileMappedRegisters()
+        private List<AssemblerRegister64> GetNonVolatileMappedRegisters(X64Context ctx)
         {
-            ImmutableDictionary<Value, Location> registerMap = _currentState.RegisterMap;
+            ImmutableDictionary<Value, Location> registerMap = ctx.RegisterMap;
             List<AssemblerRegister64> regs = new();
 
             foreach (KeyValuePair<Value, Location> item in registerMap)
@@ -295,7 +285,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             return location.SpillSlot * 8;
         }
 
-        private bool ValueIsRegister(Value value)
+        private bool ValueIsRegister(X64Context ctx, Value value)
         {
             // Returns true if value is a valid non constant
             if (!value.IsValid)
@@ -303,7 +293,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                 return false;
             }
 
-            if (IsConst(value))
+            if (ctx.IsConst(value))
             {
                 return false;
             }
@@ -311,7 +301,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             return true;
         }
 
-        private void LoadOperands(IRInstruction instruction)
+        private void LoadOperands(X64Context ctx, IRInstruction instruction)
         {
             // Ensure that all valid operands are present in hardware registers
             // This is slightly inefficient, but it simplifies the handlers a lot
@@ -324,14 +314,14 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
             foreach (Value value in values)
             {
-                if (ValueIsRegister(value))
+                if (ValueIsRegister(ctx, value))
                 {
-                    location = GetLocation(value);
+                    location = ctx.GetLocation(value);
 
                     if (!location.IsSpilled)
                     {
-                        ReserveRegister(location);
-                        MarkActiveVolatile(location);
+                        ReserveRegister(ctx, location);
+                        MarkActiveVolatile(ctx, location);
                     }
                 }
             }
@@ -339,25 +329,25 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // Second pass loads spilled registers from stack
             foreach (Value value in values)
             {
-                if (ValueIsRegister(value))
+                if (ValueIsRegister(ctx, value))
                 {
-                    location = GetLocation(value);
+                    location = ctx.GetLocation(value);
 
                     if (location.IsSpilled)
                     {
-                        LoadOperand(location);
+                        LoadOperand(ctx, location);
                     }
                 }
             }
         }
 
-        private void ReserveRegister(Location location)
+        private void ReserveRegister(X64Context ctx, Location location)
         {
             AssemblerRegister64 reg = location.GetRegister();
-            _currentState.AddReservedRegister(reg);
+            ctx.AddReservedRegister(reg);
         }
 
-        private void MarkActiveVolatile(Location location)
+        private void MarkActiveVolatile(X64Context ctx, Location location)
         {
             // permenant mapped volatile register need to be added to this list
             // to be able to save them before calls
@@ -366,18 +356,18 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
             if (IsVolatile(reg))
             {
-                _currentState.AddInUseVolatileRegister(reg);
+                ctx.AddInUseVolatileRegister(reg);
             }
         }
 
-        private void LoadOperand(Location location)
+        private void LoadOperand(X64Context ctx, Location location)
         {
-            AssemblerRegister64 temp = BorrowRegister(_currentState.Asm);
-            _currentState.Asm.mov(temp, __qword_ptr[rbp + SpillOffset(location)]);
+            AssemblerRegister64 temp = BorrowRegister(ctx);
+            ctx.Asm.mov(temp, __qword_ptr[rbp + SpillOffset(location)]);
             location.AssignRegister(temp);
         }
 
-        private void FreeOperands(IRInstruction instruction)
+        private void FreeOperands(X64Context ctx, IRInstruction instruction)
         {
             Value[] values = [instruction.Destination, instruction.Operand1, instruction.Operand2, instruction.Operand3];
 
@@ -387,37 +377,37 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // One pass is enough here
             foreach (Value value in values)
             {
-                if (ValueIsRegister(value))
+                if (ValueIsRegister(ctx, value))
                 {
-                    Location location = GetLocation(value);
+                    Location location = ctx.GetLocation(value);
 
                     if (location.IsSpilled)
                     {
-                        WriteBackOperand(location);
+                        WriteBackOperand(ctx, location);
                     }
                 }
             }
 
-            UnreserveAllRegisters();
+            UnreserveAllRegisters(ctx);
         }
 
-        private void UnreserveAllRegisters()
+        private void UnreserveAllRegisters(X64Context ctx)
         {
-            _currentState.ClearReservedRegister();
+            ctx.ClearReservedRegister();
         }
 
-        private void WriteBackOperand(Location location)
+        private void WriteBackOperand(X64Context ctx, Location location)
         {
             // Write back
             AssemblerRegister64 temp = location.GetRegister();
-            _currentState.Asm.mov(__qword_ptr[rbp + SpillOffset(location)], temp);
+            ctx.Asm.mov(__qword_ptr[rbp + SpillOffset(location)], temp);
 
             // Return the register
-            ReturnBorrowedRegister(temp);
+            ReturnBorrowedRegister(ctx, temp);
             location.UnassignRegister();
         }
 
-        private void PrepareForCall(AssemblerRegister64 skippedRegister)
+        private void PrepareForCall(X64Context ctx, AssemblerRegister64 skippedRegister)
         {
             // Note, on Windows x64:
 
@@ -429,15 +419,15 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             */
 
             // Push all currently active volatile registers
-            ReadOnlySpan<AssemblerRegister64> inUseVolatileRegisters = _currentState.GetInUseVolatileRegisters();
+            ReadOnlySpan<AssemblerRegister64> inUseVolatileRegisters = ctx.GetInUseVolatileRegisters();
 
             for (int i = 0; i < inUseVolatileRegisters.Length; i++)
             {
                 AssemblerRegister64 register = inUseVolatileRegisters[i];
                 if (register != skippedRegister)
                 {
-                    _currentState.Asm.push(register);
-                    _currentState.CurrentStackOffset += 8;
+                    ctx.Asm.push(register);
+                    ctx.CurrentStackOffset += 8;
                 }
             }
 
@@ -446,249 +436,249 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             // todo: align stack and shadow space
         }
 
-        private void ReturnFromCall(AssemblerRegister64 skippedRegister)
+        private void ReturnFromCall(X64Context ctx, AssemblerRegister64 skippedRegister)
         {
             // todo: undo shadow space first
 
             // Then:
             // Pop all currently active volatile registers in reverse 
-            ReadOnlySpan<AssemblerRegister64> inUseVolatileRegisters = _currentState.GetInUseVolatileRegisters();
+            ReadOnlySpan<AssemblerRegister64> inUseVolatileRegisters = ctx.GetInUseVolatileRegisters();
 
             for (int i = inUseVolatileRegisters.Length - 1; i >= 0; i--)
             {
                 AssemblerRegister64 register = inUseVolatileRegisters[i];
                 if (register != skippedRegister)
                 {
-                    _currentState.Asm.pop(register);
-                    _currentState.CurrentStackOffset -= 8;
+                    ctx.Asm.pop(register);
+                    ctx.CurrentStackOffset -= 8;
                 }
             }
         }
 
-        private void IRToX64(IRInstruction instruction)
+        private void IRToX64(X64Context ctx, IRInstruction instruction)
         {
             if (instruction.Opcode == IRInstruction.Op.Ret)
             {
                 return;
             }
 
-            LoadOperands(instruction);
+            LoadOperands(ctx, instruction);
 
             switch (instruction.Opcode)
             {
                 case IRInstruction.Op.PCStore:
-                    PCStore(instruction);
+                    PCStore(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.LRLoad:
-                    LRLoad(instruction);
+                    LRLoad(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.LRStore:
-                    LRStore(instruction);
+                    LRStore(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.CRLoad:
-                    CRLoad(instruction);
+                    CRLoad(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.CRStore:
-                    CRStore(instruction);
+                    CRStore(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.CTRLoad:
-                    CTRLoad(instruction);
+                    CTRLoad(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.CTRStore:
-                    CTRStore(instruction);
+                    CTRStore(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.XERLoad:
-                    XERLoad(instruction);
+                    XERLoad(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.XERStore:
-                    XERStore(instruction);
+                    XERStore(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.GPRLoad:
-                    GPRLoad(instruction);
+                    GPRLoad(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.GPRStore:
-                    GPRStore(instruction);
+                    GPRStore(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.Add:
                 case IRInstruction.Op.And:
                 case IRInstruction.Op.Or:
                 case IRInstruction.Op.Xor:
-                    CommutativeOp(instruction);
+                    CommutativeOp(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.Not:
-                    Not(instruction);
+                    Not(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.Sub:
-                    Sub(instruction);
+                    Sub(ctx, instruction);
                     break;
 
 
                 case IRInstruction.Op.IMulLD:
-                    IMulLD(instruction);
+                    IMulLD(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.IMulHD:
-                    IMulHD(instruction);
+                    IMulHD(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.MulHD:
-                    MulHD(instruction);
+                    MulHD(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.IMulLW:
-                    IMulLW(instruction);
+                    IMulLW(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.IMulHW:
-                    IMulHW(instruction);
+                    IMulHW(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.MulHW:
-                    MulHW(instruction);
+                    MulHW(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.CheckedDivD:
-                    CheckedDivD(instruction);
+                    CheckedDivD(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.CheckedIDivD:
-                    CheckedIDivD(instruction);
+                    CheckedIDivD(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.CheckedDivW:
-                    CheckedDivW(instruction);
+                    CheckedDivW(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.CheckedIDivW:
-                    CheckedIDivW(instruction);
+                    CheckedIDivW(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.ShiftLeft:
-                    ShiftLeft(instruction);
+                    ShiftLeft(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.ShiftRight:
-                    ShiftRight(instruction, arithmetic: false);
+                    ShiftRight(ctx, instruction, arithmetic: false);
                     break;
 
                 case IRInstruction.Op.ShiftRightArithmetic:
-                    ShiftRight(instruction, arithmetic: true);
+                    ShiftRight(ctx, instruction, arithmetic: true);
                     break;
 
                 case IRInstruction.Op.RotateLeft:
-                    RotateLeft(instruction);
+                    RotateLeft(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.RotateRight:
-                    RotateRight(instruction);
+                    RotateRight(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.Load64:
-                    Load64(instruction);
+                    Load64(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.Store64:
-                    Store64(instruction);
+                    Store64(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.Load32:
-                    Load32(instruction);
+                    Load32(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.Store32:
-                    Store32(instruction);
+                    Store32(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.Load16:
-                    Load16(instruction);
+                    Load16(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.Store16:
-                    Store16(instruction);
+                    Store16(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.Load8:
-                    Load8(instruction);
+                    Load8(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.Store8:
-                    Store8(instruction);
+                    Store8(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.Select:
-                    Select(instruction);
+                    Select(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.SetEq:
-                    SetEq(instruction);
+                    SetEq(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.SetNotEq:
-                    SetNotEq(instruction);
+                    SetNotEq(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.SetLessThanSigned:
-                    SetLessThan(instruction, signed: true);
+                    SetLessThan(ctx, instruction, signed: true);
                     break;
 
                 case IRInstruction.Op.SetGreaterThanSigned:
-                    SetGreaterThan(instruction, signed: true);
+                    SetGreaterThan(ctx, instruction, signed: true);
                     break;
 
                 case IRInstruction.Op.SetLessThanUnsigned:
-                    SetLessThan(instruction, signed: false);
+                    SetLessThan(ctx, instruction, signed: false);
                     break;
 
                 case IRInstruction.Op.SetGreaterThanUnsigned:
-                    SetGreaterThan(instruction, signed: false);
+                    SetGreaterThan(ctx, instruction, signed: false);
                     break;
 
                 case IRInstruction.Op.SetLessThanEqSigned:
-                    SetLessThanEq(instruction, signed: true);
+                    SetLessThanEq(ctx, instruction, signed: true);
                     break;
 
                 case IRInstruction.Op.SetGreaterThanEqSigned:
-                    SetGreaterThanEq(instruction, signed: true);
+                    SetGreaterThanEq(ctx, instruction, signed: true);
                     break;
 
                 case IRInstruction.Op.SetLessThanEqUnsigned:
-                    SetLessThanEq(instruction, signed: false);
+                    SetLessThanEq(ctx, instruction, signed: false);
                     break;
 
                 case IRInstruction.Op.SetGreaterThanEqUnsigned:
-                    SetGreaterThanEq(instruction, signed: false);
+                    SetGreaterThanEq(ctx, instruction, signed: false);
                     break;
 
                 case IRInstruction.Op.ZeroExtend:
-                    ZeroExtend(instruction);
+                    ZeroExtend(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.SignExtend:
-                    SignExtend(instruction);
+                    SignExtend(ctx, instruction);
                     break;
 
                 case IRInstruction.Op.Truncate:
-                    Truncate(instruction);
+                    Truncate(ctx, instruction);
                     break;
 
                 default:
                     throw new Exception($"TODO: IR [{instruction.Opcode}] -> x64");
             }
 
-            FreeOperands(instruction);
+            FreeOperands(ctx, instruction);
         }
 
         private bool ImmediateRequiresRegister(ulong imm)
