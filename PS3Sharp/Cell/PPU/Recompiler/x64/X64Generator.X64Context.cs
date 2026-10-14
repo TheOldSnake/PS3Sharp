@@ -89,7 +89,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
             internal List<AssemblerRegister64> GetNonVolatileMappedRegisters()
             {
-                List<AssemblerRegister64> regs = new();
+                List<AssemblerRegister64> nonVolatileRegs = [];
 
                 foreach (KeyValuePair<Value, Location> item in _registerMap)
                 {
@@ -101,18 +101,18 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                     }
 
                     // Check if the register needs to be saved
-                    if (!location.IsSpilled && IsVolatile(location.GetRegister()))
+                    AssemblerRegister64 reg = location.GetRegister();
+                    if (!location.IsSpilled && IsNonVolatile(reg))
                     {
-
-                        // Ensure that we did not save already
-                        if (!regs.Contains(location.GetRegister()))
+                        // Ensure that we did not add it already
+                        if (!nonVolatileRegs.Contains(reg))
                         {
-                            regs.Add(location.GetRegister());
+                            nonVolatileRegs.Add(reg);
                         }
                     }
                 }
 
-                return regs;
+                return nonVolatileRegs;
             }
 
             internal ReadOnlySpan<AssemblerRegister64> GetInUseVolatileRegisters()
