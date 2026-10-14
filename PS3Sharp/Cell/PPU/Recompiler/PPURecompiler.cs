@@ -13,7 +13,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler
     {
         internal struct X64Block
         {
-            internal delegate* unmanaged<PPUState*, void> Code;
+            internal delegate* unmanaged<PPUState*, void*, void> Code;
             internal int IsSyscallExit;
         }
 
@@ -77,9 +77,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler
 
             // Console.WriteLine($"Executing block 0x{ppu.State->PC:X8} at: 0x{(nint)block->Code:X16}");
 
-            block->Code(ppu.State);
+            PPUState* state = ppu.State;
+            void* memory = ppu.MemoryManager.GetGuestMemoryBase();
+            block->Code(state, memory);
 
-            if (block->IsSyscallExit == 1)
+            if (block->IsSyscallExit != 0)
             {
                 ppu.SyscallDispatcher.DispatchSyscall(ppu, 0);
             }
@@ -110,7 +112,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler
             nativeCode.CopyTo(destSpan);
 
             // Set the address
-            nativeBlock->Code = (delegate* unmanaged<PPUState*, void>)dest;
+            nativeBlock->Code = (delegate* unmanaged<PPUState*, void*, void>)dest;
 
             // Advance next block address and align to 16-byte
             _nextBlockAddress += length;

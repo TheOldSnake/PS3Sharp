@@ -19,7 +19,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
         {
             X64Context ctx = CreateContext(block);
 
-            EmitBlockEntry(ctx, ppuThread.MemoryManager);
+            EmitBlockEntry(ctx);
 
             for (int i = 0; i < block.IRCode.Count; i++)
             {
@@ -54,11 +54,12 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             return new(borrowPool, registerMap, constants, ctx, stack, spillArray, memoryBase, hasMemoryOp, hasCalls);
         }
 
-        private static void EmitBlockEntry(X64Context ctx, MemoryManager memoryManager)
+        private static void EmitBlockEntry(X64Context ctx)
         {
             if (IsNonVolatile(ctx.PPUState))
             {
                 ctx.StackPush(ctx.PPUState);
+                ctx.Asm.mov(ctx.PPUState, rcx);   // Move ppu ctx pointer argument from rcx 
             }
 
             if (IsNonVolatile(ctx.SpillArray))
@@ -73,8 +74,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                     ctx.StackPush(ctx.MemoryBase);
                 }
 
-                UIntPtr addr = (UIntPtr)memoryManager.GetGuestMemoryBase();
-                ctx.Asm.mov(ctx.MemoryBase, addr);
+                ctx.Asm.mov(ctx.MemoryBase, rdx); // Move memory base pointer argument from rdx 
             }
 
             foreach (AssemblerRegister64 reg in ctx.NonVolatileRegisters)
@@ -89,9 +89,6 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                 ctx.StackAlloc(spillBytes);                 // Allocate array for spill slots
                 ctx.Asm.mov(ctx.SpillArray, ctx.Stack);     // SpillArray Points at array[0]
             }
-
-            // Move ppu ctx pointer argument from rcx 
-            ctx.Asm.mov(ctx.PPUState, rcx);
         }
 
         private static void EmitBlockExit(X64Context ctx)
