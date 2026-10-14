@@ -96,7 +96,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler
             nativeBlock->IsSyscallExit = block.IsSyscallExit;
 
             // Generate x64
-            Span<byte> nativeCode = _x64Generator.GenerateNativeCode(block, ppu);
+            Span<byte> nativeCode = _x64Generator.GenerateNativeCode(block);
 
             // Allocate more memory if we don't have enough
             if (!HasEnoughMemory(nativeCode.Length))
@@ -117,6 +117,9 @@ namespace PS3Sharp.Cell.PPU.Recompiler
             // Advance next block address and align to 16-byte
             _nextBlockAddress += length;
             _nextBlockAddress = (nint)AlignPow2((nuint)_nextBlockAddress, 16);
+
+            // Debug
+            // X64Generator.PrintNativeCode(nativeCode, (nint)dest);
         }
 
         private void AllocateExecutableMemory(int size)

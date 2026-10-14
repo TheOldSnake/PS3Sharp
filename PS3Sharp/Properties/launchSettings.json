@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "PS3Sharp": {
+      "commandName": "Project",
+      "debugEngines": "managed,native"
+    }
+  }
+}

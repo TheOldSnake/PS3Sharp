@@ -15,7 +15,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
     {
         private readonly X64RegisterAllocator _registerAllocator = new();
 
-        internal Span<byte> GenerateNativeCode(IRBlock block, PPUThread ppuThread)
+        internal Span<byte> GenerateNativeCode(IRBlock block)
         {
             X64Context ctx = CreateContext(block);
 
@@ -29,6 +29,21 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             EmitBlockExit(ctx);
 
             return AssembleBlock(ctx);
+        }
+
+        internal static void PrintNativeCode(Span<byte> code, nint address)
+        {
+            MemoryStream stream = new(code.ToArray());
+            StreamCodeReader reader = new(stream);
+            Decoder decoder = Decoder.Create(64, reader);
+            decoder.IP = (ulong)address;
+
+            while (stream.Position < stream.Length)
+            {
+                decoder.Decode(out Instruction instr);
+                ulong ip = instr.IP;
+                Console.WriteLine($"0x{ip:X16}: {instr}");
+            }
         }
 
         private static Span<byte> AssembleBlock(X64Context ctx)
@@ -563,24 +578,6 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
 
             FreeOperands(ctx, instruction);
-        }
-
-        private static void PrintNativeCode(Assembler asm)
-        {
-            MemoryStream stream = new();
-            asm.Assemble(new StreamCodeWriter(stream), 0);
-
-            stream.Position = 0;
-            StreamCodeReader reader = new(stream);
-            Decoder decoder = Decoder.Create(64, reader);
-            decoder.IP = 0;
-
-            while (stream.Position < stream.Length)
-            {
-                decoder.Decode(out Instruction instr);
-                ulong ip = instr.IP;
-                Console.WriteLine($"{instr}");
-            }
         }
     }
 }
