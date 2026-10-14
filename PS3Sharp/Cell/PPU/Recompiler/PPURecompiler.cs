@@ -14,6 +14,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler
         internal struct X64Block
         {
             internal delegate* unmanaged<PPUState*, void*, void> Code;
+            internal int ByteCount;
             internal int IsSyscallExit;
         }
 
@@ -97,25 +98,25 @@ namespace PS3Sharp.Cell.PPU.Recompiler
 
             // Generate x64
             Span<byte> nativeCode = _x64Generator.GenerateNativeCode(block);
+            int byteCount = nativeCode.Length;
 
             // Allocate more memory if we don't have enough
-            if (!HasEnoughMemory(nativeCode.Length))
+            if (!HasEnoughMemory(byteCount))
             {
-                AllocateExecutableMemory(nativeCode.Length);
+                AllocateExecutableMemory(byteCount);
             }
 
-            void* dest = (void*)_nextBlockAddress;
-
             // Copy the code
-            int length = nativeCode.Length;
-            Span<byte> destSpan = new(dest, length);
+            void* dest = (void*)_nextBlockAddress;
+            Span<byte> destSpan = new(dest, byteCount);
             nativeCode.CopyTo(destSpan);
 
-            // Set the address
+            // Set the address and size
             nativeBlock->Code = (delegate* unmanaged<PPUState*, void*, void>)dest;
+            nativeBlock->ByteCount = byteCount;
 
             // Advance next block address and align to 16-byte
-            _nextBlockAddress += length;
+            _nextBlockAddress += byteCount;
             _nextBlockAddress = (nint)AlignPow2((nuint)_nextBlockAddress, 16);
 
             // Debug
