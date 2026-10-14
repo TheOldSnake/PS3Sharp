@@ -15,15 +15,19 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             internal AssemblerRegister64 Stack { get; }                               // Stack register
             internal AssemblerRegister64 SpillArray { get; }                          // Spill array pointer
             internal AssemblerRegister64 MemoryBase { get; }                          // Memory base pointer
+            internal ImmutableList<AssemblerRegister64> NonVolatileRegisters { get; } // List of all used non-volatile registers for this block
+            internal int SpillSlotsCount { get; }                                     // Total number of spill slots on the stack
+            internal bool HasMemoryOp { get; }                                        // Whether the block has memory operations
+            internal bool HasCalls { get; }                                           // Whether the block has callbacks
 
-            private readonly ImmutableList<AssemblerRegister64> _borrowPool;          // List of all borrowable registers for this block, based on the allocator
-            private readonly ImmutableDictionary<Value, Location> _registerMap;       // Current register mapping
-            private readonly ImmutableDictionary<Value, ulong> _knownConstants;       // Current constants dictionary                                        
+            private readonly ImmutableList<AssemblerRegister64> _borrowPool;           // List of all borrowable registers for this block, based on the allocator
+            private readonly ImmutableDictionary<Value, Location> _registerMap;        // Current register mapping
+            private readonly ImmutableDictionary<Value, ulong> _knownConstants;        // Current constants dictionary                                        
 
-            private readonly List<AssemblerRegister64> _inUseVolatileRegisters = [];  // Currently active volatile registers (across the block)
-            private readonly Stack<AssemblerRegister64> _borrowedRegisters = [];      // Currently borrowed registers by the current instruction operands/handler
-            private readonly List<AssemblerRegister64> _reservedRegisters = [];       // Currently reserved registers by the current instruction permenant registers mapping
-            private int _currentStackOffset = 8;                                      // Current stack offset in bytes -  starts offset by 8 bytes for the return address
+            private readonly List<AssemblerRegister64> _inUseVolatileRegisters = [];   // Currently active volatile registers (across the block)
+            private readonly Stack<AssemblerRegister64> _borrowedRegisters = [];       // Currently borrowed registers by the current instruction operands/handler
+            private readonly List<AssemblerRegister64> _reservedRegisters = [];        // Currently reserved registers by the current instruction permenant registers mapping
+            private int _currentStackOffset = 8;                                       // Current stack offset in bytes -  starts offset by 8 bytes for the return address
 
             internal X64Context(
                 List<AssemblerRegister64> borrowPool, 
@@ -32,16 +36,24 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                 AssemblerRegister64 ppuState,
                 AssemblerRegister64 stack,
                 AssemblerRegister64 spillArray,
-                AssemblerRegister64 memoryBase)
+                AssemblerRegister64 memoryBase,
+                bool hasMemoryOp,
+                bool hasCalls)
             {
                 _borrowPool = borrowPool.ToImmutableList();
                 _registerMap = registerMap.ToImmutableDictionary();
                 _knownConstants = constants.ToImmutableDictionary();
+
+                Asm = new(64);
                 PPUState = ppuState;
                 Stack = stack;
                 SpillArray = spillArray;
                 MemoryBase = memoryBase;
-                Asm = new(64);
+                HasMemoryOp = hasMemoryOp;
+                HasCalls = hasCalls;
+
+                NonVolatileRegisters = GetNonVolatileMappedRegisters().ToImmutableList();
+                SpillSlotsCount = GetStackSlotsCount();
             }
 
             internal bool IsBorrowedRegister(AssemblerRegister64 reg) => _borrowedRegisters.Contains(reg);
@@ -70,49 +82,6 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             {
                 Asm.sub(Stack, size);
                 _currentStackOffset -= size;
-            }
-
-            internal int GetStackSlotsCount()
-            {
-                int lastIndex = -1;
-                foreach (KeyValuePair<Value, Location> item in _registerMap)
-                {
-                    Location location = item.Value;
-                    if (location.IsSpilled)
-                    {
-                        lastIndex = int.Max(lastIndex, location.SpillSlot);
-                    }
-                }
-
-                return lastIndex + 1;
-            }
-
-            internal List<AssemblerRegister64> GetNonVolatileMappedRegisters()
-            {
-                List<AssemblerRegister64> nonVolatileRegs = [];
-
-                foreach (KeyValuePair<Value, Location> item in _registerMap)
-                {
-                    Location location = item.Value;
-
-                    if (!location.Value.IsValid)
-                    {
-                        continue;
-                    }
-
-                    // Check if the register needs to be saved
-                    AssemblerRegister64 reg = location.GetRegister();
-                    if (!location.IsSpilled && IsNonVolatile(reg))
-                    {
-                        // Ensure that we did not add it already
-                        if (!nonVolatileRegs.Contains(reg))
-                        {
-                            nonVolatileRegs.Add(reg);
-                        }
-                    }
-                }
-
-                return nonVolatileRegs;
             }
 
             internal ReadOnlySpan<AssemblerRegister64> GetInUseVolatileRegisters()
@@ -191,6 +160,48 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                 }
 
                 return false;
+            }
+
+            private List<AssemblerRegister64> GetNonVolatileMappedRegisters()
+            {
+                List<AssemblerRegister64> nonVolatileRegs = [];
+
+                foreach (KeyValuePair<Value, Location> item in _registerMap)
+                {
+                    Location location = item.Value;
+
+                    if (!location.Value.IsValid)
+                    {
+                        continue;
+                    }
+
+                    // Check if the register needs to be saved, and we did not add it before
+                    if (!location.IsSpilled)
+                    {
+                        AssemblerRegister64 reg = location.GetRegister();
+                        if (IsNonVolatile(reg) && !nonVolatileRegs.Contains(reg))
+                        {
+                            nonVolatileRegs.Add(reg);
+                        }
+                    }
+                }
+
+                return nonVolatileRegs;
+            }
+
+            private int GetStackSlotsCount()
+            {
+                int lastIndex = -1;
+                foreach (KeyValuePair<Value, Location> item in _registerMap)
+                {
+                    Location location = item.Value;
+                    if (location.IsSpilled)
+                    {
+                        lastIndex = int.Max(lastIndex, location.SpillSlot);
+                    }
+                }
+
+                return lastIndex + 1;
             }
         }
     }

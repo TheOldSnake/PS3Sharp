@@ -19,20 +19,14 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
         {
             X64Context ctx = CreateContext(block);
 
-            int stackSlots = ctx.GetStackSlotsCount();
-            List<AssemblerRegister64> allocatedNonVolatileRegisters = ctx.GetNonVolatileMappedRegisters();
-
-            bool hasCalls = HasCalls(block.IRCode);
-            bool hasMemoryOp = HasMemoryOp(block.IRCode);
-
-            EmitBlockEntry(ctx, stackSlots, allocatedNonVolatileRegisters, hasMemoryOp, ppuThread.MemoryManager);
+            EmitBlockEntry(ctx, ppuThread.MemoryManager);
 
             for (int i = 0; i < block.IRCode.Count; i++)
             {
                 IRToX64(ctx, block.IRCode[i]);
             }
 
-            EmitBlockExit(ctx, allocatedNonVolatileRegisters, stackSlots, hasMemoryOp);
+            EmitBlockExit(ctx);
 
             return AssembleBlock(ctx);
         }
@@ -54,10 +48,13 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             AssemblerRegister64 stack = StackPointer;
             AssemblerRegister64 spillArray = SpillArrayPointer;
             AssemblerRegister64 memoryBase = MemoryBasePointer;
-            return new(borrowPool, registerMap, constants, ctx, stack, spillArray, memoryBase);
+            bool hasMemoryOp = HasMemoryOp(block.IRCode);
+            bool hasCalls = HasCalls(block.IRCode);
+
+            return new(borrowPool, registerMap, constants, ctx, stack, spillArray, memoryBase, hasMemoryOp, hasCalls);
         }
 
-        private static void EmitBlockEntry(X64Context ctx, int spillSlotCount, List<AssemblerRegister64> nonVolatileRegs, bool hasMemoryOp, MemoryManager memoryManager)
+        private static void EmitBlockEntry(X64Context ctx, MemoryManager memoryManager)
         {
             if (IsNonVolatile(ctx.PPUState))
             {
@@ -69,9 +66,8 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                 ctx.StackPush(ctx.SpillArray);
             }
 
-            if (hasMemoryOp)
+            if (ctx.HasMemoryOp)
             {
-
                 if (IsNonVolatile(ctx.MemoryBase))
                 {
                     ctx.StackPush(ctx.MemoryBase);
@@ -81,15 +77,15 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
                 ctx.Asm.mov(ctx.MemoryBase, addr);
             }
 
-            foreach (AssemblerRegister64 reg in nonVolatileRegs)
+            foreach (AssemblerRegister64 reg in ctx.NonVolatileRegisters)
             {
                 ctx.StackPush(reg);
             }
 
             // Allocate spill array
-            if (spillSlotCount > 0)
+            if (ctx.SpillSlotsCount > 0)
             {
-                int spillBytes = spillSlotCount * 8;
+                int spillBytes = ctx.SpillSlotsCount * 8;
                 ctx.StackAlloc(spillBytes);                 // Allocate array for spill slots
                 ctx.Asm.mov(ctx.SpillArray, ctx.Stack);     // SpillArray Points at array[0]
             }
@@ -98,12 +94,12 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             ctx.Asm.mov(ctx.PPUState, rcx);
         }
 
-        private static void EmitBlockExit(X64Context ctx, List<AssemblerRegister64> nonVolatileRegs, int spillSlotCount, bool hasMemoryOp)
+        private static void EmitBlockExit(X64Context ctx)
         {
             // Reverse everything
 
             // Deallocate spill slots
-            int spillBytes = spillSlotCount * 8;
+            int spillBytes = ctx.SpillSlotsCount * 8;
 
             if (spillBytes > 0)
             {
@@ -111,12 +107,12 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
             }
 
             // Pop pushed registers in reverse order
-            for (int i = nonVolatileRegs.Count - 1; i >= 0; i--)
+            for (int i = ctx.NonVolatileRegisters.Count - 1; i >= 0; i--)
             {
-                ctx.Asm.pop(nonVolatileRegs[i]);
+                ctx.Asm.pop(ctx.NonVolatileRegisters[i]);
             }
 
-            if (hasMemoryOp)
+            if (ctx.HasMemoryOp)
             {
                 if (IsNonVolatile(ctx.MemoryBase))
                 {
