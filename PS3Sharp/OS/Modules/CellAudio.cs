@@ -80,7 +80,8 @@ namespace PS3Sharp.OS.Modules
             DiscardOnBufferOverflow = true
         };
 
-        private readonly WaveOutEvent output = new();
+        private readonly WaveOut output = new();
+
         private uint AttachedEventID = 0;
 
         private readonly LV2EventPort.SysEventData AudioEvent = new()
@@ -304,8 +305,8 @@ namespace PS3Sharp.OS.Modules
 
         private void InitNAudio()
         {
-            output.Init(provider);
-            output.Play();
+             output.Init(provider);
+             output.Play();
         }
 
         private void PlayAudio(byte[] samples)
