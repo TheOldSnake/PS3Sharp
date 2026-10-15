@@ -7,7 +7,7 @@ namespace PS3Sharp.OS.Modules
 {
     internal partial class CellPngDec
     {
-        private class PngDecoder : IDisposable
+        private sealed class PngDecoder : IDisposable
         {
             internal uint Handle { get; }
             internal CellPngDecOutParam OutputParam { get; set; }
