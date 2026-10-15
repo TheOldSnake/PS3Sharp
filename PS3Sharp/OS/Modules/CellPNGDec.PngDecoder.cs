@@ -1,7 +1,5 @@
-using OpenTK.Graphics.OpenGL;
 using PS3Sharp.FileSystem;
 using PS3Sharp.Memory;
-using SkiaSharp;
 using StbImageSharp;
 using System.Diagnostics;
 
