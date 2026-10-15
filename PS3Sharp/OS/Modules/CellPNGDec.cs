@@ -374,9 +374,13 @@ namespace PS3Sharp.OS.Modules
         {
             switch (cellPngDecColor)
             {
-                case CELL_PNGDEC_RGB: return 3;
-                case CELL_PNGDEC_RGBA: return 4;
-                case CELL_PNGDEC_ARGB: return 4;
+                case CELL_PNGDEC_RGB: 
+                    return 3;
+
+                case CELL_PNGDEC_RGBA:
+                case CELL_PNGDEC_ARGB: 
+                    return 4;
+
                 default:
                     throw new Exception($"[CellPNGDec] todo color size: {cellPngDecColor:X}");
             }
@@ -386,7 +390,8 @@ namespace PS3Sharp.OS.Modules
         {
             switch (cellPngDecColor)
             {
-                case CELL_PNGDEC_RGB: return ColorComponents.RedGreenBlue;
+                case CELL_PNGDEC_RGB: 
+                    return ColorComponents.RedGreenBlue;
 
                 case CELL_PNGDEC_RGBA: 
                 case CELL_PNGDEC_ARGB: 
