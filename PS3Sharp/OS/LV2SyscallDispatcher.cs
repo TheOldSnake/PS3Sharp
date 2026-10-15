@@ -43,7 +43,7 @@ namespace PS3Sharp.OS
         internal CellAudio CellAudioHandler { get; }
         internal CellVideoOut CellVideoOutHandler { get; }
         internal CellSysModule CellSysModuleHandler { get; }
-        internal CellPNGDec CellPNGDecHandler { get; }
+        internal CellPngDec CellPngDecHandler { get; }
         internal CellResc CellRescHandler { get; }
         internal CellGame CellGameHandler { get; }
         internal CellRtc CellRtcHandler { get; }
@@ -107,7 +107,7 @@ namespace PS3Sharp.OS
             CellAudioHandler = new(_memoryManager, SysEventHandler);
             CellVideoOutHandler = new(_memoryManager);
             CellSysModuleHandler = new(_memoryManager);
-            CellPNGDecHandler = new(_memoryManager);
+            CellPngDecHandler = new(_memoryManager);
             CellRescHandler = new(_memoryManager, CellGcmSysHandler);
             CellRtcHandler = new(_memoryManager);
             CellFsHandler = new(_memoryManager, SysFsHandler);

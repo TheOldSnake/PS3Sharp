@@ -231,13 +231,13 @@ namespace PS3Sharp.OS
                 [NIDManager.GetNID("cellSysmoduleIsLoaded")] = CellSysModuleHandler.CellSysmoduleIsLoaded,
 
                 // CellPngDec
-                [NIDManager.GetNID("cellPngDecCreate")] = CellPNGDecHandler.CellPngDecCreate,
-                [NIDManager.GetNID("cellPngDecOpen")] = CellPNGDecHandler.CellPngDecOpen,
-                [NIDManager.GetNID("cellPngDecReadHeader")] = CellPNGDecHandler.CellPngDecReadHeader,
-                [NIDManager.GetNID("cellPngDecSetParameter")] = CellPNGDecHandler.CellPngDecSetParameter,
-                [NIDManager.GetNID("cellPngDecDecodeData")] = CellPNGDecHandler.CellPngDecDecodeData,
-                [NIDManager.GetNID("cellPngDecClose")] = CellPNGDecHandler.CellPngDecClose,
-                [NIDManager.GetNID("cellPngDecDestroy")] = CellPNGDecHandler.CellPngDecDestroy,
+                [NIDManager.GetNID("cellPngDecCreate")] = CellPngDecHandler.CellPngDecCreate,
+                [NIDManager.GetNID("cellPngDecOpen")] = CellPngDecHandler.CellPngDecOpen,
+                [NIDManager.GetNID("cellPngDecReadHeader")] = CellPngDecHandler.CellPngDecReadHeader,
+                [NIDManager.GetNID("cellPngDecSetParameter")] = CellPngDecHandler.CellPngDecSetParameter,
+                [NIDManager.GetNID("cellPngDecDecodeData")] = CellPngDecHandler.CellPngDecDecodeData,
+                [NIDManager.GetNID("cellPngDecClose")] = CellPngDecHandler.CellPngDecClose,
+                [NIDManager.GetNID("cellPngDecDestroy")] = CellPngDecHandler.CellPngDecDestroy,
 
                 // CellResc
                 [NIDManager.GetNID("cellRescInit")] = CellRescHandler.CellRescInit,

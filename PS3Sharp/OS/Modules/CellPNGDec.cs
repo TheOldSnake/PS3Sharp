@@ -1,16 +1,17 @@
 using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.FileSystem;
 using PS3Sharp.Memory;
+using SkiaSharp;
 using StbImageSharp;
-using System.Diagnostics;
+using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal class CellPNGDec
+    internal partial class CellPngDec
     {
         internal struct CellPngDecThreadOutParam : IPS3Struct
         {
@@ -86,14 +87,9 @@ namespace PS3Sharp.OS.Modules
         internal const int CELL_PNGDEC_ARGB = 20;
 
         private readonly MemoryManager _memoryManager;
-        private uint _decoderCurrentHandle;
-        private CellPngDecSrc _currentSource;
-        private CellPngDecOutParam _currentOutParam;
-        //private Image? _currentImage;
+        private readonly ConcurrentDictionary<uint, PngDecoder> _decoders = [];
 
-        private byte[]? _currentPNGData;
-
-        internal CellPNGDec(MemoryManager memoryManager)
+        internal CellPngDec(MemoryManager memoryManager)
         {
             _memoryManager = memoryManager;
         }
@@ -104,10 +100,14 @@ namespace PS3Sharp.OS.Modules
             uint thread_in_param_ptr = ppu.ReadArg<uint>(ARG1);
             GuestPtr<CellPngDecThreadOutParam> thread_out_param_ptr = ppu.ReadArg<GuestPtr<CellPngDecThreadOutParam>>(ARG2);
 
-            //Write the handle
-            uint handle = _memoryManager.GetHandle();
-            _decoderCurrentHandle = handle;
-            _memoryManager.Write<uint>(handle_ptr, _decoderCurrentHandle);
+            // Create a decoder
+            PngDecoder decoder = new(_memoryManager);
+
+            // Add it to the dictionary 
+            AddPngDecoder(decoder);
+
+            // Write the handle
+            _memoryManager.Write<uint>(handle_ptr, decoder.Handle);
 
             //Write the codec version
             unsafe
@@ -116,7 +116,6 @@ namespace PS3Sharp.OS.Modules
                 out_param->CodecVersion = PNG_CODEC_VERSION;
             }
 
-            //Console.WriteLine($"[CellPNGDec] cellPngDecCreate");
             return CELL_OK;
         }
 
@@ -127,74 +126,83 @@ namespace PS3Sharp.OS.Modules
             GuestPtr<CellPngDecSrc> src_ptr = ppu.ReadArg<GuestPtr<CellPngDecSrc>>(ARG2);
             GuestVoidPtr open_info_ptr = ppu.ReadArg<GuestVoidPtr>(ARG3);
 
-            if (handle != _decoderCurrentHandle)
+            if (TryGetPngDec(handle, out PngDecoder? decoder))
             {
-                throw new Exception($"[CellPNGDec] Got a different handle: 0x{handle:X8}");
+                CellPngDecSrc src = _memoryManager.ReadStruct<CellPngDecSrc>(src_ptr);
+                decoder.Open(src);
+            }
+            else
+            {
+                // Todo: Return actual error code
+                throw new Exception($"[CellPngDec] Can't find decoder handle: {handle:X}");
             }
 
-            _currentSource = _memoryManager.ReadStruct<CellPngDecSrc>(src_ptr);
-            _currentPNGData = GetCurrentSourceData();
-
-            string source = _currentSource.SrcSelect == CELL_PNGDEC_FILE ? _memoryManager.ReadString(_currentSource.Filename_ptr) : "memory buffer";
-            //Console.WriteLine($"[CellPNGDec] cellPngDecOpen src = {source}");
             return CELL_OK;
         }
 
         internal ulong CellPngDecReadHeader(PPUThread ppu)
         {
-            Debug.Assert(_currentPNGData != null);
-
             uint handle = ppu.ReadArg<uint>(ARG0);
             uint sub_handle = ppu.ReadArg<uint>(ARG1);
             GuestPtr<CellPngDecInfo> info_ptr = ppu.ReadArg<GuestPtr<CellPngDecInfo>>(ARG2);
 
-            //Fill the CellPngDecInfo data from the ImageSharp.Image instance
-            unsafe
+            if (TryGetPngDec(handle, out PngDecoder? decoder))
             {
-                ImageInfo srcImageInfo = GetImageInfo(_currentPNGData);
-                CellPngDecInfo* info = _memoryManager.GetPtr(info_ptr);
-
-                info->Width = (uint)srcImageInfo.Width;
-                info->Height = (uint)srcImageInfo.Height;
-                info->NumberOfComponents = (uint)GetNumberOfComponents(srcImageInfo);
-                info->ColorSpace = GetColorSpace(srcImageInfo);
-                info->BitDepth = (uint)GetBitsPerPixel(srcImageInfo);
-                info->InterlaceMethod = 0;
-                info->ChunkInfo = 0;
+                ImageInfo srcImageInfo = decoder.ImageInfo;
+                unsafe
+                {
+                    CellPngDecInfo* info = _memoryManager.GetPtr(info_ptr);
+                    info->Width = (uint)srcImageInfo.Width;
+                    info->Height = (uint)srcImageInfo.Height;
+                    info->NumberOfComponents = (uint)decoder.NumberOfComponents;
+                    info->ColorSpace = decoder.ColorSpace;
+                    info->BitDepth = (uint)decoder.BitsPerPixel;
+                    info->InterlaceMethod = 0;
+                    info->ChunkInfo = 0;
+                }
+            }
+            else
+            {
+                // Todo: Return actual error code
+                throw new Exception($"[CellPngDec] Can't find decoder handle: {handle:X}");
             }
 
-            //Console.WriteLine($"[CellPNGDec] cellPngDecReadHeader");
             return CELL_OK;
         }
 
         internal ulong CellPngDecSetParameter(PPUThread ppu)
         {
-            Debug.Assert(_currentPNGData != null);
-            ImageInfo srcImageInfo = GetImageInfo(_currentPNGData);
-
             uint handle = ppu.ReadArg<uint>(ARG0);
             uint sub_handle = ppu.ReadArg<uint>(ARG1);
             GuestPtr<CellPngDecInParam> in_param_ptr = ppu.ReadArg<GuestPtr<CellPngDecInParam>>(ARG2);
             GuestPtr<CellPngDecOutParam> out_param_ptr = ppu.ReadArg<GuestPtr<CellPngDecOutParam>>(ARG3);
 
-            //Fill the CellPngDecOutParam data from the ImageSharp.Image instance
-            unsafe
+            if (TryGetPngDec(handle, out PngDecoder? decoder))
             {
-                CellPngDecInParam* in_param = _memoryManager.GetPtr(in_param_ptr);
-                CellPngDecOutParam* out_param = _memoryManager.GetPtr(out_param_ptr);
+                ImageInfo srcImageInfo = decoder.ImageInfo;
+                unsafe
+                {
+                    CellPngDecInParam* in_param = _memoryManager.GetPtr(in_param_ptr);
+                    CellPngDecOutParam* out_param = _memoryManager.GetPtr(out_param_ptr);
 
-                ulong outputWidthInBits = (ulong)(srcImageInfo.Width * GetBitsPerPixel(srcImageInfo));
-                out_param->OutputWidthByte = outputWidthInBits / 8;
-                out_param->OutputWidth = (uint)srcImageInfo.Width;
-                out_param->OutputHeight = (uint)srcImageInfo.Height;
-                out_param->OutputComponents = (uint)(GetNumberOfComponents(srcImageInfo));
-                out_param->OutputBitDepth = (uint)(GetBitsPerPixel(srcImageInfo));
-                out_param->OutputMode = (int)(uint)in_param->OutputMode;      //same as in_param
-                out_param->OutputColorSpace = in_param->OutputColorSpace;     //same as in_param
-                out_param->UseMemorySpace = 0;                                //?
+                    ulong outputWidthInBits = (ulong)(srcImageInfo.Width * decoder.BitsPerPixel);
+                    out_param->OutputWidthByte = outputWidthInBits / 8;
+                    out_param->OutputWidth = (uint)srcImageInfo.Width;
+                    out_param->OutputHeight = (uint)srcImageInfo.Height;
+                    out_param->OutputComponents = (uint)decoder.NumberOfComponents;
+                    out_param->OutputBitDepth = (uint)decoder.BitsPerPixel;
+                    out_param->OutputMode = (int)(uint)in_param->OutputMode;      //same as in_param
+                    out_param->OutputColorSpace = in_param->OutputColorSpace;     //same as in_param
+                    out_param->UseMemorySpace = 0;                                //?
 
-                //Save a copy of this struct -- we need it when we decode in cellPngDecDecodeData
-                _currentOutParam = *out_param;
+                    // Save a copy of this struct -- we need it when we decode in cellPngDecDecodeData
+                    decoder.OutputParam = *out_param;
+                }
+            }
+            else
+            {
+                // Todo: Return actual error code
+                throw new Exception($"[CellPngDec] Can't find decoder handle: {handle:X}");
             }
 
             return CELL_OK;
@@ -202,8 +210,6 @@ namespace PS3Sharp.OS.Modules
 
         internal ulong CellPngDecDecodeData(PPUThread ppu)
         {
-            Debug.Assert(_currentPNGData != null);
-
             uint handle = ppu.ReadArg<uint>(ARG0);
             uint sub_handle = ppu.ReadArg<uint>(ARG1);
             GuestVoidPtr data_buffer_ptr = ppu.ReadArg<GuestVoidPtr>(ARG2);
@@ -212,211 +218,83 @@ namespace PS3Sharp.OS.Modules
 
             CellPngDecDataCtrlParam data_ctrl_param = _memoryManager.ReadStruct<CellPngDecDataCtrlParam>(data_ctrl_param_ptr);
 
-            int outputColorSpace = _currentOutParam.OutputColorSpace;
-            bool isRgb = _currentOutParam.OutputColorSpace == CELL_PNGDEC_RGB;
-            ulong outputWidthByte = _currentOutParam.OutputWidthByte;
-            uint outputHeight = _currentOutParam.OutputHeight;
-            int lengthInBytes = (int)(outputHeight * data_ctrl_param.OutputBytesPerLine); //what if the image has a different width?
-            ulong outputBytesPerLine = data_ctrl_param.OutputBytesPerLine;
-
-            // Console.WriteLine($"[CellPNGDec] cellPngDecDecodeData: outputWidthByte = {outputWidthByte}");
-            // Console.WriteLine($"[CellPNGDec] cellPngDecDecodeData: outputHeight = {outputHeight}");
-            // Console.WriteLine($"[CellPNGDec] cellPngDecDecodeData: lengthInBytes = {lengthInBytes}");
-            // Console.WriteLine($"[CellPNGDec] cellPngDecDecodeData: img_w = {_currentImage.Width}");
-            // Console.WriteLine($"[CellPNGDec] cellPngDecDecodeData: img_h = {_currentImage.Height}");
-            // Console.WriteLine($"[CellPNGDec] cellPngDecDecodeData: data_ctrl_param.OutputBytesPerLine = {data_ctrl_param.OutputBytesPerLine}");
-
-            // Decode the data
-            Span<byte> buffer = DecodeImage(lengthInBytes, (int)outputBytesPerLine, (uint)outputColorSpace);
-
-            // Copy it to virtual memory, this copy handles crossing block boundaries
-            _memoryManager.CopyBufferToVirtualMemory(buffer, data_buffer_ptr);
-
-            // Set staus to finish
-            unsafe
+            if (TryGetPngDec(handle, out PngDecoder? decoder))
             {
-                CellPngDecDataOutInfo* data_out_info = _memoryManager.GetPtr(data_out_info_ptr);
-                data_out_info->Status = 0;
+
+                uint outputHeight = decoder.OutputParam.OutputHeight;
+                int lengthInBytes = (int)(outputHeight * data_ctrl_param.OutputBytesPerLine);
+                ulong outputBytesPerLine = data_ctrl_param.OutputBytesPerLine;
+
+                // Decode the data
+                Span<byte> buffer = decoder.DecodeImage(lengthInBytes, (int)outputBytesPerLine);
+
+                // Copy it to virtual memory, this copy handles crossing block boundaries
+                _memoryManager.CopyBufferToVirtualMemory(buffer, data_buffer_ptr);
+
+                // Set staus to finish
+                unsafe
+                {
+                    CellPngDecDataOutInfo* data_out_info = _memoryManager.GetPtr(data_out_info_ptr);
+                    data_out_info->Status = 0;
+                }
+            }
+            else
+            {
+                // Todo: Return actual error code
+                throw new Exception($"[CellPngDec] Can't find decoder handle: {handle:X}");
             }
 
-            //Console.WriteLine($"[CellPNGDec] cellPngDecDecodeData");
             return CELL_OK;
-        }
-
-        internal Span<byte> DecodeImage(int totalBufferSize, int bytesPerLine, uint outColorSpace)
-        {
-            Debug.Assert(_currentPNGData != null);
-
-            ColorComponents colorComponenents = ToStbImageColorComponents(outColorSpace);
-            using MemoryStream stream = new(_currentPNGData);
-            ImageResult decodedImage = ImageResult.FromStream(stream, colorComponenents);
-
-            if (outColorSpace == CELL_PNGDEC_ARGB)
-            {
-                ConvertRGBAToARGB(decodedImage.Data);
-            }
-            
-            // We need to copy row by row
-            // 1: if the destination image memory has a larger row width, the extra width of each row remains untouched
-            // 2: if the destination image memory has a smaller row width, each source row is trimmed (this case is bugged?)
-
-            Span<byte> dest = new byte[totalBufferSize];
-            int destRowBytes = bytesPerLine;
-
-            Span<byte> src = decodedImage.Data;
-            int pixelBytes = GetPixelByteSize(outColorSpace);
-            int srcRowBytes = int.Min(decodedImage.Width * pixelBytes, destRowBytes);
-
-            for (int y = 0; y < decodedImage.Height; y++)
-            {
-                Span<byte> srcRow = src.Slice(y * srcRowBytes, srcRowBytes);
-                Span<byte> destRow = dest.Slice(y * destRowBytes, destRowBytes);
-                srcRow.CopyTo(destRow);
-            }
-
-            return dest;
         }
 
         internal ulong CellPngDecClose(PPUThread ppu)
         {
-            // Reset
-            _currentOutParam = default;
-            _currentSource = default;
-            _currentPNGData = null;
+            uint handle = ppu.ReadArg<uint>(ARG0);
 
-            //Console.WriteLine($"[CellPNGDec] cellPngDecClose");
+            if (TryGetPngDec(handle, out PngDecoder? decoder))
+            {
+                decoder.Close();
+            }
+            else
+            {
+                // Todo: Return actual error code
+                throw new Exception($"[CellPngDec] Can't find decoder handle: {handle:X}");
+            }
 
             return CELL_OK;
         }
 
         internal ulong CellPngDecDestroy(PPUThread ppu)
         {
-            //Reset
-            _currentOutParam = default;
-            _currentSource = default;
-            _currentPNGData = null;
+            uint handle = ppu.ReadArg<uint>(ARG0);
+
+            if (TryGetPngDec(handle, out PngDecoder? decoder))
+            {
+                decoder.Close();
+                RemoveGetPngDec(handle);
+            }
+            else
+            {
+                // Todo: Return actual error code
+                throw new Exception($"[CellPngDec] Can't find decoder handle: {handle:X}");
+            }
 
             return CELL_OK;
         }
 
-        private byte[] GetCurrentSourceData()
+        private void AddPngDecoder(PngDecoder pngDecoder)
         {
-            if ((long)_currentSource.FileOffset > (uint)_currentSource.FileSize)
-            {
-                throw new Exception($"Invalid offset/size");
-            }
-
-            byte[] data;
-
-            if (_currentSource.SrcSelect == CELL_PNGDEC_FILE)
-            {
-                string guestPath = _memoryManager.ReadString(_currentSource.Filename_ptr);
-                string hostPath = FileSystemManager.GetHostPath(guestPath);
-
-                FileStream fileStream = File.OpenRead(hostPath);
-                fileStream.Seek(0, SeekOrigin.Begin);
-
-                long file_size = _currentSource.FileSize > 0 ? _currentSource.FileSize : fileStream.Length; //not sure about this
-
-                long offset = _currentSource.FileOffset;
-                long length = (uint)file_size - offset;
-                data = new byte[file_size];
-
-                fileStream.ReadExactly(data, (int)offset, (int)length);
-                //Console.WriteLine($"CellPNGDec: Read: {hostPath} - _currentSource.FileSize = {_currentSource.FileSize} offset = {offset} size = {data.Length}");
-                return data;
-
-            }
-            else
-            {
-                uint source = _currentSource.StreamPtr;
-                uint size = _currentSource.StreamSize;
-
-                unsafe
-                {
-                    // Return a copy of the data
-                    data = new byte[size];
-                   _memoryManager.ReadBufferFromVirtualMemory(source, data.AsSpan());
-                    return data;
-                }
-            }
+            _decoders.TryAdd(pngDecoder.Handle, pngDecoder);
         }
 
-        private static ImageInfo GetImageInfo(byte[] src)
+        private bool TryGetPngDec(uint handle, [NotNullWhen(true)] out PngDecoder? pngDecoder)
         {
-            using MemoryStream stream = new(src);
-            ImageInfo? info = ImageInfo.FromStream(stream);
-
-            if (info == null)
-            {
-                throw new Exception($"[CellPNGDec] Got null ImageInfo!");
-            }
-
-            return (ImageInfo)info;
-        }
-        
-        private static int GetNumberOfComponents(ImageInfo srcImageInfo)
-        {
-            return srcImageInfo.ColorComponents == ColorComponents.RedGreenBlue ? 3 : 4;
+            return _decoders.TryGetValue(handle, out pngDecoder);
         }
 
-        private static int GetBitsPerPixel(ImageInfo srcImageInfo)
+        private void RemoveGetPngDec(uint handle)
         {
-            return (srcImageInfo.BitsPerChannel * GetNumberOfComponents(srcImageInfo));
-        }
-
-        private static int GetColorSpace(ImageInfo srcImageInfo)
-        {
-            return GetNumberOfComponents(srcImageInfo) == 3 ? CELL_PNGDEC_RGB : CELL_PNGDEC_RGBA;
-        }
-
-        private static int GetPixelByteSize(uint cellPngDecColor)
-        {
-            switch (cellPngDecColor)
-            {
-                case CELL_PNGDEC_RGB: 
-                    return 3;
-
-                case CELL_PNGDEC_RGBA:
-                case CELL_PNGDEC_ARGB: 
-                    return 4;
-
-                default:
-                    throw new Exception($"[CellPNGDec] todo color size: {cellPngDecColor:X}");
-            }
-        }
-
-        private static ColorComponents ToStbImageColorComponents(uint cellPngDecColor)
-        {
-            switch (cellPngDecColor)
-            {
-                case CELL_PNGDEC_RGB: 
-                    return ColorComponents.RedGreenBlue;
-
-                case CELL_PNGDEC_RGBA: 
-                case CELL_PNGDEC_ARGB: 
-                    return ColorComponents.RedGreenBlueAlpha;
-
-                default:
-                    throw new Exception($"[CellPNGDec] todo color size: {cellPngDecColor:X}");
-            }
-        }
-
-        private static void ConvertRGBAToARGB(Span<byte> rgba)
-        {
-            // Swizzle RGBA to ARGB
-            for (int i = 0; i < rgba.Length; i += 4)
-            {
-                byte r = rgba[i];
-                byte g = rgba[i + 1];
-                byte b = rgba[i + 2];
-                byte a = rgba[i + 3];
-
-                rgba[i] = a;
-                rgba[i + 1] = r;
-                rgba[i + 2] = g;
-                rgba[i + 3] = b;
-            }
+            _decoders.TryRemove(handle, out _);
         }
     }
 }
