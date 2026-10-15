@@ -270,7 +270,7 @@ namespace PS3Sharp.OS.Modules
             if (TryGetPngDec(handle, out PngDecoder? decoder))
             {
                 decoder.Close();
-                RemoveGetPngDec(handle);
+                RemovePngDec(handle);
             }
             else
             {
@@ -291,7 +291,7 @@ namespace PS3Sharp.OS.Modules
             return _decoders.TryGetValue(handle, out pngDecoder);
         }
 
-        private void RemoveGetPngDec(uint handle)
+        private void RemovePngDec(uint handle)
         {
             _decoders.TryRemove(handle, out _);
         }
