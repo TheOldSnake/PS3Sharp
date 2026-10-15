@@ -1,15 +1,17 @@
+using OpenTK.Graphics.OpenGL;
 using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
 using PS3Sharp.FileSystem;
 using PS3Sharp.Memory;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
-using SixLabors.ImageSharp.PixelFormats;
+using SkiaSharp;
+using StbImageSharp;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
+using static PS3Sharp.Cell.RSX.FragmentShaderGenerator.FragmentInstruction;
 
 namespace PS3Sharp.OS.Modules
 {
@@ -92,8 +94,9 @@ namespace PS3Sharp.OS.Modules
         private uint _decoderCurrentHandle;
         private CellPngDecSrc _currentSource;
         private CellPngDecOutParam _currentOutParam;
-        private Image? _currentImage;
-        private int _dumpsCount = 0;
+        //private Image? _currentImage;
+
+        private byte[]? _currentPNGData;
 
         internal CellPNGDec(MemoryManager memoryManager)
         {
@@ -135,9 +138,7 @@ namespace PS3Sharp.OS.Modules
             }
 
             _currentSource = _memoryManager.ReadStruct<CellPngDecSrc>(src_ptr);
-
-            ReadOnlySpan<byte> pngData = GetCurrentSourceData(ppu);
-            _currentImage = GetImage(pngData);
+            _currentPNGData = GetCurrentSourceData();
 
             string source = _currentSource.SrcSelect == CELL_PNGDEC_FILE ? _memoryManager.ReadString(_currentSource.Filename_ptr) : "memory buffer";
             //Console.WriteLine($"[CellPNGDec] cellPngDecOpen src = {source}");
@@ -146,7 +147,7 @@ namespace PS3Sharp.OS.Modules
 
         internal ulong CellPngDecReadHeader(PPUThread ppu)
         {
-            EnsureImageIsSet("cellPngDecReadHeader");
+            Debug.Assert(_currentPNGData != null);
 
             uint handle = ppu.ReadArg<uint>(ARG0);
             uint sub_handle = ppu.ReadArg<uint>(ARG1);
@@ -155,12 +156,14 @@ namespace PS3Sharp.OS.Modules
             //Fill the CellPngDecInfo data from the ImageSharp.Image instance
             unsafe
             {
+                ImageInfo srcImageInfo = GetImageInfo(_currentPNGData);
                 CellPngDecInfo* info = _memoryManager.GetPtr(info_ptr);
-                info->Width = (uint)_currentImage.Width;
-                info->Height = (uint)_currentImage.Height;
-                info->NumberOfComponents = (uint)_currentImage.PixelType.BitsPerPixel / 8;
-                info->ColorSpace = info->NumberOfComponents == 3 ? CELL_PNGDEC_RGB : CELL_PNGDEC_RGBA;
-                info->BitDepth = (uint)_currentImage.PixelType.BitsPerPixel;
+
+                info->Width = (uint)srcImageInfo.Width;
+                info->Height = (uint)srcImageInfo.Height;
+                info->NumberOfComponents = (uint)GetNumberOfComponents(srcImageInfo);
+                info->ColorSpace = GetColorSpace(srcImageInfo);
+                info->BitDepth = (uint)GetBitsPerPixel(srcImageInfo);
                 info->InterlaceMethod = 0;
                 info->ChunkInfo = 0;
             }
@@ -171,7 +174,8 @@ namespace PS3Sharp.OS.Modules
 
         internal ulong CellPngDecSetParameter(PPUThread ppu)
         {
-            EnsureImageIsSet("cellPngDecReadHeader");
+            Debug.Assert(_currentPNGData != null);
+            ImageInfo srcImageInfo = GetImageInfo(_currentPNGData);
 
             uint handle = ppu.ReadArg<uint>(ARG0);
             uint sub_handle = ppu.ReadArg<uint>(ARG1);
@@ -184,12 +188,12 @@ namespace PS3Sharp.OS.Modules
                 CellPngDecInParam* in_param = _memoryManager.GetPtr(in_param_ptr);
                 CellPngDecOutParam* out_param = _memoryManager.GetPtr(out_param_ptr);
 
-                ulong outputWidthInBits = (ulong)(_currentImage.Width * _currentImage.PixelType.BitsPerPixel);
+                ulong outputWidthInBits = (ulong)(srcImageInfo.Width * GetBitsPerPixel(srcImageInfo));
                 out_param->OutputWidthByte = outputWidthInBits / 8;
-                out_param->OutputWidth = (uint)_currentImage.Width;
-                out_param->OutputHeight = (uint)_currentImage.Height;
-                out_param->OutputComponents = (uint)(_currentImage.PixelType.BitsPerPixel / 8);
-                out_param->OutputBitDepth = (uint)(_currentImage.PixelType.BitsPerPixel);
+                out_param->OutputWidth = (uint)srcImageInfo.Width;
+                out_param->OutputHeight = (uint)srcImageInfo.Height;
+                out_param->OutputComponents = (uint)(GetNumberOfComponents(srcImageInfo));
+                out_param->OutputBitDepth = (uint)(GetBitsPerPixel(srcImageInfo));
                 out_param->OutputMode = (int)(uint)in_param->OutputMode;      //same as in_param
                 out_param->OutputColorSpace = in_param->OutputColorSpace;     //same as in_param
                 out_param->UseMemorySpace = 0;                                //?
@@ -203,7 +207,7 @@ namespace PS3Sharp.OS.Modules
 
         internal ulong CellPngDecDecodeData(PPUThread ppu)
         {
-            EnsureImageIsSet("cellPngDecDecodeData");
+            Debug.Assert(_currentPNGData != null);
 
             uint handle = ppu.ReadArg<uint>(ARG0);
             uint sub_handle = ppu.ReadArg<uint>(ARG1);
@@ -213,6 +217,7 @@ namespace PS3Sharp.OS.Modules
 
             CellPngDecDataCtrlParam data_ctrl_param = _memoryManager.ReadStruct<CellPngDecDataCtrlParam>(data_ctrl_param_ptr);
 
+            int outputColorSpace = _currentOutParam.OutputColorSpace;
             bool isRgb = _currentOutParam.OutputColorSpace == CELL_PNGDEC_RGB;
             ulong outputWidthByte = _currentOutParam.OutputWidthByte;
             uint outputHeight = _currentOutParam.OutputHeight;
@@ -226,83 +231,63 @@ namespace PS3Sharp.OS.Modules
             // Console.WriteLine($"[CellPNGDec] cellPngDecDecodeData: img_h = {_currentImage.Height}");
             // Console.WriteLine($"[CellPNGDec] cellPngDecDecodeData: data_ctrl_param.OutputBytesPerLine = {data_ctrl_param.OutputBytesPerLine}");
 
-            using (_memoryManager.AcquireTemporaryLock())
+            // Decode the data
+            Span<byte> buffer = DecodeImage(lengthInBytes, (int)outputBytesPerLine, (uint)outputColorSpace);
+
+            // Copy it to virtual memory, this copy handles crossing block boundaries
+            _memoryManager.CopyBufferToVirtualMemory(buffer, data_buffer_ptr);
+
+            // Set staus to finish
+            unsafe
             {
-                // Create a temporary buffer
-                Span<byte> buffer = new byte[lengthInBytes];
-
-                // Decode the data
-                switch (_currentOutParam.OutputColorSpace)
-                {
-                    case CELL_PNGDEC_RGB:
-                        DecodeImage<Rgb24>((int)outputBytesPerLine, buffer);
-                        break;
-
-                    case CELL_PNGDEC_RGBA:
-                        DecodeImage<Rgba32>((int)outputBytesPerLine, buffer);
-                        break;
-
-                    case CELL_PNGDEC_ARGB:
-                        DecodeImage<Argb32>((int)outputBytesPerLine, buffer);
-                        break;
-
-                    default:
-                        throw new Exception($"[CellPNGDec] unhandled OutputColorSpace = 0x{_currentOutParam.OutputColorSpace:X}");
-                }
-
-                // Copy it to virtual memory, this copy handles crossing block boundaries
-                _memoryManager.CopyBufferToVirtualMemory(buffer, data_buffer_ptr);
-
-                // Set staus to finish
-                unsafe
-                {
-                    CellPngDecDataOutInfo* data_out_info = _memoryManager.GetPtr(data_out_info_ptr);
-                    data_out_info->Status = 0;
-                }
+                CellPngDecDataOutInfo* data_out_info = _memoryManager.GetPtr(data_out_info_ptr);
+                data_out_info->Status = 0;
             }
 
             //Console.WriteLine($"[CellPNGDec] cellPngDecDecodeData");
             return CELL_OK;
         }
 
-        internal void DecodeImage<T>(int bytesPerLine, Span<byte> destination) where T : unmanaged, IPixel<T>
+        internal Span<byte> DecodeImage(int totalBufferSize, int bytesPerLine, uint outColorSpace)
         {
-            destination.Clear();
-            Span<T> destinationPixels = MemoryMarshal.Cast<byte, T>(destination);
+            Debug.Assert(_currentPNGData != null);
 
-            Image<T> srcImg = _currentImage.CloneAs<T>();
+            ColorComponents colorComponenents = ToStbImageColorComponents(outColorSpace);
+            using MemoryStream stream = new(_currentPNGData);
+            ImageResult decodedImage = ImageResult.FromStream(stream, colorComponenents);
 
-            int numberOfComponents = Unsafe.SizeOf<T>(); // this works because each component is a byte in Rgb24/Rgba32/Argb32
-            int destinationWidth = bytesPerLine / numberOfComponents;
-
-            // We need to copy row by row, don't use CopyPixelDataTo(), because it copies all pixels sequentially.
-            // 1: if the destination image memory has a larger row width, the extra width of each row remains untouced
-            // 2: if the destination image memory has a smaller row width, each source row is trimmed (this case is bugged)
-
-            for (int y = 0; y < srcImg.Height; y++)
+            if (outColorSpace == CELL_PNGDEC_ARGB)
             {
-                Span<T> srcRow = srcImg.DangerousGetPixelRowMemory(y).Span;
-                Span<T> destRow = destinationPixels.Slice(y * destinationWidth, destinationWidth);
-                destRow.Clear();
+                ConvertRGBAToARGB(decodedImage.Data);
+            }
+            
+            // We need to copy row by row
+            // 1: if the destination image memory has a larger row width, the extra width of each row remains untouched
+            // 2: if the destination image memory has a smaller row width, each source row is trimmed (this case is bugged?)
 
-                // Console.WriteLine($"Y = {y} srcRow length = {srcRow.Length} destinationWidth = {destinationWidth} destRow length = {destRow.Length}");
+            Span<byte> dest = new byte[totalBufferSize];
+            int destRowBytes = bytesPerLine;
 
-                if (srcRow.Length > destRow.Length)
-                {
-                    srcRow = srcRow.Slice(0, destRow.Length);
-                }
+            Span<byte> src = decodedImage.Data;
+            int pixelBytes = GetPixelByteSize(outColorSpace);
+            int srcRowBytes = int.Min(decodedImage.Width * pixelBytes, destRowBytes);
 
+            for (int y = 0; y < decodedImage.Height; y++)
+            {
+                Span<byte> srcRow = src.Slice(y * srcRowBytes, srcRowBytes);
+                Span<byte> destRow = dest.Slice(y * destRowBytes, destRowBytes);
                 srcRow.CopyTo(destRow);
             }
 
-            //DumpDecodedImage(srcImg);
+            return dest;
         }
 
         internal ulong CellPngDecClose(PPUThread ppu)
         {
             // Reset
             _currentOutParam = default;
-            _currentImage = null;
+            _currentSource = default;
+            _currentPNGData = null;
 
             //Console.WriteLine($"[CellPNGDec] cellPngDecClose");
 
@@ -313,46 +298,20 @@ namespace PS3Sharp.OS.Modules
         {
             //Reset
             _currentOutParam = default;
-            _currentImage = null;
-
-            //Console.WriteLine($"[CellPNGDec] cellPngDecDestroy lr = {ppu.LR:X8}");
+            _currentSource = default;
+            _currentPNGData = null;
 
             return CELL_OK;
         }
 
-        private Image GetImage(ReadOnlySpan<byte> pngData) => Image.Load(pngData);
-
-        private void EnsureImageIsSet(string function)
-        {
-            if (_currentImage == null)
-            {
-                throw new NullReferenceException($"[CellPNGDec] {function}: _currentImage is null");
-            }
-        }
-
-        private void SwizzleRGBAtoARGB(ref Image<Rgba32> rgba_img)
-        {
-            rgba_img.ProcessPixelRows(accessor =>
-            {
-                for (int y = 0; y < accessor.Height; y++)
-                {
-                    Span<Rgba32> row = accessor.GetRowSpan(y);
-
-                    for (int x = 0; x < row.Length; x++)
-                    {
-                        ref Rgba32 pixel = ref row[x];
-                        pixel = new Rgba32(pixel.A, pixel.R, pixel.G, pixel.B);
-                    }
-                }
-            });
-        }
-
-        private ReadOnlySpan<byte> GetCurrentSourceData(PPUThread ppu)
+        private byte[] GetCurrentSourceData()
         {
             if ((long)_currentSource.FileOffset > (uint)_currentSource.FileSize)
             {
                 throw new Exception($"Invalid offset/size");
             }
+
+            byte[] data;
 
             if (_currentSource.SrcSelect == CELL_PNGDEC_FILE)
             {
@@ -366,7 +325,7 @@ namespace PS3Sharp.OS.Modules
 
                 long offset = _currentSource.FileOffset;
                 long length = (uint)file_size - offset;
-                byte[] data = new byte[file_size];
+                data = new byte[file_size];
 
                 fileStream.ReadExactly(data, (int)offset, (int)length);
                 //Console.WriteLine($"CellPNGDec: Read: {hostPath} - _currentSource.FileSize = {_currentSource.FileSize} offset = {offset} size = {data.Length}");
@@ -381,15 +340,83 @@ namespace PS3Sharp.OS.Modules
                 unsafe
                 {
                     // Return a copy of the data
-                    return _memoryManager.CreateSpan<byte>(source, (int)size).ToArray();
+                    data = new byte[size];
+                   _memoryManager.ReadBufferFromVirtualMemory(source, data.AsSpan());
+                    return data;
                 }
             }
         }
 
-        private void DumpDecodedImage(Image image)
+        private static ImageInfo GetImageInfo(byte[] src)
         {
-            image.Save($@"pngdumps\{_dumpsCount}.png");
-            _dumpsCount++;
+            using MemoryStream stream = new(src);
+            ImageInfo? info = ImageInfo.FromStream(stream);
+
+            if (info == null)
+            {
+                throw new Exception($"[CellPNGDec] Got null ImageInfo!");
+            }
+
+            return (ImageInfo)info;
+        }
+        
+        private static int GetNumberOfComponents(ImageInfo srcImageInfo)
+        {
+            return srcImageInfo.ColorComponents == ColorComponents.RedGreenBlue ? 3 : 4;
+        }
+
+        private static int GetBitsPerPixel(ImageInfo srcImageInfo)
+        {
+            return (srcImageInfo.BitsPerChannel * GetNumberOfComponents(srcImageInfo));
+        }
+
+        private static int GetColorSpace(ImageInfo srcImageInfo)
+        {
+            return GetNumberOfComponents(srcImageInfo) == 3 ? CELL_PNGDEC_RGB : CELL_PNGDEC_RGBA;
+        }
+
+        private static int GetPixelByteSize(uint cellPngDecColor)
+        {
+            switch (cellPngDecColor)
+            {
+                case CELL_PNGDEC_RGB: return 3;
+                case CELL_PNGDEC_RGBA: return 4;
+                case CELL_PNGDEC_ARGB: return 4;
+                default:
+                    throw new Exception($"[CellPNGDec] todo color size: {cellPngDecColor:X}");
+            }
+        }
+
+        private static ColorComponents ToStbImageColorComponents(uint cellPngDecColor)
+        {
+            switch (cellPngDecColor)
+            {
+                case CELL_PNGDEC_RGB: return ColorComponents.RedGreenBlue;
+
+                case CELL_PNGDEC_RGBA: 
+                case CELL_PNGDEC_ARGB: 
+                    return ColorComponents.RedGreenBlueAlpha;
+
+                default:
+                    throw new Exception($"[CellPNGDec] todo color size: {cellPngDecColor:X}");
+            }
+        }
+
+        private static void ConvertRGBAToARGB(Span<byte> rgba)
+        {
+            // Swizzle RGBA to ARGB
+            for (int i = 0; i < rgba.Length; i += 4)
+            {
+                byte r = rgba[i];
+                byte g = rgba[i + 1];
+                byte b = rgba[i + 2];
+                byte a = rgba[i + 3];
+
+                rgba[i] = a;
+                rgba[i + 1] = r;
+                rgba[i + 2] = g;
+                rgba[i + 3] = b;
+            }
         }
     }
 }
