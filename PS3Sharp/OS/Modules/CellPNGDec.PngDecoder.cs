@@ -15,8 +15,7 @@ namespace PS3Sharp.OS.Modules
 
             private readonly MemoryManager _memoryManager;
             private CellPngDecSrc _src;
-            private byte[]? _srcData;
-            private MemoryStream? _srcDataStream;
+            private Stream? _srcDataStream;
 
             internal int NumberOfComponents => ImageInfo.ColorComponents == ColorComponents.RedGreenBlue ? 3 : 4;
             internal int BitsPerPixel => ImageInfo.BitsPerChannel * NumberOfComponents;
@@ -31,9 +30,10 @@ namespace PS3Sharp.OS.Modules
             internal void Open(CellPngDecSrc src)
             {
                 _src = src;
-                _srcData = GetCurrentSourceData(_src);
-                _srcDataStream = new(_srcData);
-                ImageInfo = CreateImageInfo();
+                _srcDataStream = GetDataStream(_src);
+                ImageInfo? info = CreateImageInfo();
+                Debug.Assert(info != null, $"[PngDecoder] Failed to get image info");
+                ImageInfo = (ImageInfo)info;
             }
 
             internal Span<byte> DecodeImage(int totalBufferSize, int bytesPerLine)
@@ -71,56 +71,39 @@ namespace PS3Sharp.OS.Modules
                 return dest;
             }
 
-            private ImageInfo CreateImageInfo()
+            private ImageInfo? CreateImageInfo()
             {
                 Debug.Assert(_srcDataStream != null);
-
                 _srcDataStream.Position = 0;
-                ImageInfo? info = ImageInfo.FromStream(_srcDataStream);
-
-                Debug.Assert(info != null);
-                return (ImageInfo)info;
+                return ImageInfo.FromStream(_srcDataStream);
             }
 
-            private byte[] GetCurrentSourceData(CellPngDecSrc src)
+            private Stream GetDataStream(CellPngDecSrc src)
             {
                 if ((long)src.FileOffset > (uint)src.FileSize)
                 {
                     throw new Exception($"Invalid offset/size");
                 }
 
-                byte[] data;
+                Stream dataStream;
 
                 if (src.SrcSelect == CELL_PNGDEC_FILE)
                 {
                     string guestPath = _memoryManager.ReadString(src.Filename_ptr);
                     string hostPath = FileSystemManager.GetHostPath(guestPath);
-
-                    FileStream fileStream = File.OpenRead(hostPath);
-                    fileStream.Seek(0, SeekOrigin.Begin);
-
-                    long file_size = src.FileSize > 0 ? src.FileSize : fileStream.Length; // not sure about this
-
-                    long offset = src.FileOffset;
-                    long length = (uint)file_size - offset;
-                    data = new byte[file_size];
-                    fileStream.ReadExactly(data, (int)offset, (int)length);
-
-                    return data;
+                    dataStream = File.OpenRead(hostPath);
                 }
                 else
                 {
+                    // Copy the data from memory
                     uint source = src.StreamPtr;
                     uint size = src.StreamSize;
-
-                    unsafe
-                    {
-                        // Return a copy of the data
-                        data = new byte[size];
-                        _memoryManager.ReadBufferFromVirtualMemory(source, data.AsSpan());
-                        return data;
-                    }
+                    byte[] buffer = new byte[size];
+                    _memoryManager.ReadBufferFromVirtualMemory(source, buffer.AsSpan());
+                    dataStream = new MemoryStream(buffer);
                 }
+
+                return dataStream;
             }
 
             private static int GetPixelByteSize(uint cellPngDecColor)
@@ -181,7 +164,6 @@ namespace PS3Sharp.OS.Modules
             {
                 _srcDataStream?.Close();
                 _srcDataStream = null;
-                _srcData = null;
                 _src = default;
                 ImageInfo = default;
             }
