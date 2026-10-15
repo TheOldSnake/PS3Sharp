@@ -36,12 +36,14 @@ namespace PS3Sharp.OS.Modules
                 ImageInfo = (ImageInfo)info;
             }
 
-            internal Span<byte> DecodeImage(int totalBufferSize, int bytesPerLine)
+            internal byte[] DecodeImage(int totalBufferSize, int bytesPerLine)
             {
                 Debug.Assert(_srcDataStream != null);
                 _srcDataStream.Position = 0;
 
                 int cellColorSpace = OutputParam.OutputColorSpace;
+                int pixelBytes = GetPixelByteSize((uint)cellColorSpace);
+
                 ColorComponents colorComponenents = ToStbImageColorComponents((uint)cellColorSpace);
                 ImageResult decodedImage = ImageResult.FromStream(_srcDataStream, colorComponenents);
 
@@ -50,25 +52,7 @@ namespace PS3Sharp.OS.Modules
                     ConvertRGBAToARGB(decodedImage.Data);
                 }
 
-                // We need to copy row by row
-                // 1: if the destination image memory has a larger row width, the extra width of each row remains untouched
-                // 2: if the destination image memory has a smaller row width, each source row is trimmed (this case is bugged?)
-
-                Span<byte> dest = new byte[totalBufferSize];
-                int destRowBytes = bytesPerLine;
-
-                Span<byte> src = decodedImage.Data;
-                int pixelBytes = GetPixelByteSize((uint)cellColorSpace);
-                int srcRowBytes = int.Min(decodedImage.Width * pixelBytes, destRowBytes);
-
-                for (int y = 0; y < decodedImage.Height; y++)
-                {
-                    Span<byte> srcRow = src.Slice(y * srcRowBytes, srcRowBytes);
-                    Span<byte> destRow = dest.Slice(y * destRowBytes, destRowBytes);
-                    srcRow.CopyTo(destRow);
-                }
-
-                return dest;
+                return CreateImageBuffer(decodedImage, totalBufferSize, bytesPerLine, pixelBytes);
             }
 
             private ImageInfo? CreateImageInfo()
@@ -104,6 +88,30 @@ namespace PS3Sharp.OS.Modules
                 }
 
                 return dataStream;
+            }
+
+            private static byte[] CreateImageBuffer(ImageResult decodedImage, int destBufferSizeBytes, int destPitchBytes, int pixelSizeBytes)
+            {
+                // We need to copy row by row
+                // 1: if the destination image memory has a larger row width, the extra width of each row remains untouched
+                // 2: if the destination image memory has a smaller row width, each source row is trimmed (this case is bugged?)
+
+                byte[] buffer = new byte[destBufferSizeBytes];
+                Span<byte> dest = buffer.AsSpan();
+
+                Span<byte> src = decodedImage.Data;
+                int srcPixelWidth = decodedImage.Width;
+                int srcPixelHeight = decodedImage.Height;
+                int srcRowBytes = int.Min(srcPixelWidth * pixelSizeBytes, destPitchBytes);
+
+                for (int y = 0; y < srcPixelHeight; y++)
+                {
+                    Span<byte> srcRow = src.Slice(y * srcRowBytes, srcRowBytes);
+                    Span<byte> destRow = dest.Slice(y * destPitchBytes, destPitchBytes);
+                    srcRow.CopyTo(destRow);
+                }
+
+                return buffer;
             }
 
             private static int GetPixelByteSize(uint cellPngDecColor)
