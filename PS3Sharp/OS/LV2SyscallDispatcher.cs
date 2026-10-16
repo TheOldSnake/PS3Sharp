@@ -11,7 +11,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS
 {
-    internal partial class LV2SyscallDispatcher
+    internal partial class LV2SyscallDispatcher : IDisposable
     {
         private const int SYSCALL_ID_REG = 11;      // R11 contains syscall number
 
@@ -190,6 +190,11 @@ namespace PS3Sharp.OS
             uint arg2 = ppu.ReadArg<uint>(ARG2);
             uint lr = ppu.GetLR();
             Console.WriteLine($"[{ppu.ThreadName}] LLE function: {info.FunctionName} arg0 = 0x{arg0:X8} arg1 = 0x{arg1:X8} arg2 = 0x{arg2:X8} lr = 0x{lr:X8} pc: 0x{pc:X8} - reutned: 0x{returnValue}");
+        }
+
+        public void Dispose()
+        {
+            CellPngDecHandler.Dispose();
         }
     }
 }

@@ -71,6 +71,7 @@ namespace PS3Sharp
 
         public void Dispose()
         {
+            _lv2SyscallDispatcher.Dispose();
             _threadManager.Dispose();
             _ppuRecompiler.Dispose();
             _memoryManager.Dispose();

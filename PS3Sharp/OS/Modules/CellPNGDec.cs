@@ -10,7 +10,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal partial class CellPngDec
+    internal partial class CellPngDec : IDisposable
     {
         internal struct CellPngDecThreadOutParam : IPS3Struct
         {
@@ -294,6 +294,16 @@ namespace PS3Sharp.OS.Modules
         private void RemovePngDec(uint handle)
         {
             _decoders.TryRemove(handle, out _);
+        }
+
+        public void Dispose()
+        {
+            foreach(KeyValuePair<uint, PngDecoder> decoder in _decoders)
+            {
+                decoder.Value.Dispose();
+            }
+
+            _decoders.Clear();
         }
     }
 }
