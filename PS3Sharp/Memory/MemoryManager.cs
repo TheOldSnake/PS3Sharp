@@ -45,7 +45,6 @@ namespace PS3Sharp.Memory
         private readonly List<MemoryBlock> _allocations = [];
         private readonly Dictionary<uint, MemoryReservation> _reservations = [];
 
-
         private uint _nextAllocationAddress = 0x30000000; // I don't know where to start
         private uint _nextStackAllocationAddress = STACK_REGION_START;
         private uint _nextHandle = 0x100;

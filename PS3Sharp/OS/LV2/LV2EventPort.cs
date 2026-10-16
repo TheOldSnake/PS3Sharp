@@ -27,18 +27,18 @@ namespace PS3Sharp.OS.LV2
             internal BigEndian<int> Type;
             internal BigEndian<ulong> EqueueID;
         }
+
         private readonly MemoryManager _memoryManager;
-
-        internal readonly int Type;
-        internal readonly ulong Name;
-        internal uint Handle { get; }
-
         private LV2EventQueue? _qonnectedQueue;
+        private readonly int _type;
+        private readonly ulong _name;
+
+        internal uint Handle { get; }
 
         internal LV2EventPort(ulong name, int type, MemoryManager memoryManager)
         {
-            Name = name;
-            Type = type;
+            _name = name;
+            _type = type;
             _memoryManager = memoryManager;
             Handle = _memoryManager.GetHandle();
         }
@@ -67,7 +67,7 @@ namespace PS3Sharp.OS.LV2
             {
                 SysEventData data = new()
                 {
-                    Source = Name,
+                    Source = _name,
                     Data1 = data1,
                     Data2 = data2,
                     Data3 = data3

@@ -42,12 +42,11 @@ namespace PS3Sharp.OS.LV2
         private readonly object _mutex = new();
         private readonly LWMutexAttrib _attributes;
         private readonly bool _isRecursive;
-
-        internal readonly GuestPtr<LWMutex> InstancePtr;
+        private readonly GuestPtr<LWMutex> _instancePtr;
 
         internal LV2LWMutex(GuestPtr<LWMutex> ptr, LWMutexAttrib attribute, MemoryManager memoryManager)
         {
-            InstancePtr = ptr;
+            _instancePtr = ptr;
             _attributes = attribute;
             _isRecursive = attribute.Recursive == SYS_SYNC_RECURSIVE;
             _memoryManager = memoryManager;
@@ -170,7 +169,7 @@ namespace PS3Sharp.OS.LV2
             {
                 unsafe
                 {
-                    LWMutex* mutex = _memoryManager.GetPtr(InstancePtr);
+                    LWMutex* mutex = _memoryManager.GetPtr(_instancePtr);
                     uint currentCount = mutex->RecursiveCount;
                     mutex->RecursiveCount = currentCount + 1;
                 }
@@ -187,7 +186,7 @@ namespace PS3Sharp.OS.LV2
             {
                 unsafe
                 {
-                    LWMutex* mutex = _memoryManager.GetPtr(InstancePtr);
+                    LWMutex* mutex = _memoryManager.GetPtr(_instancePtr);
                     mutex->Owner = threadID;
                     mutex->RecursiveCount = _isRecursive ? 1u : 0u;
                 }
@@ -208,7 +207,7 @@ namespace PS3Sharp.OS.LV2
             {
                 unsafe
                 {
-                    LWMutex* mutex = _memoryManager.GetPtr(InstancePtr);
+                    LWMutex* mutex = _memoryManager.GetPtr(_instancePtr);
 
                     if (_isRecursive && mutex->RecursiveCount > 0)
                     {

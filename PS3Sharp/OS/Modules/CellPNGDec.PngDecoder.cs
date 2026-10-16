@@ -9,14 +9,13 @@ namespace PS3Sharp.OS.Modules
     {
         private sealed class PngDecoder : IDisposable
         {
-            internal uint Handle { get; }
-            internal CellPngDecOutParam OutputParam { get; set; }
-            internal ImageInfo ImageInfo { get; private set; }
-
             private readonly MemoryManager _memoryManager;
             private CellPngDecSrc _src;
             private Stream? _srcDataStream;
-
+            
+            internal uint Handle { get; }
+            internal CellPngDecOutParam OutputParam { get; set; }
+            internal ImageInfo ImageInfo { get; private set; }
             internal int NumberOfComponents => ImageInfo.ColorComponents == ColorComponents.RedGreenBlue ? 3 : 4;
             internal int BitsPerPixel => ImageInfo.BitsPerChannel * NumberOfComponents;
             internal int ColorSpace => NumberOfComponents == 3 ? CELL_PNGDEC_RGB : CELL_PNGDEC_RGBA;

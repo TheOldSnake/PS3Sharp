@@ -4,9 +4,9 @@
     {
         internal sealed class MemoryReservation
         {
-            internal ulong VirtualAddress;
-            internal ulong Size;
-            internal uint ThreadID;
+            internal ulong VirtualAddress { get; set; }
+            internal ulong Size { get; set; }
+            internal uint ThreadID { get; set; }
         }
     }
 }

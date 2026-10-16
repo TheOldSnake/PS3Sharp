@@ -7,7 +7,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
     internal sealed partial class X64RegisterAllocator
     {
         // Register pools
-        private static readonly AssemblerRegister64[] StaticRegisterPool64 =
+        private static readonly AssemblerRegister64[] _registerPool64 =
         [
            rax,
            rcx,
@@ -27,7 +27,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
            r15,
         ];
 
-        private static readonly AssemblerRegister64[] StaticNonVolatileRegisterPool64 =
+        private static readonly AssemblerRegister64[] _nonVolatileRegisterPool64 =
         [
             rbx,
             rbp,
@@ -39,7 +39,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
             r15,
         ];
 
-        private static readonly AssemblerRegister64[] StaticVolatileRegisterPool64 =
+        private static readonly AssemblerRegister64[] _volatileRegisterPool64 =
         [
             rax,
             rcx,
@@ -50,9 +50,9 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
             r11,
         ];
 
-        internal static ReadOnlySpan<AssemblerRegister64> AllRegisters => StaticRegisterPool64;
-        internal static ReadOnlySpan<AssemblerRegister64> AllNonVolatileRegisters => StaticNonVolatileRegisterPool64;
-        internal static ReadOnlySpan<AssemblerRegister64> AllVolatileRegisters => StaticVolatileRegisterPool64;
+        internal static ReadOnlySpan<AssemblerRegister64> AllRegisters => _registerPool64;
+        internal static ReadOnlySpan<AssemblerRegister64> AllNonVolatileRegisters => _nonVolatileRegisterPool64;
+        internal static ReadOnlySpan<AssemblerRegister64> AllVolatileRegisters => _volatileRegisterPool64;
 
         // Currently these assignments are permanent for all blocks
         internal static AssemblerRegister64 PPUStatePointer => rbx;
@@ -60,24 +60,24 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
         internal static AssemblerRegister64 SpillArrayPointer => rbp;
         internal static AssemblerRegister64 MemoryBasePointer => r8;
 
-        private List<AssemblerRegister64> CurrentRegisterPool = [];
-        private bool CanAllocate => CurrentRegisterPool.Count > 0;
         private int _spillIndex = 0;
+        private List<AssemblerRegister64> _currentRegisterPool = [];
+        private bool CanAllocate => _currentRegisterPool.Count > 0;
 
-        internal static bool IsVolatile(AssemblerRegister64 reg) => StaticVolatileRegisterPool64.Contains(reg);
-        internal static bool IsNonVolatile(AssemblerRegister64 reg) => StaticNonVolatileRegisterPool64.Contains(reg);
+        internal static bool IsVolatile(AssemblerRegister64 reg) => _volatileRegisterPool64.Contains(reg);
+        internal static bool IsNonVolatile(AssemblerRegister64 reg) => _nonVolatileRegisterPool64.Contains(reg);
 
         internal void ResetAllocatorState()
         {
             _spillIndex = 0;
-            CurrentRegisterPool.Clear();
+            _currentRegisterPool.Clear();
         }
 
         internal Dictionary<Value, Location> AllocateHostRegisters(List<IRInstruction> code, Dictionary<Value, ulong> knownConstants)
         {
             // Reset
             ResetAllocatorState();
-            CurrentRegisterPool = CreateRegisterPool(code);
+            _currentRegisterPool = CreateRegisterPool(code);
 
             List<Liveness> livenessList = BuildLivenessList(code, knownConstants);
             Dictionary<Value, Location> allocatedRegs = AssignHostRegs(livenessList);
@@ -89,7 +89,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
         {
 
             // Initial list of all registers
-            List<AssemblerRegister64> regs = new(StaticRegisterPool64);
+            List<AssemblerRegister64> regs = new(_registerPool64);
 
             // Remove registers that are reserved from the pool
             regs.Remove(PPUStatePointer);
@@ -126,14 +126,14 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
 
         private AssemblerRegister64 RequestRegister64()
         {
-            AssemblerRegister64 reg = CurrentRegisterPool[0];
-            CurrentRegisterPool.Remove(reg);
+            AssemblerRegister64 reg = _currentRegisterPool[0];
+            _currentRegisterPool.Remove(reg);
             return reg;
         }
 
         private void FreeRegister64(AssemblerRegister64 reg)
         {
-            CurrentRegisterPool.Add(reg);
+            _currentRegisterPool.Add(reg);
         }
 
         private static bool RequiresReservedRaxRdx(IRInstruction instruction)

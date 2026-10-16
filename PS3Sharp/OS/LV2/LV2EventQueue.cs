@@ -23,13 +23,13 @@ namespace PS3Sharp.OS.LV2
         internal const uint SYS_PPU_QUEUE = 1;
         internal const uint SYS_SPU_QUEUE = 2;
 
-        internal readonly ulong IPCKey;
-        internal uint Handle { get; }
-        internal bool IsSPUQueue => _attribute.Type == SYS_SPU_QUEUE;
-
         private readonly MemoryManager _memoryManager;
         private readonly BlockingCollection<SysEventData> _queue;
         private readonly SysEventQueueAttribute _attribute;
+
+        internal ulong IPCKey { get; }
+        internal uint Handle { get; }
+        internal bool IsSPUQueue => _attribute.Type == SYS_SPU_QUEUE;
 
         internal LV2EventQueue(int size, ulong ipc, SysEventQueueAttribute attribute, MemoryManager memoryManager)
         {

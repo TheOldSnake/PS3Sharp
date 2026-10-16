@@ -20,12 +20,12 @@ namespace PS3Sharp.OS.LV2
             internal InlineData.InlineArray8<byte> Name;
         }
 
-        internal uint Handle { get; }
-
         private readonly MemoryManager _memoryManager;
         private readonly object _rlock = new(); // Read Lock
         private readonly object _wlock = new(); // Write Lock
         private readonly SysRWLockAttribute _attribute;
+
+        internal uint Handle { get; }
 
         internal LV2RWLock(SysRWLockAttribute attribute, MemoryManager memoryManager)
         {

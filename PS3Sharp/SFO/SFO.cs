@@ -32,21 +32,22 @@ namespace PS3Sharp.SFOLoader
         internal const ushort ParamFormatString = 0x004;
         internal const ushort ParamFormatArray = 0x204;
         internal const ushort ParamFormatUInt = 0x404;
-        internal string TitleID => StringsDictionary["TITLE_ID"];
-        internal string Title => StringsDictionary["TITLE"];
 
-        private readonly Dictionary<string, uint> UIntsDictionary;
-        private readonly Dictionary<string, string> StringsDictionary;
+        private readonly Dictionary<string, uint> _uintDictionary;
+        private readonly Dictionary<string, string> _stringsDictionary;
+
+        internal string TitleID => _stringsDictionary["TITLE_ID"];
+        internal string Title => _stringsDictionary["TITLE"];
 
         private SFO(Dictionary<string, uint> uints, Dictionary<string, string> strings)
         {
-            UIntsDictionary = uints;
-            StringsDictionary = strings;
+            _uintDictionary = uints;
+            _stringsDictionary = strings;
         }
 
-        internal bool UIntLookup(string key, out uint value) => UIntsDictionary.TryGetValue(key, out value);
+        internal bool UIntLookup(string key, out uint value) => _uintDictionary.TryGetValue(key, out value);
 
-        internal bool StringLookup(string key, out string value) => StringsDictionary.TryGetValue(key, out value);
+        internal bool StringLookup(string key, out string value) => _stringsDictionary.TryGetValue(key, out value);
 
         internal static SFO? LoadSFO(string path)
         {

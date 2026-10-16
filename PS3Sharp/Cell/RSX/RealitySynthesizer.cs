@@ -60,20 +60,6 @@ namespace PS3Sharp.Cell.RSX
         internal const uint VRAM_SIZE = 249 * 1024 * 1024;
         internal const ulong FRAME_TIME_US = (ulong)(16.666 * 1000);
 
-        internal CancellationTokenSource LocalCancellationToken { get; } = new();
-        internal RSXInternalState CurrentState { get; }
-        internal bool MemoryAllocated { get; private set; }
-        internal GuestPtr<CellGcmConfig> ConfigPtr { get; private set; }
-        internal GuestPtr<CellGcmCtxData> CtxPtr { get; private set; }
-        internal GuestPtr<CellGcmCtrlRegister> CtrlPtr { get; private set; }
-        internal GuestVoidPtr VRAM_Ptr { get; private set; }
-        internal GuestPtr<byte> LabelsPtr { get; private set; }
-        internal ulong LastFlipTime { get; private set; }
-        internal RSXFrameBuffer[] FrameBuffers { get; } = new RSXFrameBuffer[255];
-        internal RSXThreadStates RsxThreadState = RSXThreadStates.Stopped;
-        internal Thread NativeThread { get; }
-        internal int ExitCode { get; private set; }
-
         private PPU.PPUThread? _RSX_PPU_Thread;            // For executing rsx callbacks that are ppu functions
         private readonly ThreadManager _threadManager;
         private readonly MemoryManager _memoryManager;
@@ -87,6 +73,20 @@ namespace PS3Sharp.Cell.RSX
 
         private GLRenderer GLRenderer => _window.GLRenderer!;
         private bool ShouldExit => _threadManager.GlobalCancellationSource.IsCancellationRequested || LocalCancellationToken.IsCancellationRequested;
+
+        internal CancellationTokenSource LocalCancellationToken { get; } = new();
+        internal RSXInternalState CurrentState { get; }
+        internal bool MemoryAllocated { get; private set; }
+        internal GuestPtr<CellGcmConfig> ConfigPtr { get; private set; }
+        internal GuestPtr<CellGcmCtxData> CtxPtr { get; private set; }
+        internal GuestPtr<CellGcmCtrlRegister> CtrlPtr { get; private set; }
+        internal GuestVoidPtr VRAM_Ptr { get; private set; }
+        internal GuestPtr<byte> LabelsPtr { get; private set; }
+        internal ulong LastFlipTime { get; private set; }
+        internal RSXFrameBuffer[] FrameBuffers { get; } = new RSXFrameBuffer[255];
+        internal RSXThreadStates RsxThreadState = RSXThreadStates.Stopped;
+        internal Thread NativeThread { get; }
+        internal int ExitCode { get; private set; }
 
         internal RealitySynthesizer(ThreadManager threadManager, MemoryManager memoryManager, EmulatorWindow window, CellGcmSys cellGcmSys)
         {

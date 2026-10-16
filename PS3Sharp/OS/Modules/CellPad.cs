@@ -82,7 +82,6 @@ namespace PS3Sharp.OS.Modules
                // R2 is Axis 5 
         }.ToImmutableDictionary();
 
-
         private readonly MemoryManager _memoryManager;
         private readonly Func<JoystickState?> _joyStickReader;
 

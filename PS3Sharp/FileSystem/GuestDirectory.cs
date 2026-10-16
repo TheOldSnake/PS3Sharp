@@ -4,12 +4,12 @@ namespace PS3Sharp.FileSystem
     {
         internal sealed class GuestDirectory
         {
-            internal readonly string Path;
-            internal readonly int FileDescriptor;
-            internal readonly uint OwnerThread;
-            internal readonly ulong Size;
-            internal int CurrentEntry = 0;
-            internal DirectoryInfo DirectoryInfo { get; private set; }
+            internal string Path { get; }
+            internal int FileDescriptor { get; }
+            internal uint OwnerThread { get; }
+            internal ulong Size { get; }
+            internal int CurrentEntry { get; set; }
+            internal DirectoryInfo DirectoryInfo { get; }
 
             internal GuestDirectory(string path, ulong size, int fileDescriptor, uint ownerThread)
             {

@@ -15,6 +15,13 @@ namespace PS3Sharp.OS
     {
         private const int SYSCALL_ID_REG = 11;      // R11 contains syscall number
 
+        private readonly ThreadManager _threadManager;
+        private readonly MemoryManager _memoryManager;
+        private readonly ModulePatcher _modulePatcher;
+        private readonly PRX.PRXManager _prxManager;
+        private readonly ImmutableDictionary<SyscallID, Func<PPUThread, ulong>> _syscallTable;
+        private readonly ImmutableDictionary<uint, Func<PPUThread, ulong>> _moduleTable;
+
         // Syscall handlers
         internal SysTTY SysTTYHandler { get; }
         internal SysEvent SysEventHandler { get; }
@@ -53,13 +60,6 @@ namespace PS3Sharp.OS
         internal SCENP SceNPHandler { get; }
         internal CellNetCtl CellNetCtlHandler { get; }
         internal CellIO CellIOHandler { get; }
-
-        private readonly ThreadManager _threadManager;
-        private readonly MemoryManager _memoryManager;
-        private readonly ModulePatcher _modulePatcher;
-        private readonly PRX.PRXManager _prxManager;
-        private readonly ImmutableDictionary<SyscallID, Func<PPUThread, ulong>> _syscallTable;
-        private readonly ImmutableDictionary<uint, Func<PPUThread, ulong>> _moduleTable;
 
         internal LV2SyscallDispatcher(
             ThreadManager threadManager, 

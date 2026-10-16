@@ -73,7 +73,6 @@ namespace PS3Sharp.Cell.RSX
 
         }
 
-
         internal static readonly string[] InputNames = [
             "fs_wpos",
             "fs_col0",

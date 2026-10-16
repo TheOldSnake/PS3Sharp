@@ -34,16 +34,16 @@ namespace PS3Sharp.OS.Modules
         internal const uint COMMAND_BUFFER_SIZE = 32 * 1024;
         internal const uint DEFAULT_COMMAND_WORD_SIZE = 0x20000;
 
-        internal CellGcmOffsetTable OffsetTable;
-        internal GuestPtr<CellGcmCtxData> DefaultCtxPtr;
+        private readonly MemoryManager _memoryManager;
+        private RealitySynthesizer _rsx;
+
+        internal CellGcmOffsetTable OffsetTable { get; set; }
+        internal GuestPtr<CellGcmCtxData> DefaultCtxPtr { get; set; }
 
         internal ulong FlipStatus;
         internal uint TotalCommandBuffers { get; private set; }
         internal GuestVoidPtr VblankHandler { get; private set; }
         internal GuestVoidPtr FlipHandler { get; private set; }
-
-        private readonly MemoryManager _memoryManager;
-        private RealitySynthesizer _rsx;
 
         internal CellGcmSys(MemoryManager memoryManager)
         {
@@ -119,8 +119,11 @@ namespace PS3Sharp.OS.Modules
             MemoryManager.MemoryBlock block = _memoryManager.AllocateVirtualMemory(size);
             _memoryManager.ClearMemory(block.VirtualAddress, block.Size, 0xFF); // The table is initialized to all FFs
 
-            OffsetTable.ioTableAddress = block.VirtualAddress;
-            OffsetTable.eaTableAddress = block.VirtualAddress + (3072 * sizeof(ushort));
+            OffsetTable = new()
+            {
+                ioTableAddress = block.VirtualAddress,
+                eaTableAddress = block.VirtualAddress + (3072 * sizeof(ushort))
+            };
 
             for (uint i = 0; i < (config.IO_Size >> 20); i++)
             {

@@ -6,7 +6,24 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
     {
         internal sealed class IRContext
         {
-            // Constants 
+            private IRGenerator irGenerator;    // todo: remove this dependency
+
+            // Value generation
+            private int _nextValueId = 1;
+
+            // IR being constructed
+            private List<IRInstruction> _instructions = [];
+
+            // Current state
+            private readonly Value[] _currentGPR = new Value[32];
+            private readonly Value[] _currentFPR = new Value[32];
+            private Value _currentCR = Value.Invalid;
+            private Value _currentCTR = Value.Invalid;
+            private Value _currentLR = Value.Invalid;
+            private Value _currentXER = Value.Invalid;
+            private Value _currentVRSave = Value.Invalid;
+
+            // IR Constants 
             internal Value Zero { get; set; }
             internal Value One { get; set; }
             internal Value MinusOne { get; set; }
@@ -17,27 +34,9 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
             internal Value OVBit { get; set; }
             internal Value CABit { get; set; }
 
-            // IR being constructed
-            private List<IRInstruction> Instructions { get; set; } = new();
-
-            // Current guest state
             internal uint CurrentPC { get; set; }
             internal Value ExitPC { get; set; } = Value.Invalid;
-            private Value[] CurrentGPR { get; } = new Value[32];
-            private Value[] CurrentFPR { get; } = new Value[32];
-
-            private Value CurrentCR { get; set; } = Value.Invalid;
-            private Value CurrentCTR { get; set; } = Value.Invalid;
-            private Value CurrentLR { get; set; } = Value.Invalid;
-            private Value CurrentXER { get; set; } = Value.Invalid;
-            private Value CurrentVRSave { get; set; } = Value.Invalid;
-
-            // Value generation
-            private int NextValueId { get; set; } = 1;
-
-            internal int InitialValueCount { get; set; }
-
-            private IRGenerator irGenerator;    // todo: remove this dependency
+            internal int InitialValueCount { get; private set; }
 
             internal IRContext(IRGenerator generator)
             {
@@ -67,140 +66,140 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
                 for (int i = 0; i < 32; i++)
                 {
-                    CurrentGPR[i] = Value.Invalid;
-                    CurrentFPR[i] = Value.Invalid;
+                    _currentGPR[i] = Value.Invalid;
+                    _currentFPR[i] = Value.Invalid;
                 }
             }
 
             internal Value CreateValue(Value.ValueType type)
             {
-                return new Value(NextValueId++, type);
+                return new Value(_nextValueId++, type);
             }
 
             internal void AddInstruction(IRInstruction instruction, int index = -1)
             {
                 if (index == -1)
                 {
-                    Instructions.Add(instruction);
+                    _instructions.Add(instruction);
                 }
                 else
                 {
-                    Instructions.Insert(index, instruction);
+                    _instructions.Insert(index, instruction);
                 }
             }
 
             internal Value GetGPR(uint index)
             {
 
-                if (!CurrentGPR[index].IsValid)
+                if (!_currentGPR[index].IsValid)
                 {
-                    CurrentGPR[index] = irGenerator.GPRLoad(index);
+                    _currentGPR[index] = irGenerator.GPRLoad(index);
                 }
 
-                return CurrentGPR[index];
+                return _currentGPR[index];
             }
 
             internal Value GetFPR(uint index)
             {
 
-                if (!CurrentFPR[index].IsValid)
+                if (!_currentFPR[index].IsValid)
                 {
-                    CurrentFPR[index] = irGenerator.FPRLoad(index);
+                    _currentFPR[index] = irGenerator.FPRLoad(index);
                 }
 
-                return CurrentFPR[index];
+                return _currentFPR[index];
             }
 
             internal Value GetCR()
             {
-                if (!CurrentCR.IsValid)
+                if (!_currentCR.IsValid)
                 {
-                    CurrentCR = irGenerator.CRLoad();
+                    _currentCR = irGenerator.CRLoad();
                 }
 
-                return CurrentCR;
+                return _currentCR;
             }
 
             internal void SetCR(Value value)
             {
                 EnsureSameType(value.Type, Value.ValueType.I64);
-                CurrentCR = value;
+                _currentCR = value;
             }
 
             internal Value GetCTR()
             {
-                if (!CurrentCTR.IsValid)
+                if (!_currentCTR.IsValid)
                 {
-                    CurrentCTR = irGenerator.CTRLoad();
+                    _currentCTR = irGenerator.CTRLoad();
                 }
 
-                return CurrentCTR;
+                return _currentCTR;
             }
 
             internal void SetCTR(Value value)
             {
                 EnsureSameType(value.Type, Value.ValueType.I64);
-                CurrentCTR = value;
+                _currentCTR = value;
             }
 
             internal Value GetLR()
             {
-                if (!CurrentLR.IsValid)
+                if (!_currentLR.IsValid)
                 {
-                    CurrentLR = irGenerator.LRLoad();
+                    _currentLR = irGenerator.LRLoad();
                 }
 
-                return CurrentLR;
+                return _currentLR;
             }
 
             internal void SetLR(Value value)
             {
                 EnsureSameType(value.Type, Value.ValueType.I64);
-                CurrentLR = value;
+                _currentLR = value;
             }
 
             internal Value GetXER()
             {
-                if (!CurrentXER.IsValid)
+                if (!_currentXER.IsValid)
                 {
-                    CurrentXER = irGenerator.XERLoad();
+                    _currentXER = irGenerator.XERLoad();
                 }
 
-                return CurrentXER;
+                return _currentXER;
             }
 
             internal void SetXER(Value value)
             {
                 EnsureSameType(value.Type, Value.ValueType.I64);
-                CurrentXER = value;
+                _currentXER = value;
             }
 
             internal Value GetVRSave()
             {
-                if (!CurrentVRSave.IsValid)
+                if (!_currentVRSave.IsValid)
                 {
-                    CurrentVRSave = irGenerator.VRSaveLoad();
+                    _currentVRSave = irGenerator.VRSaveLoad();
                 }
 
-                return CurrentVRSave;
+                return _currentVRSave;
             }
 
             internal void SetVRSave(Value value)
             {
                 EnsureSameType(value.Type, Value.ValueType.I64);
-                CurrentVRSave = value;
+                _currentVRSave = value;
             }
 
             internal void SetGPR(uint index, Value value)
             {
                 EnsureSameType(value.Type, Value.ValueType.I64);
-                CurrentGPR[index] = value;
+                _currentGPR[index] = value;
             }
 
             internal void SetFPR(uint index, Value value)
             {
                 EnsureSameType(value.Type, Value.ValueType.F64);
-                CurrentFPR[index] = value;
+                _currentFPR[index] = value;
             }
 
             internal void SetCA(Value flag)
@@ -292,11 +291,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             internal int GetLastUseIndex(Value value)
             {
-                for (int i = Instructions.Count - 1; i >= 0; i--)
+                for (int i = _instructions.Count - 1; i >= 0; i--)
                 {
-                    if (Instructions[i].Opcode != IRInstruction.Op.GPRStore)
+                    if (_instructions[i].Opcode != IRInstruction.Op.GPRStore)
                     {
-                        Value[] operands = [Instructions[i].Destination, Instructions[i].Operand1, Instructions[i].Operand2, Instructions[i].Operand3];
+                        Value[] operands = [_instructions[i].Destination, _instructions[i].Operand1, _instructions[i].Operand2, _instructions[i].Operand3];
 
                         foreach (Value operand in operands)
                         {
@@ -314,12 +313,12 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
             internal void WritebackGPRs()
             {
                 // Insert writeback after last instruction that writes to the value
-                for (uint i = 0; i < CurrentGPR.Length; i++)
+                for (uint i = 0; i < _currentGPR.Length; i++)
                 {
-                    if (CurrentGPR[i].IsValid)
+                    if (_currentGPR[i].IsValid)
                     {
-                        int lastWrite = GetLastUseIndex(CurrentGPR[i]);
-                        irGenerator.GPRStore(CurrentGPR[i], i, lastWrite + 1);
+                        int lastWrite = GetLastUseIndex(_currentGPR[i]);
+                        irGenerator.GPRStore(_currentGPR[i], i, lastWrite + 1);
                     }
                 }
             }
@@ -327,12 +326,12 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
             internal void WritebackFPRs()
             {
                 // Insert writeback after last instruction that writes to the value
-                for (uint i = 0; i < CurrentFPR.Length; i++)
+                for (uint i = 0; i < _currentFPR.Length; i++)
                 {
-                    if (CurrentFPR[i].IsValid)
+                    if (_currentFPR[i].IsValid)
                     {
-                        int lastWrite = GetLastUseIndex(CurrentFPR[i]);
-                        irGenerator.FPRStore(CurrentFPR[i], i, lastWrite + 1);
+                        int lastWrite = GetLastUseIndex(_currentFPR[i]);
+                        irGenerator.FPRStore(_currentFPR[i], i, lastWrite + 1);
                     }
                 }
             }
@@ -342,34 +341,34 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
                 // Insert writeback after last instruction that writes to the value
                 int lastWrite;
 
-                if (CurrentCR.IsValid)
+                if (_currentCR.IsValid)
                 {
-                    lastWrite = GetLastUseIndex(CurrentCR);
-                    irGenerator.CRStore(CurrentCR, lastWrite + 1);
+                    lastWrite = GetLastUseIndex(_currentCR);
+                    irGenerator.CRStore(_currentCR, lastWrite + 1);
                 }
 
-                if (CurrentCTR.IsValid)
+                if (_currentCTR.IsValid)
                 {
-                    lastWrite = GetLastUseIndex(CurrentCTR);
-                    irGenerator.CTRStore(CurrentCTR, lastWrite + 1);
+                    lastWrite = GetLastUseIndex(_currentCTR);
+                    irGenerator.CTRStore(_currentCTR, lastWrite + 1);
                 }
 
-                if (CurrentLR.IsValid)
+                if (_currentLR.IsValid)
                 {
-                    lastWrite = GetLastUseIndex(CurrentLR);
-                    irGenerator.LRStore(CurrentLR, lastWrite + 1);
+                    lastWrite = GetLastUseIndex(_currentLR);
+                    irGenerator.LRStore(_currentLR, lastWrite + 1);
                 }
 
-                if (CurrentXER.IsValid)
+                if (_currentXER.IsValid)
                 {
-                    lastWrite = GetLastUseIndex(CurrentXER);
-                    irGenerator.XERStore(CurrentXER, lastWrite + 1);
+                    lastWrite = GetLastUseIndex(_currentXER);
+                    irGenerator.XERStore(_currentXER, lastWrite + 1);
                 }
 
-                if (CurrentVRSave.IsValid)
+                if (_currentVRSave.IsValid)
                 {
-                    lastWrite = GetLastUseIndex(CurrentVRSave);
-                    irGenerator.VRSaveStore(CurrentVRSave, lastWrite + 1);
+                    lastWrite = GetLastUseIndex(_currentVRSave);
+                    irGenerator.VRSaveStore(_currentVRSave, lastWrite + 1);
                 }
             }
 
@@ -384,19 +383,19 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             internal List<IRInstruction> GetIRCode()
             {
-                IRInstruction[] copy = Instructions.ToArray();
-                return Instructions;
+                IRInstruction[] copy = _instructions.ToArray();
+                return _instructions;
             }
 
             internal List<IRInstruction> CreateIRCopy()
             {
-                IRInstruction[] copy = Instructions.ToArray();
+                IRInstruction[] copy = _instructions.ToArray();
                 return new List<IRInstruction>(copy);
             }
 
             internal void SetIRCode(List<IRInstruction> ir)
             {
-                Instructions = ir;
+                _instructions = ir;
             }
         }
     }

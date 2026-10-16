@@ -4,14 +4,13 @@
     {
         internal sealed class GuestFile : IDisposable
         {
-            internal readonly string Path;
-            internal readonly int FileDescriptor;
-            internal readonly uint OwnerThread;
-            internal readonly FileStream Stream;
-            internal readonly BinaryReader Reader;
-            internal readonly BinaryWriter? Writer;
-
-            internal readonly ulong Size;
+            internal string Path { get; }
+            internal int FileDescriptor { get; }
+            internal uint OwnerThread { get; }
+            internal FileStream Stream { get; }
+            internal BinaryReader Reader { get; }
+            internal BinaryWriter? Writer { get; }
+            internal ulong Size { get; }
 
             internal GuestFile(string path, ulong size, int fileDescriptor, uint ownerThread)
             {
@@ -25,7 +24,10 @@
                 Stream.Seek(0, SeekOrigin.Begin);
             }
 
-            internal void Close() => Dispose();
+            internal void Close()
+            {
+                Dispose();
+            }
 
             public void Dispose()
             {

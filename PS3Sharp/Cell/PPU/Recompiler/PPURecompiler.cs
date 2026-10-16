@@ -25,10 +25,6 @@ namespace PS3Sharp.Cell.PPU.Recompiler
         private static readonly bool IsRecompilerEnabled = false; // TODO make this configurable
         internal static bool IsRecompilerUsable => IsPlatformSupported() && IsRecompilerEnabled;
 
-        internal ulong NumberOfCompiledBlocks { get; private set; }
-        internal ulong NumberOfExecutedBlocks { get; private set; }
-        internal ulong TotalAllocatedPages { get; private set; }
-
         private readonly List<VirtualMemoryHandle?> _executablePages = [];
         private readonly NativeMemoryHandle?[] _memoryBlocksTable = new NativeMemoryHandle[PAGE_SIZE];
 
@@ -38,6 +34,10 @@ namespace PS3Sharp.Cell.PPU.Recompiler
         private nint _nextBlockAddress;
         private nint _currentPageStartAddress;
         private nint _currentPageEndAddress;
+
+        internal ulong NumberOfCompiledBlocks { get; private set; }
+        internal ulong NumberOfExecutedBlocks { get; private set; }
+        internal ulong TotalAllocatedPages { get; private set; }
 
         private X64Block* GetOrCreateBlock(uint virtualAddress)
         {

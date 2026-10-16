@@ -7,14 +7,12 @@ namespace PS3Sharp.Cell.RSX
     internal sealed partial class RSXInternalState
     {
         private readonly MemoryManager _memoryManager;
+
         internal uint CurrentSemaphoreOffset { get; set; }
         internal uint CurrentSemaphoreLocation { get; set; }
         internal RSXVertexBuffer[] VertexBuffers { get; } = new RSXVertexBuffer[16];
         internal RSXTexture[] Textures { get; } = new RSXTexture[16];
         internal RSXElementBuffer ElementBuffer { get; }
-
-        //internal uint ElementBufferAddress { get; set; }          // Indices list address
-        //internal DrawElementsType ElementBufferType { get; set; } // Indices list type
 
         internal uint PointX { get; set; }
         internal uint PointY { get; set; }
@@ -40,19 +38,17 @@ namespace PS3Sharp.Cell.RSX
         internal bool ShaderProgramHasChanged { get; set; }
         internal Dictionary<uint, Vector4> AllUniforms { get; } = [];   // Dictionary of all uniforms and their values
 
-        // Don't use { get; set; } on these structs
-        internal Vector2i SurfaceClip = new();
+        internal Vector2i SurfaceClip { get; set; }
         internal bool SurfaceClipDirty { get; set; }
 
-        internal Vector4 ViewPortOffset = new();
+        internal Vector4 ViewPortOffset { get; set; }
         internal bool ViewPortOffsetDirty { get; set; }
 
-        internal Vector4 ViewPortScale = new();
+        internal Vector4 ViewPortScale { get; set; }
         internal bool ViewPortScaleDirty { get; set; }
 
-
-        internal uint Surface_A_Offset;
-        internal uint Surface_A_Location;
+        internal uint SurfaceAOffset;
+        internal uint SurfaceALocation;
         internal bool FrameDirty { get; set; }
 
         internal static ReadOnlySpan<BeginMode> BeginModeLookup => [

@@ -9,7 +9,6 @@ namespace PS3Sharp
 {
     internal class ThreadManager : IDisposable
     {
-        internal CancellationTokenSource GlobalCancellationSource { get; } = new();      // Global shutdown signal
         private readonly ManualResetEventSlim _processTerminationEvent = new(false);     // Shutdown event
         private readonly MemoryManager _memoryManager;
         private readonly PPURecompiler _ppuRecompiler;
@@ -23,6 +22,8 @@ namespace PS3Sharp
         // _isShuttingDown means the emulator is in a shutdown state
         // and will not accept any new thread creation requests
         private bool _isShuttingDown;
+
+        internal CancellationTokenSource GlobalCancellationSource { get; } = new();      // Global shutdown signal
 
         internal ThreadManager(MemoryManager memoryManager, PPURecompiler ppuRecompiler)
         {

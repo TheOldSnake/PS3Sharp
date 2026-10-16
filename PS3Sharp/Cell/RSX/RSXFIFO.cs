@@ -518,8 +518,6 @@ namespace PS3Sharp.Cell.RSX
                         VertexBufferAddress(methodRegister, param);
                         break;
 
-
-
                     case NV40TCL_VTX_ATTR_2F_0:
                     case NV40TCL_VTX_ATTR_2F_1:
                     case NV40TCL_VTX_ATTR_2F_2:
@@ -748,7 +746,9 @@ namespace PS3Sharp.Cell.RSX
 
             if (CurrentState.ViewPortOffset[index] != value)
             {
-                CurrentState.ViewPortOffset[index] = value;
+                Vector4 viewportOffset = CurrentState.ViewPortOffset;
+                viewportOffset[index] = value;
+                CurrentState.ViewPortOffset = viewportOffset;
                 CurrentState.ViewPortOffsetDirty = true;
             }
         }
@@ -762,7 +762,9 @@ namespace PS3Sharp.Cell.RSX
 
             if (CurrentState.ViewPortScale[index] != value)
             {
-                CurrentState.ViewPortScale[index] = value;
+                Vector4 viewporScale = CurrentState.ViewPortScale;
+                viewporScale[index] = value;
+                CurrentState.ViewPortScale = viewporScale;
                 CurrentState.ViewPortScaleDirty = true;
             }
         }
@@ -835,7 +837,7 @@ namespace PS3Sharp.Cell.RSX
         {
             if (methodRegister == NV40TCL_DMA_COLOR0)
             {
-                CurrentState.Surface_A_Location = param.Dequeue();
+                CurrentState.SurfaceALocation = param.Dequeue();
             }
 
             //todo
@@ -854,7 +856,7 @@ namespace PS3Sharp.Cell.RSX
             uint pitch = param.Dequeue();
 
             // Render surface coloroffset[0]
-            CurrentState.Surface_A_Offset = param.Dequeue();
+            CurrentState.SurfaceAOffset = param.Dequeue();
 
             // other stuff
             param.Clear();
@@ -900,7 +902,9 @@ namespace PS3Sharp.Cell.RSX
 
             if (width != CurrentState.SurfaceClip[0])
             {
-                CurrentState.SurfaceClip[0] = width;
+                Vector2i surfaceClip = CurrentState.SurfaceClip;
+                surfaceClip[0] = width;
+                CurrentState.SurfaceClip = surfaceClip;
                 CurrentState.SurfaceClipDirty = true;
             }
 
@@ -916,7 +920,9 @@ namespace PS3Sharp.Cell.RSX
 
             if (height != CurrentState.SurfaceClip[1])
             {
-                CurrentState.SurfaceClip[1] = height;
+                Vector2i surfaceClip = CurrentState.SurfaceClip;
+                surfaceClip[1] = height;
+                CurrentState.SurfaceClip = surfaceClip;
                 CurrentState.SurfaceClipDirty = true;
             }
             //Console.WriteLine($"[RSX] Surface Clip height = {height}");

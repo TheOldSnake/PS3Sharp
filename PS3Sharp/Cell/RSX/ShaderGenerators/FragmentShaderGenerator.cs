@@ -6,10 +6,8 @@ namespace PS3Sharp.Cell.RSX
 {
     internal partial class FragmentShaderGenerator
     {
-        private readonly MemoryManager _memoryManager;
-        private readonly RealitySynthesizer _rsx;
-
-        private static readonly string FragmentProgramBase = @"
+        internal const uint INSTRUCTION_SIZE = 4 * sizeof(uint);          //4 32-bit words
+        private static readonly string _fragmentProgramBase = @"
             #version 460        
 
             //output color
@@ -71,7 +69,7 @@ namespace PS3Sharp.Cell.RSX
             uniform bool u_flip_tex_flags[16];";
 
 
-        private static readonly string FragmentHelpers = @"
+        private static readonly string _fragmentHelpers = @"
             const float FLOAT16_MAX = 65504.0;
 
             vec4 clampToFloat16(vec4 v) {
@@ -90,7 +88,7 @@ namespace PS3Sharp.Cell.RSX
             }
 ";
 
-        private static readonly string FragmentProgramEnd = @"
+        private static readonly string _fragmentProgramEnd = @"
             void main(){
                 vec4 dbg = texture(u_tex0, fs_tex0.xy);
                 main_cg();
@@ -99,18 +97,19 @@ namespace PS3Sharp.Cell.RSX
                // out_col0 = texture(u_tex0, fs_tex0.xyzw.xy);
             }";
 
+        private readonly MemoryManager _memoryManager;
+        private readonly RealitySynthesizer _rsx;
 
-        private string[] Globals = ["r0", "r1", "r2", "r3", "r4", "cc0", "cc1"];
-        private List<string> Locals = [];
-        private List<uint> CurrentUniforms = [];                  // uniformes names that are in use for this current shader
-        private string CurrentImmediate = string.Empty;
+        private string[] _globals = ["r0", "r1", "r2", "r3", "r4", "cc0", "cc1"];
+        private readonly List<string> _locals = [];
+        private readonly List<uint> _currentUniforms = [];                  // uniformes names that are in use for this current shader
+        private string _currentImmediate = string.Empty;
 
-        private readonly string WhiteSpace = @"                ";
-        private string CurrentFragmentShaderBody = string.Empty;
+        private readonly string _whiteSpace = @"                ";
+        private string _currentFragmentShaderBody = string.Empty;
+        private uint _currentAddress;
 
-        internal uint INSTRUCTION_SIZE = 4 * sizeof(uint);          //4 32-bit words
         internal uint FragmentShaderStartAddress { get; set; }     // Address of the fragment shader program
-        private uint CurrentAddress;
 
         private List<FragmentInstruction> Buf = new();
 
@@ -121,7 +120,7 @@ namespace PS3Sharp.Cell.RSX
         }
 
         internal string AddressToUniform(uint address) => $"u_{address:x}";
-        internal bool IsUniformInUse(uint address) => CurrentUniforms.Contains(address);
+        internal bool IsUniformInUse(uint address) => _currentUniforms.Contains(address);
 
         //internal static string AddUniform(uint address) {
         //    if (!CurrentUniforms.Contains(address)) {
@@ -135,15 +134,15 @@ namespace PS3Sharp.Cell.RSX
         {
 
             //Add the base
-            string shader = FragmentProgramBase;
+            string shader = _fragmentProgramBase;
 
             //Add the helpers
-            shader += FragmentHelpers;
+            shader += _fragmentHelpers;
 
             //Add the uniforms
-            for (int i = 0; i < CurrentUniforms.Count; i++)
+            for (int i = 0; i < _currentUniforms.Count; i++)
             {
-                shader += $"            uniform vec4 {AddressToUniform(CurrentUniforms[i])};\n";
+                shader += $"            uniform vec4 {AddressToUniform(_currentUniforms[i])};\n";
             }
 
             //Add the main_cg
@@ -152,20 +151,20 @@ namespace PS3Sharp.Cell.RSX
 ";
 
             //Add local variables
-            for (int i = 0; i < Locals.Count; i++)
+            for (int i = 0; i < _locals.Count; i++)
             {
-                shader += $"{WhiteSpace}vec4 {Locals[i]} = vec4(0.0f);\n";
+                shader += $"{_whiteSpace}vec4 {_locals[i]} = vec4(0.0f);\n";
             }
 
             //Add the body
-            shader += CurrentFragmentShaderBody;
+            shader += _currentFragmentShaderBody;
 
             //End of main_cg()
             shader += @"            }";
 
             //Add our main()
             shader += '\n';
-            shader += FragmentProgramEnd;
+            shader += _fragmentProgramEnd;
             return shader;
         }
 
@@ -214,7 +213,7 @@ namespace PS3Sharp.Cell.RSX
 
                 // I am trying to not include uniforms in the checksum
 
-                if (!CurrentUniforms.Contains(currentAddress))
+                if (!_currentUniforms.Contains(currentAddress))
                 {
                     FragmentInstruction instruction = GetFragmentInstruction(currentAddress);
                     instructionCount++;
@@ -244,17 +243,17 @@ namespace PS3Sharp.Cell.RSX
         static bool stop = false;
         internal string GenerateFragmentShader()
         {
-            CurrentAddress = FragmentShaderStartAddress;
-            CurrentFragmentShaderBody = string.Empty;
-            Locals.Clear();
-            CurrentUniforms.Clear();
+            _currentAddress = FragmentShaderStartAddress;
+            _currentFragmentShaderBody = string.Empty;
+            _locals.Clear();
+            _currentUniforms.Clear();
 
             int count = 0;
             while (true)
             {
-                FragmentInstruction instruction = GetFragmentInstruction(CurrentAddress);
-                CurrentAddress += INSTRUCTION_SIZE;
-                CurrentFragmentShaderBody += HandleFragmentInstruction(instruction);
+                FragmentInstruction instruction = GetFragmentInstruction(_currentAddress);
+                _currentAddress += INSTRUCTION_SIZE;
+                _currentFragmentShaderBody += HandleFragmentInstruction(instruction);
 
                 if (instruction.ProgramEnd || stop)
                 {
@@ -278,7 +277,7 @@ namespace PS3Sharp.Cell.RSX
                 return string.Empty;
             }
 
-            CurrentImmediate = string.Empty;
+            _currentImmediate = string.Empty;
 
             string src0 = GetSource(0, instruction);
             string src1 = GetSource(1, instruction);
@@ -514,7 +513,7 @@ namespace PS3Sharp.Cell.RSX
             //    stop = true;
             //}
             //Console.Write($"Line: {output}");
-            return WhiteSpace + output;
+            return _whiteSpace + output;
         }
 
         internal string GetSource(int sourceNumber, FragmentInstruction instruction)
@@ -550,7 +549,7 @@ namespace PS3Sharp.Cell.RSX
             {
                 case 0:
                     srcName = $"{(src.IsFp16 ? "h" : "r")}{src.TempIndex}";
-                    if (!Globals.Contains(srcName))
+                    if (!_globals.Contains(srcName))
                     {
                         AddLocalVariable(srcName);
                     }
@@ -588,35 +587,35 @@ namespace PS3Sharp.Cell.RSX
 
                     //Check if there's a uniform for this address
                     Dictionary<uint, OpenTK.Mathematics.Vector4> uniformsDict = _rsx.CurrentState.AllUniforms;
-                    if (uniformsDict.ContainsKey(CurrentAddress))
+                    if (uniformsDict.ContainsKey(_currentAddress))
                     {
 
                         // Add it to the currently used uniforms
-                        if (!CurrentUniforms.Contains(CurrentAddress))
+                        if (!_currentUniforms.Contains(_currentAddress))
                         {
-                            CurrentUniforms.Add(CurrentAddress);
+                            _currentUniforms.Add(_currentAddress);
                         }
 
-                        srcName = AddressToUniform(CurrentAddress);
-                        CurrentImmediate = srcName;
+                        srcName = AddressToUniform(_currentAddress);
+                        _currentImmediate = srcName;
                         //CurrentAddress += sizeOfVector;
                         break;
                     }
 
                     //Check if we have an immediate from a previous SRC
-                    if (CurrentImmediate != string.Empty)
+                    if (_currentImmediate != string.Empty)
                     {
-                        srcName = CurrentImmediate;
+                        srcName = _currentImmediate;
                         break;
                     }
 
                     //Fetch vector4 from memory
-                    Vector4 imm = ReadVector4(CurrentAddress);
-                    CurrentAddress += sizeOfVector;
+                    Vector4 imm = ReadVector4(_currentAddress);
+                    _currentAddress += sizeOfVector;
 
                     //Embed it as an immediate
                     srcName = $"vec4({imm.X}f, {imm.Y}f, {imm.Z}f, {imm.W}f)";
-                    CurrentImmediate = srcName;
+                    _currentImmediate = srcName;
                     break;
 
                 default:
@@ -670,7 +669,7 @@ namespace PS3Sharp.Cell.RSX
             else
             {
                 destName = $"{(instruction.IsDestinationFp16 ? "h" : "r")}{instruction.DestinationIndex}";
-                if (!Globals.Contains(destName))
+                if (!_globals.Contains(destName))
                 {
                     AddLocalVariable(destName);
                 }
@@ -790,9 +789,9 @@ namespace PS3Sharp.Cell.RSX
 
         internal void AddLocalVariable(string name)
         {
-            if (!Locals.Contains(name))
+            if (!_locals.Contains(name))
             {
-                Locals.Add(name);
+                _locals.Add(name);
             }
         }
 

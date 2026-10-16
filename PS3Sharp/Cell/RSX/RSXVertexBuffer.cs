@@ -9,12 +9,16 @@ namespace PS3Sharp.Cell.RSX
 {
     internal sealed class RSXVertexBuffer
     {
-        private readonly MemoryManager _memoryManager;
-
-        internal RSXVertexBuffer(MemoryManager memoryManager)
+        internal struct VertexCacheKey
         {
-            _memoryManager = memoryManager;
+            internal uint Address;
+            internal uint Type;
+            internal uint NumberOfElements;
+            internal uint Stride;
+            internal ulong Hash;
         }
+
+        private readonly MemoryManager _memoryManager;
 
         // Attributes 
         internal bool IsEnabled { get; set; }
@@ -25,7 +29,7 @@ namespace PS3Sharp.Cell.RSX
         internal bool IsNormalized { get; set; }
 
         // Immediate data is currently only for floats
-        internal List<float> ImmediateData { get; } = new List<float>();
+        internal List<float> ImmediateData { get; } = [];
         internal Span<float> ImmediateDataSpan => CollectionsMarshal.AsSpan(ImmediateData);
         internal bool HasImmediateData => ImmediateData.Count > 0;
 
@@ -33,13 +37,9 @@ namespace PS3Sharp.Cell.RSX
         internal ScratchBuffer ScratchBuffer { get; } = new ScratchBuffer();
         internal VertexCacheKey CacheKey = new();
 
-        internal struct VertexCacheKey
+        internal RSXVertexBuffer(MemoryManager memoryManager)
         {
-            internal uint Address;
-            internal uint Type;
-            internal uint NumberOfElements;
-            internal uint Stride;
-            internal ulong Hash;
+            _memoryManager = memoryManager;
         }
 
         internal Span<T> GetScratchData<T>(int elementsCount) where T : unmanaged

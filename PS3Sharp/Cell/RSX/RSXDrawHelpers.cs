@@ -10,7 +10,7 @@ namespace PS3Sharp.Cell.RSX
         internal void BindSurfaceA()
         {
             // Bind Surface A
-            uint surface_a_address = OffsetToAddress(CurrentState.Surface_A_Offset, CurrentState.Surface_A_Location & 1);
+            uint surface_a_address = OffsetToAddress(CurrentState.SurfaceAOffset, CurrentState.SurfaceALocation & 1);
             GLRenderer.SetSurface(surface_a_address);
         }
 

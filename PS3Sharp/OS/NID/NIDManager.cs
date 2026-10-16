@@ -1,11 +1,12 @@
+using System.Collections.Immutable;
 using System.Globalization;
 
 namespace PS3Sharp.OS.NID
 {
     internal static class NIDManager
     {
-        internal static Dictionary<uint, string> NIDList = ParseNIDsFile(@"OS\NID\NIDs.txt");
-        internal static bool NIDInitialized;
+        private static bool _nidInitialized;
+        internal static ImmutableDictionary<uint, string> NIDList { get; } = ParseNIDsFile(@"OS\NID\NIDs.txt").ToImmutableDictionary();
 
         internal static Dictionary<uint, string> ParseNIDsFile(string path)
         {
@@ -38,7 +39,7 @@ namespace PS3Sharp.OS.NID
                 dict[key] = value;
             }
 
-            NIDInitialized = true;
+            _nidInitialized = true;
             return dict;
         }
 

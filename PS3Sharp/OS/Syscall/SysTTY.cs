@@ -12,7 +12,7 @@ namespace PS3Sharp.OS.Syscall
         internal const uint STDERR = 2;
         private readonly MemoryManager _memoryManager;
 
-        // private StreamWriter output = File.AppendText(@"D:\RPCS3\app_home\output.txt");
+        // private StreamWriter output = File.AppendText();
 
         internal SysTTY(MemoryManager memoryManager)
         {

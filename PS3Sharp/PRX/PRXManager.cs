@@ -113,9 +113,9 @@ namespace PS3Sharp.PRX
            // "libgcm_sys"
         ];
 
-        private readonly List<LibraryInfo> LoadedLibraries = [];                    // List of loaded libraries
-        private readonly List<LibraryInitialization> LibraryInitializations = [];   // List of library initialization functions to be called at startup
-        private readonly Dictionary<uint, uint> ExportedFunctions = [];             // List of exported functions from the libraries
+        private readonly List<LibraryInfo> _loadedLibraries = [];                    // List of loaded libraries
+        private readonly List<LibraryInitialization> _libraryInitializations = [];   // List of library initialization functions to be called at startup
+        private readonly Dictionary<uint, uint> _exportedFunctions = [];             // List of exported functions from the libraries
         private readonly MemoryManager _memoryManager;
 
         internal PRXManager(MemoryManager memoryManager)
@@ -125,7 +125,7 @@ namespace PS3Sharp.PRX
 
         internal bool TryGetFunction(uint nid, out uint address)
         {
-            return ExportedFunctions.TryGetValue(nid, out address);
+            return _exportedFunctions.TryGetValue(nid, out address);
         }
 
         internal void LoadPRXLibraries(ElfLoader elfLoader, ModulePatcher modulePatcher)
@@ -135,19 +135,19 @@ namespace PS3Sharp.PRX
             {
                 string name = PRXList[i];
                 LibraryInfo lib = LoadLibrary(name, elfLoader);
-                LoadedLibraries.Add(lib);
+                _loadedLibraries.Add(lib);
             }
 
             // Handle All exports
-            for (int i = 0; i < LoadedLibraries.Count; i++)
+            for (int i = 0; i < _loadedLibraries.Count; i++)
             {
-                HandleExports(LoadedLibraries[i]);
+                HandleExports(_loadedLibraries[i]);
             }
 
             // Handle All imports
-            for (int i = 0; i < LoadedLibraries.Count; i++)
+            for (int i = 0; i < _loadedLibraries.Count; i++)
             {
-                HandleImports(LoadedLibraries[i], modulePatcher, _memoryManager);
+                HandleImports(_loadedLibraries[i], modulePatcher, _memoryManager);
             }
 
             //throw new Exception("done");
@@ -235,7 +235,7 @@ namespace PS3Sharp.PRX
 
                         if (!ForceHLE.Contains(function_name))
                         {
-                            ExportedFunctions.Add(nid, address);
+                            _exportedFunctions.Add(nid, address);
                             Console.WriteLine($"[{libname}] export at address: 0x{address:X8} function name = {function_name}");
                         }
                     }
@@ -244,7 +244,7 @@ namespace PS3Sharp.PRX
                 currentAddress += size;
             }
 
-            LibraryInitializations.Add(libraryInitialization);
+            _libraryInitializations.Add(libraryInitialization);
         }
 
         private void HandleImports(LibraryInfo lib_info, ModulePatcher modulePatcher, MemoryManager memoryManager)
@@ -284,9 +284,9 @@ namespace PS3Sharp.PRX
 
         internal void InitializeLibraries(PPUThread ppu)
         {
-            for (int i = 0; i < LibraryInitializations.Count; i++)
+            for (int i = 0; i < _libraryInitializations.Count; i++)
             {
-                LibraryInitialization libraryInitialization = LibraryInitializations[i];
+                LibraryInitialization libraryInitialization = _libraryInitializations[i];
 
                 if (libraryInitialization.LibName == "liblv2")
                 {

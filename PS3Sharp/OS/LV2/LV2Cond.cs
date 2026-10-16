@@ -10,7 +10,6 @@ namespace PS3Sharp.OS.LV2
 {
     internal sealed class LV2Cond
     {
-
         [StructLayout(LayoutKind.Sequential)]
         internal struct SysCondAttribute : IPS3Struct
         {
@@ -24,7 +23,7 @@ namespace PS3Sharp.OS.LV2
         private readonly SysCondAttribute _attribute;
         private readonly LV2Mutex _mutex;
         private static readonly ConcurrentDictionary<uint, LV2CondWaiter> _threadCondWaiters = [];
-        private readonly List<LV2CondWaiter> Waiters = new();
+        private readonly List<LV2CondWaiter> Waiters = [];
         internal uint Handle { get; }
 
         internal LV2Cond(SysCondAttribute attribute, LV2Mutex mutex, MemoryManager memoryManager)

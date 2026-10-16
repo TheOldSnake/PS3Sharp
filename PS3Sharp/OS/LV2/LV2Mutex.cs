@@ -31,8 +31,8 @@ namespace PS3Sharp.OS.LV2
 
         internal uint Handle { get; }
         internal SysMutexAttribute Attribute => _attribute;
-        private bool _isRecursive => _attribute.protocol == SYS_SYNC_RECURSIVE;
         internal bool IsEntered => Monitor.IsEntered(_mutex);
+        private bool IsRecursive => _attribute.protocol == SYS_SYNC_RECURSIVE;
 
         internal LV2Mutex(SysMutexAttribute attribute, MemoryManager memoryManager)
         {
@@ -67,7 +67,7 @@ namespace PS3Sharp.OS.LV2
         private ulong ReEnter(PPUThread ppu)
         {
             // Check if we're allowed to re-enter
-            if (!_isRecursive)
+            if (!IsRecursive)
             {
                 return CELL_EDEADLK;
             }

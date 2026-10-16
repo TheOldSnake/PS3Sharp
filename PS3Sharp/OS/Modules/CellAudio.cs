@@ -69,21 +69,19 @@ namespace PS3Sharp.OS.Modules
         private readonly SysEvent _sysEvent;
         private bool _initialized;
         private uint _readPositionsAddress;  //An array of 8 ulongs, each entry contains the current block position for the corrosponding port
+        private uint _attachedEventID = 0;
 
         private readonly AudioPort[] _audioPorts = new AudioPort[AUDIO_PORT_COUNT];
         private readonly Lock _audioThreadLock = new();
 
-        private static readonly WaveFormat waveFormat = new(48000, 2);
+        private static readonly WaveFormat _waveFormat = new(48000, 2);
 
-        private readonly BufferedWaveProvider provider = new(waveFormat)
+        private readonly BufferedWaveProvider _provider = new(_waveFormat)
         {
             DiscardOnBufferOverflow = true
         };
 
-        private readonly WaveOut output = new();
-
-        private uint AttachedEventID = 0;
-
+        private readonly WaveOut _output = new();
         private readonly LV2EventPort.SysEventData AudioEvent = new()
         {
             Data1 = EVENT_QUEUE_KEY,
@@ -288,7 +286,7 @@ namespace PS3Sharp.OS.Modules
 
             lock (_audioThreadLock)
             {
-                AttachedEventID = eventQueue.Handle;
+                _attachedEventID = eventQueue.Handle;
             }
 
             Console.WriteLine("[CellAudio] cellAudioCreateNotifyEventQueue");
@@ -305,13 +303,13 @@ namespace PS3Sharp.OS.Modules
 
         private void InitNAudio()
         {
-             output.Init(provider);
-             output.Play();
+             _output.Init(_provider);
+             _output.Play();
         }
 
         private void PlayAudio(byte[] samples)
         {
-            provider.AddSamples(samples, 0, samples.Length);
+            _provider.AddSamples(samples, 0, samples.Length);
         }
 
         private byte[] GetSamplesWaveData(float[] samples, int samplesCount)
@@ -361,16 +359,16 @@ namespace PS3Sharp.OS.Modules
                 }
 
                 // Send audio event
-                if (AttachedEventID > 0)
+                if (_attachedEventID > 0)
                 {
-                    if (_sysEvent.TryGetEventQueueByID(AttachedEventID, out LV2EventQueue? eventQueue))
+                    if (_sysEvent.TryGetEventQueueByID(_attachedEventID, out LV2EventQueue? eventQueue))
                     {
                         eventQueue.Send(AudioEvent);
 
                     }
                     else
                     {
-                        throw new Exception($"[AudioThread] Can't find AttachedEventID = 0x{AttachedEventID:X}");
+                        throw new Exception($"[AudioThread] Can't find AttachedEventID = 0x{_attachedEventID:X}");
                     }
                 }
 

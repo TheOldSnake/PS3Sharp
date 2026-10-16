@@ -8,11 +8,12 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
         internal sealed class Location
         {
             internal Liveness Liveness { get; }
-            private AssemblerRegister64? Register { get; set; }
+            private AssemblerRegister64? Register { get; set; } = null;
             internal int SpillSlot { get; set; } = -1;
 
             internal bool IsSpilled => SpillSlot >= 0;
             internal Value Value => Liveness.Value;
+
             internal Location(Liveness liveness)
             {
                 Liveness = liveness;

@@ -18,8 +18,7 @@ namespace PS3Sharp.Memory
             VirtualAddress = address;
         }
 
-        protected PageFaultException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
+        protected PageFaultException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
             VirtualAddress = info.GetUInt32(nameof(VirtualAddress));
         }

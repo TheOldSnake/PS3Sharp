@@ -46,6 +46,8 @@ namespace PS3Sharp
 
         internal const int FBO_TEXTURE_UNIT = 20; // or anything more than 15
 
+        private readonly GameWindow _gameWindow;
+
         // Handles for VAO / EBO / Depth texture
         internal int VertexArrayObject { get; private set; }
         internal int ElementBufferObject { get; private set; }
@@ -94,8 +96,6 @@ namespace PS3Sharp
         internal bool ColorMaskG { get; private set; } = false;
         internal bool ColorMaskB { get; private set; } = false;
         internal bool ColorMaskA { get; private set; } = false;
-
-        private readonly GameWindow _gameWindow;
 
         internal GLRenderer(GameWindow gameWindow)
         {

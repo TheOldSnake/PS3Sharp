@@ -4,7 +4,7 @@ namespace PS3Sharp.Cell.RSX
 {
     internal partial class VertexShaderGenerator
     {
-        private static readonly string VertexProgramBase = @"
+        private static readonly string _vertexProgramBase = @"
             #version 460        
 
             // temporary registers
@@ -71,7 +71,7 @@ namespace PS3Sharp.Cell.RSX
             out vec4 fs_ssa;        //dst_reg17
             out vec4 fs_unk15;      //dst_reg18";
 
-        private static readonly string VertexProgramEnd = @"
+        private static readonly string _vertexProgramEnd = @"
             void main(){
                 main_cg();
 
@@ -94,18 +94,19 @@ namespace PS3Sharp.Cell.RSX
             }";
 
 
-        private static readonly string WhiteSpace = @"                ";
-        private string CurrentVetrexShader = VertexProgramBase;
-        internal string LastVertexShader;
+        private static readonly string _whiteSpace = @"                ";
+        private string _currentVetrexShader = _vertexProgramBase;
+        private string _lastVertexShader;
+        private readonly uint[] _vertexShaderBuffer = new uint[512 * 4];  // 512 qwords
+
         internal uint VertexShaderShaderStart { get; set; }   // Index of the first instruction
         internal uint VertexShaderLoadIndex { get; set; }    // Index to load instructions from
 
-        private readonly uint[] VertexShaderBuffer = new uint[512 * 4];  // 512 qwords
 
         private string FinalizeVertexShader()
         {
             //Add the base
-            string shader = VertexProgramBase;
+            string shader = _vertexProgramBase;
 
             //Add the main_cg
             shader += @"
@@ -113,14 +114,14 @@ namespace PS3Sharp.Cell.RSX
 ";
 
             //Add the body
-            shader += CurrentVetrexShader;
+            shader += _currentVetrexShader;
 
             //End of main_cg()
             shader += @"            }";
 
             //Add our main()
             shader += '\n';
-            shader += VertexProgramEnd;
+            shader += _vertexProgramEnd;
             return shader;
         }
 
@@ -139,7 +140,7 @@ namespace PS3Sharp.Cell.RSX
             while (data.Count > 0)
             {
                 BigEndian<uint> value = data.Dequeue();
-                VertexShaderBuffer[VertexShaderLoadIndex] = value;
+                _vertexShaderBuffer[VertexShaderLoadIndex] = value;
                 VertexShaderLoadIndex++;
             }
         }
@@ -147,14 +148,14 @@ namespace PS3Sharp.Cell.RSX
         internal ulong CalculateChecksum()
         {
             ulong checksum = 0;
-            for (uint i = VertexShaderShaderStart; i < VertexShaderBuffer.Length; i += 4)
+            for (uint i = VertexShaderShaderStart; i < _vertexShaderBuffer.Length; i += 4)
             {
-                checksum += VertexShaderBuffer[i + 0];
-                checksum += VertexShaderBuffer[i + 1];
-                checksum += VertexShaderBuffer[i + 2];
-                checksum += VertexShaderBuffer[i + 3];
+                checksum += _vertexShaderBuffer[i + 0];
+                checksum += _vertexShaderBuffer[i + 1];
+                checksum += _vertexShaderBuffer[i + 2];
+                checksum += _vertexShaderBuffer[i + 3];
 
-                if ((VertexShaderBuffer[i + 3] & 1) == 1)
+                if ((_vertexShaderBuffer[i + 3] & 1) == 1)
                 { // End bit
                     break;
                 }
@@ -165,20 +166,20 @@ namespace PS3Sharp.Cell.RSX
 
         internal string GenerateVertexShader()
         {
-            CurrentVetrexShader = string.Empty;
+            _currentVetrexShader = string.Empty;
 
-            for (uint i = VertexShaderShaderStart; i < VertexShaderBuffer.Length; i += 4)
+            for (uint i = VertexShaderShaderStart; i < _vertexShaderBuffer.Length; i += 4)
             {
                 VertexInstruction instruction = new()
                 { // Or we can do casts
-                    Raw_0 = VertexShaderBuffer[i + 0],
-                    Raw_1 = VertexShaderBuffer[i + 1],
-                    Raw_2 = VertexShaderBuffer[i + 2],
-                    Raw_3 = VertexShaderBuffer[i + 3],
+                    Raw_0 = _vertexShaderBuffer[i + 0],
+                    Raw_1 = _vertexShaderBuffer[i + 1],
+                    Raw_2 = _vertexShaderBuffer[i + 2],
+                    Raw_3 = _vertexShaderBuffer[i + 3],
                 };
 
-                CurrentVetrexShader += HandleVectorInstruction(instruction);
-                CurrentVetrexShader += HandleScalarInstruction(instruction);
+                _currentVetrexShader += HandleVectorInstruction(instruction);
+                _currentVetrexShader += HandleScalarInstruction(instruction);
 
                 if (instruction.End)
                 {
@@ -186,8 +187,8 @@ namespace PS3Sharp.Cell.RSX
                 }
             }
 
-            LastVertexShader = FinalizeVertexShader();
-            return LastVertexShader;
+            _lastVertexShader = FinalizeVertexShader();
+            return _lastVertexShader;
         }
 
         internal string HandleVectorInstruction(VertexInstruction instruction)
@@ -318,7 +319,7 @@ namespace PS3Sharp.Cell.RSX
             }
 
             //Console.Write($"line: {output}");
-            return WhiteSpace + output;
+            return _whiteSpace + output;
         }
 
         internal string HandleScalarInstruction(VertexInstruction instruction)
@@ -373,7 +374,7 @@ namespace PS3Sharp.Cell.RSX
             string fullDest = $"{scalarDest}.{scalarChannels}";
 
             string output = $"{fullDest} = {fullSource};\n";
-            return WhiteSpace + output;
+            return _whiteSpace + output;
         }
 
         internal string GetSource(int sourceNumber, VertexInstruction instruction)

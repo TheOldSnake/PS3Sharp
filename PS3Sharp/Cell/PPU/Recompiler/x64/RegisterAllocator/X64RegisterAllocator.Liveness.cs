@@ -7,9 +7,9 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
     {
         internal sealed class Liveness
         {
-            internal Value Value;
-            internal int FirstUse;
-            internal int LastUse;
+            internal Value Value { get; set; }
+            internal int FirstUse { get; set; }
+            internal int LastUse { get; set; }
         }
     }
 }

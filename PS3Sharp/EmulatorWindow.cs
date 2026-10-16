@@ -10,15 +10,15 @@ namespace PS3Sharp
 {
     internal class EmulatorWindow : IDisposable
     {
-        internal GameWindow? GameWindow { get; private set; }
-        internal GLRenderer? GLRenderer { get; private set; }
-        internal bool IsWindowCreated => GameWindow != null;
-        internal Func<JoystickState?> JoystickReader => GetJoystickState;
-
         private readonly ThreadManager _threadManager;
         private readonly FileSystemManager _fileSystemManager;
         private readonly object _windowLock = new();
         private Vector2i _currentWindowSize;
+
+        internal GameWindow? GameWindow { get; private set; }
+        internal GLRenderer? GLRenderer { get; private set; }
+        internal bool IsWindowCreated => GameWindow != null;
+        internal Func<JoystickState?> JoystickReader => GetJoystickState;
 
         internal EmulatorWindow(ThreadManager threadManager, FileSystemManager fileSystemManager)
         {

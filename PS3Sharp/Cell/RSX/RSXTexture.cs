@@ -8,6 +8,31 @@ namespace PS3Sharp.Cell.RSX
 {
     internal sealed class RSXTexture(RealitySynthesizer rsx)
     {
+        internal struct Swizzle
+        {
+            internal int A;
+            internal int R;
+            internal int G;
+            internal int B;
+        }
+
+        internal struct TextureCacheKey
+        {
+            internal uint Address;
+            internal uint Width;
+            internal uint Height;
+            internal ulong Hash;
+        }
+
+        private static ReadOnlySpan<int> _swizzleTable => [(int)All.Alpha, (int)All.Red, (int)All.Green, (int)All.Blue];
+        private static readonly string[] _swizzleStringTable = ["a", "r", "g", "b"];
+        internal static readonly Swizzle DefaultSwizzle = new()
+        {
+            A = _swizzleTable[0],
+            R = _swizzleTable[1],
+            G = _swizzleTable[2],
+            B = _swizzleTable[3],
+        };
 
         // Atributes 
         internal uint Address => rsx.OffsetToAddress(Offset, MemoryLocation); // Final address
@@ -28,33 +53,6 @@ namespace PS3Sharp.Cell.RSX
 
         internal ScratchBuffer ScratchBuffer { get; } = new ScratchBuffer();
         internal TextureCacheKey CacheKey = new();
-
-        private static ReadOnlySpan<int> _swizzleTable => [(int)All.Alpha, (int)All.Red, (int)All.Green, (int)All.Blue];
-        private static readonly string[] _swizzleStringTable = ["a", "r", "g", "b"];
-
-        internal static readonly Swizzle DefaultSwizzle = new()
-        {
-            A = _swizzleTable[0],
-            R = _swizzleTable[1],
-            G = _swizzleTable[2],
-            B = _swizzleTable[3],
-        };
-
-        internal struct Swizzle
-        {
-            internal int A;
-            internal int R;
-            internal int G;
-            internal int B;
-        }
-
-        internal struct TextureCacheKey
-        {
-            internal uint Address;
-            internal uint Width;
-            internal uint Height;
-            internal ulong Hash;
-        }
 
         internal int GetSizeInBytes()
         {
