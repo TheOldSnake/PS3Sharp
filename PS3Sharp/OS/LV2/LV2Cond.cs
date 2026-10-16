@@ -19,11 +19,14 @@ namespace PS3Sharp.OS.LV2
             internal InlineData.InlineArray8<byte> Name;
         }
 
+        // Static mapping of ppu -> LV2CondWaiter
+        private static readonly ConcurrentDictionary<uint, LV2CondWaiter> _ppuThreadsCondWaiters = []; 
+
         private readonly MemoryManager _memoryManager;
         private readonly SysCondAttribute _attribute;
         private readonly LV2Mutex _mutex;
-        private static readonly ConcurrentDictionary<uint, LV2CondWaiter> _threadCondWaiters = [];
-        private readonly List<LV2CondWaiter> Waiters = [];
+        private readonly List<LV2CondWaiter> _waiters = []; // Current waiters list
+
         internal uint Handle { get; }
 
         internal LV2Cond(SysCondAttribute attribute, LV2Mutex mutex, MemoryManager memoryManager)
@@ -44,9 +47,9 @@ namespace PS3Sharp.OS.LV2
             // Add the thread to the wait list
             LV2CondWaiter waiter = GetThreadCondWaiter(ppu.ThreadID);
 
-            lock (Waiters)
+            lock (_waiters)
             {
-                Waiters.Add(waiter);
+                _waiters.Add(waiter);
             }
 
             // Unlock the mutex
@@ -74,9 +77,9 @@ namespace PS3Sharp.OS.LV2
                 _mutex.Lock(ppu);
 
                 // Remove the waiter from the list
-                lock (Waiters)
+                lock (_waiters)
                 {
-                    Waiters.Remove(waiter);
+                    _waiters.Remove(waiter);
                 }
             }
 
@@ -85,9 +88,9 @@ namespace PS3Sharp.OS.LV2
 
         internal ulong Signal()
         {
-            lock (Waiters)
+            lock (_waiters)
             {
-                LV2CondWaiter? waiter = Waiters.FirstOrDefault();
+                LV2CondWaiter? waiter = _waiters.FirstOrDefault();
                 waiter?.Event.Set();
             }
 
@@ -96,9 +99,9 @@ namespace PS3Sharp.OS.LV2
 
         internal ulong SignalAll()
         {
-            lock (Waiters)
+            lock (_waiters)
             {
-                foreach (LV2CondWaiter? waiter in Waiters)
+                foreach (LV2CondWaiter? waiter in _waiters)
                 {
                     waiter.Event.Set();
                 }
@@ -111,9 +114,9 @@ namespace PS3Sharp.OS.LV2
         {
             LV2CondWaiter? waiter;
 
-            lock (Waiters)
+            lock (_waiters)
             {
-                waiter = Waiters.FirstOrDefault(w => w.WaiterTheadID == waiterID);
+                waiter = _waiters.FirstOrDefault(w => w.WaiterTheadID == waiterID);
             }
 
             waiter?.Event.Set();
@@ -141,17 +144,17 @@ namespace PS3Sharp.OS.LV2
             }
         }
 
-        private LV2CondWaiter GetThreadCondWaiter(uint threadID)
+        private static LV2CondWaiter GetThreadCondWaiter(uint threadID)
         {
-            // Look up the condWaiter instance in the dictionary
-            if (_threadCondWaiters.TryGetValue(threadID, out LV2CondWaiter waiter))
+            // Look up the condWaiter instance in the static dictionary
+            if (_ppuThreadsCondWaiters.TryGetValue(threadID, out LV2CondWaiter? waiter))
             {
                 return waiter;
             }
 
-            // If it does not exist create one and add it
+            // If it does not exist create the waiter object and add it
             LV2CondWaiter condWaiter = new(threadID);
-            bool success = _threadCondWaiters.TryAdd(threadID, condWaiter);
+            bool success = _ppuThreadsCondWaiters.TryAdd(threadID, condWaiter);
 
             if (!success)
             {
