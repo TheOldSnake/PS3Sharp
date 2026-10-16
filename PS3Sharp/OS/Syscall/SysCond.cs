@@ -14,7 +14,7 @@ namespace PS3Sharp.OS.Syscall
     {
         private readonly MemoryManager _memoryManager;
         private readonly SysMutex _sysMutex;
-        private readonly ConcurrentDictionary<uint, LV2Cond> _conds = new();
+        private readonly ConcurrentDictionary<uint, LV2Cond> _conds = [];
 
         internal SysCond(MemoryManager memoryManager, SysMutex sysMutex)
         {
