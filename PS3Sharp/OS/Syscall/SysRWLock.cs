@@ -29,7 +29,7 @@ namespace PS3Sharp.OS.Syscall
             LV2RWLock rwlock = new(attribute, _memoryManager);
             AddRWLock(rwlock.Handle, rwlock);
 
-            _memoryManager.Write<uint>(id_ptr, rwlock.Handle);
+            _memoryManager.Write<BigEndian<uint>>(id_ptr, rwlock.Handle);
             return CELL_OK;
         }
 

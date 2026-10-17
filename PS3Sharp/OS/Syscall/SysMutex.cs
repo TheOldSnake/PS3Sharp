@@ -30,7 +30,7 @@ namespace PS3Sharp.OS.Syscall
             AddMutex(mutex);
 
             // Write the handle
-            _memoryManager.Write<uint>(id_ptr, mutex.Handle);
+            _memoryManager.Write<BigEndian<uint>>(id_ptr, mutex.Handle);
 
             return CELL_OK;
         }

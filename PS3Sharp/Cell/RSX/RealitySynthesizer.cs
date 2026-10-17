@@ -178,7 +178,7 @@ namespace PS3Sharp.Cell.RSX
             {
                 uint ea_table = _cellGcmSys.OffsetTable.eaTableAddress;
                 uint io_page = offset >> 20;
-                uint ea_page = _memoryManager.Read<ushort>(ea_table + (io_page * 2));
+                uint ea_page = _memoryManager.Read<BigEndian<ushort>>(ea_table + (io_page * 2));
                 address = (ea_page << 20) | (offset & 0xfffff);
             }
 

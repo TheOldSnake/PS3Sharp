@@ -139,7 +139,7 @@ namespace PS3Sharp.OS.Modules
 
             //Find lwz r2
             int count = 0;
-            PPUInstruction instruction = new() { Raw = memoryManager.Read<uint>(stubAddress) };
+            PPUInstruction instruction = new() { Raw = memoryManager.Read<BigEndian<uint>>(stubAddress) };
             while (true)
             {
                 if (instruction.Op == Op.LWZ && instruction.Rt == 2)
@@ -149,7 +149,7 @@ namespace PS3Sharp.OS.Modules
 
                 stubAddress += 4;
                 count++;
-                instruction.Raw = memoryManager.Read<uint>(stubAddress);
+                instruction.Raw = memoryManager.Read<BigEndian<uint>>(stubAddress);
 
                 if (count > 64)
                 {
@@ -159,7 +159,7 @@ namespace PS3Sharp.OS.Modules
 
             //Check which type the branch is
             bool is_bctr = false;
-            instruction.Raw = memoryManager.Read<uint>(stubAddress + 8);
+            instruction.Raw = memoryManager.Read<BigEndian<uint>>(stubAddress + 8);
             if (instruction.Op == Op.G13 && instruction.G13 == G13.BCCTR)
             {
                 is_bctr = (instruction.Raw & 1) == 0;
@@ -175,9 +175,9 @@ namespace PS3Sharp.OS.Modules
             const uint blr = 0x4e800020;                      //return
             const uint nop = 0x60000000;                      //nop
 
-            memoryManager.Write<uint>(stubAddress + 0, li);                 //instead of lwz r2
-            memoryManager.Write<uint>(stubAddress + 4, sc);                 //instead of mtspr CTR,r0
-            memoryManager.Write<uint>(stubAddress + 8, is_bctr ? blr : nop);  //instead of bctr / bctrl 
+            memoryManager.Write<BigEndian<uint>>(stubAddress + 0, li);                 //instead of lwz r2
+            memoryManager.Write<BigEndian<uint>>(stubAddress + 4, sc);                 //instead of mtspr CTR,r0
+            memoryManager.Write<BigEndian<uint>>(stubAddress + 8, is_bctr ? blr : nop);  //instead of bctr / bctrl 
 
             //Return the address where the patch starts
             return stubAddress;

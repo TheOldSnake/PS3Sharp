@@ -49,7 +49,7 @@ namespace PS3Sharp.OS.Syscall
         {
             uint pid = ppu.ReadArg<uint>(ARG0);
             GuestPtr<uint> ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
-            _memoryManager.Write<uint>(ptr, 0x00360001);
+            _memoryManager.Write<BigEndian<uint>>(ptr, 0x00360001);
             return CELL_OK;
         }
 

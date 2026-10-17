@@ -106,7 +106,7 @@ namespace PS3Sharp.OS.Modules
             AddPngDecoder(decoder);
 
             // Write the handle
-            _memoryManager.Write<uint>(handle_ptr, decoder.Handle);
+            _memoryManager.Write<BigEndian<uint>>(handle_ptr, decoder.Handle);
 
             //Write the codec version
             unsafe

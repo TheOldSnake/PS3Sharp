@@ -1,5 +1,6 @@
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Cell.PPU.Interpreter;
+using PS3Sharp.Common;
 using PS3Sharp.FileSystem;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.Modules;
@@ -184,7 +185,7 @@ namespace PS3Sharp.OS
 
         private void LogLLECall(PPUThread ppu, uint ptr, ModuleStubInfo info, ulong returnValue)
         {
-            uint pc = _memoryManager.Read<uint>(ptr);
+            uint pc = _memoryManager.Read<BigEndian<uint>>(ptr);
             uint arg0 = ppu.ReadArg<uint>(ARG0);
             uint arg1 = ppu.ReadArg<uint>(ARG1);
             uint arg2 = ppu.ReadArg<uint>(ARG2);

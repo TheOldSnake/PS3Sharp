@@ -92,7 +92,7 @@ namespace PS3Sharp.OS.Modules
                 MemoryBlock block = _memoryManager.AllocatePhysicalMemory((uint)size);
 
                 //Write the handle at the alloc_addr*
-                _memoryManager.Write<uint>(addressPtr.Address, (uint)block.Handle);
+                _memoryManager.Write<BigEndian<uint>>(addressPtr.Address, (uint)block.Handle);
                 Console.WriteLine($"[SysPrxForUser] sys_mmapper_allocate_memory handle = {block.Handle}");
             }
             else

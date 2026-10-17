@@ -171,7 +171,7 @@ namespace PS3Sharp.OS.Modules
             // Create the sample buffer for the port
             port.SampleBuffer = new byte[port.TotalSamplesPerBlock * sizeof(short)];
 
-            _memoryManager.Write<uint>(portNumber_ptr, port.Number);
+            _memoryManager.Write<BigEndian<uint>>(portNumber_ptr, port.Number);
 
             Console.WriteLine($"[CellAudio] cellAudioPortOpen opened port = {port.Number}");
             return CELL_OK;
@@ -281,8 +281,8 @@ namespace PS3Sharp.OS.Modules
             _sysEvent.AddEventQueue(eventQueue.Handle, eventQueue);
 
             // Write the ID and the key
-            _memoryManager.Write<uint>(equeue_id_ptr, eventQueue.Handle);
-            _memoryManager.Write<ulong>(key_ptr, EVENT_QUEUE_KEY);
+            _memoryManager.Write<BigEndian<uint>>(equeue_id_ptr, eventQueue.Handle);
+            _memoryManager.Write<BigEndian<ulong>>(key_ptr, EVENT_QUEUE_KEY);
 
             lock (_audioThreadLock)
             {
@@ -351,7 +351,7 @@ namespace PS3Sharp.OS.Modules
                         FillSampleBuffer(port);
 
                         // Update the current block in the array
-                        _memoryManager.Write<ulong>(_readPositionsAddress + ((uint)i * sizeof(ulong)), port.CurrentBlock);
+                        _memoryManager.Write<BigEndian<ulong>>(_readPositionsAddress + ((uint)i * sizeof(ulong)), port.CurrentBlock);
 
                         // Play the samples
                         PlayAudio(port.SampleBuffer);
@@ -391,7 +391,7 @@ namespace PS3Sharp.OS.Modules
             for (int i = 0; i < samplesPerBlock; i++)
             {
                 // Read a float sample from memory
-                float floatSample = _memoryManager.Read<float>(sampleAddress);
+                float floatSample = _memoryManager.Read<BigEndian<float>>(sampleAddress);
                 sampleAddress += sizeof(float);
 
                 // Convert from float to short on the fly -- can we use floats directly with NAudio ??

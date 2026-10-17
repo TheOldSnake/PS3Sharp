@@ -707,12 +707,12 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             }
 
             // Set PC
-            ppu.State->PC = ppu.MemoryManager.Read<uint>(ptr_to_pc);
+            ppu.State->PC = ppu.MemoryManager.Read<BigEndian<uint>>(ptr_to_pc);
 
             // Set TOC if needed
             if (toc)
             {
-                ppu.GPR[2].Value64 = ppu.MemoryManager.Read<uint>(ptr_to_pc + 4);
+                ppu.GPR[2].Value64 = ppu.MemoryManager.Read<BigEndian<uint>>(ptr_to_pc + 4);
             }
 
             // Set LR

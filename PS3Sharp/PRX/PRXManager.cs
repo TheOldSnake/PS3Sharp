@@ -206,8 +206,8 @@ namespace PS3Sharp.PRX
                 for (uint i = 0; i < module_info.FunctionCount; i++)
                 {
                     uint offset = i * sizeof(uint);
-                    uint nid = _memoryManager.Read<uint>(nid_table + offset);
-                    uint address = _memoryManager.Read<uint>(address_table + offset);
+                    uint nid = _memoryManager.Read<BigEndian<uint>>(nid_table + offset);
+                    uint address = _memoryManager.Read<BigEndian<uint>>(address_table + offset);
 
                     // Special module
                     if ((module_info.Attributes & 0x8000) > 0)
@@ -269,8 +269,8 @@ namespace PS3Sharp.PRX
                 {
                     uint offset = i * sizeof(uint);
 
-                    uint nid = _memoryManager.Read<uint>(nid_table + offset);
-                    uint address = _memoryManager.Read<uint>(address_table + offset);
+                    uint nid = _memoryManager.Read<BigEndian<uint>>(nid_table + offset);
+                    uint address = _memoryManager.Read<BigEndian<uint>>(address_table + offset);
 
                     string functionName = NIDManager.NIDList.GetValueOrDefault(nid, "unknown_function");
                     modulePatcher.PatchModuleCallHLE(moduleName, functionName, nid, address, memoryManager);

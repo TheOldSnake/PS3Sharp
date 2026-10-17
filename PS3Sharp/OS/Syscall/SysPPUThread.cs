@@ -29,7 +29,7 @@ namespace PS3Sharp.OS.Syscall
         internal ulong SysPPUThreadGetID(PPUThread ppu)
         {
             GuestPtr<ulong> id_ptr = ppu.ReadArg<GuestPtr<ulong>>(ARG0);
-            _memoryManager.Write<ulong>(id_ptr, ppu.ThreadID);
+            _memoryManager.Write<BigEndian<ulong>>(id_ptr, ppu.ThreadID);
 
             //Console.WriteLine($"[sys_ppu_thread] sys_ppu_thread_get_id: 0x{ppu.ThreadID:X8}");
             return CELL_OK;
@@ -42,7 +42,7 @@ namespace PS3Sharp.OS.Syscall
 
             //Console.WriteLine($"[sys_ppu_thread] sys_ppu_thread_get_priority ID = 0x{id:X8}");
             PPUThread? thread = ppu.ThreadManager.GetThreadByID(id);
-            _memoryManager.Write<int>(prio_ptr, thread.ThreadPriority);
+            _memoryManager.Write<BigEndian<int>>(prio_ptr, thread.ThreadPriority);
             return CELL_OK;
         }
 
@@ -83,7 +83,7 @@ namespace PS3Sharp.OS.Syscall
             PPUThread ppu_thread = _threadManager.CreatePPUThread(name, entry, stacksize, arg, ppu.SyscallDispatcher);
             ppu_thread.StartThread();
 
-            _memoryManager.Write<ulong>(id_ptr, ppu_thread.ThreadID);
+            _memoryManager.Write<BigEndian<ulong>>(id_ptr, ppu_thread.ThreadID);
             Console.WriteLine($"[SysPPUThread] sys_ppu_thread_create: {name} thread_id = 0x{ppu_thread.ThreadID:X8} entry_pc = {entry:X8}");
 
             return CELL_OK;
@@ -117,7 +117,7 @@ namespace PS3Sharp.OS.Syscall
             GuestPtr<ulong> exit_code_ptr = ppu.ReadArg<GuestPtr<ulong>>(ARG1);
 
             int exit_code = ppu.ThreadManager.JoinThreadByID(id);
-            _memoryManager.Write<ulong>(exit_code_ptr, (ulong)exit_code);
+            _memoryManager.Write<BigEndian<ulong>>(exit_code_ptr, (ulong)exit_code);
 
             Console.WriteLine($"[SysPPUThread] sys_ppu_thread_join: caller = {ppu.ThreadName} joins: 0x{id:X8}");
             return CELL_OK;
@@ -133,7 +133,7 @@ namespace PS3Sharp.OS.Syscall
             GuestPtr<uint> once_ctrl_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             GuestVoidPtr ptr_to_pc = ppu.ReadArg<GuestVoidPtr>(ARG1);
 
-            if (_memoryManager.Read<uint>(once_ctrl_ptr) == 0)
+            if (_memoryManager.Read<BigEndian<uint>>(once_ctrl_ptr) == 0)
             {
 
                 //uint pc = MemoryManager.Read<uint>(ptr_to_pc);
@@ -141,7 +141,7 @@ namespace PS3Sharp.OS.Syscall
 
                 PPUInterpreter.ExecuteFunction(ppu, ptr_to_pc, toc: true, []);
 
-                _memoryManager.Write<uint>(once_ctrl_ptr, 1);        //SYS_PPU_THREAD_DONE_INIT
+                _memoryManager.Write<BigEndian<uint>>(once_ctrl_ptr, 1);        //SYS_PPU_THREAD_DONE_INIT
             }
 
             return CELL_OK;

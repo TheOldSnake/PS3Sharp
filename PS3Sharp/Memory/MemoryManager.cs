@@ -151,42 +151,26 @@ namespace PS3Sharp.Memory
 
         internal uint ReadPPUInstruction(uint virtualAddress)
         {
-            // PPU does not have self modifying code 
-            return *(BigEndian<uint>*)GetNativeAddress(virtualAddress);
+            BigEndian<uint> instruction = Read<BigEndian<uint>>(virtualAddress);
+            return instruction;
         }
 
         internal uint ReadRSXInstruction(uint virtualAddress)
         {
-            return *(BigEndian<uint>*)GetNativeAddress(virtualAddress);
+            BigEndian<uint> instruction = Read<BigEndian<uint>>(virtualAddress);
+            return instruction;
         }
 
-        // Writes the little endian data to the big endian memory
         internal void Write<T>(uint virtualAddress, T value) where T : unmanaged
         {
-            BigEndian<T>* native_address = (BigEndian<T>*)GetNativeAddress(virtualAddress);
-            *native_address = value;
+            void* address = GetNativeAddress(virtualAddress);
+            Unsafe.WriteUnaligned(address, value);
         }
 
-        // Writes the data to the big endian memory without any conversion
-        internal void WriteBE<T>(uint virtualAddress, T value) where T : unmanaged
-        {
-            void* native_address = GetNativeAddress(virtualAddress);
-            *(T*)native_address = value;
-        }
-
-        // Reads from the big endian memory and swaps data to little endian
         internal T Read<T>(uint virtualAddress) where T : unmanaged
         {
-            void* native_address = GetNativeAddress(virtualAddress);
-            T value = *(BigEndian<T>*)native_address;
-            return value;
-        }
-
-        // Reads from the big endian memory without any conversion
-        internal T ReadBE<T>(uint virtualAddress) where T : unmanaged
-        {
-            void* native_address = GetNativeAddress(virtualAddress);
-            return *(T*)native_address;
+            void* address = GetNativeAddress(virtualAddress);
+            return Unsafe.ReadUnaligned<T>(address);
         }
 
         internal T LoadAndReserve<T>(uint virtualAddress, uint threadId, PPUThread ppu) where T : unmanaged
@@ -203,7 +187,6 @@ namespace PS3Sharp.Memory
         {
             lock (_managerLock)
             {
-
                 // Acquire reservation and only write if successful 
                 bool ok = TryAccess(virtualAddress, sizeof(T), threadId);
 
@@ -218,7 +201,6 @@ namespace PS3Sharp.Memory
 
         internal void ReserveAddress(uint virtualAddress, int size, uint threadId)
         {
-
             lock (_managerLock)
             {
                 // one reservation per thread, apprearently
@@ -235,13 +217,11 @@ namespace PS3Sharp.Memory
 
         internal bool TryAccess(uint virtualAddress, int size, uint threadId)
         {
-
             ulong accessStart = virtualAddress;
             ulong accessEnd = (ulong)(virtualAddress + size);
 
             lock (_managerLock)
             {
-
                 if (!_reservations.TryGetValue(threadId, out MemoryReservation? memoryReservation))
                 {
                     return false;

@@ -1,3 +1,4 @@
+using PS3Sharp.Common;
 using static PS3Sharp.Cell.PPU.PPUThread;
 
 namespace PS3Sharp.Cell.PPU.Interpreter
@@ -83,66 +84,68 @@ namespace PS3Sharp.Cell.PPU.Interpreter
         private static void STH(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.DForm, true);
-            ppu.MemoryManager.Write<ushort>(ea, ppu.GPR[instruction.Rs].Value16);
+            ppu.MemoryManager.Write<BigEndian<ushort>>(ea, ppu.GPR[instruction.Rs].Value16);
         }
 
         private static void STHX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
-            ppu.MemoryManager.Write<ushort>(ea, ppu.GPR[instruction.Rs].Value16);
+            ppu.MemoryManager.Write<BigEndian<ushort>>(ea, ppu.GPR[instruction.Rs].Value16);
         }
 
         private static void STHU(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.DForm, false);
-            ppu.MemoryManager.Write<ushort>(ea, ppu.GPR[instruction.Rs].Value16);
+            ppu.MemoryManager.Write<BigEndian<ushort>>(ea, ppu.GPR[instruction.Rs].Value16);
             ppu.GPR[instruction.Ra].Value64 = ea; //update
         }
 
         private static void STHUX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, false);
-            ppu.MemoryManager.Write<ushort>(ea, ppu.GPR[instruction.Rs].Value16);
+            ppu.MemoryManager.Write<BigEndian<ushort>>(ea, ppu.GPR[instruction.Rs].Value16);
             ppu.GPR[instruction.Ra].Value64 = ea; //update
         }
 
         private static void STHBRX(PPUInstruction instruction, PPUThread ppu)
         {
+            // Write without endian conversion
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
-            ppu.MemoryManager.WriteBE<ushort>(ea, ppu.GPR[instruction.Rs].Value16);
+            ppu.MemoryManager.Write<ushort>(ea, ppu.GPR[instruction.Rs].Value16);
         }
 
         // Store Word Instructions
         private static void STW(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.DForm, true);
-            ppu.MemoryManager.Write<uint>(ea, ppu.GPR[instruction.Rs].Value32);
+            ppu.MemoryManager.Write<BigEndian<uint>>(ea, ppu.GPR[instruction.Rs].Value32);
         }
 
         private static void STWX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
-            ppu.MemoryManager.Write<uint>(ea, ppu.GPR[instruction.Rs].Value32);
+            ppu.MemoryManager.Write<BigEndian<uint>>(ea, ppu.GPR[instruction.Rs].Value32);
         }
 
         private static void STWU(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.DForm, false);
-            ppu.MemoryManager.Write<uint>(ea, ppu.GPR[instruction.Rs].Value32);
+            ppu.MemoryManager.Write<BigEndian<uint>>(ea, ppu.GPR[instruction.Rs].Value32);
             ppu.GPR[instruction.Ra].Value64 = ea; //update
         }
 
         private static void STWUX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, false);
-            ppu.MemoryManager.Write<uint>(ea, ppu.GPR[instruction.Rs].Value32);
+            ppu.MemoryManager.Write<BigEndian<uint>>(ea, ppu.GPR[instruction.Rs].Value32);
             ppu.GPR[instruction.Ra].Value64 = ea; //update
         }
 
         private static void STWBRX(PPUInstruction instruction, PPUThread ppu)
         {
+            // Write without endian conversion
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
-            ppu.MemoryManager.WriteBE<uint>(ea, ppu.GPR[instruction.Rs].Value32);
+            ppu.MemoryManager.Write<uint>(ea, ppu.GPR[instruction.Rs].Value32);
         }
 
         private static void STWCX(PPUInstruction instruction, PPUThread ppu)
@@ -150,7 +153,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
 
             uint value = ppu.GPR[instruction.Rs].Value32;
-            bool ok = ppu.MemoryManager.StoreConditional<uint>(ea, ppu.ThreadID, value, ppu);
+            bool ok = ppu.MemoryManager.StoreConditional<BigEndian<uint>>(ea, ppu.ThreadID, value, ppu);
             ppu.State->CR.WriteCRField(CRNumber.CR0, ok ? PPUThread.ConditionRegister.EQ : 0);
         }
 
@@ -160,7 +163,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             uint r = instruction.Rs;
             while (r <= 31)
             {
-                ppu.MemoryManager.Write<uint>(ea, ppu.GPR[r].Value32);
+                ppu.MemoryManager.Write<BigEndian<uint>>(ea, ppu.GPR[r].Value32);
                 ea += 4;
                 r++;
             }
@@ -173,7 +176,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             bool checkRa = !update;
 
             uint ea = GetEA(instruction, ppu, MemAccessForm.DSForm, checkRa);
-            ppu.MemoryManager.Write<ulong>(ea, ppu.GPR[instruction.Rs].Value64);
+            ppu.MemoryManager.Write<BigEndian<ulong>>(ea, ppu.GPR[instruction.Rs].Value64);
             if (update)
             {
                 ppu.GPR[instruction.Ra].Value64 = ea;
@@ -186,7 +189,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             bool checkRa = !update;
 
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, checkRa);
-            ppu.MemoryManager.Write<ulong>(ea, ppu.GPR[instruction.Rs].Value64);
+            ppu.MemoryManager.Write<BigEndian<ulong>>(ea, ppu.GPR[instruction.Rs].Value64);
             if (update)
             {
                 ppu.GPR[instruction.Ra].Value64 = ea;
@@ -196,7 +199,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
         private static void STDUX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, false);
-            ppu.MemoryManager.Write<ulong>(ea, ppu.GPR[instruction.Rs].Value64);
+            ppu.MemoryManager.Write<BigEndian<ulong>>(ea, ppu.GPR[instruction.Rs].Value64);
             ppu.GPR[instruction.Ra].Value64 = ea;
         }
 
@@ -205,7 +208,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
 
             ulong value = ppu.GPR[instruction.Rs].Value64;
-            bool ok = ppu.MemoryManager.StoreConditional<ulong>(ea, ppu.ThreadID, value, ppu);
+            bool ok = ppu.MemoryManager.StoreConditional<BigEndian<ulong>>(ea, ppu.ThreadID, value, ppu);
             ppu.State->CR.WriteCRField(CRNumber.CR0, ok ? PPUThread.ConditionRegister.EQ : 0);
         }
 
@@ -241,53 +244,54 @@ namespace PS3Sharp.Cell.PPU.Interpreter
         private static void LHZ(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.DForm, true);
-            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<ushort>(ea); //zeroes the top 48-bits
+            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<BigEndian<ushort>>(ea); //zeroes the top 48-bits
         }
 
         private static void LHZU(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.DForm, false);
-            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<ushort>(ea); //zeroes the top 48-bits
+            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<BigEndian<ushort>>(ea); //zeroes the top 48-bits
             ppu.GPR[instruction.Ra].Value64 = ea;
         }
 
         private static void LHZX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
-            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<ushort>(ea); //zeroes the top 48-bits
+            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<BigEndian<ushort>>(ea); //zeroes the top 48-bits
         }
 
         private static void LHZUX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, false);
-            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<ushort>(ea); //zeroes the top 48-bits
+            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<BigEndian<ushort>>(ea); //zeroes the top 48-bits
             ppu.GPR[instruction.Ra].Value64 = ea;
         }
 
         private static void LHBRX(PPUInstruction instruction, PPUThread ppu)
         {
+            // Read without endian conversion
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
-            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.ReadBE<ushort>(ea); //zeroes the top 48-bits
+            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<ushort>(ea); //zeroes the top 48-bits
         }
 
         private static void LHA(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.DForm, true);
-            long se = (long)ppu.MemoryManager.Read<short>(ea);                     //sign extended
+            long se = (long)ppu.MemoryManager.Read<BigEndian<short>>(ea);                     //sign extended
             ppu.GPR[instruction.Rt].SValue64 = se;
         }
 
         private static void LHAX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
-            long se = (long)ppu.MemoryManager.Read<short>(ea);                     //sign extended
+            long se = (long)ppu.MemoryManager.Read<BigEndian<short>>(ea);                     //sign extended
             ppu.GPR[instruction.Rt].SValue64 = se;
         }
 
         private static void LHAU(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.DForm, false);
-            long se = (long)ppu.MemoryManager.Read<short>(ea);                     //sign extended
+            long se = (long)ppu.MemoryManager.Read<BigEndian<short>>(ea);                     //sign extended
             ppu.GPR[instruction.Rt].SValue64 = se;
             ppu.GPR[instruction.Ra].Value64 = ea;
         }
@@ -295,7 +299,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
         private static void LHAUX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, false);
-            long se = (long)ppu.MemoryManager.Read<short>(ea);                     //sign extended
+            long se = (long)ppu.MemoryManager.Read<BigEndian<short>>(ea);                     //sign extended
             ppu.GPR[instruction.Rt].Value64 = (ulong)se;
             ppu.GPR[instruction.Ra].Value64 = ea;
         }
@@ -305,60 +309,61 @@ namespace PS3Sharp.Cell.PPU.Interpreter
         private static void LWZ(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.DForm, true);
-            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<uint>(ea); //zeroes the top 32-bits
+            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<BigEndian<uint>>(ea); //zeroes the top 32-bits
         }
 
         private static void LWZU(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.DForm, false);
-            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<uint>(ea); //zeroes the top 32-bits
+            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<BigEndian<uint>>(ea); //zeroes the top 32-bits
             ppu.GPR[instruction.Ra].Value64 = ea;
         }
 
         private static void LWZX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
-            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<uint>(ea); //zeroes the top 32-bits
+            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<BigEndian<uint>>(ea); //zeroes the top 32-bits
         }
 
         private static void LWZUX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, false);
-            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<uint>(ea); //zeroes the top 32-bits
+            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<BigEndian<uint>>(ea); //zeroes the top 32-bits
             ppu.GPR[instruction.Ra].Value64 = ea;
         }
 
         private static void LWBRX(PPUInstruction instruction, PPUThread ppu)
         {
+            // Read without endian conversion
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
-            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.ReadBE<uint>(ea); //zeroes the top 32-bits
+            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<uint>(ea);   //zeroes the top 32-bits
         }
 
         private static void LWARX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
-            uint value = ppu.MemoryManager.LoadAndReserve<uint>(ea, ppu.ThreadID, ppu);
+            uint value = ppu.MemoryManager.LoadAndReserve<BigEndian<uint>>(ea, ppu.ThreadID, ppu);
             ppu.GPR[instruction.Rt].Value64 = value;                         //zeroes the top 32-bits                
         }
 
         private static void LWA(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.DSForm, true);
-            long se = ppu.MemoryManager.Read<int>(ea);   //Sign extended
+            long se = ppu.MemoryManager.Read<BigEndian<int>>(ea);   //Sign extended
             ppu.GPR[instruction.Rt].SValue64 = se;
         }
 
         private static void LWAX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
-            long se = ppu.MemoryManager.Read<int>(ea);   //Sign extended
+            long se = ppu.MemoryManager.Read<BigEndian<int>>(ea);   //Sign extended
             ppu.GPR[instruction.Rt].SValue64 = se;
         }
 
         private static void LWAUX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, false);
-            long se = ppu.MemoryManager.Read<int>(ea);  //Sign extended
+            long se = ppu.MemoryManager.Read<BigEndian<int>>(ea);  //Sign extended
             ppu.GPR[instruction.Rt].SValue64 = se;
             ppu.GPR[instruction.Ra].Value64 = ea;
         }
@@ -369,7 +374,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             uint r = instruction.Rt;
             while (r <= 31)
             {
-                ppu.GPR[r].Value64 = ppu.MemoryManager.Read<uint>(ea);
+                ppu.GPR[r].Value64 = ppu.MemoryManager.Read<BigEndian<uint>>(ea);
                 ea += 4;
                 r++;
             }
@@ -399,7 +404,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             bool checkRa = !update;
 
             uint ea = GetEA(instruction, ppu, MemAccessForm.DSForm, checkRa);
-            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<ulong>(ea);
+            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<BigEndian<ulong>>(ea);
             if (update)
             {
                 ppu.GPR[instruction.Ra].Value64 = ea;
@@ -409,20 +414,20 @@ namespace PS3Sharp.Cell.PPU.Interpreter
         private static void LDX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
-            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<ulong>(ea);
+            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<BigEndian<ulong>>(ea);
         }
 
         private static void LDUX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, false);
-            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<ulong>(ea);
+            ppu.GPR[instruction.Rt].Value64 = ppu.MemoryManager.Read<BigEndian<ulong>>(ea);
             ppu.GPR[instruction.Ra].Value64 = ea;
         }
 
         private static void LDARX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
-            ulong value = ppu.MemoryManager.LoadAndReserve<ulong>(ea, ppu.ThreadID, ppu);
+            ulong value = ppu.MemoryManager.LoadAndReserve<BigEndian<ulong>>(ea, ppu.ThreadID, ppu);
             ppu.GPR[instruction.Rt].Value64 = value;
         }
 

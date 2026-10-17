@@ -44,7 +44,7 @@ namespace PS3Sharp.OS.Syscall
             //LV2LWCond lv2lwcond = new LV2LWCond(control_ptr, attribute);
             //AddLWCond(handle, lv2lwcond);
 
-            _memoryManager.Write<uint>(id_ptr, handle);
+            _memoryManager.Write<BigEndian<uint>>(id_ptr, handle);
             return CELL_OK;
         }
 

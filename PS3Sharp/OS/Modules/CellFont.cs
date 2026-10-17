@@ -82,7 +82,7 @@ namespace PS3Sharp.OS.Modules
 
             for (uint i = 0; i < data.Length; i++)
             {
-                data[i] = _memoryManager.Read<uint>(font_ptr + (i * 4));
+                data[i] = _memoryManager.Read<BigEndian<uint>>(font_ptr + (i * 4));
             }
 
             Console.WriteLine($"CellFont data:");
@@ -107,7 +107,7 @@ namespace PS3Sharp.OS.Modules
 
             for (uint i = 0; i < data.Length; i++)
             {
-                data[i] = _memoryManager.Read<uint>(metrics_ptr + (i * 4));
+                data[i] = _memoryManager.Read<BigEndian<uint>>(metrics_ptr + (i * 4));
             }
 
             Console.WriteLine($"CellFontGlyphMetrics data:");

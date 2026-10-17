@@ -1,4 +1,5 @@
 using PS3Sharp.Cell.PPU.Recompiler;
+using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using PS3Sharp.OS;
 using PS3Sharp.OS.Syscall;
@@ -88,7 +89,7 @@ namespace PS3Sharp.Cell.PPU
 
             SetGCHandle();
 
-            State->PC = entryPointer != 0 ? MemoryManager.Read<uint>(entryPointer) : 0;
+            State->PC = entryPointer != 0 ? MemoryManager.Read<BigEndian<uint>>(entryPointer) : 0;
             State->VRSAVE = 0xFFFFFFFF;
 
             MemoryBlock stackArea = MemoryManager.AllocateStackSpace(stackSize);
@@ -178,7 +179,7 @@ namespace PS3Sharp.Cell.PPU
         {
             GPR[0].Value64 = State->PC;
             GPR[1].Value64 = stackBase;
-            GPR[2].Value64 = entryPointer != 0 ? MemoryManager.Read<uint>(entryPointer + 4) : 0;
+            GPR[2].Value64 = entryPointer != 0 ? MemoryManager.Read<BigEndian<uint>>(entryPointer + 4) : 0;
             GPR[3].Value64 = thread_arg;
             GPR[11].Value64 = entryPointer;
             GPR[12].Value64 = 0x100000;                      //malloc pagesize or something
@@ -298,7 +299,7 @@ namespace PS3Sharp.Cell.PPU
         private void WriteStack(ulong value)
         {
             GPR[STACK_REG].Value32 -= sizeof(ulong); // -= 8
-            MemoryManager.Write<ulong>(GPR[STACK_REG].Value32, value);
+            MemoryManager.Write<BigEndian<ulong>>(GPR[STACK_REG].Value32, value);
             Console.WriteLine($"STACK[{GPR[STACK_REG].Value32:X8}] = {value:X16}");
         }
 

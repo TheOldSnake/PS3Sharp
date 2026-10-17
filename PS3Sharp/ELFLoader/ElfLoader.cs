@@ -1,3 +1,4 @@
+using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -211,23 +212,27 @@ namespace PS3Sharp
 
                         Console.WriteLine($"[ELFLoader] Relocation type = {type} at [0x{address:X8}] data = 0x{data:X8} -- ptr = 0x{relocation.ptr:X8} offs = 0x{relocation.offs:X8}");
 
+                        ushort temp;
+
                         switch (type)
                         {
                             case 1:
-                                memoryManager.Write<uint>(address, data);
+                                memoryManager.Write<BigEndian<uint>>(address, data);
                                 break;
 
                             case 4:
-                                memoryManager.Write<ushort>(address, (ushort)data);
+                                temp = (ushort)data;
+                                memoryManager.Write<BigEndian<ushort>>(address, temp);
                                 break;
 
                             case 5:
-                                memoryManager.Write<ushort>(address, (ushort)(data >> 16));
+                                temp = (ushort)(data >> 16);
+                                memoryManager.Write<BigEndian<ushort>>(address, temp);
                                 break;
 
                             case 6:
-                                data = (ushort)(data >> 16) + ((data >> 15) & 1);
-                                memoryManager.Write<ushort>(address, (ushort)data);
+                                temp = (ushort)((data >> 16) + ((data >> 15) & 1));
+                                memoryManager.Write<BigEndian<ushort>>(address, temp);
                                 break;
 
                             default:

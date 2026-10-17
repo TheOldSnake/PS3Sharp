@@ -1,3 +1,4 @@
+using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -170,7 +171,7 @@ namespace PS3Sharp.Cell.RSX
 
         private uint Read32(uint address)
         {
-            uint value = _memoryManager.Read<uint>(address);
+            uint value = _memoryManager.Read<BigEndian<uint>>(address);
             return (value >> 16) | (value << 16); // for some reason 16-bits are swapped
         }
 

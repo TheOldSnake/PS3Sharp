@@ -89,7 +89,7 @@ namespace PS3Sharp.Cell.RSX
 
             for (uint i = 0; i < buffer.Length; i++)
             {
-                buffer[(int)i] = _memoryManager.Read<T>(currentAddress);
+                buffer[(int)i] = _memoryManager.Read<BigEndian<T>>(currentAddress);
                 currentAddress += sizeOfT;
             }
 

@@ -32,7 +32,7 @@ namespace PS3Sharp.OS.Modules
             Console.WriteLine($"[SCENPTrophy] sceNpTrophyCreateContext context_ptr = 0x{context_ptr:X8}");
 
             uint handle = _memoryManager.GetHandle();
-            _memoryManager.Write<uint>(context_ptr, handle);
+            _memoryManager.Write<BigEndian<uint>>(context_ptr, handle);
 
             return CELL_OK;
         }
@@ -83,7 +83,7 @@ namespace PS3Sharp.OS.Modules
             GuestVoidPtr handle_ptr = ppu.ReadArg<GuestVoidPtr>(ARG0);
 
             uint handle = _memoryManager.GetHandle();
-            _memoryManager.Write<uint>(handle_ptr, handle);
+            _memoryManager.Write<BigEndian<uint>>(handle_ptr, handle);
 
             Console.WriteLine($"[SCENPTrophy] SCENpTrophyCreateHandle handle_ptr = 0x{handle_ptr:X8} handle = 0x{handle:X8}");
             return CELL_OK;
@@ -92,7 +92,7 @@ namespace PS3Sharp.OS.Modules
         internal ulong SCENpTrophyGetRequiredDiskSpace(PPUThread ppu)
         {
             GuestVoidPtr require_space_ptr = ppu.ReadArg<GuestVoidPtr>(ARG2);
-            _memoryManager.Write<uint>(require_space_ptr, 0);
+            _memoryManager.Write<BigEndian<uint>>(require_space_ptr, 0);
             Console.WriteLine($"[SCENPTrophy] SCENpTrophyGetRequiredDiskSpace");
             return CELL_OK;
         }
@@ -113,7 +113,7 @@ namespace PS3Sharp.OS.Modules
             GuestPtr<uint> count_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG3);
 
             _memoryManager.Write<byte>(flags_ptr, 0x80);
-            _memoryManager.Write<uint>(count_ptr, 32);
+            _memoryManager.Write<BigEndian<uint>>(count_ptr, 32);
 
             Console.WriteLine($"[SCENPTrophy] sceNpTrophyGetTrophyUnlockState");
             return CELL_OK;

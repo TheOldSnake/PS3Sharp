@@ -30,7 +30,7 @@ namespace PS3Sharp.OS.Syscall
             LV2Semaphore semaphore = new((int)initialCount, (int)maxCount, attribute, _memoryManager);
             AddSemaphore(semaphore.Handle, semaphore);
 
-            _memoryManager.Write<uint>(semaphore_id_ptr, semaphore.Handle);
+            _memoryManager.Write<BigEndian<uint>>(semaphore_id_ptr, semaphore.Handle);
             return CELL_OK;
         }
 

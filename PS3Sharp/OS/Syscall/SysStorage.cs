@@ -174,7 +174,7 @@ namespace PS3Sharp.OS.Syscall
                       fd,
                       new StorageDevice(storage, size));
 
-                _memoryManager.Write<uint>(fd_ptr, fd);
+                _memoryManager.Write<BigEndian<uint>>(fd_ptr, fd);
             }
 
             return CELL_OK;
@@ -215,7 +215,7 @@ namespace PS3Sharp.OS.Syscall
                 //throw new Exception($"SysStorageRead: Device was not open");
             }
 
-            _memoryManager.Write<uint>(sectors_read, num_sectors);
+            _memoryManager.Write<BigEndian<uint>>(sectors_read, num_sectors);
             return CELL_OK;
         }
 

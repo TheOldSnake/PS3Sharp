@@ -45,7 +45,7 @@ namespace PS3Sharp.OS.Syscall
             AddEventQueue(eventQueue.Handle, eventQueue);
 
             // Write the handle
-            _memoryManager.Write<uint>(queue_id_ptr, eventQueue.Handle);
+            _memoryManager.Write<BigEndian<uint>>(queue_id_ptr, eventQueue.Handle);
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_queue_create - id = 0x{eventQueue.Handle:X8} size = {size} type = {attribute.Type} protocol = {attribute.Protocol}");
             return CELL_OK;
@@ -122,7 +122,7 @@ namespace PS3Sharp.OS.Syscall
             ReadOnlySpan<byte> bytes = MemoryMarshal.Cast<SysEventData, byte>(received);
             _memoryManager.CopyBufferToVirtualMemory(bytes, event_array_ptr);
 
-            _memoryManager.Write<int>(read_ptr, received.Length);
+            _memoryManager.Write<BigEndian<int>>(read_ptr, received.Length);
 
             // Are there errors ?
             return CELL_OK;
@@ -156,7 +156,7 @@ namespace PS3Sharp.OS.Syscall
             AddEventPort(eventPort.Handle, eventPort);
 
             //Write the handle
-            _memoryManager.Write<uint>(eport_id_ptr, eventPort.Handle);
+            _memoryManager.Write<BigEndian<uint>>(eport_id_ptr, eventPort.Handle);
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_port_create -- id = 0x{eventPort.Handle:X8}");
             return CELL_OK;

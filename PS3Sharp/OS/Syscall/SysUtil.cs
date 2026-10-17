@@ -325,7 +325,7 @@ namespace PS3Sharp.OS.Syscall
             }
 
 
-            _memoryManager.Write<uint>(value_ptr, value);
+            _memoryManager.Write<BigEndian<uint>>(value_ptr, value);
             return CELL_OK;
         }
 

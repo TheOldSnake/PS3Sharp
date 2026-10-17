@@ -610,8 +610,8 @@ namespace PS3Sharp.Cell.RSX
                 PPUInterpreter.ExecuteFunction(_RSX_PPU_Thread, _cellGcmSys.FlipHandler, toc: true, [1, 0, 0, 0, 0]);
             }
 
-            _memoryManager.Write<ulong>(LabelsPtr + 0x10, 0);
-            _memoryManager.Write<ulong>(LabelsPtr + 0x10 + 0x8, 0);
+            _memoryManager.Write<BigEndian<ulong>>(LabelsPtr + 0x10, 0);
+            _memoryManager.Write<BigEndian<ulong>>(LabelsPtr + 0x10 + 0x8, 0);
 
             //Console.WriteLine($"[RSX] Flipped");
 
@@ -655,7 +655,7 @@ namespace PS3Sharp.Cell.RSX
             // Reverse it
             uint wvalue = param.Dequeue();
             uint value = (wvalue & 0xff00ff00) | ((wvalue & 0xff) << 16) | ((wvalue >> 16) & 0xff);
-            _memoryManager.Write<uint>(LabelsPtr + CurrentState.CurrentSemaphoreOffset, value);
+            _memoryManager.Write<BigEndian<uint>>(LabelsPtr + CurrentState.CurrentSemaphoreOffset, value);
             //Console.WriteLine($"[RSX] SemaphoreBackendwriteRelease [{CurrentState.CurrentSemaphoreOffset}] = 0x{value:X8}");
         }
 
@@ -680,7 +680,7 @@ namespace PS3Sharp.Cell.RSX
         private void SemaphoreRelease(Queue<BigEndian<uint>> param)
         {
             uint value = param.Dequeue();
-            _memoryManager.Write<uint>(LabelsPtr + CurrentState.CurrentSemaphoreOffset, value);
+            _memoryManager.Write<BigEndian<uint>>(LabelsPtr + CurrentState.CurrentSemaphoreOffset, value);
             //Console.WriteLine($"[RSX] SemaphoreRelease [{CurrentState.CurrentSemaphoreOffset}] = 0x{value:X8}");
         }
 

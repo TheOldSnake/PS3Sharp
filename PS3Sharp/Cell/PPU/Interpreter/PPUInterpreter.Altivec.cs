@@ -1,3 +1,4 @@
+using PS3Sharp.Common;
 using static PS3Sharp.Cell.PPU.PPUThread;
 
 namespace PS3Sharp.Cell.PPU.Interpreter
@@ -104,21 +105,21 @@ namespace PS3Sharp.Cell.PPU.Interpreter
         internal static void LVX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true) & ~0xFU;
-            ppu.VRF[instruction.Vd].Value128 = ppu.MemoryManager.Read<UInt128>(ea);
+            ppu.VRF[instruction.Vd].Value128 = ppu.MemoryManager.Read<BigEndian<UInt128>>(ea);
         }
 
         internal static void LVEWX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true) & ~0x3U;
             uint m = (ea >> 2) & 3;          //m=EA[28–29] 
-            ppu.VRF[instruction.Vd].UInts[3 - m] = ppu.MemoryManager.Read<uint>(ea);
+            ppu.VRF[instruction.Vd].UInts[3 - m] = ppu.MemoryManager.Read<BigEndian<uint>>(ea);
         }
 
         internal static void LVEHX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true) & ~0x1U;
             uint m = (ea >> 1) & 7;          //m=EA[28–30] 
-            ppu.VRF[instruction.Vd].UShorts[7 - m] = ppu.MemoryManager.Read<ushort>(ea);
+            ppu.VRF[instruction.Vd].UShorts[7 - m] = ppu.MemoryManager.Read<BigEndian<ushort>>(ea);
         }
 
         internal static void LVEBX(PPUInstruction instruction, PPUThread ppu)
@@ -132,23 +133,24 @@ namespace PS3Sharp.Cell.PPU.Interpreter
         internal static void STVX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true) & ~0xFU;
-            ppu.MemoryManager.Write<UInt128>(ea, ppu.VRF[instruction.Vs].Value128);
+            BigEndian<UInt128> value = ppu.VRF[instruction.Vs].Value128;
+            ppu.MemoryManager.Write(ea, value);
         }
 
         internal static void STVEWX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true) & ~0x3U;
             uint m = (ea >> 2) & 3;          //m=EA[28–29] 
-            uint data = ppu.VRF[instruction.Vs].UInts[3 - m];
-            ppu.MemoryManager.Write<uint>(ea, data);
+            BigEndian<uint> data = ppu.VRF[instruction.Vs].UInts[3 - m];
+            ppu.MemoryManager.Write(ea, data);
         }
 
         internal static void STVEHX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true) & ~0x1U;
             uint m = (ea >> 1) & 7;         //m=EA[28–30] 
-            ushort data = ppu.VRF[instruction.Vs].UShorts[7 - m];
-            ppu.MemoryManager.Write<ushort>(ea, data);
+            BigEndian<ushort> data = ppu.VRF[instruction.Vs].UShorts[7 - m];
+            ppu.MemoryManager.Write(ea, data);
         }
 
         internal static void STVEBX(PPUInstruction instruction, PPUThread ppu)
@@ -156,7 +158,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
             uint m = ea & 0xF;              //m=EA[28–31] 
             byte data = ppu.VRF[instruction.Vs].Bytes[15 - m];
-            ppu.MemoryManager.Write<byte>(ea, data);
+            ppu.MemoryManager.Write(ea, data);
         }
 
         internal static void VADDUWM(PPUInstruction instruction, PPUThread ppu)

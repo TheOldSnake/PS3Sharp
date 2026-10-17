@@ -102,7 +102,7 @@ namespace PS3Sharp.OS.Modules
             }
 
             //Write the CellGcmCtxData memory address to ctx_ptr
-            _memoryManager.Write<uint>(ctx_ptr, _rsx.CtxPtr.Address);
+            _memoryManager.Write<BigEndian<uint>>(ctx_ptr, _rsx.CtxPtr.Address);
 
 
             //Start RSX thread
@@ -136,21 +136,21 @@ namespace PS3Sharp.OS.Modules
             uint ioPage = io >> 20;
             uint eaPage = ea >> 20;
 
-            _memoryManager.Write<ushort>(OffsetTable.eaTableAddress + (ioPage * sizeof(ushort)), (ushort)eaPage);
-            _memoryManager.Write<ushort>(OffsetTable.ioTableAddress + (eaPage * sizeof(ushort)), (ushort)ioPage);
+            _memoryManager.Write<BigEndian<ushort>>(OffsetTable.eaTableAddress + (ioPage * sizeof(ushort)), (ushort)eaPage);
+            _memoryManager.Write<BigEndian<ushort>>(OffsetTable.ioTableAddress + (eaPage * sizeof(ushort)), (ushort)ioPage);
         }
 
         internal bool IsIoOffsMapped(uint io)
         {
             uint ioPage = io >> 20;
-            uint eaPage = _memoryManager.Read<ushort>(OffsetTable.eaTableAddress + (ioPage * sizeof(ushort)));
+            uint eaPage = _memoryManager.Read<BigEndian<ushort>>(OffsetTable.eaTableAddress + (ioPage * sizeof(ushort)));
             return eaPage != 0xFFFF;
         }
 
         internal bool IsEaOffsMapped(uint ea)
         {
             uint eaPage = ea >> 20;
-            uint ioPage = _memoryManager.Read<ushort>(OffsetTable.ioTableAddress + (eaPage * sizeof(ushort)));
+            uint ioPage = _memoryManager.Read<BigEndian<ushort>>(OffsetTable.ioTableAddress + (eaPage * sizeof(ushort)));
             return ioPage != 0xFFFF;
         }
 
@@ -158,7 +158,7 @@ namespace PS3Sharp.OS.Modules
         {
             uint ea_page_table = OffsetTable.eaTableAddress;
             uint io_page = io >> 20;
-            uint ea_page = _memoryManager.Read<ushort>(ea_page_table + (io_page * sizeof(ushort)));
+            uint ea_page = _memoryManager.Read<BigEndian<ushort>>(ea_page_table + (io_page * sizeof(ushort)));
             return (ea_page << 20) | (io & 0xFFFFF);
         }
 
@@ -166,13 +166,14 @@ namespace PS3Sharp.OS.Modules
         {
             uint io_page_table = OffsetTable.ioTableAddress;
             uint ea_page = ea >> 20;
-            uint io_page = _memoryManager.Read<ushort>(io_page_table + (ea_page * sizeof(ushort)));
+            uint io_page = _memoryManager.Read<BigEndian<ushort>>(io_page_table + (ea_page * sizeof(ushort)));
             return (io_page << 20) | (ea & 0xFFFFF);
         }
 
         internal ulong CellGcmSetDefaultCommandBuffer(PPUThread ppu)
         {
-            _memoryManager.Write<uint>(DefaultCtxPtr, _rsx.CtxPtr);
+            uint ptr = _rsx.CtxPtr;
+            _memoryManager.Write<BigEndian<uint>>(DefaultCtxPtr, ptr);
             Console.WriteLine($"[CellGcmSys] cellGcmSetDefaultCommandBuffer");
             return CELL_OK;
         }
@@ -187,10 +188,10 @@ namespace PS3Sharp.OS.Modules
             MemoryManager.MemoryBlock callback = _memoryManager.AllocateVirtualMemory(totalInstructions * sizeof(uint));
             uint address = (uint)callback.VirtualAddress;
 
-            _memoryManager.Write<uint>(address + 0, address + 4); //Write the address in the first word, the ppu code loads this word and jumps to its value
-            _memoryManager.Write<uint>(address + 4, li);
-            _memoryManager.Write<uint>(address + 8, sc);
-            _memoryManager.Write<uint>(address + 12, blr);
+            _memoryManager.Write<BigEndian<uint>>(address + 0, address + 4); //Write the address in the first word, the ppu code loads this word and jumps to its value
+            _memoryManager.Write<BigEndian<uint>>(address + 4, li);
+            _memoryManager.Write<BigEndian<uint>>(address + 8, sc);
+            _memoryManager.Write<BigEndian<uint>>(address + 12, blr);
             return callback;
         }
 
@@ -255,7 +256,7 @@ namespace PS3Sharp.OS.Modules
 
                 // Inject a Jump command to the new location in the current stream
                 uint jump = 0x20000000 | _rsx.AddressToOffset(newBegin);
-                _memoryManager.Write<uint>(ctx_current, jump);
+                _memoryManager.Write<BigEndian<uint>>(ctx_current, jump);
 
                 // Update context struct
                 ctx->Begin = newBegin;
@@ -305,7 +306,7 @@ namespace PS3Sharp.OS.Modules
             uint address = ppu.ReadArg<uint>(ARG0);
             uint offset_ptr = ppu.ReadArg<uint>(ARG1);
             uint offset = _rsx.AddressToOffset(address);
-            _memoryManager.Write<uint>(offset_ptr, offset);
+            _memoryManager.Write<BigEndian<uint>>(offset_ptr, offset);
 
             //  Console.WriteLine($"[CellGcmSys] cellGcmAddressToOffset address = {address:X8} offset_ptr = {offset_ptr:X8} ret = {offset:X8}");
             return CELL_OK;
@@ -386,8 +387,8 @@ namespace PS3Sharp.OS.Modules
 
                 // Inject a flip command
                 uint flipCommand = RSXCommand.GCM_FLIP_COMMAND | (1 << RSXCommand.RSX_METHOD_COUNT_SHIFT); // 1 Argument
-                _memoryManager.Write<uint>(ctx->Current, flipCommand);
-                _memoryManager.Write<uint>(ctx->Current + 4, bufferId);
+                _memoryManager.Write<BigEndian<uint>>(ctx->Current, flipCommand);
+                _memoryManager.Write<BigEndian<uint>>(ctx->Current + 4, bufferId);
                 ctx->Current += 8;
             }
 
@@ -520,7 +521,7 @@ namespace PS3Sharp.OS.Modules
                 }
             }
 
-            _memoryManager.Write<uint>(offset_ptr, offs << 20);
+            _memoryManager.Write<BigEndian<uint>>(offset_ptr, offs << 20);
             return CELL_OK;
         }
 

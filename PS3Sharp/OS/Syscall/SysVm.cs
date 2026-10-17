@@ -25,7 +25,7 @@ namespace PS3Sharp.OS.Syscall
             GuestPtr<uint> addr_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG5);
 
             MemoryManager.MemoryBlock block = _memoryManager.AllocateVirtualMemory((uint)psize);
-            _memoryManager.Write<uint>(addr_ptr, block.VirtualAddress);
+            _memoryManager.Write<BigEndian<uint>>(addr_ptr, block.VirtualAddress);
 
             return CELL_OK;
         }

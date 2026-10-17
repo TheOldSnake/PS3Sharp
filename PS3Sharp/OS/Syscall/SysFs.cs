@@ -266,7 +266,7 @@ namespace PS3Sharp.OS.Syscall
             if (result == CELL_OK)
             {
                 //Write the file descriptor
-                _memoryManager.Write<int>(fd_ptr, handle);
+                _memoryManager.Write<BigEndian<int>>(fd_ptr, handle);
                 // Console.WriteLine($"[{ppu.ThreadName}] [SysFsOpen] cellFsOpen opened file {guestPath} fd = 0x{handle:X} flags = 0x{flags}");
 
             }
@@ -294,7 +294,7 @@ namespace PS3Sharp.OS.Syscall
             }
 
             ulong position = (ulong)_fileSystemManager.Seek(fd, offset, whence);
-            _memoryManager.Write<ulong>(pos_ptr, position);
+            _memoryManager.Write<BigEndian<ulong>>(pos_ptr, position);
 
             return CELL_OK;
         }
@@ -326,7 +326,7 @@ namespace PS3Sharp.OS.Syscall
             // Write back the number of bytes read
             if (nread_ptr > 0)
             {
-                _memoryManager.Write<ulong>(nread_ptr, readCount);
+                _memoryManager.Write<BigEndian<ulong>>(nread_ptr, readCount);
             }
 
             // TODO: Seems like this syscall returns CELL_EFAULT if number of bytes read == 0, while CellFsRead does not
@@ -342,7 +342,7 @@ namespace PS3Sharp.OS.Syscall
             GuestPtr<ulong> nwrite_ptr = ppu.ReadArg<GuestPtr<ulong>>(ARG3);
 
             ulong nrwite = _fileSystemManager.Write(fd, (int)nbytes, buf);
-            _memoryManager.Write<ulong>(nwrite_ptr, nrwite); //Write back the number of bytes written
+            _memoryManager.Write<BigEndian<ulong>>(nwrite_ptr, nrwite); //Write back the number of bytes written
 
             return CELL_OK;
         }
@@ -380,7 +380,7 @@ namespace PS3Sharp.OS.Syscall
 
             if (result == CELL_OK)
             {
-                _memoryManager.Write<uint>(fd_ptr, (uint)handle);
+                _memoryManager.Write<BigEndian<uint>>(fd_ptr, (uint)handle);
             }
             else
             {
@@ -399,7 +399,7 @@ namespace PS3Sharp.OS.Syscall
             // Console.WriteLine($"[SysFsReadDir] SysFsReadDir fd = 0x{fd:X8} lr = 0x{ppu.GetLR():X8}");
 
             ulong bytes_read = _fileSystemManager.ReadDir(fd, direent_ptr);
-            _memoryManager.Write<ulong>(bytes_read_ptr, bytes_read);
+            _memoryManager.Write<BigEndian<ulong>>(bytes_read_ptr, bytes_read);
 
             return CELL_OK;
         }

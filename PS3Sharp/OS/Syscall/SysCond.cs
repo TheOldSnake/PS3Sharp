@@ -42,7 +42,7 @@ namespace PS3Sharp.OS.Syscall
             AddCond(cond);
 
             // Write the cond id
-            _memoryManager.Write<uint>(cond_id_ptr, cond.Handle);
+            _memoryManager.Write<BigEndian<uint>>(cond_id_ptr, cond.Handle);
 
             return CELL_OK;
         }

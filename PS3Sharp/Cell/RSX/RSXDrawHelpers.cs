@@ -222,7 +222,7 @@ namespace PS3Sharp.Cell.RSX
             for (uint i = 0; i < indicesCount; i++)
             {
                 uint address = elementBufferAddress + (i * sizeOfT);
-                T data = _memoryManager.Read<T>(address);
+                T data = _memoryManager.Read<BigEndian<T>>(address);
                 indexList.Add(data);
 
                 if (i == 0 || data > max)

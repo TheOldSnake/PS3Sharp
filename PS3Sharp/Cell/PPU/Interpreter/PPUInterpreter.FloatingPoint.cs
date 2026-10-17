@@ -1,3 +1,4 @@
+using PS3Sharp.Common;
 using System.Runtime.CompilerServices;
 
 namespace PS3Sharp.Cell.PPU.Interpreter
@@ -121,14 +122,14 @@ namespace PS3Sharp.Cell.PPU.Interpreter
         internal static void LFS(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.DForm, true);
-            uint v = ppu.MemoryManager.Read<uint>(ea);
+            uint v = ppu.MemoryManager.Read<BigEndian<uint>>(ea);
             ppu.FPR[instruction.Frt].Float64 = Unsafe.BitCast<uint, float>(v);
         }
 
         internal static void LFSU(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.DForm, false);
-            uint v = ppu.MemoryManager.Read<uint>(ea);
+            uint v = ppu.MemoryManager.Read<BigEndian<uint>>(ea);
             ppu.FPR[instruction.Frt].Float64 = Unsafe.BitCast<uint, float>(v);
             ppu.GPR[instruction.Ra].Value64 = ea;
         }
@@ -136,14 +137,14 @@ namespace PS3Sharp.Cell.PPU.Interpreter
         internal static void LFSX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
-            uint v = ppu.MemoryManager.Read<uint>(ea);
+            uint v = ppu.MemoryManager.Read<BigEndian<uint>>(ea);
             ppu.FPR[instruction.Frt].Float64 = Unsafe.BitCast<uint, float>(v);
         }
 
         internal static void LFSUX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, false);
-            uint v = ppu.MemoryManager.Read<uint>(ea);
+            uint v = ppu.MemoryManager.Read<BigEndian<uint>>(ea);
             ppu.FPR[instruction.Frt].Float64 = Unsafe.BitCast<uint, float>(v);
             ppu.GPR[instruction.Ra].Value64 = ea;
         }
@@ -155,7 +156,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             uint ea = GetEA(instruction, ppu, MemAccessForm.DForm, true);
             float frs = (float)ppu.FPR[instruction.Frs].Float64;
             uint v = Unsafe.BitCast<float, uint>(frs);
-            ppu.MemoryManager.Write<uint>(ea, v);
+            ppu.MemoryManager.Write<BigEndian<uint>>(ea, v);
         }
 
         internal static void STFSX(PPUInstruction instruction, PPUThread ppu)
@@ -163,7 +164,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
             float frs = (float)ppu.FPR[instruction.Frs].Float64;
             uint v = Unsafe.BitCast<float, uint>(frs);
-            ppu.MemoryManager.Write<uint>(ea, v);
+            ppu.MemoryManager.Write<BigEndian<uint>>(ea, v);
         }
 
         internal static void STFSU(PPUInstruction instruction, PPUThread ppu)
@@ -171,7 +172,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             uint ea = GetEA(instruction, ppu, MemAccessForm.DForm, false);
             float frs = (float)ppu.FPR[instruction.Frs].Float64;
             uint v = Unsafe.BitCast<float, uint>(frs);
-            ppu.MemoryManager.Write<uint>(ea, v);
+            ppu.MemoryManager.Write<BigEndian<uint>>(ea, v);
             ppu.GPR[instruction.Ra].Value64 = ea;
         }
 
@@ -180,7 +181,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, false);
             float frs = (float)ppu.FPR[instruction.Frs].Float64;
             uint v = Unsafe.BitCast<float, uint>(frs);
-            ppu.MemoryManager.Write<uint>(ea, v);
+            ppu.MemoryManager.Write<BigEndian<uint>>(ea, v);
             ppu.GPR[instruction.Ra].Value64 = ea;
         }
 
@@ -188,27 +189,27 @@ namespace PS3Sharp.Cell.PPU.Interpreter
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
             uint frs = (uint)(ppu.FPR[instruction.Frs].Value64 & 0xFFFFFFFF);
-            ppu.MemoryManager.Write<uint>(ea, frs);
+            ppu.MemoryManager.Write<BigEndian<uint>>(ea, frs);
         }
 
         internal static void LFD(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.DForm, true);
-            ulong v = ppu.MemoryManager.Read<ulong>(ea);
+            ulong v = ppu.MemoryManager.Read<BigEndian<ulong>>(ea);
             ppu.FPR[instruction.Frt].Float64 = Unsafe.BitCast<ulong, double>(v);
         }
 
         internal static void LFDX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
-            ulong v = ppu.MemoryManager.Read<ulong>(ea);
+            ulong v = ppu.MemoryManager.Read<BigEndian<ulong>>(ea);
             ppu.FPR[instruction.Frt].Float64 = Unsafe.BitCast<ulong, double>(v);
         }
 
         internal static void LFDU(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.DForm, false);
-            ulong v = ppu.MemoryManager.Read<ulong>(ea);
+            ulong v = ppu.MemoryManager.Read<BigEndian<ulong>>(ea);
             ppu.FPR[instruction.Frt].Float64 = Unsafe.BitCast<ulong, double>(v);
             ppu.GPR[instruction.Ra].Value64 = ea;
         }
@@ -216,7 +217,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
         internal static void LFDUX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, false);
-            ulong v = ppu.MemoryManager.Read<ulong>(ea);
+            ulong v = ppu.MemoryManager.Read<BigEndian<ulong>>(ea);
             ppu.FPR[instruction.Frt].Float64 = Unsafe.BitCast<ulong, double>(v);
             ppu.GPR[instruction.Ra].Value64 = ea;
         }
@@ -228,7 +229,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             uint ea = GetEA(instruction, ppu, MemAccessForm.DForm, true);
             double frs = (double)ppu.FPR[instruction.Frs].Float64;
             ulong v = Unsafe.BitCast<double, ulong>(frs);
-            ppu.MemoryManager.Write<ulong>(ea, v);
+            ppu.MemoryManager.Write<BigEndian<ulong>>(ea, v);
         }
 
         internal static void STFDX(PPUInstruction instruction, PPUThread ppu)
@@ -236,7 +237,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
             double frs = (double)ppu.FPR[instruction.Frs].Float64;
             ulong v = Unsafe.BitCast<double, ulong>(frs);
-            ppu.MemoryManager.Write<ulong>(ea, v);
+            ppu.MemoryManager.Write<BigEndian<ulong>>(ea, v);
         }
 
         internal static void STFDU(PPUInstruction instruction, PPUThread ppu)
@@ -244,7 +245,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             uint ea = GetEA(instruction, ppu, MemAccessForm.DForm, false);
             double frs = (double)ppu.FPR[instruction.Frs].Float64;
             ulong v = Unsafe.BitCast<double, ulong>(frs);
-            ppu.MemoryManager.Write<ulong>(ea, v);
+            ppu.MemoryManager.Write<BigEndian<ulong>>(ea, v);
             ppu.GPR[instruction.Ra].Value64 = ea;
         }
 
@@ -253,7 +254,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, false);
             double frs = (double)ppu.FPR[instruction.Frs].Float64;
             ulong v = Unsafe.BitCast<double, ulong>(frs);
-            ppu.MemoryManager.Write<ulong>(ea, v);
+            ppu.MemoryManager.Write<BigEndian<ulong>>(ea, v);
             ppu.GPR[instruction.Ra].Value64 = ea;
         }
 

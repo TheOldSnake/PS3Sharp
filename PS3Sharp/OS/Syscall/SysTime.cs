@@ -20,8 +20,8 @@ namespace PS3Sharp.OS.Syscall
             GuestPtr<long> sec = ppu.ReadArg<GuestPtr<long>>(ARG0);   //sys_time_sec_t*
             GuestPtr<long> nsec = ppu.ReadArg<GuestPtr<long>>(ARG1);  //sys_time_nsec_t* 
 
-            _memoryManager.Write<long>(sec, (long)Utility.GetCurrentSecondsSince1970());
-            _memoryManager.Write<long>(nsec, (long)Utility.GetCurrentNanosecondsSince1970());
+            _memoryManager.Write<BigEndian<long>>(sec, (long)Utility.GetCurrentSecondsSince1970());
+            _memoryManager.Write<BigEndian<long>>(nsec, (long)Utility.GetCurrentNanosecondsSince1970());
 
             //Console.WriteLine("[SysTime] SysTimeGetCurrentTime");
             return CELL_OK;
@@ -40,8 +40,8 @@ namespace PS3Sharp.OS.Syscall
 
             // todo: get actual timezone values
 
-            _memoryManager.Write<uint>(timezone_ptr, 60);
-            _memoryManager.Write<uint>(summertime_ptr, 00);
+            _memoryManager.Write<BigEndian<uint>>(timezone_ptr, 60);
+            _memoryManager.Write<BigEndian<uint>>(summertime_ptr, 00);
             return CELL_OK;
         }
 

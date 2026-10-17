@@ -108,7 +108,7 @@ namespace PS3Sharp.Cell.RSX
                 for (uint element = 0; element < elementsPerUnitCount; element++)
                 {
                     uint address = bufferAddress + dataMemoryOffset + (element * sizeOfT);
-                    T data = _memoryManager.Read<T>(address);
+                    T data = _memoryManager.Read<BigEndian<T>>(address);
                     vertexData[(int)(dataBaseIndex + element)] = data;
                 }
             }

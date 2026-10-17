@@ -164,7 +164,7 @@ namespace PS3Sharp.OS.Modules
             {
                 if (sfo!.UIntLookup(key, out uint value))
                 {
-                    _memoryManager.Write<uint>(value_ptr, value);
+                    _memoryManager.Write<BigEndian<uint>>(value_ptr, value);
                 }
                 else
                 {

@@ -43,7 +43,7 @@ namespace PS3Sharp.OS.Syscall
                 Console.WriteLine($"[SysMemory] sys_memory_allocate: [0x{block.VirtualAddress:X8} - 0x{block.End:X8}]");
 
                 //Write the handle at the alloc_addr*
-                _memoryManager.Write<uint>(alloc_addr, (uint)block.VirtualAddress);
+                _memoryManager.Write<BigEndian<uint>>(alloc_addr, block.VirtualAddress);
             }
             else
             {

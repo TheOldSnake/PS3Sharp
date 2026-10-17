@@ -28,7 +28,7 @@ namespace PS3Sharp.OS.Syscall
             LV2EventFlag eventFlag = new(initialValue, _memoryManager);
             AddEventFlag(eventFlag.Handle, eventFlag);
 
-            _memoryManager.Write<uint>(id_ptr, eventFlag.Handle);
+            _memoryManager.Write<BigEndian<uint>>(id_ptr, eventFlag.Handle);
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_flag_create id = 0x{eventFlag.Handle:X8}");
             return CELL_OK;
@@ -61,7 +61,7 @@ namespace PS3Sharp.OS.Syscall
 
                 if (errorCode == CELL_OK)
                 {
-                    _memoryManager.Write<ulong>(result_ptr, result);
+                    _memoryManager.Write<BigEndian<ulong>>(result_ptr, result);
                 }
 
                 return errorCode;

@@ -119,7 +119,7 @@ namespace PS3Sharp.OS.Syscall
             // Create the thread group
             LV2SPUThreadGroup group = new(attr_ptr, num, prio, _memoryManager);
             AddSPUThreadGroup(group);
-            _memoryManager.Write<uint>(id_ptr, group.Handle);
+            _memoryManager.Write<BigEndian<uint>>(id_ptr, group.Handle);
 
             Console.WriteLine($"[SysSPUThreadInitialize] Created SPU group: 0x{group.Handle:X8}");
             return CELL_OK;
@@ -154,7 +154,7 @@ namespace PS3Sharp.OS.Syscall
             SPUThread spu = new(thread_name, id, group_id, img, arg, _memoryManager);
             threadGroup.AddThread(spu);
 
-            _memoryManager.Write<uint>(id_ptr, id);
+            _memoryManager.Write<BigEndian<uint>>(id_ptr, id);
 
             Console.WriteLine($"[SysSPUThreadInitialize] Created SPU thread: {thread_name} - Group: 0x{group_id:X8}");
             return CELL_OK;

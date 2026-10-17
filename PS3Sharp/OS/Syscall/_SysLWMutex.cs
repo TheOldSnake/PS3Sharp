@@ -47,7 +47,7 @@ namespace PS3Sharp.OS.Syscall
             AddLWMutex(handle, mutex);
 
             // Write the handle
-            _memoryManager.Write<uint>(id_ptr, handle);
+            _memoryManager.Write<BigEndian<uint>>(id_ptr, handle);
 
             return CELL_OK;
         }

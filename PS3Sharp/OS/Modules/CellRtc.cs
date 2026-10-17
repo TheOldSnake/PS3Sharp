@@ -32,7 +32,7 @@ namespace PS3Sharp.OS.Modules
             Console.WriteLine($"[CellRtc] cellRtcGetCurrentTick");
             uint ptr = ppu.ReadArg<uint>(ARG0);
             ulong tick = Utility.GetCurrentTickSince1970();
-            _memoryManager.Write<ulong>(ptr, tick);
+            _memoryManager.Write<BigEndian<ulong>>(ptr, tick);
             return CELL_OK;
         }
 
