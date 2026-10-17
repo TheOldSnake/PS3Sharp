@@ -161,7 +161,7 @@ namespace PS3Sharp.Memory
             return instruction;
         }
 
-        internal void Write<T>(uint virtualAddress, T value) where T : unmanaged
+        internal void Write<T>(uint virtualAddress, in T value) where T : unmanaged
         {
             void* address = GetNativeAddress(virtualAddress);
             Unsafe.WriteUnaligned(address, value);
