@@ -738,7 +738,9 @@ namespace PS3Sharp.Memory
             }
 
             void* dest = GetNativeAddress((uint)virtualAddress);
-            NativeMemory.Fill(dest, byteCount, value);
+            Span<byte> destSpan = new(dest, (int)byteCount);
+
+            destSpan.Fill(value);
         }
 
         internal string ReadString(uint virtualAddress)
