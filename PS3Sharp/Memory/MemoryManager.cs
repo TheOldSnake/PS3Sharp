@@ -415,6 +415,11 @@ namespace PS3Sharp.Memory
             }
         }
 
+        internal MemoryBlock AllocatePages(int pageCount)
+        {
+            return AllocateVirtualMemory(Fastmem.PAGE_SIZE * (uint)pageCount);
+        }
+
         internal MemoryBlock AllocatePhysicalMemory(uint size)
         {
             lock (_managerLock)

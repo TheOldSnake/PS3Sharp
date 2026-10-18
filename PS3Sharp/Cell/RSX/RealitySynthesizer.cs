@@ -4,6 +4,7 @@ using PS3Sharp.OS;
 using PS3Sharp.OS.Modules;
 using System.Buffers;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -59,6 +60,7 @@ namespace PS3Sharp.Cell.RSX
         internal const uint GCM_LOCATION_CELL = 1;    // Memory buffer is located in main memory.
         internal const uint GCM_LOCATION_REPORT = 2;  // Memory buffer is located in report memory.
         internal const uint VRAM_SIZE = 249 * 1024 * 1024;
+        internal const uint LABELS_SIZE = 0x10 * 256;
         internal const ulong FRAME_TIME_US = (ulong)(16.666 * 1000);
 
         private PPU.PPUThread? _RSX_PPU_Thread;            // For executing rsx callbacks that are ppu functions
@@ -81,7 +83,7 @@ namespace PS3Sharp.Cell.RSX
         internal GuestPtr<CellGcmConfig> ConfigPtr { get; private set; }
         internal GuestPtr<CellGcmCtxData> CtxPtr { get; private set; }
         internal GuestPtr<CellGcmCtrlRegister> CtrlPtr { get; private set; }
-        internal GuestVoidPtr VRAM_Ptr { get; private set; }
+        internal GuestVoidPtr VRAMPtr { get; private set; }
         internal GuestPtr<byte> LabelsPtr { get; private set; }
         internal ulong LastFlipTime { get; private set; }
         internal RSXFrameBuffer[] FrameBuffers { get; } = new RSXFrameBuffer[255];
@@ -133,11 +135,33 @@ namespace PS3Sharp.Cell.RSX
 
         internal void AllocateRSXMemory()
         {
-            AllocateVram();
-            AllocateConfigReg();
-            AllocateCtrReg();
-            AllocateDataCtxReg();
-            AllocateLabels();
+            // Allocate vram
+            MemoryManager.MemoryBlock vram = _memoryManager.AllocateVirtualMemory(VRAM_SIZE);
+            VRAMPtr = vram.VirtualAddress;
+
+            // Allocate a page for structs + labels
+            MemoryManager.MemoryBlock page = _memoryManager.AllocatePages(pageCount: 1);
+            ulong pageStart = page.VirtualAddress;
+            ulong pageEnd = page.End;
+
+            ulong configSize = (ulong)Unsafe.SizeOf<CellGcmConfig>();
+            ulong ctrlSize = (ulong)Unsafe.SizeOf<CellGcmCtrlRegister>();
+            ulong ctxSize = (ulong)Unsafe.SizeOf<CellGcmCtxData>();
+
+            // Align the structs starting addresses to 16 byte
+            ulong alignment = 16;
+            ulong configStartAddress = pageStart;  // Page base is already page-aligned
+            ulong ctrlStartAddress = Utility.AlignPowerOfTwo(configStartAddress + configSize, alignment);
+            ulong ctxStartAddress = Utility.AlignPowerOfTwo(ctrlStartAddress + ctrlSize, alignment);
+            ulong labelsStartAddress = Utility.AlignPowerOfTwo(ctxStartAddress + ctxSize, alignment);
+
+            Debug.Assert(labelsStartAddress + LABELS_SIZE < pageEnd);
+
+            ConfigPtr = (uint)configStartAddress;
+            CtrlPtr = (uint)ctrlStartAddress;
+            CtxPtr = (uint)ctxStartAddress;
+            LabelsPtr = (uint)labelsStartAddress;
+
             MemoryAllocated = true;
         }
 
@@ -148,9 +172,9 @@ namespace PS3Sharp.Cell.RSX
             CellGcmCtxData ctx = _memoryManager.Read<CellGcmCtxData>(CtxPtr);
             CellGcmConfig config = _memoryManager.Read<CellGcmConfig>(ConfigPtr);
 
-            if (address >= VRAM_Ptr.Address && address < VRAM_Ptr.Address + VRAM_SIZE)
+            if (address >= VRAMPtr.Address && address < VRAMPtr.Address + VRAM_SIZE)
             { // Relative to VRAM
-                return address - VRAM_Ptr.Address;
+                return address - VRAMPtr.Address;
             }
             else
             {
@@ -237,6 +261,7 @@ namespace PS3Sharp.Cell.RSX
         {
             unsafe
             {
+                // Note: we control and guarantee the alignment of this struct in AllocateRSXMemory
                 CellGcmCtrlRegister* ctrl = _memoryManager.GetPtr(CtrlPtr);
 
                 // Console.WriteLine($"[RSX] Current GET: [0x{ctrl.Get:X8}] Running until: [0x{ctrl.Put:X8}]");
@@ -358,83 +383,6 @@ namespace PS3Sharp.Cell.RSX
             string? trace = exception.StackTrace;
             string msg = $"RSX Exception: {exceptionMessage} Trace: {trace}";
             return msg;
-        }
-
-        private void AllocateVram()
-        {
-            if (VRAM_Ptr == 0)
-            {
-                //Allocate local rsx memory
-                VRAM_Ptr = (uint)_memoryManager.AllocateVirtualMemory(VRAM_SIZE).VirtualAddress;
-            }
-            else
-            {
-                throw new Exception("RSX VRAM was already allocated"); //Can we ignore?
-            }
-        }
-
-        private void AllocateConfigReg()
-        {
-            if (ConfigPtr == 0)
-            {
-                //Allocate CellGcmConfig memory
-                uint size = (uint)Unsafe.SizeOf<CellGcmConfig>();
-                ConfigPtr = (uint)_memoryManager.AllocateVirtualMemory(size).VirtualAddress;
-            }
-            else
-            {
-                throw new Exception("RSX CellGcmConfig was already allocated"); //Can we ignore?
-            }
-        }
-
-        private void AllocateCtrReg()
-        {
-            if (CtrlPtr == 0)
-            {
-                //Allocate CellGcmCtrlRegister memory
-                uint size = (uint)Unsafe.SizeOf<CellGcmCtrlRegister>();
-                CtrlPtr = (uint)_memoryManager.AllocateVirtualMemory(size).VirtualAddress;
-
-                CellGcmCtrlRegister initial = new()
-                {
-                    Ref = 0xFFFFFFFF
-                };
-
-                _memoryManager.Write(CtrlPtr, initial);
-            }
-            else
-            {
-                throw new Exception("RSX CellGcmCtrlRegister was already allocated"); //Can we ignore?
-            }
-        }
-
-        private void AllocateDataCtxReg()
-        {
-            if (CtxPtr == 0)
-            {
-                //Allocate CellGcmCtxData memory
-                uint size = (uint)Unsafe.SizeOf<CellGcmCtxData>();
-                CtxPtr = (uint)_memoryManager.AllocateVirtualMemory(size).VirtualAddress;
-            }
-            else
-            {
-                throw new Exception("RSX CellGcmCtxData was already allocated"); //Can we ignore?
-            }
-        }
-
-        private void AllocateLabels()
-        {
-            if (LabelsPtr == 0)
-            {
-                //Allocate labels memory
-                //Seems that they are indexed by u8, which is then multiplied by 0x10
-                //Which means there are 256 labels, and each label is 0x10 bytes..?
-                LabelsPtr = (uint)_memoryManager.AllocateVirtualMemory(0x10 * 256).VirtualAddress;
-            }
-            else
-            {
-                throw new Exception("RSX Labels were already allocated"); //Can we ignore?
-            }
         }
     }
 }

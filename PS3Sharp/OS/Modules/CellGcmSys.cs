@@ -84,7 +84,7 @@ namespace PS3Sharp.OS.Modules
             CellGcmConfig initialConfig = new()
             {
                 Local_Size = VRAM_SIZE,
-                Local_Addr = _rsx.VRAM_Ptr.Address,
+                Local_Addr = _rsx.VRAMPtr.Address,
                 IO_Addr = io_addr,
                 IO_Size = io_size,
                 MemFreq = 650000000,
@@ -331,7 +331,7 @@ namespace PS3Sharp.OS.Modules
 
             _rsx.EnqueueCommand(new WorkItem(() =>
             {
-                _rsx.FrameBuffers[bufferId].Address = _rsx.VRAM_Ptr.Address + offset;
+                _rsx.FrameBuffers[bufferId].Address = _rsx.VRAMPtr.Address + offset;
                 _rsx.FrameBuffers[bufferId].Pitch = pitch;
                 _rsx.FrameBuffers[bufferId].Width = width;
                 _rsx.FrameBuffers[bufferId].Height = height;
