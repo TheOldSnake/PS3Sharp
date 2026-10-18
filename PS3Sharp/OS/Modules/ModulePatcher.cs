@@ -63,11 +63,8 @@ namespace PS3Sharp.OS.Modules
                 uint sizeOfStubHeader = (uint)Unsafe.SizeOf<PRXStubHeader>();
                 uint spanLength = (prx.libstubend - prx.libstubstart) / sizeOfStubHeader;
 
-                unsafe
-                {
-                    ReadOnlySpan<PRXStubHeader> moduleStubs = memoryManager.CreateSpan<PRXStubHeader>(prx.libstubstart, (int)spanLength);
-                    ImportModules(moduleStubs, memoryManager);
-                }
+                ReadOnlySpan<PRXStubHeader> moduleStubs = memoryManager.ReadArray<PRXStubHeader>(prx.libstubstart, (int)spanLength);
+                ImportModules(moduleStubs, memoryManager);
             }
             else
             {
@@ -75,26 +72,23 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        internal unsafe void ImportModules(ReadOnlySpan<PRXStubHeader> moduleStubs, MemoryManager memoryManager)
+        internal void ImportModules(ReadOnlySpan<PRXStubHeader> moduleStubs, MemoryManager memoryManager)
         {
             int length = moduleStubs.Length;
 
-            unsafe
+            for (int i = 0; i < length; i++)
             {
-                for (int i = 0; i < length; i++)
-                {
-                    PRXStubHeader moduleStub = moduleStubs[i];
-                    string moduleName = memoryManager.ReadString(moduleStub.s_modulename);
-                    Console.WriteLine($"Module Import: {moduleName}");
+                PRXStubHeader moduleStub = moduleStubs[i];
+                string moduleName = memoryManager.ReadString(moduleStub.s_modulename);
+                Console.WriteLine($"Module Import: {moduleName}");
 
-                    Span<BigEndian<uint>> nids = memoryManager.CreateSpan<BigEndian<uint>>(moduleStub.s_nid, moduleStub.s_imports);
-                    Span<BigEndian<uint>> stubCodeAddresses = memoryManager.CreateSpan<BigEndian<uint>>(moduleStub.s_text, moduleStub.s_imports);
-                    ImportFunctions(moduleName, nids, stubCodeAddresses, memoryManager);
-                }
+                Span<BigEndian<uint>> nids = memoryManager.ReadArray<BigEndian<uint>>(moduleStub.s_nid, moduleStub.s_imports);
+                Span<BigEndian<uint>> stubCodeAddresses = memoryManager.ReadArray<BigEndian<uint>>(moduleStub.s_text, moduleStub.s_imports);
+                ImportFunctions(moduleName, nids, stubCodeAddresses, memoryManager);
             }
         }
 
-        internal unsafe void ImportFunctions(string moduleName, Span<BigEndian<uint>> nids, Span<BigEndian<uint>> stubCodeAddresses, MemoryManager memoryManager)
+        internal void ImportFunctions(string moduleName, Span<BigEndian<uint>> nids, Span<BigEndian<uint>> stubCodeAddresses, MemoryManager memoryManager)
         {
             if (nids.Length != stubCodeAddresses.Length)
             {

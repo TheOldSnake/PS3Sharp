@@ -91,12 +91,12 @@ namespace PS3Sharp.Common
         }
 
         internal static void DumpMemoryAsImage(uint address, int width, int height, string path, MemoryManager memoryManager)
-        { // As BRGA8888
-            SKBitmap bitmap = new(width, height, SKColorType.Bgra8888, SKAlphaType.Premul);
+        { 
+            SKBitmap bitmap = new(width, height, SKColorType.Bgra8888, SKAlphaType.Premul); // As BRGA8888
 
             unsafe
             {
-                Span<byte> data = memoryManager.CreateSpan<byte>(address, width * height * 4);
+                Span<byte> data = memoryManager.CreateByteSpan(address, width * height * 4);
 
                 for (int y = 0; y < height; y++)
                 {

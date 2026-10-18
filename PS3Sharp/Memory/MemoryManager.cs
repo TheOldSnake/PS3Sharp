@@ -748,10 +748,10 @@ namespace PS3Sharp.Memory
         }
 
         // Must be in unsafe context
-        internal unsafe Span<T> CreateSpan<T>(uint virtualAddress, int length) where T : unmanaged
-        { 
+        internal unsafe Span<byte> CreateByteSpan(uint virtualAddress, int length)
+        {
             byte* ptr = (byte*)GetNativeAddress(virtualAddress);
-            return new Span<T>(ptr, length);
+            return new Span<byte>(ptr, length);
         }
 
         internal T[] ReadArray<T>(uint virtualAddress, int length) where T : unmanaged

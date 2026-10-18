@@ -199,11 +199,10 @@ namespace PS3Sharp.OS.Syscall
                 unsafe
                 {
                     Span<byte> data = storageDevice.CreateSpan(offset, size);
-                    Span<byte> dest = _memoryManager.CreateSpan<byte>(buf, size);
+                    Span<byte> dest = _memoryManager.CreateByteSpan(buf, size);
                     dest.Clear();
                     data.CopyTo(dest);
                 }
-
 
                 //Console.WriteLine($"SysStorageRead: start_sector = {start_sector} num_sectors = {num_sectors}");
             }

@@ -170,7 +170,7 @@ namespace PS3Sharp.FileSystem
 
             unsafe
             {
-                Span<byte> nativeBuffer = _memoryManager.CreateSpan<byte>(destinationBuffer, (int)nbytes);
+                Span<byte> nativeBuffer = _memoryManager.CreateByteSpan(destinationBuffer, (int)nbytes);
 
                 if (_openFiles.TryGetValue(fd, out GuestFile? file))
                 {
@@ -227,8 +227,8 @@ namespace PS3Sharp.FileSystem
 
                 unsafe
                 {
-                    Span<byte> nativeBuffer = _memoryManager.CreateSpan<byte>(sourceBuffer, nBytes);
-                    file.Writer!.Write(nativeBuffer);
+                    Span<byte> nativeBuffer = _memoryManager.CreateByteSpan(sourceBuffer, nBytes);
+                    file.Writer?.Write(nativeBuffer);
                 }
             }
 

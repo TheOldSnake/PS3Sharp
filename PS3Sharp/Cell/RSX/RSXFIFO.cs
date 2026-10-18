@@ -12,17 +12,10 @@ namespace PS3Sharp.Cell.RSX
         internal void HandleInstruction(RSXCommand command, ref CellGcmCtrlRegister ctrl)
         {
             //PrintCommand(command);
-            Queue<BigEndian<uint>> param;
+            BigEndian<uint>[] param_array = _memoryManager.ReadArray<BigEndian<uint>>(_cellGcmSys.IoToEa(ctrl.Get), (int)command.MethodCount);
+            Queue<BigEndian<uint>> param = new(param_array);   // this is very bad and slow
 
-            unsafe
-            {
-                ReadOnlySpan<BigEndian<uint>> param_span = _memoryManager.CreateSpan<BigEndian<uint>>(_cellGcmSys.IoToEa(ctrl.Get), (int)command.MethodCount);
-                ctrl.Get += command.MethodCount * 4;
-
-                // this is very bad and slow
-                param = new Queue<BigEndian<uint>>(param_span.ToArray());
-            }
-
+            ctrl.Get += command.MethodCount * 4;
             uint methodRegister = command.MethodRegister;
 
             while (param.Count > 0)

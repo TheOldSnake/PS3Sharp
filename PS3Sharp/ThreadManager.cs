@@ -73,7 +73,7 @@ namespace PS3Sharp
 
                 if ((stackSize & 0xF) > 0)
                 {
-                    stackSize = _memoryManager.AlignPowerOfTwo(stackSize, 16);
+                    stackSize = MemoryManager.AlignPowerOfTwo(stackSize, 16);
                 }
 
                 if (stackSize < 0x1000)

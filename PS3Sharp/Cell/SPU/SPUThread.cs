@@ -97,14 +97,11 @@ namespace PS3Sharp.Cell.SPU
                 throw new Exception($"[SPU] Image null pointer");
             }
 
-            unsafe
-            {
-                ReadOnlySpan<SysSPU.SysSPUSegment> segments = _memoryManager.CreateSpan<SysSPU.SysSPUSegment>(entry, (int)count);
+            ReadOnlySpan<SysSPU.SysSPUSegment> segments = _memoryManager.ReadArray<SysSPU.SysSPUSegment>(entry, (int)count);
 
-                for (int i = 0; i < segments.Length; i++)
-                {
-                    LoadSegment(segments[i]);
-                }
+            for (int i = 0; i < segments.Length; i++)
+            {
+                LoadSegment(segments[i]);
             }
         }
 
