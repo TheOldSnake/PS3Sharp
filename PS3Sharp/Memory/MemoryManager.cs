@@ -756,15 +756,10 @@ namespace PS3Sharp.Memory
 
         internal T[] ReadArray<T>(uint virtualAddress, int length) where T : unmanaged
         {
-            uint size = (uint)Unsafe.SizeOf<T>();
-            uint currentAddress = virtualAddress;
             T[] values = new T[length];
 
-            for (int i = 0; i < length; i++)
-            {
-                values[i] = Read<T>(currentAddress);
-                currentAddress += size;
-            }
+            Span<byte> bytes = MemoryMarshal.Cast<T, byte>(values.AsSpan());
+            ReadBufferFromVirtualMemory(virtualAddress, bytes);
 
             return values;
         }
