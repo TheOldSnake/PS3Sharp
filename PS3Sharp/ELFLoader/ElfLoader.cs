@@ -136,23 +136,25 @@ namespace PS3Sharp
         private uint LoadSegment(BinaryReader reader, ref ProgramHeader programHeader, MemoryManager memoryManager)
         {
             string pt_name = ProgramHeader.GetName(programHeader);
+            uint p_memsz = (uint)(ulong)programHeader.p_memsz;
+            uint p_vaddr = (uint)(ulong)programHeader.p_vaddr;
 
-            //Load segment
+            // Load segment
             byte[] segmentData = GetSegmentData(reader, ref programHeader);
             uint dest;
 
-            if (!memoryManager.IsVirtualAddressAllocated((uint)programHeader.p_vaddr))
+            if (!memoryManager.IsVirtualAddressAllocated(p_vaddr))
             {
-                MemoryManager.MemoryBlock block = memoryManager.AllocateVirtualAddress((uint)programHeader.p_vaddr, (uint)programHeader.p_memsz);
+                MemoryManager.MemoryBlock block = memoryManager.AllocateVirtualAddress(p_vaddr, p_memsz);
                 dest = block.VirtualAddress;
             }
             else
             {
-                dest = (uint)programHeader.p_vaddr;
+                dest = p_vaddr;
 
                 // Make sure the block has enough size
-                uint programEnd = (uint)(dest + programHeader.p_memsz);
-                MemoryManager.MemoryBlock block = memoryManager.GetAllocationByVirtualAddress((uint)programHeader.p_vaddr);
+                uint programEnd = dest + p_memsz;
+                MemoryManager.MemoryBlock block = memoryManager.GetAllocationByVirtualAddress(p_vaddr);
                 int extraBytes = (int)(programEnd - block.End);
 
                 if (extraBytes > 0)
@@ -161,14 +163,14 @@ namespace PS3Sharp
                     block = memoryManager.ResizeBlock(block, newSize);
                 }
 
-                Console.WriteLine($"[Loader] Warning: Segment overwrite at vaddr = 0x{programHeader.p_vaddr:X8} size = 0x{programHeader.p_memsz:X8} segment: {pt_name}");
+                Console.WriteLine($"[Loader] Warning: Segment overwrite at vaddr = 0x{p_vaddr:X8} size = 0x{p_memsz:X8} segment: {pt_name}");
             }
 
             memoryManager.CopyBufferToVirtualMemory(segmentData, dest);
 
-            if ((ulong)segmentData.Length < programHeader.p_memsz)
+            if (segmentData.Length < p_memsz)
             {
-                uint zeroesCount = (uint)programHeader.p_memsz - (uint)segmentData.Length;
+                int zeroesCount = (int)p_memsz - segmentData.Length;
                 memoryManager.ClearMemory(dest + (uint)segmentData.Length, zeroesCount);
             }
 

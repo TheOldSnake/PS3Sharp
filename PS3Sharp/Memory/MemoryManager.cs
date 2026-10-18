@@ -730,15 +730,15 @@ namespace PS3Sharp.Memory
             sourceSpan.CopyTo(destSpan);
         }
 
-        internal void ClearMemory(uint virtualAddress, uint byteCount, byte value = 0)
+        internal void ClearMemory(uint virtualAddress, int byteCount, byte value = 0)
         {
             if (byteCount == 0)
             {
                 return;
             }
 
-            void* dest = GetNativeAddress((uint)virtualAddress);
-            Span<byte> destSpan = new(dest, (int)byteCount);
+            void* dest = GetNativeAddress(virtualAddress);
+            Span<byte> destSpan = new(dest, byteCount);
 
             destSpan.Fill(value);
         }

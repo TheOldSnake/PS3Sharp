@@ -164,7 +164,7 @@ namespace PS3Sharp.OS.Modules
         {
             GuestVoidPtr dest = ppu.ReadArg<GuestVoidPtr>(ARG0);
             int ch = ppu.ReadArg<int>(ARG1);
-            uint size = ppu.ReadArg<uint>(ARG2);
+            int size = ppu.ReadArg<int>(ARG2);
 
             _memoryManager.ClearMemory(dest, size, (byte)ch);
 

@@ -333,7 +333,7 @@ namespace PS3Sharp.OS.Syscall
 
             uint param = ppu.ReadArg<uint>(ARG0);
             GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(ARG1);
-            uint size = ppu.ReadArg<uint>(ARG2);
+            int size = ppu.ReadArg<int>(ARG2);
 
             Console.WriteLine($"[CellSysutil] CellSysutilGetSystemParamString param = 0x{param:X8}");
 
