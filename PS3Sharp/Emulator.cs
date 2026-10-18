@@ -41,17 +41,18 @@ namespace PS3Sharp
 
         internal void RunEmulator()
         {
-            string elfDirectory = _fileSystemManager.GetRequestedExecutable();
-
-            if (elfDirectory == string.Empty)
+            if (_fileSystemManager.TryGetRequestedExecutable(out string elfPath))
             {
-                return;
+                RunExecutable(elfPath);
             }
+        }
 
-            uint entryPointer = LoadExecutable(elfDirectory);
+        private void RunExecutable(string elfPath)
+        {
+            uint entryPointer = LoadExecutable(elfPath);
             _prxManager.LoadPRXLibraries(_elfLoader, _modulePatcher);
 
-            PPUThread ppu_main = _threadManager.CreateMainPPUThread(entryPointer, elfDirectory, _lv2SyscallDispatcher);
+            PPUThread ppu_main = _threadManager.CreateMainPPUThread(entryPointer, elfPath, _lv2SyscallDispatcher);
             _prxManager.InitializeLibraries(ppu_main);
 
             ppu_main.StartThread();
@@ -59,7 +60,7 @@ namespace PS3Sharp
             _threadManager.PrintExitCodes();
         }
 
-        internal uint LoadExecutable(string path)
+        private uint LoadExecutable(string path)
         {
             // Load and patch elf
             BinaryReader reader = new(File.OpenRead(path));

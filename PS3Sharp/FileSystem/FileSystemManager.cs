@@ -308,14 +308,15 @@ namespace PS3Sharp.FileSystem
             return dirent_size;
         }
 
-        internal string GetRequestedExecutable()
+        internal bool TryGetRequestedExecutable(out string elfPath)
         {
+            elfPath = string.Empty;
             List<(string content, string elf)> executables = GetAllExecutables();
 
             if (executables.Count == 0)
             {
                 Console.WriteLine($"Did not find executables");
-                return string.Empty;
+                return false;
             }
 
             Console.WriteLine($"Select which executable to launch:");
@@ -357,7 +358,8 @@ namespace PS3Sharp.FileSystem
                 Console.WriteLine($"Sfo: {CurrentSFODirectory}");
             }
 
-            return CurrentELFDirectory;
+            elfPath = CurrentELFDirectory;
+            return true;
         }
 
         internal string GetCurrentTitleString()
