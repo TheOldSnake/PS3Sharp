@@ -167,12 +167,10 @@ namespace PS3Sharp.OS.LV2
 
             using (_memoryManager.AcquireTemporaryLock())
             {
-                unsafe
-                {
-                    LWMutex* mutex = _memoryManager.GetPtr(_instancePtr);
-                    uint currentCount = mutex->RecursiveCount;
-                    mutex->RecursiveCount = currentCount + 1;
-                }
+                LWMutex mutex = _memoryManager.Read<LWMutex>(_instancePtr);
+                uint currentCount = mutex.RecursiveCount;
+                mutex.RecursiveCount = currentCount + 1;
+                _memoryManager.Write(_instancePtr, mutex);
             }
 
             return CELL_OK;
@@ -184,12 +182,10 @@ namespace PS3Sharp.OS.LV2
 
             using (_memoryManager.AcquireTemporaryLock())
             {
-                unsafe
-                {
-                    LWMutex* mutex = _memoryManager.GetPtr(_instancePtr);
-                    mutex->Owner = threadID;
-                    mutex->RecursiveCount = _isRecursive ? 1u : 0u;
-                }
+                LWMutex mutex = _memoryManager.Read<LWMutex>(_instancePtr);
+                mutex.Owner = threadID;
+                mutex.RecursiveCount = _isRecursive ? 1u : 0u;
+                _memoryManager.Write(_instancePtr, mutex);
             }
         }
 
@@ -205,34 +201,31 @@ namespace PS3Sharp.OS.LV2
             bool becameFree;
             using (_memoryManager.AcquireTemporaryLock())
             {
-                unsafe
+                LWMutex mutex = _memoryManager.Read<LWMutex>(_instancePtr);
+
+                if (_isRecursive && mutex.RecursiveCount > 0)
                 {
-                    LWMutex* mutex = _memoryManager.GetPtr(_instancePtr);
+                    mutex.RecursiveCount--;
 
-                    if (_isRecursive && mutex->RecursiveCount > 0)
+                    if (mutex.RecursiveCount == 0)
                     {
-                        mutex->RecursiveCount--;
-
-                        if (mutex->RecursiveCount == 0)
-                        {
-                            mutex->Owner = 0xFFFFFFFF;
-                            becameFree = true;
-
-                        }
-                        else
-                        {
-                            becameFree = false;
-                        }
-
+                        mutex.Owner = 0xFFFFFFFF;
+                        becameFree = true;
                     }
                     else
                     {
-                        becameFree = true;
-                        mutex->Owner = 0xFFFFFFFF;
-                        mutex->RecursiveCount = 0;
+                        becameFree = false;
                     }
+
+                }
+                else
+                {
+                    becameFree = true;
+                    mutex.Owner = 0xFFFFFFFF;
+                    mutex.RecursiveCount = 0;
                 }
 
+                _memoryManager.Write(_instancePtr, mutex);
                 Monitor.Exit(_mutex);
             }
 

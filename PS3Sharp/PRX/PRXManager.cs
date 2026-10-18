@@ -169,7 +169,7 @@ namespace PS3Sharp.PRX
             // From PS3DevWiki: The Module Info is at offset Elf32_Phdrs[text_seg_id].p_paddr - Elf32_Phdrs[text_seg_id].p_offset
             LoadedPRXSegment text = loadedSegments[0];
             uint address = (uint)(text.ActualEntry + text.ProgramHeader.p_paddr - text.ProgramHeader.p_offset);
-            LibraryInfo library_info = _memoryManager.ReadStruct<LibraryInfo>(address);
+            LibraryInfo library_info = _memoryManager.Read<LibraryInfo>(address);
 
             return library_info;
             // HandleExports(library_info);
@@ -181,10 +181,10 @@ namespace PS3Sharp.PRX
             //Console.WriteLine($"Exports start = 0x{lib_info.ExportsStart:X8}");
             //Console.WriteLine($"Exports end = 0x{lib_info.ExportsEnd:X8}");
 
-            LibraryInitialization libraryInitialization = default;
-
-            string libname = GetLibName(lib_info);
-            libraryInitialization.LibName = libname;
+            LibraryInitialization libraryInitialization = new()
+            {
+                LibName = GetLibName(lib_info)
+            };
 
             uint start = lib_info.ExportsStart;
             uint end = lib_info.ExportsEnd;
@@ -192,7 +192,7 @@ namespace PS3Sharp.PRX
 
             while (currentAddress < end)
             {
-                PRXModuleInfo module_info = _memoryManager.ReadStruct<PRXModuleInfo>(currentAddress);
+                PRXModuleInfo module_info = _memoryManager.Read<PRXModuleInfo>(currentAddress);
                 uint size = (uint)(module_info.Size > 0 ? module_info.Size : Unsafe.SizeOf<PRXModuleInfo>());
 
                 if (module_info.Name_Ptr != 0)
@@ -236,7 +236,7 @@ namespace PS3Sharp.PRX
                         if (!ForceHLE.Contains(function_name))
                         {
                             _exportedFunctions.Add(nid, address);
-                            Console.WriteLine($"[{libname}] export at address: 0x{address:X8} function name = {function_name}");
+                            Console.WriteLine($"[{libraryInitialization.LibName}] export at address: 0x{address:X8} function name = {function_name}");
                         }
                     }
                 }
@@ -257,7 +257,7 @@ namespace PS3Sharp.PRX
 
             while (currentAddress < end)
             {
-                PRXModuleInfo module_info = _memoryManager.ReadStruct<PRXModuleInfo>(currentAddress);
+                PRXModuleInfo module_info = _memoryManager.Read<PRXModuleInfo>(currentAddress);
                 uint size = (uint)(module_info.Size > 0 ? module_info.Size : Unsafe.SizeOf<PRXModuleInfo>());
 
                 string moduleName = _memoryManager.ReadString(module_info.Name_Ptr);

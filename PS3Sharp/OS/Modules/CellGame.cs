@@ -123,13 +123,14 @@ namespace PS3Sharp.OS.Modules
                 string host_dir = _fileSystemManager.CurrentContentDirectory;
                 int size = (int)_fileSystemManager.GetDirectorySize(host_dir);
 
-                unsafe
+                CellGameContentSize size_struct = new()
                 {
-                    CellGameContentSize* size_struct = _memoryManager.GetPtr(size_ptr);
-                    size_struct->HDDFreeSizeKB = 40 * 1024 * 1024 - 256;
-                    size_struct->SizeKB = size;
-                    size_struct->SysSizeKB = 4;
-                }
+                    HDDFreeSizeKB = 40 * 1024 * 1024 - 256,
+                    SizeKB = size,
+                    SysSizeKB = 4,
+                };
+
+                _memoryManager.Write(size_ptr, size_struct);
             }
 
             return CELL_OK;

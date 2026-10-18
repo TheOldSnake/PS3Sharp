@@ -35,7 +35,7 @@ namespace PS3Sharp.OS.Syscall
             }
 
             // Get the attribute
-            SysCondAttribute attribute = _memoryManager.ReadStruct<SysCondAttribute>(attribute_ptr);
+            SysCondAttribute attribute = _memoryManager.Read<SysCondAttribute>(attribute_ptr);
 
             // Create and add the cond
             LV2Cond cond = new(attribute, mutex, _memoryManager);

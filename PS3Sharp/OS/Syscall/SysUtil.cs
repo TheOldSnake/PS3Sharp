@@ -263,11 +263,9 @@ namespace PS3Sharp.OS.Syscall
 
             GuestPtr<CellAudioState> state_ptr = ppu.ReadArg<GuestPtr<CellAudioState>>(ARG2);
 
-            unsafe
-            {
-                CellAudioState* state = _memoryManager.GetPtr(state_ptr);
-                state->State = CELL_AUDIO_OUT_OUTPUT_STATE_ENABLED;
-            }
+            CellAudioState state = _memoryManager.Read<CellAudioState>(state_ptr);
+            state.State = CELL_AUDIO_OUT_OUTPUT_STATE_ENABLED;
+            _memoryManager.Write(state_ptr, state);
 
             Console.WriteLine($"[CellSysutil] cellAudioOutGetState");
             return CELL_OK;

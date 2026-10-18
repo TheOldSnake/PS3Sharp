@@ -72,13 +72,13 @@ namespace PS3Sharp.OS.Syscall
 
             uint total_size = MemoryManager.RAM_SIZE;
 
-            unsafe
+            SysMemoryInfo memory_info = new()
             {
-                SysMemoryInfo* memory_info = _memoryManager.GetPtr(memory_info_ptr);
-                memory_info->TotalUserMemory = total_size;
-                memory_info->AvailableUserMemory = total_size; //stub
-            }
+                TotalUserMemory = total_size,
+                AvailableUserMemory = total_size //stub
+            };
 
+            _memoryManager.Write(memory_info_ptr, memory_info);
             Console.WriteLine($"[SysMemory] sys_memory_get_user_memory_size");
             return CELL_OK;
         }

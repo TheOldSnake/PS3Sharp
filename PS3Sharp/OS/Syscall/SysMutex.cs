@@ -25,7 +25,7 @@ namespace PS3Sharp.OS.Syscall
             GuestPtr<SysMutexAttribute> attrib_ptr = ppu.ReadArg<GuestPtr<SysMutexAttribute>>(ARG1);
 
             // Create and add the mutex to the dictionary
-            SysMutexAttribute attribute = _memoryManager.ReadStruct<SysMutexAttribute>(attrib_ptr);
+            SysMutexAttribute attribute = _memoryManager.Read<SysMutexAttribute>(attrib_ptr);
             LV2Mutex mutex = new(attribute, _memoryManager);
             AddMutex(mutex);
 

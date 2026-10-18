@@ -40,7 +40,7 @@ namespace PS3Sharp.OS.Syscall
             int size = ppu.ReadArg<int>(ARG3);
 
             // Create the queue
-            SysEventQueueAttribute attribute = _memoryManager.ReadStruct<SysEventQueueAttribute>(queue_attribute_ptr);
+            SysEventQueueAttribute attribute = _memoryManager.Read<SysEventQueueAttribute>(queue_attribute_ptr);
             LV2EventQueue eventQueue = new(size, sys_ipc_key, attribute, _memoryManager);
             AddEventQueue(eventQueue.Handle, eventQueue);
 

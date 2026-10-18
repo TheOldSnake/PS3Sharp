@@ -33,8 +33,7 @@ namespace PS3Sharp.OS.Syscall
             ulong name = ppu.ReadArg<ulong>(ARG4);
 
             uint handle = _memoryManager.GetHandle();
-            LWMutexAttrib attribute = default;     // not needed for these syscalls i guess
-
+       
             Console.WriteLine($"[_SysLWMutex] _sys_lwmutex_create id: 0x{handle:X8}");
 
             if (protocol != SYS_SYNC_FIFO && protocol != SYS_SYNC_RETRY && protocol != SYS_SYNC_PRIORITY)
@@ -42,8 +41,8 @@ namespace PS3Sharp.OS.Syscall
                 return CELL_EINVAL;
             }
 
-            // Create the lwmutex
-            LV2LWMutex mutex = new(control, attribute, _memoryManager);
+            // Create the lwmutex, attribute not needed for these syscalls i guess
+            LV2LWMutex mutex = new(control, attribute: default, _memoryManager);
             AddLWMutex(handle, mutex);
 
             // Write the handle

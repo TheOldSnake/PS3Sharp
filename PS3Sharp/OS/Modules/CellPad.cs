@@ -113,20 +113,19 @@ namespace PS3Sharp.OS.Modules
                 return CELL_PAD_ERROR_NO_DEVICE;
             }
 
-            unsafe
+            CellPadData data = new()
             {
-                CellPadData* data = _memoryManager.GetPtr(data_ptr);
-                data->Len = 24;
+                Len = 24
+            };
 
-                WriteButtons(data_ptr);
+            WriteButtons(ref data);
 
-                //..??
-                data->Buttons[0] = 0;
-                int v = ((data->Len / 2) & 0xf) | (7 << 4);
-                data->Buttons[1] = (ushort)v;
-            }
+            //..??
+            data.Buttons[0] = 0;
+            int v = ((data.Len / 2) & 0xf) | (7 << 4);
+            data.Buttons[1] = (ushort)v;
 
-
+            _memoryManager.Write(data_ptr, data);
             return CELL_OK;
         }
 
@@ -140,36 +139,35 @@ namespace PS3Sharp.OS.Modules
             GuestPtr<CellPadInfo2> info_ptr = ppu.ReadArg<GuestPtr<CellPadInfo2>>(ARG0);
             uint nowConnected = _joyStickReader() == null ? 0U : 1U;
 
-            unsafe
+            CellPadInfo2 info = new()
             {
-                CellPadInfo2* info = _memoryManager.GetPtr(info_ptr);
-                info->MaxConnect = CELL_PAD_MAX_PORT_NUM;
-                info->NowConnect = nowConnected; // Must set to 1 if we are emulating a controller
-                info->SystemInfo = 0;
+                MaxConnect = CELL_PAD_MAX_PORT_NUM,
+                NowConnect = nowConnected, // Must set to 1 if we are emulating a controller
+                SystemInfo = 0
+            };
 
-                for (int i = 0; i < CELL_PAD_MAX_PORT_NUM; i++)
-                {
-                    info->PortStatus[i] = 0; //Not connected
-                    info->PortSetting[i] = 0;
-                    info->DeviceCapability[i] = 0;
-                    info->DeviceType[i] = 0;
-                }
-
-                if (nowConnected == 1)
-                {
-                    // Set the state of 1 controller
-                    info->PortStatus[0] = 1;             // Connected
-                    info->PortSetting[0] = 0x6;
-                    info->DeviceCapability[0] = 0x1F;    // Standard
-                    info->DeviceType[0] = 0;
-                }
+            for (int i = 0; i < CELL_PAD_MAX_PORT_NUM; i++)
+            {
+                info.PortStatus[i] = 0; //Not connected
+                info.PortSetting[i] = 0;
+                info.DeviceCapability[i] = 0;
+                info.DeviceType[i] = 0;
             }
 
-            //  Console.WriteLine($"[CellPad] cellPadGetInfo2");
+            if (nowConnected == 1)
+            {
+                // Set the state of 1 controller
+                info.PortStatus[0] = 1;             // Connected
+                info.PortSetting[0] = 0x6;
+                info.DeviceCapability[0] = 0x1F;    // Standard
+                info.DeviceType[0] = 0;
+            }
+
+            _memoryManager.Write(info_ptr, info);
             return CELL_OK;
         }
 
-        private unsafe void WriteButtons(GuestPtr<CellPadData> cellPadData_ptr)
+        private void WriteButtons(ref CellPadData cellPadData)
         {
             // Loop over the controller's buttons, write to cellPadData
 
@@ -185,29 +183,25 @@ namespace PS3Sharp.OS.Modules
                 if (XInputDictionary.TryGetValue(i, out uint value))
                 {
                     bool pressed = controllerState.IsButtonDown((int)i);
-                    SetButton(value, pressed, cellPadData_ptr);
+                    SetButton(value, pressed, ref cellPadData);
                 }
             }
 
             // Get L2 and R2
             (bool l2_pressed, bool r2_pressed) = GetL2R2(controllerState);
-            SetButton(CELL_PAD_CTRL_L2, l2_pressed, cellPadData_ptr);
-            SetButton(CELL_PAD_CTRL_R2, r2_pressed, cellPadData_ptr);
+            SetButton(CELL_PAD_CTRL_L2, l2_pressed, ref cellPadData);
+            SetButton(CELL_PAD_CTRL_R2, r2_pressed, ref cellPadData);
 
             // Write Left/Right stick positions
             (byte leftX, byte leftY, byte rightX, byte rightY) = GetStickPosition(controllerState, XInputAxis);
 
-            unsafe
-            {
-                CellPadData* cellPadData = _memoryManager.GetPtr(cellPadData_ptr);
-                cellPadData->Buttons[4] = rightX;
-                cellPadData->Buttons[5] = rightY;
-                cellPadData->Buttons[6] = leftX;
-                cellPadData->Buttons[7] = leftY;
-            }
+            cellPadData.Buttons[4] = rightX;
+            cellPadData.Buttons[5] = rightY;
+            cellPadData.Buttons[6] = leftX;
+            cellPadData.Buttons[7] = leftY;
         }
 
-        private void SetButton(uint buttonBit, bool isPressed, GuestPtr<CellPadData> cellPadData_ptr)
+        private void SetButton(uint buttonBit, bool isPressed, ref CellPadData cellPadData)
         {
             // Buttons are stored in index 2 and 3
             bool isIndex3 = buttonBit >= 16;
@@ -219,25 +213,21 @@ namespace PS3Sharp.OS.Modules
                 buttonBit -= 16;
             }
 
-            unsafe
+            ushort currentState = cellPadData.Buttons[idx];
+            int bitValue = 1 << (int)buttonBit;
+
+            if (isPressed)
             {
-                CellPadData* cellPadData = _memoryManager.GetPtr(cellPadData_ptr);
-                ushort currentState = cellPadData->Buttons[idx];
-                int bitValue = 1 << (int)buttonBit;
-
-                if (isPressed)
-                {
-                    // Set 
-                    currentState |= (ushort)(bitValue);
-                }
-                else
-                {
-                    // Clear
-                    currentState &= (ushort)(~bitValue);
-                }
-
-                cellPadData->Buttons[idx] = currentState;
+                // Set 
+                currentState |= (ushort)(bitValue);
             }
+            else
+            {
+                // Clear
+                currentState &= (ushort)(~bitValue);
+            }
+
+            cellPadData.Buttons[idx] = currentState;
         }
 
         private (bool, bool) GetL2R2(JoystickState controller)

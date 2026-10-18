@@ -144,9 +144,9 @@ namespace PS3Sharp.OS.Syscall
             uint count = (uint)(threadGroup.SPUThreads.Count & 0xFF);
             uint id = (count << 24) | (group_id & 0xFFFFFF);
 
-            SysSPUImage img = _memoryManager.ReadStruct<SysSPUImage>(img_ptr);
-            SysSPUThreadAttribute attribute = _memoryManager.ReadStruct<SysSPUThreadAttribute>(attr_ptr);
-            SysSPUThreadArgument arg = _memoryManager.ReadStruct<SysSPUThreadArgument>(arg_ptr);
+            SysSPUImage img = _memoryManager.Read<SysSPUImage>(img_ptr);
+            SysSPUThreadAttribute attribute = _memoryManager.Read<SysSPUThreadAttribute>(attr_ptr);
+            SysSPUThreadArgument arg = _memoryManager.Read<SysSPUThreadArgument>(arg_ptr);
 
             GuestVoidPtr name_ptr = attribute.NamePtr;
             string thread_name = name_ptr.IsNullPtr ? "Unnamed-SPU" : _memoryManager.ReadString(name_ptr);

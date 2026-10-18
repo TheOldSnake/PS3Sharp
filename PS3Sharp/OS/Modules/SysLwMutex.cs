@@ -35,22 +35,21 @@ namespace PS3Sharp.OS.Modules
 
             uint id = _memoryManager.GetHandle();
 
-            unsafe
-            {
-                LWMutexAttrib attribute = _memoryManager.ReadStruct<LWMutexAttrib>(attribute_ptr);
-                LWMutex* lwmutex = _memoryManager.GetPtr(lwmutex_ptr);
+            LWMutexAttrib attribute = _memoryManager.Read<LWMutexAttrib>(attribute_ptr);
+            LWMutex lwmutex = _memoryManager.Read<LWMutex>(lwmutex_ptr);
 
-                lwmutex->Owner = 0xFFFFFFFF; //-1 = free
-                lwmutex->Waiter = 0;
-                lwmutex->Attribute = attribute.Protocol | attribute.Recursive;
-                lwmutex->RecursiveCount = 0;
-                lwmutex->SleepQueue = id;    // Store the handle in the "SleepQueue" 
+            lwmutex.Owner = 0xFFFFFFFF; //-1 = free
+            lwmutex.Waiter = 0;
+            lwmutex.Attribute = attribute.Protocol | attribute.Recursive;
+            lwmutex.RecursiveCount = 0;
+            lwmutex.SleepQueue = id;    // Store the handle in the "SleepQueue" 
 
-                //Console.WriteLine($"[SysLwMutex] sys_lwmutex_create id: 0x{id:X8}");
+            _memoryManager.Write<LWMutex>(lwmutex_ptr, lwmutex);
 
-                LV2LWMutex mutex = new(lwmutex_ptr, attribute, _memoryManager);
-                AddLWMutex(id, mutex);
-            }
+            //Console.WriteLine($"[SysLwMutex] sys_lwmutex_create id: 0x{id:X8}");
+
+            LV2LWMutex mutex = new(lwmutex_ptr, attribute, _memoryManager);
+            AddLWMutex(id, mutex);
 
             return CELL_OK;
         }
@@ -60,19 +59,14 @@ namespace PS3Sharp.OS.Modules
             GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(ARG0);
             ulong us_timeout = ppu.ReadArg<ulong>(ARG1);
 
-            uint id;
-            unsafe
-            {
-                LWMutex* mutex = _memoryManager.GetPtr(lwmutex_ptr);
-                id = mutex->SleepQueue;
-            }
+            LWMutex mutex = _memoryManager.Read<LWMutex>(lwmutex_ptr);
+            uint id = mutex.SleepQueue;
 
             //Console.WriteLine($"[SysLwMutex] sys_lwmutex_lock id: 0x{id:X8}");
 
             if (GetLWMutex(id, out LV2LWMutex? lwmutex))
             {
                 return lwmutex.Lock(ppu, us_timeout);
-
             }
             else
             {
@@ -84,12 +78,8 @@ namespace PS3Sharp.OS.Modules
         {
             GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(ARG0);
 
-            uint id;
-            unsafe
-            {
-                LWMutex* mutex = _memoryManager.GetPtr(lwmutex_ptr);
-                id = mutex->SleepQueue;
-            }
+            LWMutex mutex = _memoryManager.Read<LWMutex>(lwmutex_ptr);
+            uint id = mutex.SleepQueue;
 
             //Console.WriteLine($"[SysLwMutex] sys_lwmutex_trylock id: 0x{id:X8}");
 
@@ -108,12 +98,8 @@ namespace PS3Sharp.OS.Modules
         {
             GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(ARG0);
 
-            uint id;
-            unsafe
-            {
-                LWMutex* mutex = _memoryManager.GetPtr(lwmutex_ptr);
-                id = mutex->SleepQueue;
-            }
+            LWMutex mutex = _memoryManager.Read<LWMutex>(lwmutex_ptr);
+            uint id = mutex.SleepQueue;
 
             //Console.WriteLine($"[SysLwMutex] sys_lwmutex_unlock id: 0x{id:X8}");
 
@@ -132,12 +118,8 @@ namespace PS3Sharp.OS.Modules
         {
             GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(ARG0);
 
-            uint id;
-            unsafe
-            {
-                LWMutex* mutex = _memoryManager.GetPtr(lwmutex_ptr);
-                id = mutex->SleepQueue;
-            }
+            LWMutex mutex = _memoryManager.Read<LWMutex>(lwmutex_ptr);
+            uint id = mutex.SleepQueue;
 
             //Console.WriteLine($"[SysLwMutex] sys_lwmutex_destroy id: 0x{id:X8}");
             RemoveLWMutex(id);

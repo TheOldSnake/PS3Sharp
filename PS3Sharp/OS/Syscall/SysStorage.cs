@@ -115,21 +115,19 @@ namespace PS3Sharp.OS.Syscall
                 return 0xFFFFFFFFFFFFFFFB; // -5
             }
 
-            unsafe
-            {
-                StorageDeviceInfo* info = _memoryManager.GetPtr(info_ptr);
+            StorageDeviceInfo info = new();
 
-                Span<byte> name_string = Encoding.UTF8.GetBytes("unnamed");
-                name_string.CopyTo(info->Name);
+            Span<byte> name_string = Encoding.UTF8.GetBytes("unnamed");
+            name_string.CopyTo(info.Name);
 
-                info->SectorSize = 0x200;
-                info->One = 1;
+            info.SectorSize = 0x200;
+            info.One = 1;
 
-                info->Flags[1] = 0;
-                info->Flags[2] = 1;
-                info->Flags[7] = 1;
-            }
+            info.Flags[1] = 0;
+            info.Flags[2] = 1;
+            info.Flags[7] = 1;
 
+            _memoryManager.Write(info_ptr, info);
             return CELL_OK;
         }
 

@@ -154,12 +154,9 @@ namespace PS3Sharp.OS.Modules
             // Otherwise open the port and set the requested parameters
             port.Status = CELL_AUDIO_STATUS_READY;
 
-            unsafe
-            {
-                CellAudioPortParam* param = _memoryManager.GetPtr(param_ptr);
-                port.NumberOfChannels = param->NumberOfChannels;
-                port.NumberOfBlocks = param->NumberOfBlocks;
-            }
+            CellAudioPortParam param = _memoryManager.Read<CellAudioPortParam>(param_ptr);
+            port.NumberOfChannels = param.NumberOfChannels;
+            port.NumberOfBlocks = param.NumberOfBlocks;
 
             port.TotalSamplesPerBlock = (uint)(CELL_AUDIO_BLOCK_SAMPLES * port.NumberOfChannels);
 
@@ -195,16 +192,17 @@ namespace PS3Sharp.OS.Modules
             {
                 AudioPort port = _audioPorts[port_number];
 
-                unsafe
+                CellAudioPortConfig config = new()
                 {
-                    CellAudioPortConfig* config = _memoryManager.GetPtr(config_ptr);
-                    config->ReadAddress = _readPositionsAddress + (port_number * sizeof(ulong));
-                    config->Status = port.Status;
-                    config->NumberOfChannels = port.NumberOfChannels;
-                    config->NumberOfBlocks = port.NumberOfBlocks;
-                    config->PortSize = port.Size;
-                    config->PortAddress = port.BaseAddress;
-                }
+                    ReadAddress = _readPositionsAddress + (port_number * sizeof(ulong)),
+                    Status = port.Status,
+                    NumberOfChannels = port.NumberOfChannels,
+                    NumberOfBlocks = port.NumberOfBlocks,
+                    PortSize = port.Size,
+                    PortAddress = port.BaseAddress,
+                };
+
+                _memoryManager.Write(config_ptr, config);
             }
 
             Console.WriteLine($"[CellAudio] cellAudioGetPortConfig port = {port_number}");

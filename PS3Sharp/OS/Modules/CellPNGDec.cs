@@ -109,12 +109,12 @@ namespace PS3Sharp.OS.Modules
             _memoryManager.Write<BigEndian<uint>>(handle_ptr, decoder.Handle);
 
             //Write the codec version
-            unsafe
+            CellPngDecThreadOutParam out_param = new()
             {
-                CellPngDecThreadOutParam* out_param = _memoryManager.GetPtr(thread_out_param_ptr);
-                out_param->CodecVersion = PNG_CODEC_VERSION;
-            }
+                CodecVersion = PNG_CODEC_VERSION,
+            };
 
+            _memoryManager.Write(thread_out_param_ptr, out_param);
             return CELL_OK;
         }
 
@@ -127,7 +127,7 @@ namespace PS3Sharp.OS.Modules
 
             if (TryGetPngDec(handle, out PngDecoder? decoder))
             {
-                CellPngDecSrc src = _memoryManager.ReadStruct<CellPngDecSrc>(src_ptr);
+                CellPngDecSrc src = _memoryManager.Read<CellPngDecSrc>(src_ptr);
                 decoder.Open(src);
             }
             else
@@ -148,17 +148,18 @@ namespace PS3Sharp.OS.Modules
             if (TryGetPngDec(handle, out PngDecoder? decoder))
             {
                 ImageInfo srcImageInfo = decoder.ImageInfo;
-                unsafe
+                CellPngDecInfo info = new()
                 {
-                    CellPngDecInfo* info = _memoryManager.GetPtr(info_ptr);
-                    info->Width = (uint)srcImageInfo.Width;
-                    info->Height = (uint)srcImageInfo.Height;
-                    info->NumberOfComponents = (uint)decoder.NumberOfComponents;
-                    info->ColorSpace = decoder.ColorSpace;
-                    info->BitDepth = (uint)decoder.BitsPerPixel;
-                    info->InterlaceMethod = 0;
-                    info->ChunkInfo = 0;
-                }
+                    Width = (uint)srcImageInfo.Width,
+                    Height = (uint)srcImageInfo.Height,
+                    NumberOfComponents = (uint)decoder.NumberOfComponents,
+                    ColorSpace = decoder.ColorSpace,
+                    BitDepth = (uint)decoder.BitsPerPixel,
+                    InterlaceMethod = 0,
+                    ChunkInfo = 0
+                };
+
+                _memoryManager.Write(info_ptr, info);
             }
             else
             {
@@ -179,24 +180,25 @@ namespace PS3Sharp.OS.Modules
             if (TryGetPngDec(handle, out PngDecoder? decoder))
             {
                 ImageInfo srcImageInfo = decoder.ImageInfo;
-                unsafe
+                ulong outputWidthInBits = (ulong)(srcImageInfo.Width * decoder.BitsPerPixel);
+
+                CellPngDecInParam in_param = _memoryManager.Read<CellPngDecInParam>(in_param_ptr);
+                CellPngDecOutParam out_param = new()
                 {
-                    CellPngDecInParam* in_param = _memoryManager.GetPtr(in_param_ptr);
-                    CellPngDecOutParam* out_param = _memoryManager.GetPtr(out_param_ptr);
+                    OutputWidthByte = outputWidthInBits / 8,
+                    OutputWidth = (uint)srcImageInfo.Width,
+                    OutputHeight = (uint)srcImageInfo.Height,
+                    OutputComponents = (uint)decoder.NumberOfComponents,
+                    OutputBitDepth = (uint)decoder.BitsPerPixel,
+                    OutputMode = (int)(uint)in_param.OutputMode,      //same as in_param
+                    OutputColorSpace = in_param.OutputColorSpace,     //same as in_param
+                    UseMemorySpace = 0,                               //?
+                };
 
-                    ulong outputWidthInBits = (ulong)(srcImageInfo.Width * decoder.BitsPerPixel);
-                    out_param->OutputWidthByte = outputWidthInBits / 8;
-                    out_param->OutputWidth = (uint)srcImageInfo.Width;
-                    out_param->OutputHeight = (uint)srcImageInfo.Height;
-                    out_param->OutputComponents = (uint)decoder.NumberOfComponents;
-                    out_param->OutputBitDepth = (uint)decoder.BitsPerPixel;
-                    out_param->OutputMode = (int)(uint)in_param->OutputMode;      //same as in_param
-                    out_param->OutputColorSpace = in_param->OutputColorSpace;     //same as in_param
-                    out_param->UseMemorySpace = 0;                                //?
+                _memoryManager.Write(out_param_ptr, out_param);
 
-                    // Save a copy of this struct -- we need it when we decode in cellPngDecDecodeData
-                    decoder.OutputParam = *out_param;
-                }
+                // Save a copy of this struct -- we need it when we decode in cellPngDecDecodeData
+                decoder.OutputParam = out_param;
             }
             else
             {
@@ -215,7 +217,7 @@ namespace PS3Sharp.OS.Modules
             GuestPtr<CellPngDecDataCtrlParam> data_ctrl_param_ptr = ppu.ReadArg<GuestPtr<CellPngDecDataCtrlParam>>(ARG3);
             GuestPtr<CellPngDecDataOutInfo> data_out_info_ptr = ppu.ReadArg<GuestPtr<CellPngDecDataOutInfo>>(ARG4);
 
-            CellPngDecDataCtrlParam data_ctrl_param = _memoryManager.ReadStruct<CellPngDecDataCtrlParam>(data_ctrl_param_ptr);
+            CellPngDecDataCtrlParam data_ctrl_param = _memoryManager.Read<CellPngDecDataCtrlParam>(data_ctrl_param_ptr);
 
             if (TryGetPngDec(handle, out PngDecoder? decoder))
             {
@@ -231,11 +233,9 @@ namespace PS3Sharp.OS.Modules
                 _memoryManager.CopyBufferToVirtualMemory(buffer, data_buffer_ptr);
 
                 // Set staus to finish
-                unsafe
-                {
-                    CellPngDecDataOutInfo* data_out_info = _memoryManager.GetPtr(data_out_info_ptr);
-                    data_out_info->Status = 0;
-                }
+                CellPngDecDataOutInfo data_out_info = _memoryManager.Read<CellPngDecDataOutInfo>(data_out_info_ptr);
+                data_out_info.Status = 0;
+                _memoryManager.Write(data_out_info_ptr, data_out_info);
             }
             else
             {

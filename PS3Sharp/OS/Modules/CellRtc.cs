@@ -42,18 +42,18 @@ namespace PS3Sharp.OS.Modules
             GuestPtr<CellRtcDateTime> clock_ptr = ppu.ReadArg<GuestPtr<CellRtcDateTime>>(ARG0);
 
             DateTime dateTimeNow = DateTime.Now;
-            unsafe
+            CellRtcDateTime clock = new()
             {
-                CellRtcDateTime* clock = _memoryManager.GetPtr(clock_ptr);
+                Year = (ushort)dateTimeNow.Year,
+                Month = (ushort)dateTimeNow.Month,
+                Day = (ushort)dateTimeNow.Day,
+                Hour = (ushort)dateTimeNow.Hour,
+                Minute = (ushort)dateTimeNow.Minute,
+                Second = (ushort)dateTimeNow.Second,
+                Microsecond = (uint)dateTimeNow.Microsecond
+            };
 
-                clock->Year = (ushort)dateTimeNow.Year;
-                clock->Month = (ushort)dateTimeNow.Month;
-                clock->Day = (ushort)dateTimeNow.Day;
-                clock->Hour = (ushort)dateTimeNow.Hour;
-                clock->Minute = (ushort)dateTimeNow.Minute;
-                clock->Second = (ushort)dateTimeNow.Second;
-                clock->Microsecond = (uint)dateTimeNow.Microsecond;
-            }
+            _memoryManager.Write(clock_ptr, clock);
 
             return CELL_OK;
         }

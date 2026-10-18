@@ -198,15 +198,9 @@ namespace PS3Sharp.OS.Modules
             GuestPtr<CellVideoOutConfiguration> config_ptr = ppu.ReadArg<GuestPtr<CellVideoOutConfiguration>>(ARG1);
             uint option_ptr = ppu.ReadArg<uint>(ARG2);
             uint wait_for_event = ppu.ReadArg<uint>(ARG3);
-
-            unsafe
-            {
-                CellVideoOutConfiguration* config = _memoryManager.GetPtr(config_ptr);
-                VideoConfiguration.ResolutionId = config->ResolutionId;
-                VideoConfiguration.Format = config->Format;
-                VideoConfiguration.Aspect = config->Aspect;
-                VideoConfiguration.Pitch = config->Pitch;
-            }
+            
+            // Read/Save configuration struct
+            VideoConfiguration = _memoryManager.Read<CellVideoOutConfiguration>(config_ptr);
 
             VideoResolution res = (VideoResolution)VideoConfiguration.ResolutionId;
             Console.WriteLine($"[CellSysutil] cellVideoOutConfigure: Res = {res} Format = {VideoConfiguration.Format} Aspect = {VideoConfiguration.Aspect} Pitch = {VideoConfiguration.Pitch}");
@@ -221,23 +215,21 @@ namespace PS3Sharp.OS.Modules
             Console.WriteLine($"[CellGcmSys] cellVideoOutGetResolution resID = {(VideoResolution)resolutionID} resPtr = {resPtr:X8}");
 
             (ushort width, ushort height) = VideoResolutionSizes[resolutionID];
+            CellVideoResolution videoResolutionStruct = new();
 
-            unsafe
+            if (width > 0 && height > 0)
             {
-                CellVideoResolution* videoResolutionStruct = _memoryManager.GetPtr(resPtr);
-                if (width > 0 && height > 0)
-                {
-                    videoResolutionStruct->Width = width;
-                    videoResolutionStruct->Height = height;
-                }
-                else
-                {
-                    Console.WriteLine($"[CellVideoOut] Undefined Resolution -- Returning 1280x720");
-                    videoResolutionStruct->Width = 1280;
-                    videoResolutionStruct->Height = 720;
-                }
+                videoResolutionStruct.Width = width;
+                videoResolutionStruct.Height = height;
+            }
+            else
+            {
+                Console.WriteLine($"[CellVideoOut] Undefined Resolution -- Returning 1280x720");
+                videoResolutionStruct.Width = 1280;
+                videoResolutionStruct.Height = 720;
             }
 
+            _memoryManager.Write(resPtr, videoResolutionStruct);
             return CELL_OK;
         }
 
@@ -248,25 +240,27 @@ namespace PS3Sharp.OS.Modules
             uint deviceIndex = ppu.ReadArg<uint>(ARG1);
             GuestPtr<CellVideoState> state_ptr = ppu.ReadArg<uint>(ARG2);
 
-            byte resID;
-
-            unsafe
+            CellVideoState state = new()
             {
-                CellVideoState* state = _memoryManager.GetPtr(state_ptr);
-                state->State = CELL_VIDEO_OUT_OUTPUT_STATE_ENABLED;
-                state->ColorSpace = CELL_VIDEO_OUT_COLOR_SPACE_RGB;
-                state->DisplayMode.ResolutionID = VideoConfiguration.ResolutionId;
-                state->DisplayMode.ScanMode = CELL_VIDEO_OUT_SCAN_MODE_PROGRESSIVE;
-                state->DisplayMode.Conversion = CELL_VIDEO_OUT_DISPLAY_CONVERSION_NONE;
+                State = CELL_VIDEO_OUT_OUTPUT_STATE_ENABLED,
+                ColorSpace = CELL_VIDEO_OUT_COLOR_SPACE_RGB,
+                DisplayMode = new()
+                {
+                    ResolutionID = VideoConfiguration.ResolutionId,
+                    ScanMode = CELL_VIDEO_OUT_SCAN_MODE_PROGRESSIVE,
+                    Conversion = CELL_VIDEO_OUT_DISPLAY_CONVERSION_NONE,
 
-                //TODO: Calculate the correct aspect ratio for AUTO
-                state->DisplayMode.Aspect = VideoConfiguration.Aspect != CELL_VIDEO_OUT_ASPECT_AUTO ? VideoConfiguration.Aspect : CELL_VIDEO_OUT_ASPECT_16_9;
-                state->DisplayMode.RefreshRates = CELL_VIDEO_OUT_REFRESH_RATE_59_94HZ;
+                    //TODO: Calculate the correct aspect ratio for AUTO
+                    Aspect = VideoConfiguration.Aspect != CELL_VIDEO_OUT_ASPECT_AUTO ? VideoConfiguration.Aspect : CELL_VIDEO_OUT_ASPECT_16_9,
+                    RefreshRates = CELL_VIDEO_OUT_REFRESH_RATE_59_94HZ,
+                }
+            };
 
-                resID = state->DisplayMode.ResolutionID;
-            }
+            _memoryManager.Write(state_ptr, state);
 
+            byte resID = state.DisplayMode.ResolutionID;
             Console.WriteLine($"[CellSysutil] cellVideoOutGetState video_out = {video_out} state.DisplayMode.ResolutionID = {resID} deviceIndex = {deviceIndex}");
+
             return CELL_OK;
         }
 
@@ -286,21 +280,26 @@ namespace PS3Sharp.OS.Modules
 
             GuestPtr<CellVideoOutDeviceInfo> info_ptr = ppu.ReadArg<GuestPtr<CellVideoOutDeviceInfo>>(ARG2);
 
-            unsafe
+            CellVideoOutDisplayMode displayMode = new()
             {
-                CellVideoOutDeviceInfo* info = _memoryManager.GetPtr(info_ptr);
-                info->PortType = CELL_VIDEO_OUT_PORT_HDMI;
-                info->State = CELL_VIDEO_OUT_OUTPUT_STATE_ENABLED;
-                info->RGBOutputRange = 1;
-                info->NumberOfAvailableModes = 1;
+                ResolutionId = (byte)VideoResolution.Resolution720,
+                ScanMode = CELL_VIDEO_OUT_SCAN_MODE_PROGRESSIVE,
+                Conversion = CELL_VIDEO_OUT_DISPLAY_CONVERSION_NONE,
+                Aspect = CELL_VIDEO_OUT_ASPECT_16_9,
+                RefreshRates = CELL_VIDEO_OUT_REFRESH_RATE_59_94HZ
+            };
 
-                info->AvailableModes[0].ResolutionId = (byte)VideoResolution.Resolution720;
-                info->AvailableModes[0].ScanMode = CELL_VIDEO_OUT_SCAN_MODE_PROGRESSIVE;
-                info->AvailableModes[0].Conversion = CELL_VIDEO_OUT_DISPLAY_CONVERSION_NONE;
-                info->AvailableModes[0].Aspect = CELL_VIDEO_OUT_ASPECT_16_9;
-                info->AvailableModes[0].RefreshRates = CELL_VIDEO_OUT_REFRESH_RATE_59_94HZ;
-            }
+            CellVideoOutDeviceInfo info = new()
+            {
+                PortType = CELL_VIDEO_OUT_PORT_HDMI,
+                State = CELL_VIDEO_OUT_OUTPUT_STATE_ENABLED,
+                RGBOutputRange = 1,
+                NumberOfAvailableModes = 1,
+            };
 
+            info.AvailableModes[0] = displayMode;
+
+            _memoryManager.Write(info_ptr, info);
             Console.WriteLine($"[CellSysutil] cellVideoOutGetDeviceInfo");
             return CELL_OK;
         }

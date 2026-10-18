@@ -71,13 +71,7 @@ namespace PS3Sharp.OS.Modules
 
         private void PrintCellFontData(GuestPtr<CellFont_> font_ptr)
         {
-            CellFont_ font;
-
-            unsafe
-            {
-                font = *_memoryManager.GetPtr(font_ptr);
-            }
-
+            CellFont_ font = _memoryManager.Read<CellFont_>(font_ptr);
             uint[] data = new uint[Unsafe.SizeOf<CellFont_>() / 4];
 
             for (uint i = 0; i < data.Length; i++)
@@ -96,13 +90,7 @@ namespace PS3Sharp.OS.Modules
 
         private void PrintCellFontGlyphMetricsData(GuestPtr<CellFontGlyphMetrics> metrics_ptr)
         {
-            CellFontGlyphMetrics metrics;
-
-            unsafe
-            {
-                metrics = *_memoryManager.GetPtr(metrics_ptr);
-            }
-
+            CellFontGlyphMetrics metrics = _memoryManager.Read<CellFontGlyphMetrics>(metrics_ptr);
             uint[] data = new uint[Unsafe.SizeOf<CellFontGlyphMetrics>() / 4];
 
             for (uint i = 0; i < data.Length; i++)
@@ -126,12 +114,7 @@ namespace PS3Sharp.OS.Modules
 
         private void PrintCellFontRenderSurfaceData(GuestPtr<CellFontRenderSurface> surface_ptr)
         {
-            CellFontRenderSurface surface;
-
-            unsafe
-            {
-                surface = *_memoryManager.GetPtr(surface_ptr);
-            }
+            CellFontRenderSurface surface = _memoryManager.Read<CellFontRenderSurface>(surface_ptr);
 
             Console.WriteLine($"CellFontRenderSurface data:");
 
@@ -158,12 +141,7 @@ namespace PS3Sharp.OS.Modules
 
         private void PrintCellFontImageTransInfoData(GuestPtr<CellFontImageTransInfo> image_trans_info_ptr)
         {
-            CellFontImageTransInfo image_trans_info;
-
-            unsafe
-            {
-                image_trans_info = *_memoryManager.GetPtr(image_trans_info_ptr);
-            }
+            CellFontImageTransInfo image_trans_info = _memoryManager.Read<CellFontImageTransInfo>(image_trans_info_ptr);
 
             Console.WriteLine($"CellFontImageTransInfo data:");
 

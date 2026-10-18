@@ -26,7 +26,7 @@ namespace PS3Sharp.OS.Syscall
             uint initialCount = ppu.ReadArg<uint>(ARG2);
             uint maxCount = ppu.ReadArg<uint>(ARG3);
 
-            SysSemaphoreAttribute attribute = _memoryManager.ReadStruct<SysSemaphoreAttribute>(semaphore_attribute_ptr);
+            SysSemaphoreAttribute attribute = _memoryManager.Read<SysSemaphoreAttribute>(semaphore_attribute_ptr);
             LV2Semaphore semaphore = new((int)initialCount, (int)maxCount, attribute, _memoryManager);
             AddSemaphore(semaphore.Handle, semaphore);
 

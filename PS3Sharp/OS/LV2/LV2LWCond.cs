@@ -49,19 +49,14 @@ namespace PS3Sharp.OS.LV2
             // this is assuming that the mutex is stored here
             // but we already get a mutex ID in like every syscall of this sealed class.. ?
 
-            uint id;
-            unsafe
-            {
-                SysLWCond* cond = _memoryManager.GetPtr(_instancePtr);
-                GuestPtr<LV2LWMutex.LWMutex> lwmutexPtr = cond->LWMutex;
-                LV2LWMutex.LWMutex* lwmutex = _memoryManager.GetPtr(lwmutexPtr);
-                id = lwmutex->SleepQueue;
-            }
+            SysLWCond cond = _memoryManager.Read<SysLWCond>(_instancePtr);
+            GuestPtr<LV2LWMutex.LWMutex> lwmutexPtr = cond.LWMutex;
+            LV2LWMutex.LWMutex lwmutex = _memoryManager.Read<LV2LWMutex.LWMutex>(lwmutexPtr);
+            uint id = lwmutex.SleepQueue;
 
             if (_sysLwMutex.GetLWMutex(id, out LV2LWMutex? mutex))
             {
                 return mutex;
-
             }
             else
             {

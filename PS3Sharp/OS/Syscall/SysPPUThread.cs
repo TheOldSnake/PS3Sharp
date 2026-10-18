@@ -160,12 +160,13 @@ namespace PS3Sharp.OS.Syscall
 
             GuestPtr<ThreadStackInfo> info_ptr = ppu.ReadArg<GuestPtr<ThreadStackInfo>>(ARG0);
 
-            unsafe
+            ThreadStackInfo info = new()
             {
-                ThreadStackInfo* info = _memoryManager.GetPtr(info_ptr);
-                info->addr = ppu.Stack;
-                info->size = ppu.StackSize;
-            }
+                addr = ppu.Stack,
+                size = ppu.StackSize
+            };
+
+            _memoryManager.Write(info_ptr, info);
 
             return CELL_OK;
         }

@@ -153,19 +153,19 @@ namespace PS3Sharp.OS.Syscall
                 return CELL_ENOENT;
             }
 
-            unsafe
+            CellFsStat stat = new()
             {
-                CellFsStat* stat = _memoryManager.GetPtr(stat_ptr);
-                stat->Mode = (int)(isDirectory ? DIR_MODE : FILE_MODE);
-                stat->UID = 0;
-                stat->GID = 0;
-                stat->AccessTime = 0;
-                stat->ModifyTime = 0;
-                stat->CreateTime = 0;
-                stat->Size = isDirectory ? _fileSystemManager.GetDirectorySize(hostPath) : _fileSystemManager.GetFileSize(hostPath);
-                stat->BlkSize = 4096;
-            }
+                Mode = (int)(isDirectory ? DIR_MODE : FILE_MODE),
+                UID = 0,
+                GID = 0,
+                AccessTime = 0,
+                ModifyTime = 0,
+                CreateTime = 0,
+                Size = isDirectory ? _fileSystemManager.GetDirectorySize(hostPath) : _fileSystemManager.GetFileSize(hostPath),
+                BlkSize = 4096
+            };
 
+            _memoryManager.Write(stat_ptr, stat);
             //Console.WriteLine($"[{ppu.ThreadName}] [SysFs] Size: {stat.Size}");
 
             return CELL_OK;
@@ -182,7 +182,7 @@ namespace PS3Sharp.OS.Syscall
 
             if (isConsole)
             {
-                _memoryManager.WriteStruct(stat_ptr, ConsoleFsStat);
+                _memoryManager.Write(stat_ptr, ConsoleFsStat);
                 Console.WriteLine($"[{ppu.ThreadName}] [SysFs] SysFsFstat => CELL_EBADF");
                 return CELL_EBADF;
             }
@@ -209,19 +209,19 @@ namespace PS3Sharp.OS.Syscall
                 //throw new Exception($"FD: 0x{fd:X} does not corrospond to any file/directory");
             }
 
-            unsafe
+            CellFsStat stat = new()
             {
-                CellFsStat* stat = _memoryManager.GetPtr(stat_ptr);
-                stat->Mode = mode;
-                stat->UID = 0;
-                stat->GID = 0;
-                stat->AccessTime = 0;
-                stat->ModifyTime = 0;
-                stat->CreateTime = 0;
-                stat->Size = size;
-                stat->BlkSize = 4096;
-            }
+                Mode = mode,
+                UID = 0,
+                GID = 0,
+                AccessTime = 0,
+                ModifyTime = 0,
+                CreateTime = 0,
+                Size = size,
+                BlkSize = 4096
+            };
 
+            _memoryManager.Write(stat_ptr, stat);
             return CELL_OK;
         }
 
@@ -272,7 +272,7 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                // Console.WriteLine($"[{ppu.ThreadName}] [SysFsOpen] path: {guestPath} failed -> {CellErrorNames[result]}");
+                // Console.WriteLine($"[{ppu.ThreadName}] [SysFsOpen] path: {guestPath} failed . {CellErrorNames[result]}");
             }
 
             return result;
@@ -289,7 +289,7 @@ namespace PS3Sharp.OS.Syscall
 
             if (!_fileSystemManager.IsFileOpen(fd))
             {
-                // Console.WriteLine($"[SysFsLseek] cellFsLseek fails (file not open) -> CELL_EINVAL");
+                // Console.WriteLine($"[SysFsLseek] cellFsLseek fails (file not open) . CELL_EINVAL");
                 return CELL_EINVAL;
             }
 
@@ -317,7 +317,7 @@ namespace PS3Sharp.OS.Syscall
 
             if (buf.IsNullPtr || nread_ptr.IsNullPtr || nbytes == 0)
             {
-                // Console.WriteLine($"[{ppu.ThreadName}] [SysFsRead] cellFsRead -> CELL_EFAULT");
+                // Console.WriteLine($"[{ppu.ThreadName}] [SysFsRead] cellFsRead . CELL_EFAULT");
                 return CELL_EFAULT;
             }
 
@@ -359,7 +359,7 @@ namespace PS3Sharp.OS.Syscall
         internal ulong SysFsMkDir(PPUThread ppu)
         {
             // todo
-            Console.WriteLine($"[SysFsMkDir] SysFsMkDir -> CELL_OK");
+            Console.WriteLine($"[SysFsMkDir] SysFsMkDir . CELL_OK");
             return CELL_OK;
         }
 
@@ -384,7 +384,7 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                Console.WriteLine($"[SysFsOpenDir] SysFsOpenDir failed -> {CellErrorNames[result]}");
+                Console.WriteLine($"[SysFsOpenDir] SysFsOpenDir failed . {CellErrorNames[result]}");
             }
 
             return result;
@@ -407,7 +407,7 @@ namespace PS3Sharp.OS.Syscall
         internal ulong SysFsCloseDir(PPUThread ppu)
         {
             // todo
-            // Console.WriteLine($"[SysFsCloseDir] SysFsCloseDir -> CELL_OK");
+            // Console.WriteLine($"[SysFsCloseDir] SysFsCloseDir . CELL_OK");
             return CELL_OK;
         }
     }

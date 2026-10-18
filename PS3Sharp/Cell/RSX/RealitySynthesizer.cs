@@ -2,6 +2,7 @@ using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using PS3Sharp.OS;
 using PS3Sharp.OS.Modules;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -144,13 +145,12 @@ namespace PS3Sharp.Cell.RSX
 
         internal uint AddressToOffset(uint address)
         {
-            CellGcmCtxData ctx = _memoryManager.ReadStruct<CellGcmCtxData>(CtxPtr);
-            CellGcmConfig config = _memoryManager.ReadStruct<CellGcmConfig>(ConfigPtr);
+            CellGcmCtxData ctx = _memoryManager.Read<CellGcmCtxData>(CtxPtr);
+            CellGcmConfig config = _memoryManager.Read<CellGcmConfig>(ConfigPtr);
 
             if (address >= VRAM_Ptr.Address && address < VRAM_Ptr.Address + VRAM_SIZE)
             { // Relative to VRAM
                 return address - VRAM_Ptr.Address;
-
             }
             else
             {
@@ -170,9 +170,8 @@ namespace PS3Sharp.Cell.RSX
             if (location == GCM_LOCATION_RSX)
             {
                 // Relative to VRAM (Local_Addr)
-                CellGcmConfig config = _memoryManager.ReadStruct<CellGcmConfig>(ConfigPtr);
+                CellGcmConfig config = _memoryManager.Read<CellGcmConfig>(ConfigPtr);
                 address = offset + config.Local_Addr;
-
             }
             else
             {
@@ -187,39 +186,32 @@ namespace PS3Sharp.Cell.RSX
 
         internal void UpdateGet(int value)
         {
-            _memoryManager.UpdateStruct<CellGcmCtrlRegister>(CtrlPtr, (ref ctrl) =>
-            {
-                ctrl.Get += (uint)value;
-            });
+            CellGcmCtrlRegister ctrl = _memoryManager.Read<CellGcmCtrlRegister>(CtrlPtr);
+            ctrl.Get += (uint)value;
+            _memoryManager.Write(CtrlPtr, ctrl);
         }
 
         internal void SetPut(uint value)
         {
-            _memoryManager.UpdateStruct<CellGcmCtrlRegister>(CtrlPtr, (ref ctrl) =>
-            {
-                ctrl.Put = value;
-            });
+            CellGcmCtrlRegister ctrl = _memoryManager.Read<CellGcmCtrlRegister>(CtrlPtr);
+            ctrl.Put = value;
+            _memoryManager.Write(CtrlPtr, ctrl);
         }
 
         internal void SetGet(uint value)
         {
-            _memoryManager.UpdateStruct<CellGcmCtrlRegister>(CtrlPtr, (ref ctrl) =>
-            {
-                ctrl.Get = value;
-            });
+            CellGcmCtrlRegister ctrl = _memoryManager.Read<CellGcmCtrlRegister>(CtrlPtr);
+            ctrl.Get = value;
+            _memoryManager.Write(CtrlPtr, ctrl);
         }
 
         internal void RSXThreadMain()
         {
-            // CellGcmCtrlRegister ctrl = MemoryManager.ReadStruct<CellGcmCtrlRegister>(GCMCtrl_Address);
-            unsafe
-            {
-                CellGcmCtrlRegister* ctrl = _memoryManager.GetPtr(CtrlPtr);
+            CellGcmCtrlRegister ctrl = _memoryManager.Read<CellGcmCtrlRegister>(CtrlPtr);
 
-                if (ctrl->Put != ctrl->Get)
-                {
-                    RunCommandBuffer();
-                }
+            if (ctrl.Put != ctrl.Get)
+            {
+                RunCommandBuffer();
             }
 
             //Run any pending commands
@@ -243,54 +235,54 @@ namespace PS3Sharp.Cell.RSX
 
         internal void RunCommandBuffer()
         {
-
             unsafe
             {
                 CellGcmCtrlRegister* ctrl = _memoryManager.GetPtr(CtrlPtr);
-                CellGcmCtxData* ctx = _memoryManager.GetPtr(CtxPtr);
 
-                //Console.WriteLine($"[RSX] Current GET: [0x{ctrl.Get:X8}] Running until: [0x{ctrl.Put:X8}]");
+                // Console.WriteLine($"[RSX] Current GET: [0x{ctrl.Get:X8}] Running until: [0x{ctrl.Put:X8}]");
 
                 while (ctrl->Get != ctrl->Put)
                 {
                     uint currentAddress = _cellGcmSys.IoToEa(ctrl->Get);
                     uint instruction = _memoryManager.ReadRSXInstruction(currentAddress);
-                    RSXCommand CurrentCommand = new() { Raw = instruction };
+                    RSXCommand CurrentCommand = new()
+                    {
+                        Raw = instruction
+                    };
 
-                    //Console.WriteLine($"[0x{currentAddress:X}] cmd: 0x{instruction:X} get: [0x{ctrl.Get:X}]");
+                    // Console.WriteLine($"[0x{currentAddress:X}] cmd: 0x{instruction:X} get: [0x{ctrl.Get:X}]");
 
-                    //Jump
+                    // Jump
                     if (CurrentCommand.Jump)
                     {
                         ctrl->Get = instruction & 0x1ffffffc;
-                        //Console.WriteLine($"[RSX] Jump to 0x{ctrl.Get:X}");
+                        // Console.WriteLine($"[RSX] Jump to 0x{ctrl.Get:X}");
                         continue;
                     }
 
-                    //Call
+                    // Call
                     if (CurrentCommand.Call)
                     {
                         _callStack.Push(ctrl->Get);
                         ctrl->Get = instruction & 0x1ffffffc;
-                        //Console.WriteLine($"[RSX] Call to 0x{(instruction & 0x1ffffffc):X}");
+                        // Console.WriteLine($"[RSX] Call to 0x{(instruction & 0x1ffffffc):X}");
                         continue;
                     }
 
-                    //TODO
+                    // Return
                     if (CurrentCommand.Return)
                     {
                         ctrl->Get = _callStack.Pop() + 4;
-                        //Console.WriteLine($"[RSX] Return to 0x{(ctrl.Get):X}");
+                        // Console.WriteLine($"[RSX] Return to 0x{(ctrl.Get):X}");
                         continue;
                     }
 
                     ctrl->Get += 4;
-                    HandleInstruction(CurrentCommand, ctrl);
+                    HandleInstruction(CurrentCommand, ref *ctrl);
                 }
             }
 
-            //Console.WriteLine($"RSX Done, PUT: [0x{ctrl.Put:X}]");
-
+            // Console.WriteLine($"RSX Done, PUT: [0x{ctrl.Put:X}]");
         }
 
         internal void PrintCommand(RSXCommand command)
@@ -402,11 +394,13 @@ namespace PS3Sharp.Cell.RSX
                 //Allocate CellGcmCtrlRegister memory
                 uint size = (uint)Unsafe.SizeOf<CellGcmCtrlRegister>();
                 CtrlPtr = (uint)_memoryManager.AllocateVirtualMemory(size).VirtualAddress;
-                _memoryManager.UpdateStruct<CellGcmCtrlRegister>(CtrlPtr, (ref ctrlReg) =>
-                {
-                    ctrlReg.Ref = 0xFFFFFFFF;
-                });
 
+                CellGcmCtrlRegister initial = new()
+                {
+                    Ref = 0xFFFFFFFF
+                };
+
+                _memoryManager.Write(CtrlPtr, initial);
             }
             else
             {

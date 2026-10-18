@@ -25,7 +25,7 @@ namespace PS3Sharp.OS.Syscall
             GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
             GuestPtr<SysRWLockAttribute> attribut_ptr = ppu.ReadArg<GuestPtr<SysRWLockAttribute>>(ARG1);
 
-            SysRWLockAttribute attribute = _memoryManager.ReadStruct<SysRWLockAttribute>(attribut_ptr);
+            SysRWLockAttribute attribute = _memoryManager.Read<SysRWLockAttribute>(attribut_ptr);
             LV2RWLock rwlock = new(attribute, _memoryManager);
             AddRWLock(rwlock.Handle, rwlock);
 

@@ -9,15 +9,15 @@ namespace PS3Sharp.Cell.RSX
 {
     internal sealed partial class RealitySynthesizer
     {
-        internal unsafe void HandleInstruction(RSXCommand command, CellGcmCtrlRegister* ctrl)
+        internal void HandleInstruction(RSXCommand command, ref CellGcmCtrlRegister ctrl)
         {
             //PrintCommand(command);
             Queue<BigEndian<uint>> param;
 
             unsafe
             {
-                ReadOnlySpan<BigEndian<uint>> param_span = _memoryManager.CreateSpan<BigEndian<uint>>(_cellGcmSys.IoToEa(ctrl->Get), (int)command.MethodCount);
-                ctrl->Get += command.MethodCount * 4;
+                ReadOnlySpan<BigEndian<uint>> param_span = _memoryManager.CreateSpan<BigEndian<uint>>(_cellGcmSys.IoToEa(ctrl.Get), (int)command.MethodCount);
+                ctrl.Get += command.MethodCount * 4;
 
                 // this is very bad and slow
                 param = new Queue<BigEndian<uint>>(param_span.ToArray());
@@ -631,11 +631,9 @@ namespace PS3Sharp.Cell.RSX
         {
             uint ref_value = param.Dequeue();
 
-            unsafe
-            {
-                CellGcmCtrlRegister* ctrl = _memoryManager.GetPtr(CtrlPtr);
-                ctrl->Ref = ref_value;
-            }
+            CellGcmCtrlRegister ctrl = _memoryManager.Read<CellGcmCtrlRegister>(CtrlPtr);
+            ctrl.Ref = ref_value;
+            _memoryManager.Write<CellGcmCtrlRegister>(CtrlPtr, ctrl);
         }
 
         private void SemaphoreBackendwriteOffset(Queue<BigEndian<uint>> param)

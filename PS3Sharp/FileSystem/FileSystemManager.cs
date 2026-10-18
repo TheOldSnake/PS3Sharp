@@ -185,7 +185,6 @@ namespace PS3Sharp.FileSystem
                         Console.WriteLine($"[FileSystem] Reached end of stream");
                         return 0;
                     }
-
                 }
                 else
                 {
@@ -253,58 +252,58 @@ namespace PS3Sharp.FileSystem
             DirectoryInfo dir_info = directory!.DirectoryInfo;
             IEnumerable<FileSystemInfo> fs_info_list = dir_info.EnumerateFileSystemInfos();
 
-            unsafe
+            SysFs.CellFsDirent dirent = new();
+
+            Span<byte> name_buffer;
+            Span<byte> name_dest = dirent.Name;
+            name_dest.Clear();
+            byte type;
+
+            switch (directory.CurrentEntry)
             {
-                SysFs.CellFsDirent* dirent = _memoryManager.GetPtr(dirent_ptr);
 
-                Span<byte> name_buffer;
-                Span<byte> name_dest = dirent->Name;
-                name_dest.Clear();
-                byte type;
+                case 0: // "." entry
+                    name_buffer = Utility.ToCString($".");
+                    type = CELL_FS_TYPE_DIRECTORY;
+                    break;
 
-                switch (directory.CurrentEntry)
-                {
+                case 1: // ".." entry
+                    name_buffer = Utility.ToCString($"..");
+                    type = CELL_FS_TYPE_DIRECTORY;
+                    break;
 
-                    case 0: // "." entry
-                        name_buffer = Utility.ToCString($".");
-                        type = CELL_FS_TYPE_DIRECTORY;
-                        break;
+                default:
+                    //entry number relative to the beginning of the list (which does not contain '.' and '..')
+                    int actualEntry = directory.CurrentEntry - 2;
 
-                    case 1: // ".." entry
-                        name_buffer = Utility.ToCString($"..");
-                        type = CELL_FS_TYPE_DIRECTORY;
-                        break;
+                    //if reached end
+                    if (actualEntry >= fs_info_list.Count())
+                    {
+                        dirent.Type = 0;
+                        dirent.NameLength = 0;
+                        name_dest.Clear();
+                        directory.CurrentEntry = 0;
+                        return 0;
+                    }
 
-                    default:
-                        //entry number relative to the beginning of the list (which does not contain '.' and '..')
-                        int actualEntry = directory.CurrentEntry - 2;
+                    FileSystemInfo fs_info = fs_info_list.ElementAt(actualEntry);
+                    name_buffer = Utility.ToCString(fs_info.Name);
 
-                        //if reached end
-                        if (actualEntry >= fs_info_list.Count())
-                        {
-                            dirent->Type = 0;
-                            dirent->NameLength = 0;
-                            name_dest.Clear();
-                            directory.CurrentEntry = 0;
-                            return 0;
-                        }
-
-                        FileSystemInfo fs_info = fs_info_list.ElementAt(actualEntry);
-                        name_buffer = Utility.ToCString(fs_info.Name);
-
-                        bool isDir = (fs_info.Attributes & FileAttributes.Directory) != 0;
-                        type = isDir ? CELL_FS_TYPE_DIRECTORY : CELL_FS_TYPE_REGULAR;
-                        break;
-                }
-
-                dirent->Type = type;
-                name_buffer.CopyTo(name_dest);
-                dirent->NameLength = (byte)(name_buffer.Length - 1); // length without '\0'
-
-                Console.WriteLine($"dirent name = {Encoding.UTF8.GetString(dirent->Name)} name_length = {dirent->NameLength} type = 0x{dirent->Type:X} CurrentEntry = {directory.CurrentEntry} len = {fs_info_list.Count()}");
-
-                directory.CurrentEntry++;
+                    bool isDir = (fs_info.Attributes & FileAttributes.Directory) != 0;
+                    type = isDir ? CELL_FS_TYPE_DIRECTORY : CELL_FS_TYPE_REGULAR;
+                    break;
             }
+
+            dirent.Type = type;
+            name_buffer.CopyTo(name_dest);
+            dirent.NameLength = (byte)(name_buffer.Length - 1); // length without '\0'
+
+            // Write to memory
+            _memoryManager.Write(dirent_ptr, dirent);
+
+            Console.WriteLine($"dirent name = {Encoding.UTF8.GetString(dirent.Name)} name_length = {dirent.NameLength} type = 0x{dirent.Type:X} CurrentEntry = {directory.CurrentEntry} len = {fs_info_list.Count()}");
+
+            directory.CurrentEntry++;
 
             return dirent_size;
         }
