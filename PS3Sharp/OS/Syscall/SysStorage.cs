@@ -195,14 +195,8 @@ namespace PS3Sharp.OS.Syscall
             {
                 int offset = (int)(start_sector * 0x200);
                 int size = (int)(num_sectors * 0x200);
-
-                unsafe
-                {
-                    Span<byte> data = storageDevice.CreateSpan(offset, size);
-                    Span<byte> dest = _memoryManager.CreateByteSpan(buf, size);
-                    dest.Clear();
-                    data.CopyTo(dest);
-                }
+                Span<byte> data = storageDevice.CreateSpan(offset, size);
+                _memoryManager.WriteArray(buf, data);
 
                 //Console.WriteLine($"SysStorageRead: start_sector = {start_sector} num_sectors = {num_sectors}");
             }
