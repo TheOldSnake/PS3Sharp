@@ -132,21 +132,10 @@ namespace PS3Sharp.Memory
             return GetBlockInfo(virtualAddress).NativeAddress != null;
         }
 
-        private uint PageAlign(uint size)
+        private static uint PageAlign(uint size)
         {
             // Aligns to page size
-            return (size + Fastmem.PAGE_SIZE - 1) & ~Fastmem.PAGE_MASK;
-        }
-
-        internal static uint AlignPowerOfTwo(uint value, uint alignment)
-        {
-            return (value + alignment - 1) & ~(alignment - 1);
-        }
-
-        internal static uint Align(uint value, uint alignment)
-        {
-            uint remainder = value % alignment;
-            return remainder == 0 ? value : (value + alignment - remainder);
+            return (uint)Utility.AlignPowerOfTwo(size, Fastmem.PAGE_SIZE);
         }
 
         internal uint ReadPPUInstruction(uint virtualAddress)
@@ -412,7 +401,8 @@ namespace PS3Sharp.Memory
                 if (alignment > 0)
                 {
                     bool isPowerOf2 = (alignment & (alignment - 1)) == 0;
-                    _nextAllocationAddress = isPowerOf2 ? AlignPowerOfTwo(_nextAllocationAddress, alignment) : Align(_nextAllocationAddress, alignment);
+                    ulong alignedAddress = isPowerOf2 ? Utility.AlignPowerOfTwo(_nextAllocationAddress, alignment) : Utility.Align(_nextAllocationAddress, alignment);
+                    _nextAllocationAddress = (uint)alignedAddress;
                 }
 
                 //Allocate memory

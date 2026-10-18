@@ -1,6 +1,7 @@
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Cell.PPU.Recompiler;
 using PS3Sharp.Cell.RSX;
+using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using PS3Sharp.OS;
 using PS3Sharp.OS.Modules;
@@ -73,7 +74,7 @@ namespace PS3Sharp
 
                 if ((stackSize & 0xF) > 0)
                 {
-                    stackSize = MemoryManager.AlignPowerOfTwo(stackSize, 16);
+                    stackSize = (uint)Utility.AlignPowerOfTwo(stackSize, 16);
                 }
 
                 if (stackSize < 0x1000)

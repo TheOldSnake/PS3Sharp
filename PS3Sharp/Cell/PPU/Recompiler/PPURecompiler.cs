@@ -117,7 +117,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler
 
             // Advance next block address and align to 16-byte
             _nextBlockAddress += byteCount;
-            _nextBlockAddress = (nint)AlignPow2((nuint)_nextBlockAddress, 16);
+            _nextBlockAddress = (nint)Utility.AlignPowerOfTwo((nuint)_nextBlockAddress, 16);
 
             // Debug
             // X64Generator.PrintNativeCode(nativeCode, (nint)dest);
@@ -125,7 +125,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler
 
         private void AllocateExecutableMemory(int size)
         {
-            ulong alignedSize = AlignPow2((ulong)size, PAGE_SIZE);
+            ulong alignedSize = Utility.AlignPowerOfTwo((ulong)size, PAGE_SIZE);
 
             // Create VirtualMemoryHandle
             // Uses MEM_RESERVE by default
@@ -147,20 +147,8 @@ namespace PS3Sharp.Cell.PPU.Recompiler
 
         private bool HasEnoughMemory(int size)
         {
-            ulong aligned = AlignPow2((nuint)_nextBlockAddress + (nuint)size, 16);
+            ulong aligned = Utility.AlignPowerOfTwo((nuint)_nextBlockAddress + (nuint)size, 16);
             return aligned < (nuint)_currentPageEndAddress;
-        }
-
-        private ulong AlignPow2(ulong value, ulong alignment)
-        {
-            bool isPowerOf2 = alignment != 0 && (alignment & (alignment - 1)) == 0;
-
-            if (!isPowerOf2)
-            {
-                throw new Exception($"Alignment is not power of 2");
-            }
-
-            return (value + alignment - 1) & ~(alignment - 1);
         }
 
         private static bool IsPlatformSupported()

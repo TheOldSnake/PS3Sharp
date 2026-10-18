@@ -25,6 +25,24 @@ namespace PS3Sharp.Common
             //return (ulong)((Stopwatch.GetTimestamp() - TimeBaseStart) * (TB_FREQUENCY / TimeBaseFreq));
         }
 
+        internal static ulong AlignPowerOfTwo(ulong value, ulong alignment)
+        {
+            bool isPowerOf2 = alignment != 0 && (alignment & (alignment - 1)) == 0;
+
+            if (!isPowerOf2)
+            {
+                throw new Exception($"Alignment is not power of 2");
+            }
+
+            return (value + alignment - 1) & ~(alignment - 1);
+        }
+
+        internal static uint Align(uint value, uint alignment)
+        {
+            uint remainder = value % alignment;
+            return remainder == 0 ? value : (value + alignment - remainder);
+        }
+
         internal static string ToString(ReadOnlySpan<byte> c_str)
         {
             return Encoding.UTF8.GetString(c_str);
