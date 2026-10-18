@@ -764,6 +764,12 @@ namespace PS3Sharp.Memory
             return values;
         }
 
+        internal void WriteArray<T>(uint virtualAddress, ReadOnlySpan<T> values) where T : unmanaged
+        {
+            ReadOnlySpan<byte> bytes = MemoryMarshal.Cast<T, byte>(values);
+            CopyBufferToVirtualMemory(bytes, virtualAddress);
+        }
+
         // Returns a ref of a value without flipping it -- Use carefully !
         internal unsafe ref T DangerousBigEndianRef<T>(uint virtualAddress)
         {
