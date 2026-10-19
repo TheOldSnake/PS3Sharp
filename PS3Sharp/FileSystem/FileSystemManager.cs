@@ -79,7 +79,7 @@ namespace PS3Sharp.FileSystem
             return guestPath;
         }
 
-        internal ulong GetFileSize(string filePath)
+        internal static ulong GetFileSize(string filePath)
         {
             if (!File.Exists(filePath))
             {
@@ -90,7 +90,7 @@ namespace PS3Sharp.FileSystem
             return (ulong)fileInfo.Length; // size in bytes
         }
 
-        internal ulong GetDirectorySize(string directoryPath)
+        internal static ulong GetDirectorySize(string directoryPath)
         {
             if (!Directory.Exists(directoryPath))
             {
@@ -109,8 +109,6 @@ namespace PS3Sharp.FileSystem
                 return CELL_EISDIR;
             }
 
-            ulong size = 0;
-
             // Error if the file does not exist (and create flag is not set)
             bool exists = IsFile(hostPath);
             if (!exists && mode != FileMode.OpenOrCreate)
@@ -119,27 +117,27 @@ namespace PS3Sharp.FileSystem
             }
 
             // Open file
-            GuestFile file = new(hostPath, size, fd, ownerThread, mode, access);
+            GuestFile file = new(hostPath, fd, ownerThread, mode, access);
             _openFiles.TryAdd(fd, file);
             return CELL_OK;
         }
 
-        internal ulong OpenDirectory(string host_path, int fd, uint ownerThread)
+        internal ulong OpenDirectory(string hostPath, int fd, uint ownerThread)
         {
             // Error if it's a file
-            if (IsFile(host_path))
+            if (IsFile(hostPath))
             {
                 return CELL_ENOTDIR;
             }
 
             // Error if the directory does not exist
-            if (!IsDirectory(host_path))
+            if (!IsDirectory(hostPath))
             {
                 return CELL_ENOENT;
             }
 
             // Open directory
-            GuestDirectory directory = new(host_path, GetDirectorySize(host_path), fd, ownerThread);
+            GuestDirectory directory = new(hostPath, fd, ownerThread);
             _openDirectories.TryAdd(fd, directory);
 
             return CELL_OK;

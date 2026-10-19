@@ -161,7 +161,7 @@ namespace PS3Sharp.OS.Syscall
                 AccessTime = 0,
                 ModifyTime = 0,
                 CreateTime = 0,
-                Size = isDirectory ? _fileSystemManager.GetDirectorySize(hostPath) : _fileSystemManager.GetFileSize(hostPath),
+                Size = isDirectory ? GetDirectorySize(hostPath) : GetFileSize(hostPath),
                 BlkSize = 4096
             };
 

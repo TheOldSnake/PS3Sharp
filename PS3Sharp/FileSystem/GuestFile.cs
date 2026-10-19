@@ -1,4 +1,7 @@
-﻿namespace PS3Sharp.FileSystem
+﻿using System.Drawing;
+using System.Runtime.InteropServices.Marshalling;
+
+namespace PS3Sharp.FileSystem
 {
     internal sealed partial class FileSystemManager
     {
@@ -12,13 +15,12 @@
             internal FileStream Stream { get; }
             internal BinaryReader? Reader { get; }
             internal BinaryWriter? Writer { get; }
-            internal ulong Size { get; }
+            internal ulong Size => (ulong)Stream.Length;
 
-            internal GuestFile(string path, ulong size, int fileDescriptor, uint ownerThread, FileMode mode, FileAccess access)
+            internal GuestFile(string path, int fileDescriptor, uint ownerThread, FileMode mode, FileAccess access)
             {
                 FilePath = path;
                 FileDescriptor = fileDescriptor;
-                Size = size;
                 OwnerThread = ownerThread;
                 Mode = mode;
                 Access = access;

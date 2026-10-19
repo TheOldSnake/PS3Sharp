@@ -121,7 +121,7 @@ namespace PS3Sharp.OS.Modules
             if (!size_ptr.IsNullPtr)
             {
                 string host_dir = _fileSystemManager.CurrentContentDirectory;
-                int size = (int)_fileSystemManager.GetDirectorySize(host_dir);
+                int size = (int)FileSystemManager.GetDirectorySize(host_dir);
 
                 CellGameContentSize size_struct = new()
                 {

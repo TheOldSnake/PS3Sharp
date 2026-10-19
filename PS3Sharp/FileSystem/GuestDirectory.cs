@@ -11,12 +11,12 @@ namespace PS3Sharp.FileSystem
             internal int CurrentEntry { get; set; }
             internal DirectoryInfo DirectoryInfo { get; }
 
-            internal GuestDirectory(string path, ulong size, int fileDescriptor, uint ownerThread)
+            internal GuestDirectory(string path, int fileDescriptor, uint ownerThread)
             {
                 Path = path;
                 FileDescriptor = fileDescriptor;
                 OwnerThread = ownerThread;
-                Size = size;
+                Size = GetDirectorySize(path);
                 DirectoryInfo = new DirectoryInfo(path);
             }
         }
