@@ -4,7 +4,6 @@ using PS3Sharp.Common;
 using PS3Sharp.FileSystem;
 using PS3Sharp.Memory;
 using PS3Sharp.SFOLoader;
-using System.Buffers;
 using System.Collections.Immutable;
 using System.Runtime.InteropServices;
 using System.Text;
