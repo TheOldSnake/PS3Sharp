@@ -4,6 +4,7 @@ using PS3Sharp.Common;
 using PS3Sharp.FileSystem;
 using PS3Sharp.Memory;
 using PS3Sharp.SFOLoader;
+using System.Buffers;
 using System.Collections.Immutable;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -104,33 +105,33 @@ namespace PS3Sharp.OS.Modules
 
         internal ulong CellGameBootCheck(PPUThread ppu)
         {
-            GuestPtr<uint> type_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
-            GuestPtr<uint> attrib_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
-            GuestPtr<CellGameContentSize> size_ptr = ppu.ReadArg<GuestPtr<CellGameContentSize>>(ARG2);
-            GuestVoidPtr dir_ptr = ppu.ReadArg<GuestVoidPtr>(ARG3);
+            GuestPtr<uint> typePtr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
+            GuestPtr<uint> attribPtr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
+            GuestPtr<CellGameContentSize> sizePtr = ppu.ReadArg<GuestPtr<CellGameContentSize>>(ARG2);
+            GuestVoidPtr dirPtr = ppu.ReadArg<GuestVoidPtr>(ARG3);
 
-            if (!dir_ptr.IsNullPtr)
+            if (!dirPtr.IsNullPtr)
             {
                 //copy content dir
                 byte[] content_chars = Encoding.UTF8.GetBytes(GuestContentDirectory);
-                _memoryManager.CopyBufferToVirtualMemory(content_chars, dir_ptr);
+                _memoryManager.CopyBufferToVirtualMemory(content_chars, dirPtr);
 
                 Console.WriteLine($"[CellGame] cellGameBootCheck path = {GuestContentDirectory}");
             }
 
-            if (!size_ptr.IsNullPtr)
+            if (!sizePtr.IsNullPtr)
             {
-                string host_dir = _fileSystemManager.CurrentContentDirectory;
-                int size = (int)FileSystemManager.GetDirectorySize(host_dir);
+                string hostDir = _fileSystemManager.CurrentContentDirectory;
+                int size = (int)FileSystemManager.GetDirectorySize(hostDir);
 
-                CellGameContentSize size_struct = new()
+                CellGameContentSize sizeStruct = new()
                 {
                     HDDFreeSizeKB = 40 * 1024 * 1024 - 256,
                     SizeKB = size,
                     SysSizeKB = 4,
                 };
 
-                _memoryManager.Write(size_ptr, size_struct);
+                _memoryManager.Write(sizePtr, sizeStruct);
             }
 
             return CELL_OK;
@@ -138,17 +139,14 @@ namespace PS3Sharp.OS.Modules
 
         internal ulong CellGameContentPermit(PPUThread ppu)
         {
-            uint content_dir_ptr = ppu.ReadArg<uint>(ARG0);
-            uint usr_dir_ptr = ppu.ReadArg<uint>(ARG1);
+            uint contentDirPtr = ppu.ReadArg<uint>(ARG0);
+            uint UsrDirPtr = ppu.ReadArg<uint>(ARG1);
 
-            byte[] content_chars = Encoding.UTF8.GetBytes(GuestContentDirectory);
-            byte[] usr_dir_chars = Encoding.UTF8.GetBytes(GuestUSRDIR);
-            _memoryManager.CopyBufferToVirtualMemory(content_chars, content_dir_ptr);
-            _memoryManager.CopyBufferToVirtualMemory(usr_dir_chars, usr_dir_ptr);
-
-            //null terminate strings
-            //MemoryManager.Write<byte>(content_dir_ptr + (uint)content_chars.Length, 0);
-            //MemoryManager.Write<byte>(usr_dir_ptr + (uint)usr_dir_chars.Length, 0);
+            // Strings are null terminated
+            byte[] ContentChars = Encoding.UTF8.GetBytes(GuestContentDirectory);
+            byte[] UsrDirChars = Encoding.UTF8.GetBytes(GuestUSRDIR);
+            _memoryManager.CopyBufferToVirtualMemory(ContentChars, contentDirPtr);
+            _memoryManager.CopyBufferToVirtualMemory(UsrDirChars, UsrDirPtr);
 
             Console.WriteLine($"[CellGame] cellGameContentPermit path = {GuestContentDirectory}");
             return CELL_OK;
@@ -185,26 +183,26 @@ namespace PS3Sharp.OS.Modules
         internal ulong CellGameGetParamString(PPUThread ppu)
         {
             uint id = ppu.ReadArg<uint>(ARG0);
-            GuestPtr<uint> buffer_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
-            uint bufferSize = ppu.ReadArg<uint>(ARG2);
+            GuestPtr<uint> bufferPtr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
+            int bufferSize = ppu.ReadArg<int>(ARG2);
 
+            _memoryManager.ClearMemory(bufferPtr, bufferSize);
             string key = CellGameParamId[id];
 
             if (_fileSystemManager.TryGetCurrentSFO(out SFO? sfo))
             {
                 if (sfo!.StringLookup(key, out string value))
                 {
-                    byte[] str = Encoding.UTF8.GetBytes(value + "\0");
+                    // Add null terminator
+                    Span<byte> str = Encoding.UTF8.GetBytes(value + '\0');
 
-                    for (uint i = 0; i < bufferSize; i++)
+                    if (str.Length > bufferSize)
                     {
-                        uint offset = buffer_ptr + i;
-                        _memoryManager.Write<byte>(offset, str[i]);
-                        if (str[i] == 0)
-                        {
-                            break;
-                        }
+                        str = str.Slice(0, bufferSize);
                     }
+
+                    // Copy to ptr
+                    _memoryManager.CopyBufferToVirtualMemory(str, bufferPtr);
 
                     Console.WriteLine($"[CellGame] CellGameGetParamString key = {key} value = {value}");
                 }
