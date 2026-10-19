@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
+using static PS3Sharp.OS.Syscall.SysFs;
 using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.FileSystem
@@ -101,7 +102,7 @@ namespace PS3Sharp.FileSystem
             return (ulong)dir.GetFiles("*", SearchOption.AllDirectories).Sum(file => file.Length);
         }
 
-        internal ulong OpenFile(string hostPath, int fd, uint ownerThread, FileMode mode, FileAccess access)
+        internal ulong OpenFile(string hostPath, int fd, uint ownerThread, uint flags)
         {
             // Error if it's a directory
             if (IsDirectory(hostPath))
@@ -111,13 +112,15 @@ namespace PS3Sharp.FileSystem
 
             // Error if the file does not exist (and create flag is not set)
             bool exists = IsFile(hostPath);
-            if (!exists && mode != FileMode.OpenOrCreate)
+            bool create = (flags & O_CREAT) != 0;
+
+            if (!(exists || create))
             {
                 return CELL_ENOENT;
             }
 
             // Open file
-            GuestFile file = new(hostPath, fd, ownerThread, mode, access);
+            GuestFile file = new(hostPath, fd, ownerThread, flags);
             _openFiles.TryAdd(fd, file);
             return CELL_OK;
         }
@@ -158,14 +161,12 @@ namespace PS3Sharp.FileSystem
 
             if (_openFiles.TryGetValue(fd, out GuestFile? file))
             {
-                file.Stream.Seek(offset, (SeekOrigin)(mode));
+                return file.Seek(offset, (SeekOrigin)mode);
             }
             else
             {
                 throw new InvalidOperationException("[FileSystem] file was not open!");
             }
-
-            return file.Stream.Position;
         }
 
         internal ulong Read(int fd, ulong nbytes, GuestVoidPtr destinationBuffer)
@@ -184,7 +185,7 @@ namespace PS3Sharp.FileSystem
                     try
                     {
                         // Read directly into the buffer
-                        file.Reader.ReadExactly(nativeBuffer);
+                        file.ReadExactly(nativeBuffer);
                     }
                     catch (EndOfStreamException e)
                     {
@@ -203,24 +204,6 @@ namespace PS3Sharp.FileSystem
             return nbytes;
         }
 
-        internal Span<byte> ReadSpan(int fd, ulong nbytes)
-        {
-            if (nbytes > int.MaxValue)
-            {
-                throw new Exception($"[FileSystem] Read amount is too large: {nbytes}");
-            }
-
-            if (_openFiles.TryGetValue(fd, out GuestFile? file))
-            {
-                return file.Reader.ReadBytes((int)nbytes);
-
-            }
-            else
-            {
-                throw new InvalidOperationException("[FileSystem] file was not open!");
-            }
-        }
-
         internal ulong Write(int fd, int nBytes, GuestVoidPtr sourceBuffer)
         {
             if (_openFiles.TryGetValue(fd, out GuestFile? file))
@@ -230,7 +213,7 @@ namespace PS3Sharp.FileSystem
                     unsafe
                     {
                         Span<byte> nativeBuffer = _memoryManager.CreateByteSpan(sourceBuffer, nBytes);
-                        file.Writer?.Write(nativeBuffer);
+                        file.Write(nativeBuffer);
                     }
                 }
                 else

@@ -36,56 +36,53 @@ namespace PS3Sharp.OS.Syscall
             internal InlineData.InlineArray256<byte> Name;
         }
 
-        //Same as Linux (uses base 8)
-        private static uint Oct(string v) => Convert.ToUInt32(v, 8);   // Helper (avoid using it at runtime)
-
         // Same as Linux (uses base 8)
-        private static readonly uint CELL_FS_S_IFDIR = Oct("0040000"); // Directory
-        private static readonly uint CELL_FS_S_IFREG = Oct("0100000"); // Regular
-        private static readonly uint CELL_FS_S_IFLNK = Oct("0120000"); // Symbolic link
-        private static readonly uint CELL_FS_S_IFWHT = Oct("0160000"); // Unknown
+        internal static readonly uint CELL_FS_S_IFDIR = Oct("0040000"); // Directory
+        internal static readonly uint CELL_FS_S_IFREG = Oct("0100000"); // Regular
+        internal static readonly uint CELL_FS_S_IFLNK = Oct("0120000"); // Symbolic link
+        internal static readonly uint CELL_FS_S_IFWHT = Oct("0160000"); // Unknown
 
-        private static readonly uint CELL_FS_S_IRUSR = Oct("0000400"); // R for owner
-        private static readonly uint CELL_FS_S_IWUSR = Oct("0000200"); // W for owner
-        private static readonly uint CELL_FS_S_IXUSR = Oct("0000100"); // X for owner
+        internal static readonly uint CELL_FS_S_IRUSR = Oct("0000400"); // R for owner
+        internal static readonly uint CELL_FS_S_IWUSR = Oct("0000200"); // W for owner
+        internal static readonly uint CELL_FS_S_IXUSR = Oct("0000100"); // X for owner
 
-        private static readonly uint CELL_FS_S_IRGRP = Oct("0000040"); // R for group
-        private static readonly uint CELL_FS_S_IWGRP = Oct("0000020"); // W for group
-        private static readonly uint CELL_FS_S_IXGRP = Oct("0000010"); // X for group
+        internal static readonly uint CELL_FS_S_IRGRP = Oct("0000040"); // R for group
+        internal static readonly uint CELL_FS_S_IWGRP = Oct("0000020"); // W for group
+        internal static readonly uint CELL_FS_S_IXGRP = Oct("0000010"); // X for group
 
-        private static readonly uint CELL_FS_S_IROTH = Oct("0000004"); // R for other
-        private static readonly uint CELL_FS_S_IWOTH = Oct("0000002"); // W for other
-        private static readonly uint CELL_FS_S_IXOTH = Oct("0000001"); // X for other
+        internal static readonly uint CELL_FS_S_IROTH = Oct("0000004"); // R for other
+        internal static readonly uint CELL_FS_S_IWOTH = Oct("0000002"); // W for other
+        internal static readonly uint CELL_FS_S_IXOTH = Oct("0000001"); // X for other
 
-        //Default Modes
-        private static readonly uint DIR_MODE = Oct("0777") | CELL_FS_S_IFDIR;   // RWX RWX RWX
-        private static readonly uint FILE_MODE = Oct("0666") | CELL_FS_S_IFREG;   // RW- RW- RW-
+        // Default Modes
+        internal static readonly uint DIR_MODE = Oct("0777") | CELL_FS_S_IFDIR;   // RWX RWX RWX
+        internal static readonly uint FILE_MODE = Oct("0666") | CELL_FS_S_IFREG;   // RW- RW- RW-
 
         // SysFsOpen flags
-        private static readonly uint O_RDONLY = Oct("0000");              // Read only
-        private static readonly uint O_WRONLY = Oct("0001");              // Write only
-        private static readonly uint O_RDWR = Oct("0002");                // Read/write
+        internal static readonly uint O_RDONLY = Oct("0000");              // Read only
+        internal static readonly uint O_WRONLY = Oct("0001");              // Write only
+        internal static readonly uint O_RDWR = Oct("0002");                // Read/write
 
-        private static readonly uint O_CREAT = Oct("0100");          // Create file if it does not exist
-        private static readonly uint O_EXCL = Oct("0200");           // Exclusive create
-        private static readonly uint O_NOCTTY = Oct("0400");         // Do not assign controlling terminal
-        private static readonly uint O_TRUNC = Oct("01000");         // Truncate file
-        private static readonly uint O_APPEND = Oct("02000");        // Append on each write
-        private static readonly uint O_NONBLOCK = Oct("04000");      // Non-blocking I/O
+        internal static readonly uint O_CREAT = Oct("0100");          // Create file if it does not exist
+        internal static readonly uint O_EXCL = Oct("0200");           // Exclusive create
+        internal static readonly uint O_NOCTTY = Oct("0400");         // Do not assign controlling terminal
+        internal static readonly uint O_TRUNC = Oct("01000");         // Truncate file
+        internal static readonly uint O_APPEND = Oct("02000");        // Append on each write
+        internal static readonly uint O_NONBLOCK = Oct("04000");      // Non-blocking I/O
 
-        private static readonly uint O_DSYNC = Oct("010000");        // Synchronized writes (data only)
-        private static readonly uint O_SYNC = Oct("04010000");       // Synchronized writes (data + metadata)
-        private readonly uint O_RSYNC = O_SYNC;
+        internal static readonly uint O_DSYNC = Oct("010000");        // Synchronized writes (data only)
+        internal static readonly uint O_SYNC = Oct("04010000");       // Synchronized writes (data + metadata)
+        internal readonly uint O_RSYNC = O_SYNC;
 
-        private static readonly uint O_DIRECTORY = Oct("0200000");   // Must be a directory
-        private static readonly uint O_NOFOLLOW = Oct("0400000");    // Do not follow symlinks
-        private static readonly uint O_CLOEXEC = Oct("02000000");    // Close on exec
+        internal static readonly uint O_DIRECTORY = Oct("0200000");   // Must be a directory
+        internal static readonly uint O_NOFOLLOW = Oct("0400000");    // Do not follow symlinks
+        internal static readonly uint O_CLOEXEC = Oct("02000000");    // Close on exec
 
         // Same as linux?
-        private const uint FD_STDIN = 0;
-        private const uint FD_STDOUT = 1;
-        private const uint FD_STDERR = 2;
-        private const uint FD_EOF = 4;
+        internal const uint FD_STDIN = 0;
+        internal const uint FD_STDOUT = 1;
+        internal const uint FD_STDERR = 2;
+        internal const uint FD_EOF = 4;
 
         // For the console
         private static CellFsStat ConsoleFsStat = new()
@@ -106,6 +103,8 @@ namespace PS3Sharp.OS.Syscall
 
         private readonly MemoryManager _memoryManager;
         private readonly FileSystemManager _fileSystemManager;
+
+        private static uint Oct(string v) => Convert.ToUInt32(v, 8);   // Helper (avoid using it at runtime)
 
         internal SysFs(MemoryManager memoryManager, FileSystemManager fileSystemManager)
         {
@@ -258,9 +257,7 @@ namespace PS3Sharp.OS.Syscall
 
             // Open file
             int handle = (int)_memoryManager.GetHandle();
-            FileMode mode = GetFileMode(flags);
-            FileAccess access = GetFileAccess(flags);
-            ulong result = _fileSystemManager.OpenFile(hostPath, handle, ppu.ThreadID, mode, access);
+            ulong result = _fileSystemManager.OpenFile(hostPath, handle, ppu.ThreadID, flags);
 
             if (result != CELL_OK)
             {
@@ -398,29 +395,6 @@ namespace PS3Sharp.OS.Syscall
             // todo
             // Console.WriteLine($"[SysFsCloseDir] SysFsCloseDir . CELL_OK");
             return CELL_OK;
-        }
-
-        private static FileMode GetFileMode(uint flags)
-        {
-            bool create = (flags & O_CREAT) != 0;
-            return create ? FileMode.OpenOrCreate : FileMode.Open;
-        }
-
-        private static FileAccess GetFileAccess(uint flags)
-        {
-            uint access = flags & 0x3;
-
-            if (access == O_RDONLY)
-            {
-                return FileAccess.Read;
-            }
-
-            if (access == O_WRONLY)
-            {
-                return FileAccess.Write;
-            }
-
-            return FileAccess.ReadWrite;
         }
     }
 }
