@@ -12,6 +12,8 @@ namespace PS3Sharp.FileSystem
 {
     internal sealed partial class FileSystemManager
     {
+        internal static readonly bool AllowWrites = false; // TODO: Make it configurable
+
         private readonly MemoryManager _memoryManager;
         private readonly ConcurrentDictionary<int, GuestFile> _openFiles = new();
         private readonly ConcurrentDictionary<int, GuestDirectory> _openDirectories = new();
@@ -219,17 +221,17 @@ namespace PS3Sharp.FileSystem
         {
             if (_openFiles.TryGetValue(fd, out GuestFile? file))
             {
-
-                // Hacky check to ensure we don't write something outside app_home
-                if (!file.Path.StartsWith(@"app_home\"))
+                if (AllowWrites)
                 {
-                    throw new Exception($"Attempt to write to file outside app_home, path = {file.Path}");
+                    unsafe
+                    {
+                        Span<byte> nativeBuffer = _memoryManager.CreateByteSpan(sourceBuffer, nBytes);
+                        file.Writer?.Write(nativeBuffer);
+                    }
                 }
-
-                unsafe
+                else
                 {
-                    Span<byte> nativeBuffer = _memoryManager.CreateByteSpan(sourceBuffer, nBytes);
-                    file.Writer?.Write(nativeBuffer);
+                    Console.WriteLine($"[FileSystemManager] Ignored write to {file?.Path}");
                 }
             }
 
