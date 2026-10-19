@@ -269,7 +269,6 @@ namespace PS3Sharp.FileSystem
 
             switch (directory.CurrentEntry)
             {
-
                 case 0: // "." entry
                     name_buffer = Utility.ToCString($".");
                     type = CELL_FS_TYPE_DIRECTORY;
@@ -284,13 +283,10 @@ namespace PS3Sharp.FileSystem
                     // entry number relative to the beginning of the list (which does not contain '.' and '..')
                     int actualEntry = directory.CurrentEntry - 2;
 
-                    // if reached end
+                    // if reached end write zeroes
                     if (actualEntry >= fs_info_list.Count())
                     {
-                        dirent.Type = 0;
-                        dirent.NameLength = 0;
-                        name_dest.Clear();
-                        directory.CurrentEntry = 0;
+                        _memoryManager.Write<SysFs.CellFsDirent>(dirent_ptr, default);
                         return 0;
                     }
 
@@ -313,7 +309,6 @@ namespace PS3Sharp.FileSystem
                 $" type = 0x{dirent.Type:X} CurrentEntry = {directory.CurrentEntry} len = {fs_info_list.Count()}");
 
             directory.CurrentEntry++;
-
             return dirent_size;
         }
 
