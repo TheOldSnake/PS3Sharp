@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -45,9 +46,8 @@ namespace PS3Sharp.SFOLoader
             _stringsDictionary = strings;
         }
 
-        internal bool UIntLookup(string key, out uint value) => _uintDictionary.TryGetValue(key, out value);
-
-        internal bool StringLookup(string key, out string value) => _stringsDictionary.TryGetValue(key, out value);
+        internal bool TryGetUInt(string key, out uint value) => _uintDictionary.TryGetValue(key, out value);
+        internal bool TryGetString(string key, [NotNullWhen(true)] out string? value) => _stringsDictionary.TryGetValue(key, out value);
 
         internal static SFO? LoadSFO(string path)
         {

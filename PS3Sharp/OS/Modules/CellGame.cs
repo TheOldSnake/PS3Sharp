@@ -160,7 +160,7 @@ namespace PS3Sharp.OS.Modules
 
             if (_fileSystemManager.TryGetCurrentSFO(out SFO? sfo))
             {
-                if (sfo!.UIntLookup(key, out uint value))
+                if (sfo!.TryGetUInt(key, out uint value))
                 {
                     _memoryManager.Write<BigEndian<uint>>(value_ptr, value);
                 }
@@ -190,7 +190,7 @@ namespace PS3Sharp.OS.Modules
 
             if (_fileSystemManager.TryGetCurrentSFO(out SFO? sfo))
             {
-                if (sfo!.StringLookup(key, out string value))
+                if (sfo!.TryGetString(key, out string? value))
                 {
                     // Add null terminator
                     Span<byte> str = Encoding.UTF8.GetBytes(value + '\0');
