@@ -354,8 +354,6 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysFsOpenDir(PPUThread ppu)
         {
-            // todo
-            return CELL_ENOENT;
             GuestVoidPtr path_ptr = ppu.ReadArg<GuestVoidPtr>(ARG0);
             GuestPtr<uint> fd_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
 
@@ -373,7 +371,7 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                Console.WriteLine($"[SysFsOpenDir] SysFsOpenDir failed . {CellErrorNames[result]}");
+                Console.WriteLine($"[SysFsOpenDir] SysFsOpenDir failed: {CellErrorNames[result]}");
             }
 
             return result;

@@ -57,10 +57,16 @@ namespace PS3Sharp.FileSystem
 
         internal static string GetHostPath(string guestPath)
         {
-            //Assuming absolute paths 
+            // Assuming absolute paths 
             if (!IsGuestAbsolutePath(guestPath))
             {
                 throw new Exception($"[FileSystem] path is not absolute -- path = {guestPath}");
+            }
+            
+            // Root directory is emulator folder
+            if (guestPath == "/")
+            {
+                return ".";
             }
 
             string hostPath = guestPath.Substring(1).Replace($"/", $"\\");
@@ -119,7 +125,6 @@ namespace PS3Sharp.FileSystem
 
         internal ulong OpenDirectory(string host_path, int fd, uint ownerThread)
         {
-
             // Error if it's a file
             if (IsFile(host_path))
             {
@@ -276,10 +281,10 @@ namespace PS3Sharp.FileSystem
                     break;
 
                 default:
-                    //entry number relative to the beginning of the list (which does not contain '.' and '..')
+                    // entry number relative to the beginning of the list (which does not contain '.' and '..')
                     int actualEntry = directory.CurrentEntry - 2;
 
-                    //if reached end
+                    // if reached end
                     if (actualEntry >= fs_info_list.Count())
                     {
                         dirent.Type = 0;
@@ -304,7 +309,8 @@ namespace PS3Sharp.FileSystem
             // Write to memory
             _memoryManager.Write(dirent_ptr, dirent);
 
-            Console.WriteLine($"dirent name = {Encoding.UTF8.GetString(dirent.Name)} name_length = {dirent.NameLength} type = 0x{dirent.Type:X} CurrentEntry = {directory.CurrentEntry} len = {fs_info_list.Count()}");
+            Console.WriteLine($"[FileSystemManager] dirent name = {Encoding.UTF8.GetString(dirent.Name)} name_length = {dirent.NameLength}" +
+                $" type = 0x{dirent.Type:X} CurrentEntry = {directory.CurrentEntry} len = {fs_info_list.Count()}");
 
             directory.CurrentEntry++;
 
