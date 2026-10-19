@@ -3,6 +3,7 @@ using PS3Sharp.Memory;
 using PS3Sharp.OS.Syscall;
 using PS3Sharp.SFOLoader;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
 using static PS3Sharp.Cell.ErrorCode;
@@ -37,18 +38,18 @@ namespace PS3Sharp.FileSystem
             }
         }
 
-        internal bool IsDirectory(string path) => Directory.Exists(path);
+        internal static bool IsDirectory(string path) => Directory.Exists(path);
         internal bool IsDirectoryOpen(int fd) => _openDirectories.ContainsKey(fd);
         internal bool IsDirectoryOpen(string path) => _openDirectories.Values.Any(f => f.Path == path);
-        internal bool GetDirectory(int fd, out GuestDirectory? directory) => _openDirectories.TryGetValue(fd, out directory);
+        internal bool TryGetDirectory(int fd, [NotNullWhen(true)] out GuestDirectory? directory) => _openDirectories.TryGetValue(fd, out directory);
 
-        internal bool IsFile(string path) => File.Exists(path);
+        internal static bool IsFile(string path) => File.Exists(path);
         internal bool IsFileOpen(int fd) => _openFiles.ContainsKey(fd);
         internal bool IsFileOpen(string path) => _openFiles.Values.Any(f => f.Path == path);
-        internal bool IsEncryptedFile(string path) => path.EndsWith(".edat", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".sdat", StringComparison.OrdinalIgnoreCase);
-        internal bool HasBeenDecrypted(string path) => File.Exists(path + ".unedat");
+        internal static bool IsEncryptedFile(string path) => path.EndsWith(".edat", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".sdat", StringComparison.OrdinalIgnoreCase);
+        internal static bool HasBeenDecrypted(string path) => File.Exists(path + ".unedat");
         internal GuestFile GetFileByPath(string path) => _openFiles.Values.First(f => f.Path == path); // Normally not used
-        internal bool GetFile(int fd, out GuestFile? file) => _openFiles.TryGetValue(fd, out file);
+        internal bool TryGetFile(int fd, [NotNullWhen(true)] out GuestFile? file) => _openFiles.TryGetValue(fd, out file);
 
         internal static bool IsGuestAbsolutePath(string guestPath) => guestPath.StartsWith('/');
 
