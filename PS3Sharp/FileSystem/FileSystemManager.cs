@@ -101,25 +101,25 @@ namespace PS3Sharp.FileSystem
             return (ulong)dir.GetFiles("*", SearchOption.AllDirectories).Sum(file => file.Length);
         }
 
-        internal ulong OpenFile(string host_path, int fd, uint ownerThread, FileMode mode, FileAccess access)
+        internal ulong OpenFile(string hostPath, int fd, uint ownerThread, FileMode mode, FileAccess access)
         {
+            // Error if it's a directory
+            if (IsDirectory(hostPath))
+            {
+                return CELL_EISDIR;
+            }
+
             ulong size = 0;
 
             // Error if the file does not exist (and create flag is not set)
-            if (!IsFile(host_path))
+            bool exists = IsFile(hostPath);
+            if (!exists && mode != FileMode.OpenOrCreate)
             {
-                if (mode != FileMode.OpenOrCreate)
-                {
-                    return CELL_ENOENT;
-                }
-            }
-            else
-            {
-                size = GetFileSize(host_path);
+                return CELL_ENOENT;
             }
 
             // Open file
-            GuestFile file = new(host_path, size, fd, ownerThread, mode, access);
+            GuestFile file = new(hostPath, size, fd, ownerThread, mode, access);
             _openFiles.TryAdd(fd, file);
             return CELL_OK;
         }

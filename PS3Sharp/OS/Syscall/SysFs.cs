@@ -241,12 +241,6 @@ namespace PS3Sharp.OS.Syscall
 
             string hostPath = GetHostPath(guestPath);
 
-            if (IsDirectory(hostPath))
-            {
-                // Error if it's a directory
-                return CELL_EISDIR;
-            }
-
             if (IsFile(hostPath))
             {
                 if (IsEncryptedFile(hostPath))
