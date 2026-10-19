@@ -47,10 +47,10 @@ namespace PS3Sharp.FileSystem
 
         internal static bool IsFile(string path) => File.Exists(path);
         internal bool IsFileOpen(int fd) => _openFiles.ContainsKey(fd);
-        internal bool IsFileOpen(string path) => _openFiles.Values.Any(f => f.Path == path);
+        internal bool IsFileOpen(string path) => _openFiles.Values.Any(f => f.FilePath == path);
         internal static bool IsEncryptedFile(string path) => path.EndsWith(".edat", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".sdat", StringComparison.OrdinalIgnoreCase);
         internal static bool HasBeenDecrypted(string path) => File.Exists(path + ".unedat");
-        internal GuestFile GetFileByPath(string path) => _openFiles.Values.First(f => f.Path == path); // Normally not used
+        internal GuestFile GetFileByPath(string path) => _openFiles.Values.First(f => f.FilePath == path); // Normally not used
         internal bool TryGetFile(int fd, [NotNullWhen(true)] out GuestFile? file) => _openFiles.TryGetValue(fd, out file);
 
         internal static bool IsGuestAbsolutePath(string guestPath) => guestPath.StartsWith('/');
@@ -101,25 +101,26 @@ namespace PS3Sharp.FileSystem
             return (ulong)dir.GetFiles("*", SearchOption.AllDirectories).Sum(file => file.Length);
         }
 
-        internal ulong OpenFile(string host_path, int fd, uint ownerThread)
+        internal ulong OpenFile(string host_path, int fd, uint ownerThread, FileMode mode, FileAccess access)
         {
+            ulong size = 0;
 
-            // Error if it's a directory
-            if (IsDirectory(host_path))
-            {
-                return CELL_EISDIR;
-            }
-
-            // Error if the file does not exist
+            // Error if the file does not exist (and create flag is not set)
             if (!IsFile(host_path))
             {
-                return CELL_ENOENT;
+                if (mode != FileMode.OpenOrCreate)
+                {
+                    return CELL_ENOENT;
+                }
+            }
+            else
+            {
+                size = GetFileSize(host_path);
             }
 
             // Open file
-            GuestFile file = new(host_path, GetFileSize(host_path), fd, ownerThread);
+            GuestFile file = new(host_path, size, fd, ownerThread, mode, access);
             _openFiles.TryAdd(fd, file);
-
             return CELL_OK;
         }
 
@@ -236,7 +237,7 @@ namespace PS3Sharp.FileSystem
                 }
                 else
                 {
-                    Console.WriteLine($"[FileSystemManager] Ignored write to {file?.Path}");
+                    Console.WriteLine($"[FileSystemManager] Ignored write to {file?.FilePath}");
                 }
             }
 

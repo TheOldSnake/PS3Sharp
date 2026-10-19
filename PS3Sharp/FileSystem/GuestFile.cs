@@ -4,24 +4,46 @@
     {
         internal sealed class GuestFile : IDisposable
         {
-            internal string Path { get; }
+            internal string FilePath { get; }
             internal int FileDescriptor { get; }
             internal uint OwnerThread { get; }
+            internal FileMode Mode { get; }
+            internal FileAccess Access { get; }
             internal FileStream Stream { get; }
-            internal BinaryReader Reader { get; }
+            internal BinaryReader? Reader { get; }
             internal BinaryWriter? Writer { get; }
             internal ulong Size { get; }
 
-            internal GuestFile(string path, ulong size, int fileDescriptor, uint ownerThread)
+            internal GuestFile(string path, ulong size, int fileDescriptor, uint ownerThread, FileMode mode, FileAccess access)
             {
-                Path = path;
+                FilePath = path;
                 FileDescriptor = fileDescriptor;
                 Size = size;
                 OwnerThread = ownerThread;
-                Stream = File.OpenRead(path); // todo: open or create flag
-                Reader = new BinaryReader(Stream);
-                //Writer = new BinaryWriter(Stream);
+                Mode = mode;
+                Access = access;
+
+                // Create the directory first if it does not exist
+                string? directory = Path.GetDirectoryName(path);
+
+                if (!string.IsNullOrEmpty(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                // Open file stream and create reader / writer
+                Stream = File.Open(path, Mode, Access);
                 Stream.Seek(0, SeekOrigin.Begin);
+
+                if ((Access & FileAccess.Read) != 0)
+                {
+                    Reader = new BinaryReader(Stream);
+                }
+
+                if ((Access & FileAccess.Write) != 0)
+                {
+                    Writer = new BinaryWriter(Stream);
+                }
             }
 
             internal void Close()
@@ -31,7 +53,7 @@
 
             public void Dispose()
             {
-                Reader.Close();
+                Reader?.Close();
                 Writer?.Close();
                 Stream.Close();
             }

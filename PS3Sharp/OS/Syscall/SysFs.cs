@@ -62,9 +62,9 @@ namespace PS3Sharp.OS.Syscall
         private static readonly uint FILE_MODE = Oct("0666") | CELL_FS_S_IFREG;   // RW- RW- RW-
 
         // SysFsOpen flags
-        private static readonly uint O_RDONLY = 0x0000;              // Read only
-        private static readonly uint O_WRONLY = 0x0001;              // Write only
-        private static readonly uint O_RDWR = 0x0002;                // Read/write
+        private static readonly uint O_RDONLY = Oct("0000");              // Read only
+        private static readonly uint O_WRONLY = Oct("0001");              // Write only
+        private static readonly uint O_RDWR = Oct("0002");                // Read/write
 
         private static readonly uint O_CREAT = Oct("0100");          // Create file if it does not exist
         private static readonly uint O_EXCL = Oct("0200");           // Exclusive create
@@ -241,6 +241,12 @@ namespace PS3Sharp.OS.Syscall
 
             string hostPath = GetHostPath(guestPath);
 
+            if (IsDirectory(hostPath))
+            {
+                // Error if it's a directory
+                return CELL_EISDIR;
+            }
+
             if (IsFile(hostPath))
             {
                 if (IsEncryptedFile(hostPath))
@@ -256,9 +262,11 @@ namespace PS3Sharp.OS.Syscall
                 }
             }
 
-            // TODO: handle open with create flag
+            // Open file
             int handle = (int)_memoryManager.GetHandle();
-            ulong result = _fileSystemManager.OpenFile(hostPath, handle, ppu.ThreadID);
+            FileMode mode = GetFileMode(flags);
+            FileAccess access = GetFileAccess(flags);
+            ulong result = _fileSystemManager.OpenFile(hostPath, handle, ppu.ThreadID, mode, access);
 
             if (result != CELL_OK)
             {
@@ -266,7 +274,7 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                // Console.WriteLine($"[{ppu.ThreadName}] [SysFsOpen] cellFsOpen opened file {guestPath} fd = 0x{handle:X} flags = 0x{flags}");
+                 Console.WriteLine($"[{ppu.ThreadName}] [SysFsOpen] cellFsOpen opened file {guestPath} fd = 0x{handle:X} flags = 0x{flags}");
                 // Write the file descriptor
                 _memoryManager.Write<BigEndian<int>>(fd_ptr, handle);
             }
@@ -396,6 +404,29 @@ namespace PS3Sharp.OS.Syscall
             // todo
             // Console.WriteLine($"[SysFsCloseDir] SysFsCloseDir . CELL_OK");
             return CELL_OK;
+        }
+
+        private static FileMode GetFileMode(uint flags)
+        {
+            bool create = (flags & O_CREAT) != 0;
+            return create ? FileMode.OpenOrCreate : FileMode.Open;
+        }
+
+        private static FileAccess GetFileAccess(uint flags)
+        {
+            uint access = flags & 0x3;
+
+            if (access == O_RDONLY)
+            {
+                return FileAccess.Read;
+            }
+
+            if (access == O_WRONLY)
+            {
+                return FileAccess.Write;
+            }
+
+            return FileAccess.ReadWrite;
         }
     }
 }
