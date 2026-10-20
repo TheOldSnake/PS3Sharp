@@ -379,13 +379,13 @@ namespace PS3Sharp.OS.Syscall
         internal ulong SysFsReadDir(PPUThread ppu)
         {
             int fd = ppu.ReadArg<int>(ARG0);
-            GuestPtr<CellFsDirent> direent_ptr = ppu.ReadArg<GuestPtr<CellFsDirent>>(ARG1);
-            GuestPtr<ulong> bytes_read_ptr = ppu.ReadArg<GuestPtr<ulong>>(ARG2);
+            GuestPtr<CellFsDirent> direentPtr = ppu.ReadArg<GuestPtr<CellFsDirent>>(ARG1);
+            GuestPtr<ulong> bytesReadPtr = ppu.ReadArg<GuestPtr<ulong>>(ARG2);
 
-            // Console.WriteLine($"[SysFsReadDir] SysFsReadDir fd = 0x{fd:X8} lr = 0x{ppu.GetLR():X8}");
+            ulong bytesRead = _fileSystemManager.ReadDirectory(fd, out CellFsDirent dirent);
 
-            ulong bytes_read = _fileSystemManager.ReadDir(fd, direent_ptr);
-            _memoryManager.Write<BigEndian<ulong>>(bytes_read_ptr, bytes_read);
+            _memoryManager.Write(direentPtr, dirent);
+            _memoryManager.Write<BigEndian<ulong>>(bytesReadPtr, bytesRead);
 
             return CELL_OK;
         }

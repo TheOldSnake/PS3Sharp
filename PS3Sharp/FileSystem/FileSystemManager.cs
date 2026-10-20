@@ -225,73 +225,16 @@ namespace PS3Sharp.FileSystem
             return (ulong)nBytes;
         }
 
-        internal ulong ReadDir(int fd, GuestPtr<SysFs.CellFsDirent> dirent_ptr)
+        internal ulong ReadDirectory(int fd, out CellFsDirent dirent)
         {
-            // Todo: move constants 
-            const byte CELL_FS_TYPE_DIRECTORY = 1;
-            const byte CELL_FS_TYPE_REGULAR = 2;
-
-            ulong dirent_size = (ulong)Unsafe.SizeOf<SysFs.CellFsDirent>();
-            bool found = _openDirectories.TryGetValue(fd, out GuestDirectory? directory);
-
-            if (!found)
+            if (_openDirectories.TryGetValue(fd, out GuestDirectory? directory))
+            {
+                return directory.ReadNextEntry(out dirent);
+            }
+            else
             {
                 throw new InvalidOperationException("[FileSystem] Directory was not open!");
             }
-
-            DirectoryInfo dir_info = directory!.DirectoryInfo;
-            IEnumerable<FileSystemInfo> fs_info_list = dir_info.EnumerateFileSystemInfos();
-
-            SysFs.CellFsDirent dirent = new();
-
-            Span<byte> name_buffer;
-            Span<byte> name_dest = dirent.Name;
-            name_dest.Clear();
-            byte type;
-
-            switch (directory.CurrentEntry)
-            {
-                case 0: // "." entry
-                    name_buffer = Utility.ToCString($".");
-                    type = CELL_FS_TYPE_DIRECTORY;
-                    break;
-
-                case 1: // ".." entry
-                    name_buffer = Utility.ToCString($"..");
-                    type = CELL_FS_TYPE_DIRECTORY;
-                    break;
-
-                default:
-                    // entry number relative to the beginning of the list (which does not contain '.' and '..')
-                    int actualEntry = directory.CurrentEntry - 2;
-
-                    // if reached end write zeroes
-                    if (actualEntry >= fs_info_list.Count())
-                    {
-                        _memoryManager.Write<SysFs.CellFsDirent>(dirent_ptr, default);
-                        return 0;
-                    }
-
-                    FileSystemInfo fs_info = fs_info_list.ElementAt(actualEntry);
-                    name_buffer = Utility.ToCString(fs_info.Name);
-
-                    bool isDir = (fs_info.Attributes & FileAttributes.Directory) != 0;
-                    type = isDir ? CELL_FS_TYPE_DIRECTORY : CELL_FS_TYPE_REGULAR;
-                    break;
-            }
-
-            dirent.Type = type;
-            name_buffer.CopyTo(name_dest);
-            dirent.NameLength = (byte)(name_buffer.Length - 1); // length without '\0'
-
-            // Write to memory
-            _memoryManager.Write(dirent_ptr, dirent);
-
-            Console.WriteLine($"[FileSystemManager] dirent name = {Encoding.UTF8.GetString(dirent.Name)} name_length = {dirent.NameLength}" +
-                $" type = 0x{dirent.Type:X} CurrentEntry = {directory.CurrentEntry} len = {fs_info_list.Count()}");
-
-            directory.CurrentEntry++;
-            return dirent_size;
         }
 
         internal bool TryGetRequestedExecutable(out string elfPath)
