@@ -338,7 +338,7 @@ namespace PS3Sharp.OS.Syscall
         {
             int fd = ppu.ReadArg<int>(ARG0);
 
-            _fileSystemManager.Close(fd);
+            _fileSystemManager.CloseFile(fd);
             //Console.WriteLine($"[SysFsClose] cellFsClose fd = 0x{fd:X}");
 
             return CELL_OK;
@@ -392,8 +392,8 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysFsCloseDir(PPUThread ppu)
         {
-            // todo
-            // Console.WriteLine($"[SysFsCloseDir] SysFsCloseDir . CELL_OK");
+            int fd = ppu.ReadArg<int>(ARG0);
+            _fileSystemManager.CloseDirectory(fd);
             return CELL_OK;
         }
     }

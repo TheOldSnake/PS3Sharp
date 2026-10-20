@@ -146,10 +146,15 @@ namespace PS3Sharp.FileSystem
             return CELL_OK;
         }
 
-        internal void Close(int fd)
+        internal void CloseFile(int fd)
         {
             _openFiles.Remove(fd, out GuestFile? file);
             file?.Close();
+        }
+
+        internal void CloseDirectory(int fd)
+        {
+            _openDirectories.Remove(fd, out _);
         }
 
         internal long Seek(int fd, long offset, int mode)
