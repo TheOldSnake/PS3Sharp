@@ -120,15 +120,15 @@ namespace PS3Sharp.OS.Syscall
 
         internal uint SysFsStat(PPUThread ppu)
         {
-            uint path_ptr = ppu.ReadArg<uint>(ARG0);
-            GuestPtr<CellFsStat> stat_ptr = ppu.ReadArg<GuestPtr<CellFsStat>>(ARG1);
+            uint pathPtr = ppu.ReadArg<uint>(ARG0);
+            GuestPtr<CellFsStat> statPtr = ppu.ReadArg<GuestPtr<CellFsStat>>(ARG1);
 
-            if (path_ptr == 0)
+            if (pathPtr == 0)
             {
                 return CELL_EFAULT;
             }
 
-            string guestPath = _memoryManager.ReadString(path_ptr);
+            string guestPath = _memoryManager.ReadString(pathPtr);
 
             // ?
             if (string.IsNullOrEmpty(guestPath))
@@ -164,7 +164,7 @@ namespace PS3Sharp.OS.Syscall
                 BlkSize = 4096
             };
 
-            _memoryManager.Write(stat_ptr, stat);
+            _memoryManager.Write(statPtr, stat);
 
             return CELL_OK;
         }
@@ -172,7 +172,7 @@ namespace PS3Sharp.OS.Syscall
         internal ulong SysFsFstat(PPUThread ppu)
         {
             int fd = ppu.ReadArg<int>(ARG0);
-            GuestPtr<CellFsStat> stat_ptr = ppu.ReadArg<GuestPtr<CellFsStat>>(ARG1);
+            GuestPtr<CellFsStat> statPtr = ppu.ReadArg<GuestPtr<CellFsStat>>(ARG1);
 
             bool isConsole = fd == FD_STDIN || fd == FD_STDOUT || fd == FD_STDERR;
 
@@ -180,7 +180,7 @@ namespace PS3Sharp.OS.Syscall
 
             if (isConsole)
             {
-                _memoryManager.Write(stat_ptr, ConsoleFsStat);
+                _memoryManager.Write(statPtr, ConsoleFsStat);
                 Console.WriteLine($"[{ppu.ThreadName}] [SysFs] SysFsFstat => CELL_EBADF");
                 return CELL_EBADF;
             }
@@ -216,21 +216,21 @@ namespace PS3Sharp.OS.Syscall
                 BlkSize = 4096
             };
 
-            _memoryManager.Write(stat_ptr, stat);
+            _memoryManager.Write(statPtr, stat);
 
             return CELL_OK;
         }
 
         internal ulong SysFsOpen(PPUThread ppu)
         {
-            uint path_ptr = ppu.ReadArg<uint>(ARG0);
+            uint pathPtr = ppu.ReadArg<uint>(ARG0);
             uint flags = ppu.ReadArg<uint>(ARG1);
-            GuestPtr<int> fd_ptr = ppu.ReadArg<GuestPtr<int>>(ARG2);
+            GuestPtr<int> fdPtr = ppu.ReadArg<GuestPtr<int>>(ARG2);
 
             // uint64_t mode, const void *arg, uint64_t size <- ARG3/4/5
             // the mode is only in the syscall not the library
 
-            string guestPath = _memoryManager.ReadString(path_ptr);
+            string guestPath = _memoryManager.ReadString(pathPtr);
 
             if (!IsGuestAbsolutePath(guestPath))
             {
@@ -267,7 +267,7 @@ namespace PS3Sharp.OS.Syscall
             {
                  Console.WriteLine($"[{ppu.ThreadName}] [SysFsOpen] cellFsOpen opened file {guestPath} fd = 0x{handle:X} flags = 0x{flags}");
                 // Write the file descriptor
-                _memoryManager.Write<BigEndian<int>>(fd_ptr, handle);
+                _memoryManager.Write<BigEndian<int>>(fdPtr, handle);
             }
 
             return result;
@@ -278,7 +278,7 @@ namespace PS3Sharp.OS.Syscall
             int fd = ppu.ReadArg<int>(ARG0);
             long offset = ppu.ReadArg<long>(ARG1);
             int whence = ppu.ReadArg<int>(ARG2);
-            GuestPtr<ulong> pos_ptr = ppu.ReadArg<GuestPtr<ulong>>(ARG3);
+            GuestPtr<ulong> posPtr = ppu.ReadArg<GuestPtr<ulong>>(ARG3);
 
             // Console.WriteLine($"[{ppu.ThreadName}] [SysFsLseek] cellFsLseek fd = 0x{fd:X} seek offset: 0x{offset:X} mode = {whence}");
 
@@ -288,7 +288,7 @@ namespace PS3Sharp.OS.Syscall
             }
 
             ulong position = (ulong)_fileSystemManager.Seek(fd, offset, whence);
-            _memoryManager.Write<BigEndian<ulong>>(pos_ptr, position);
+            _memoryManager.Write<BigEndian<ulong>>(posPtr, position);
 
             return CELL_OK;
         }
@@ -298,12 +298,12 @@ namespace PS3Sharp.OS.Syscall
             int fd = ppu.ReadArg<int>(ARG0);
             GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(ARG1);
             ulong nbytes = ppu.ReadArg<ulong>(ARG2);
-            GuestPtr<ulong> nread_ptr = ppu.ReadArg<GuestPtr<ulong>>(ARG3);
+            GuestPtr<ulong> nreadPtr = ppu.ReadArg<GuestPtr<ulong>>(ARG3);
 
             // MemoryManager.MemoryBlock block = _memoryManager.GetAllocationByVirtualAddress(buf);
             // Console.WriteLine($"[{ppu.ThreadName}] [SysFsRead] cellFsRead fd = 0x{fd:X} amount: 0x{nbytes:X} dest: 0x{buf:X} base = 0x{b.VirtualAddress:X8}");
 
-            if (buf.IsNullPtr || nread_ptr.IsNullPtr || nbytes == 0)
+            if (buf.IsNullPtr || nreadPtr.IsNullPtr || nbytes == 0)
             {
                 return CELL_EFAULT;
             }
@@ -312,9 +312,9 @@ namespace PS3Sharp.OS.Syscall
             ulong readCount = _fileSystemManager.Read(fd, nbytes, buf);                                  
 
             // Write back the number of bytes read
-            if (nread_ptr > 0)
+            if (nreadPtr > 0)
             {
-                _memoryManager.Write<BigEndian<ulong>>(nread_ptr, readCount);
+                _memoryManager.Write<BigEndian<ulong>>(nreadPtr, readCount);
             }
 
             // TODO: Seems like this syscall returns CELL_EFAULT if number of bytes read == 0, while CellFsRead does not
@@ -353,10 +353,10 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysFsOpenDir(PPUThread ppu)
         {
-            GuestVoidPtr path_ptr = ppu.ReadArg<GuestVoidPtr>(ARG0);
-            GuestPtr<uint> fd_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
+            GuestVoidPtr pathPtr = ppu.ReadArg<GuestVoidPtr>(ARG0);
+            GuestPtr<uint> fdPtr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
 
-            string guestPath = _memoryManager.ReadString(path_ptr);
+            string guestPath = _memoryManager.ReadString(pathPtr);
             string hostPath = GetHostPath(guestPath);
 
             // Console.WriteLine($"[SysFsOpenDir] SysFsOpenDir {guestPath}");
@@ -366,7 +366,7 @@ namespace PS3Sharp.OS.Syscall
 
             if (result == CELL_OK)
             {
-                _memoryManager.Write<BigEndian<uint>>(fd_ptr, (uint)handle);
+                _memoryManager.Write<BigEndian<uint>>(fdPtr, (uint)handle);
             }
             else
             {
