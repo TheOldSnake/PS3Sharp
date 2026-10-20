@@ -39,6 +39,12 @@ namespace PS3Sharp.FileSystem
                 Console.WriteLine("Creating dev_flash");
                 Directory.CreateDirectory("dev_flash");
             }
+
+            if (!Directory.Exists("app_home"))
+            {
+                Console.WriteLine("Creating app_home");
+                Directory.CreateDirectory("app_home");
+            }
         }
 
         internal static bool IsDirectory(string path) => Directory.Exists(path);
