@@ -20,14 +20,14 @@ namespace PS3Sharp.OS.Syscall
             // TODO implement properly 
             // For now we just do a normal allocation
 
-            ulong vsize = ppu.ReadArg<ulong>(ARG0);
-            ulong psize = ppu.ReadArg<ulong>(ARG1);
-            GuestPtr<uint> addr_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG5);
+            ulong vsize = ppu.ReadArg<ulong>(Arg0);
+            ulong psize = ppu.ReadArg<ulong>(Arg1);
+            GuestPtr<uint> addr_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg5);
 
             MemoryManager.MemoryBlock block = _memoryManager.AllocateVirtualMemory((uint)psize);
             _memoryManager.Write<BigEndian<uint>>(addr_ptr, block.VirtualAddress);
 
-            return CELL_OK;
+            return CellOk;
         }
     }
 }

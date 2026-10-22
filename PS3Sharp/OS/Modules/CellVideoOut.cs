@@ -123,53 +123,53 @@ namespace PS3Sharp.OS.Modules
            (960, 1080),   // 13 = Resolution960x1080          
         ];
 
-        internal const byte CELL_VIDEO_OUT_SCAN_MODE_INTERLACE = 0x00;
-        internal const byte CELL_VIDEO_OUT_SCAN_MODE_PROGRESSIVE = 0x01;
+        internal const byte CellVideoOutScanModeInterlace = 0x00;
+        internal const byte CellVideoOutScanModeProgressive = 0x01;
 
-        internal const byte CELL_VIDEO_OUT_DISPLAY_CONVERSION_NONE = 0x00;
-        internal const byte CELL_VIDEO_OUT_DISPLAY_CONVERSION_TO_WXGA = 0x01;
-        internal const byte CELL_VIDEO_OUT_DISPLAY_CONVERSION_TO_SXGA = 0x02;
-        internal const byte CELL_VIDEO_OUT_DISPLAY_CONVERSION_TO_WUXGA = 0x03;
-        internal const byte CELL_VIDEO_OUT_DISPLAY_CONVERSION_TO_1080 = 0x05;
-        internal const byte CELL_VIDEO_OUT_DISPLAY_CONVERSION_TO_REMOTEPLAY = 0x10;
-        internal const byte CELL_VIDEO_OUT_DISPLAY_CONVERSION_TO_720_3D_FRAME_PACKING = 0x80;
+        internal const byte CellVideoOutDisplayConversionNone = 0x00;
+        internal const byte CellVideoOutDisplayConversionToWxga = 0x01;
+        internal const byte CellVideoOutDisplayConversionToSxga = 0x02;
+        internal const byte CellVideoOutDisplayConversionToWuxga = 0x03;
+        internal const byte CellVideoOutDisplayConversionTo1080 = 0x05;
+        internal const byte CellVideoOutDisplayConversionToRemoteplay = 0x10;
+        internal const byte CellVideoOutDisplayConversionTo7203dFramePacking = 0x80;
 
-        internal const byte CELL_VIDEO_OUT_ASPECT_AUTO = 0x00;
-        internal const byte CELL_VIDEO_OUT_ASPECT_4_3 = 0x01;
-        internal const byte CELL_VIDEO_OUT_ASPECT_16_9 = 0x02;
+        internal const byte CellVideoOutAspectAuto = 0x00;
+        internal const byte CellVideoOutAspect43 = 0x01;
+        internal const byte CellVideoOutAspect169 = 0x02;
 
-        internal const ushort CELL_VIDEO_OUT_REFRESH_RATE_AUTO = 0x0000;
-        internal const ushort CELL_VIDEO_OUT_REFRESH_RATE_59_94HZ = 0x0001;
-        internal const ushort CELL_VIDEO_OUT_REFRESH_RATE_50HZ = 0x0002;
-        internal const ushort CELL_VIDEO_OUT_REFRESH_RATE_60HZ = 0x0004;
-        internal const ushort CELL_VIDEO_OUT_REFRESH_RATE_30HZ = 0x0008;
+        internal const ushort CellVideoOutRefreshRateAuto = 0x0000;
+        internal const ushort CellVideoOutRefreshRate5994hz = 0x0001;
+        internal const ushort CellVideoOutRefreshRate50hz = 0x0002;
+        internal const ushort CellVideoOutRefreshRate60hz = 0x0004;
+        internal const ushort CellVideoOutRefreshRate30hz = 0x0008;
 
-        internal const byte CELL_VIDEO_OUT_OUTPUT_STATE_ENABLED = 0x00;
-        internal const byte CELL_VIDEO_OUT_OUTPUT_STATE_DISABLED = 0x01;
-        internal const byte CELL_VIDEO_OUT_OUTPUT_STATE_PREPARING = 0x02;
+        internal const byte CellVideoOutOutputStateEnabled = 0x00;
+        internal const byte CellVideoOutOutputStateDisabled = 0x01;
+        internal const byte CellVideoOutOutputStatePreparing = 0x02;
 
-        internal const byte CELL_VIDEO_OUT_COLOR_SPACE_RGB = 0x01;
-        internal const byte CELL_VIDEO_OUT_COLOR_SPACE_YUV = 0x02;
-        internal const byte CELL_VIDEO_OUT_COLOR_SPACE_XVYCC = 0x04;
+        internal const byte CellVideoOutColorSpaceRgb = 0x01;
+        internal const byte CellVideoOutColorSpaceYuv = 0x02;
+        internal const byte CellVideoOutColorSpaceXvycc = 0x04;
 
-        internal const byte CELL_VIDEO_OUT_PORT_NONE = 0x00;
-        internal const byte CELL_VIDEO_OUT_PORT_HDMI = 0x01;
-        internal const byte CELL_VIDEO_OUT_PORT_NETWORK = 0x41;
-        internal const byte CELL_VIDEO_OUT_PORT_COMPOSITE_S = 0x81;
-        internal const byte CELL_VIDEO_OUT_PORT_D = 0x82;
-        internal const byte CELL_VIDEO_OUT_PORT_COMPONENT = 0x83;
-        internal const byte CELL_VIDEO_OUT_PORT_RGB = 0x84;
-        internal const byte CELL_VIDEO_OUT_PORT_AVMULTI_SCART = 0x85;
-        internal const byte CELL_VIDEO_OUT_PORT_DSUB = 0x86;
-        internal const VideoResolution DEFAULT_RESOLUTION = VideoResolution.Resolution720;
+        internal const byte CellVideoOutPortNone = 0x00;
+        internal const byte CellVideoOutPortHdmi = 0x01;
+        internal const byte CellVideoOutPortNetwork = 0x41;
+        internal const byte CellVideoOutPortCompositeS = 0x81;
+        internal const byte CellVideoOutPortD = 0x82;
+        internal const byte CellVideoOutPortComponent = 0x83;
+        internal const byte CellVideoOutPortRgb = 0x84;
+        internal const byte CellVideoOutPortAvmultiScart = 0x85;
+        internal const byte CellVideoOutPortDsub = 0x86;
+        internal const VideoResolution DefaultResolution = VideoResolution.Resolution720;
 
         private readonly MemoryManager _memoryManager;
 
         internal CellVideoOutConfiguration VideoConfiguration = new()
         {
-            ResolutionId = (byte)DEFAULT_RESOLUTION,
+            ResolutionId = (byte)DefaultResolution,
             Format = 0,
-            Aspect = CELL_VIDEO_OUT_ASPECT_16_9,
+            Aspect = CellVideoOutAspect169,
             Pitch = 0,
         };
 
@@ -181,10 +181,10 @@ namespace PS3Sharp.OS.Modules
         internal ulong CellVideoOutGetResolutionAvailability(PPUThread ppu)
         {
             //TODO
-            uint video_out = ppu.ReadArg<uint>(ARG0);
-            uint resolutionID = ppu.ReadArg<uint>(ARG1);
-            uint aspect = ppu.ReadArg<uint>(ARG2);
-            uint option = ppu.ReadArg<uint>(ARG3);
+            uint video_out = ppu.ReadArg<uint>(Arg0);
+            uint resolutionID = ppu.ReadArg<uint>(Arg1);
+            uint aspect = ppu.ReadArg<uint>(Arg2);
+            uint option = ppu.ReadArg<uint>(Arg3);
 
             Console.WriteLine($"[CellSysutil] cellVideoOutGetResolutionAvailability video_out = {video_out} resolution = {(VideoResolution)resolutionID} aspect = {aspect} option = {option}");
 
@@ -194,23 +194,23 @@ namespace PS3Sharp.OS.Modules
         internal ulong CellVideoOutConfigure(PPUThread ppu)
         {
             //TODO
-            uint video_out = ppu.ReadArg<uint>(ARG0);
-            GuestPtr<CellVideoOutConfiguration> config_ptr = ppu.ReadArg<GuestPtr<CellVideoOutConfiguration>>(ARG1);
-            uint option_ptr = ppu.ReadArg<uint>(ARG2);
-            uint wait_for_event = ppu.ReadArg<uint>(ARG3);
+            uint video_out = ppu.ReadArg<uint>(Arg0);
+            GuestPtr<CellVideoOutConfiguration> config_ptr = ppu.ReadArg<GuestPtr<CellVideoOutConfiguration>>(Arg1);
+            uint option_ptr = ppu.ReadArg<uint>(Arg2);
+            uint wait_for_event = ppu.ReadArg<uint>(Arg3);
             
             // Read/Save configuration struct
             VideoConfiguration = _memoryManager.Read<CellVideoOutConfiguration>(config_ptr);
 
             VideoResolution res = (VideoResolution)VideoConfiguration.ResolutionId;
             Console.WriteLine($"[CellSysutil] cellVideoOutConfigure: Res = {res} Format = {VideoConfiguration.Format} Aspect = {VideoConfiguration.Aspect} Pitch = {VideoConfiguration.Pitch}");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellVideoOutGetResolution(PPUThread ppu)
         {
-            uint resolutionID = ppu.ReadArg<uint>(ARG0);
-            GuestPtr<CellVideoResolution> resPtr = ppu.ReadArg<GuestPtr<CellVideoResolution>>(ARG1);
+            uint resolutionID = ppu.ReadArg<uint>(Arg0);
+            GuestPtr<CellVideoResolution> resPtr = ppu.ReadArg<GuestPtr<CellVideoResolution>>(Arg1);
 
             Console.WriteLine($"[CellGcmSys] cellVideoOutGetResolution resID = {(VideoResolution)resolutionID} resPtr = {resPtr:X8}");
 
@@ -230,29 +230,29 @@ namespace PS3Sharp.OS.Modules
             }
 
             _memoryManager.Write(resPtr, videoResolutionStruct);
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellVideoOutGetState(PPUThread ppu)
         {
             //TODO
-            uint video_out = ppu.ReadArg<uint>(ARG0);
-            uint deviceIndex = ppu.ReadArg<uint>(ARG1);
-            GuestPtr<CellVideoState> state_ptr = ppu.ReadArg<uint>(ARG2);
+            uint video_out = ppu.ReadArg<uint>(Arg0);
+            uint deviceIndex = ppu.ReadArg<uint>(Arg1);
+            GuestPtr<CellVideoState> state_ptr = ppu.ReadArg<uint>(Arg2);
 
             CellVideoState state = new()
             {
-                State = CELL_VIDEO_OUT_OUTPUT_STATE_ENABLED,
-                ColorSpace = CELL_VIDEO_OUT_COLOR_SPACE_RGB,
+                State = CellVideoOutOutputStateEnabled,
+                ColorSpace = CellVideoOutColorSpaceRgb,
                 DisplayMode = new()
                 {
                     ResolutionID = VideoConfiguration.ResolutionId,
-                    ScanMode = CELL_VIDEO_OUT_SCAN_MODE_PROGRESSIVE,
-                    Conversion = CELL_VIDEO_OUT_DISPLAY_CONVERSION_NONE,
+                    ScanMode = CellVideoOutScanModeProgressive,
+                    Conversion = CellVideoOutDisplayConversionNone,
 
                     //TODO: Calculate the correct aspect ratio for AUTO
-                    Aspect = VideoConfiguration.Aspect != CELL_VIDEO_OUT_ASPECT_AUTO ? VideoConfiguration.Aspect : CELL_VIDEO_OUT_ASPECT_16_9,
-                    RefreshRates = CELL_VIDEO_OUT_REFRESH_RATE_59_94HZ,
+                    Aspect = VideoConfiguration.Aspect != CellVideoOutAspectAuto ? VideoConfiguration.Aspect : CellVideoOutAspect169,
+                    RefreshRates = CellVideoOutRefreshRate5994hz,
                 }
             };
 
@@ -261,13 +261,13 @@ namespace PS3Sharp.OS.Modules
             byte resID = state.DisplayMode.ResolutionID;
             Console.WriteLine($"[CellSysutil] cellVideoOutGetState video_out = {video_out} state.DisplayMode.ResolutionID = {resID} deviceIndex = {deviceIndex}");
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellVideoOutGetNumberOfDevice(PPUThread ppu)
         {
             //TODO
-            uint video_out = ppu.ReadArg<uint>(ARG0);
+            uint video_out = ppu.ReadArg<uint>(Arg0);
             Console.WriteLine($"[CellSysutil] cellVideoOutGetNumberOfDevice video_out = {video_out}");
             return 1;
         }
@@ -275,24 +275,24 @@ namespace PS3Sharp.OS.Modules
         internal ulong CellVideoOutGetDeviceInfo(PPUThread ppu)
         {
             //TODO
-            uint video_out = ppu.ReadArg<uint>(ARG0);
-            uint deviceIndex = ppu.ReadArg<uint>(ARG1);
+            uint video_out = ppu.ReadArg<uint>(Arg0);
+            uint deviceIndex = ppu.ReadArg<uint>(Arg1);
 
-            GuestPtr<CellVideoOutDeviceInfo> info_ptr = ppu.ReadArg<GuestPtr<CellVideoOutDeviceInfo>>(ARG2);
+            GuestPtr<CellVideoOutDeviceInfo> info_ptr = ppu.ReadArg<GuestPtr<CellVideoOutDeviceInfo>>(Arg2);
 
             CellVideoOutDisplayMode displayMode = new()
             {
                 ResolutionId = (byte)VideoResolution.Resolution720,
-                ScanMode = CELL_VIDEO_OUT_SCAN_MODE_PROGRESSIVE,
-                Conversion = CELL_VIDEO_OUT_DISPLAY_CONVERSION_NONE,
-                Aspect = CELL_VIDEO_OUT_ASPECT_16_9,
-                RefreshRates = CELL_VIDEO_OUT_REFRESH_RATE_59_94HZ
+                ScanMode = CellVideoOutScanModeProgressive,
+                Conversion = CellVideoOutDisplayConversionNone,
+                Aspect = CellVideoOutAspect169,
+                RefreshRates = CellVideoOutRefreshRate5994hz
             };
 
             CellVideoOutDeviceInfo info = new()
             {
-                PortType = CELL_VIDEO_OUT_PORT_HDMI,
-                State = CELL_VIDEO_OUT_OUTPUT_STATE_ENABLED,
+                PortType = CellVideoOutPortHdmi,
+                State = CellVideoOutOutputStateEnabled,
                 RGBOutputRange = 1,
                 NumberOfAvailableModes = 1,
             };
@@ -301,7 +301,7 @@ namespace PS3Sharp.OS.Modules
 
             _memoryManager.Write(info_ptr, info);
             Console.WriteLine($"[CellSysutil] cellVideoOutGetDeviceInfo");
-            return CELL_OK;
+            return CellOk;
         }
     }
 }

@@ -30,13 +30,13 @@ namespace PS3Sharp.OS.LV2
             internal InlineData.InlineArray8<byte> Name;
         }
 
-        internal const uint SYS_SYNC_RECURSIVE = 0x10;
-        internal const uint SYS_SYNC_NOT_RECURSIVE = 0x20;
+        internal const uint SysSyncRecursive = 0x10;
+        internal const uint SysSyncNotRecursive = 0x20;
 
-        internal const uint SYS_SYNC_FIFO = 0x1;                  // First In, First Out Order
-        internal const uint SYS_SYNC_PRIORITY = 0x2;              // Priority Order
-        internal const uint SYS_SYNC_PRIORITY_INHERIT = 0x3;      // Basic Priority Inheritance Protocol
-        internal const uint SYS_SYNC_RETRY = 0x4;                 // Not selected while unlocking
+        internal const uint SysSyncFifo = 0x1;                  // First In, First Out Order
+        internal const uint SysSyncPriority = 0x2;              // Priority Order
+        internal const uint SysSyncPriorityInherit = 0x3;      // Basic Priority Inheritance Protocol
+        internal const uint SysSyncRetry = 0x4;                 // Not selected while unlocking
 
         private readonly MemoryManager _memoryManager;
         private readonly object _mutex = new();
@@ -48,7 +48,7 @@ namespace PS3Sharp.OS.LV2
         {
             _instancePtr = ptr;
             _attributes = attribute;
-            _isRecursive = attribute.Recursive == SYS_SYNC_RECURSIVE;
+            _isRecursive = attribute.Recursive == SysSyncRecursive;
             _memoryManager = memoryManager;
         }
 
@@ -71,24 +71,24 @@ namespace PS3Sharp.OS.LV2
                 ok = true;
             }
 
-            return ok ? CELL_OK : CELL_ETIMEDOUT;
+            return ok ? CellOk : CellETimedout;
         }
 
         internal ulong _Sys_TryLock()
         {
             bool ok = Monitor.TryEnter(_mutex, 0);
-            return ok ? CELL_OK : CELL_ETIMEDOUT;
+            return ok ? CellOk : CellETimedout;
         }
 
         internal ulong _Sys_Unlock()
         {
             if (!Monitor.IsEntered(_mutex))
             {
-                return CELL_EINVAL;
+                return CellEInval;
             }
 
             Monitor.Exit(_mutex);
-            return CELL_OK;
+            return CellOk;
         }
 
 
@@ -120,11 +120,11 @@ namespace PS3Sharp.OS.LV2
                 {
                     // if acquiring succeeds, set the owner to the current thread
                     SetOwnerFirstTime(ppu.ThreadID);
-                    return CELL_OK;
+                    return CellOk;
                 }
                 else
                 {
-                    return CELL_ETIMEDOUT;
+                    return CellETimedout;
                 }
             }
         }
@@ -146,12 +146,12 @@ namespace PS3Sharp.OS.LV2
                 {
                     // if acquiring succeeds, set the owner to the current thread
                     SetOwnerFirstTime(ppu.ThreadID);
-                    return CELL_OK;
+                    return CellOk;
 
                 }
                 else
                 {
-                    return CELL_EBUSY;
+                    return CellEBusy;
                 }
             }
         }
@@ -160,7 +160,7 @@ namespace PS3Sharp.OS.LV2
         {
             if (!_isRecursive)
             {
-                return CELL_EDEADLK;
+                return CellEDeadlk;
             }
 
             Monitor.Enter(_mutex);
@@ -173,7 +173,7 @@ namespace PS3Sharp.OS.LV2
                 _memoryManager.Write(_instancePtr, mutex);
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         private void SetOwnerFirstTime(uint threadID)
@@ -194,7 +194,7 @@ namespace PS3Sharp.OS.LV2
             // Error if we did not lock the mutex before
             if (!Monitor.IsEntered(_mutex))
             {
-                return CELL_EINVAL;
+                return CellEInval;
             }
 
             // Handle updating the state before unlocking
@@ -235,7 +235,7 @@ namespace PS3Sharp.OS.LV2
                 throw new Exception($"[LwMutex] unlock bug");
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         private bool InterruptableWait(PPUThread ppu)

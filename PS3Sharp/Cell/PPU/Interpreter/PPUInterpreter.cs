@@ -8,7 +8,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
 {
     internal static unsafe partial class PPUInterpreter
     {
-        internal const uint NOP = 0x60000000;
+        internal const uint Nop = 0x60000000;
         internal static Stopwatch stopwatch = new(); //debug
         internal static bool Log = false; //debug
         static bool lastBranch;         //debug
@@ -80,7 +80,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             ppu.State->PC += 4;
             ppu.State->TB++;
 
-            if (instruction.Raw != NOP)
+            if (instruction.Raw != Nop)
             {
                 Execute(instruction, ppu);
             }
@@ -339,15 +339,15 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             uint result;
             if (a < b)
             {
-                result = ConditionRegister.LT;
+                result = ConditionRegister.Lt;
             }
             else if (a > b)
             {
-                result = ConditionRegister.GT;
+                result = ConditionRegister.Gt;
             }
             else
             {
-                result = ConditionRegister.EQ;
+                result = ConditionRegister.Eq;
             }
 
             //result |= (ppu.XER.SO);
@@ -360,15 +360,15 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             uint result;
             if (a < b)
             {
-                result = ConditionRegister.LT;
+                result = ConditionRegister.Lt;
             }
             else if (a > b)
             {
-                result = ConditionRegister.GT;
+                result = ConditionRegister.Gt;
             }
             else
             {
-                result = ConditionRegister.EQ;
+                result = ConditionRegister.Eq;
             }
 
             //result |= (ppu.XER.SO);
@@ -385,15 +385,15 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             }
             else if (a < b)
             {
-                result = ConditionRegister.LT;
+                result = ConditionRegister.Lt;
             }
             else if (a > b)
             {
-                result = ConditionRegister.GT;
+                result = ConditionRegister.Gt;
             }
             else
             {
-                result = ConditionRegister.EQ;
+                result = ConditionRegister.Eq;
             }
 
             //result |= (ppu.XER.SO);
@@ -702,7 +702,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
                 // Set the arguments
                 for (int i = 0; i < args.Length; i++)
                 {
-                    ppu.GPR[ARG0 + i].Value64 = args[i];
+                    ppu.GPR[Arg0 + i].Value64 = args[i];
                 }
             }
 

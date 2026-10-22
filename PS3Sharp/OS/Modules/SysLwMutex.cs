@@ -24,13 +24,13 @@ namespace PS3Sharp.OS.Modules
 
         internal ulong SysLWmutexCreate(PPUThread ppu)
         {
-            GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(ARG0);
-            GuestPtr<LWMutexAttrib> attribute_ptr = ppu.ReadArg<GuestPtr<LWMutexAttrib>>(ARG1);
+            GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(Arg0);
+            GuestPtr<LWMutexAttrib> attribute_ptr = ppu.ReadArg<GuestPtr<LWMutexAttrib>>(Arg1);
 
             if (lwmutex_ptr.IsNullPtr || attribute_ptr.IsNullPtr)
             {
                 Console.WriteLine($"[SysLwMutex] sys_lwmutex_create: got nullptr -> CELL_EAGAIN");
-                return CELL_EAGAIN;
+                return CellEAgain;
             }
 
             uint id = _memoryManager.GetHandle();
@@ -51,13 +51,13 @@ namespace PS3Sharp.OS.Modules
             LV2LWMutex mutex = new(lwmutex_ptr, attribute, _memoryManager);
             AddLWMutex(id, mutex);
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysLWmutexLock(PPUThread ppu)
         {
-            GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(ARG0);
-            ulong us_timeout = ppu.ReadArg<ulong>(ARG1);
+            GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(Arg0);
+            ulong us_timeout = ppu.ReadArg<ulong>(Arg1);
 
             LWMutex mutex = _memoryManager.Read<LWMutex>(lwmutex_ptr);
             uint id = mutex.SleepQueue;
@@ -70,13 +70,13 @@ namespace PS3Sharp.OS.Modules
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 
         internal ulong SysLWmutexTryLock(PPUThread ppu)
         {
-            GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(ARG0);
+            GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(Arg0);
 
             LWMutex mutex = _memoryManager.Read<LWMutex>(lwmutex_ptr);
             uint id = mutex.SleepQueue;
@@ -90,13 +90,13 @@ namespace PS3Sharp.OS.Modules
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 
         internal ulong SysLWmutexUnlock(PPUThread ppu)
         {
-            GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(ARG0);
+            GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(Arg0);
 
             LWMutex mutex = _memoryManager.Read<LWMutex>(lwmutex_ptr);
             uint id = mutex.SleepQueue;
@@ -110,13 +110,13 @@ namespace PS3Sharp.OS.Modules
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 
         internal ulong SysLWmutexDestroy(PPUThread ppu)
         {
-            GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(ARG0);
+            GuestPtr<LWMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LWMutex>>(Arg0);
 
             LWMutex mutex = _memoryManager.Read<LWMutex>(lwmutex_ptr);
             uint id = mutex.SleepQueue;
@@ -124,7 +124,7 @@ namespace PS3Sharp.OS.Modules
             //Console.WriteLine($"[SysLwMutex] sys_lwmutex_destroy id: 0x{id:X8}");
             RemoveLWMutex(id);
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal bool GetLWMutex(uint id, out LV2LWMutex? mutex) => _lwMutexes.TryGetValue(id, out mutex);

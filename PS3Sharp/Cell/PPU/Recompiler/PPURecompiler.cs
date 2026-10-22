@@ -18,15 +18,15 @@ namespace PS3Sharp.Cell.PPU.Recompiler
             internal int IsSyscallExit;
         }
 
-        private const int PAGE_BITS = 16;
-        private const int PAGE_SIZE = 1 << PAGE_BITS;
-        private const uint PAGE_MASK = (1 << PAGE_BITS) - 1;
+        private const int PageBits = 16;
+        private const int PageSize = 1 << PageBits;
+        private const uint PageMask = (1 << PageBits) - 1;
 
         private static readonly bool IsRecompilerEnabled = false; // TODO make this configurable
         internal static bool IsRecompilerUsable => IsPlatformSupported() && IsRecompilerEnabled;
 
         private readonly List<VirtualMemoryHandle?> _executablePages = [];
-        private readonly NativeMemoryHandle?[] _memoryBlocksTable = new NativeMemoryHandle[PAGE_SIZE];
+        private readonly NativeMemoryHandle?[] _memoryBlocksTable = new NativeMemoryHandle[PageSize];
 
         private readonly IRGenerator _irGenerator = new();
         private readonly X64Generator _x64Generator = new();
@@ -45,8 +45,8 @@ namespace PS3Sharp.Cell.PPU.Recompiler
             uint index = virtualAddress >> 2;
 
             // 2 Levels look up
-            uint pageIndex = index >> PAGE_BITS;
-            uint blockIndex = index & PAGE_MASK;
+            uint pageIndex = index >> PageBits;
+            uint blockIndex = index & PageMask;
 
             // Look up the page
             NativeMemoryHandle? page = _memoryBlocksTable[pageIndex];
@@ -54,7 +54,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler
             // If not already allocated, allocate the page
             if (page == null)
             {
-                nuint size = (nuint)(PAGE_SIZE * sizeof(X64Block));
+                nuint size = (nuint)(PageSize * sizeof(X64Block));
                 page = new(size);
                 _memoryBlocksTable[pageIndex] = page;
             }
@@ -125,15 +125,15 @@ namespace PS3Sharp.Cell.PPU.Recompiler
 
         private void AllocateExecutableMemory(int size)
         {
-            ulong alignedSize = Utility.AlignPowerOfTwo((ulong)size, PAGE_SIZE);
+            ulong alignedSize = Utility.AlignPowerOfTwo((ulong)size, PageSize);
 
             // Create VirtualMemoryHandle
             // Uses MEM_RESERVE by default
-            VirtualMemoryHandle memoryHandle = new((nuint)alignedSize, NativeMethods.WIN_API_PAGE_EXECUTE_READWRITE);
+            VirtualMemoryHandle memoryHandle = new((nuint)alignedSize, NativeMethods.WinApiPageExecuteReadwrite);
             nint memory = memoryHandle.DangerousGetHandle();
 
             // Commit
-            NativeMethods.VirtualAlloc(memory, (nuint)alignedSize, NativeMethods.WIN_API_MEM_COMMIT, NativeMethods.WIN_API_PAGE_EXECUTE_READWRITE);
+            NativeMethods.VirtualAlloc(memory, (nuint)alignedSize, NativeMethods.WinApiMemCommit, NativeMethods.WinApiPageExecuteReadwrite);
 
             // Clear
             NativeMemory.Clear((void*)memory, (nuint)alignedSize);

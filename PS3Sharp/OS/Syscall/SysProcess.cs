@@ -18,7 +18,7 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysProcessExit(PPUThread ppu)
         {
-            int exitCode = ppu.ReadArg<int>(ARG0);
+            int exitCode = ppu.ReadArg<int>(Arg0);
             ppu.StopThread();
 
             Console.WriteLine($"[SysProcess] sys_process_exit - exit code = {exitCode} caller thread: [{ppu.ThreadName}]");
@@ -32,7 +32,7 @@ namespace PS3Sharp.OS.Syscall
             ppu.SetExitCode(exitCode);
             ppu.ThreadManager.RequestShutdown();
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysProcessExit2(PPUThread ppu)
@@ -47,24 +47,24 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysProcessGetSDKVersion(PPUThread ppu)
         {
-            uint pid = ppu.ReadArg<uint>(ARG0);
-            GuestPtr<uint> ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
+            uint pid = ppu.ReadArg<uint>(Arg0);
+            GuestPtr<uint> ptr = ppu.ReadArg<GuestPtr<uint>>(Arg1);
             _memoryManager.Write<BigEndian<uint>>(ptr, 0x00360001);
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysProcessIsSPULockLineReservationAddress(PPUThread ppu)
         {
-            uint address = ppu.ReadArg<uint>(ARG0);
-            ulong flags = ppu.ReadArg<ulong>(ARG1);
+            uint address = ppu.ReadArg<uint>(Arg0);
+            ulong flags = ppu.ReadArg<ulong>(Arg1);
 
             uint line = address >> 28; //lock line?
             if (line == 0xD || line == 0xF)
             {
-                return CELL_EPERM;
+                return CellEPerm;
             }
 
-            return CELL_OK;
+            return CellOk;
         }
     }
 }

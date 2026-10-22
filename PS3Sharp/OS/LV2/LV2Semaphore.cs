@@ -41,26 +41,26 @@ namespace PS3Sharp.OS.LV2
         {
             if (count <= 0)
             {
-                return CELL_EINVAL;
+                return CellEInval;
             }
 
             try
             {
                 _semaphore.Release(count);
-                return CELL_OK;
+                return CellOk;
 
             }
             catch (SemaphoreFullException e)
             {
                 // is this the correct error?
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 
         internal ulong TryWait()
         {
             bool ok = _semaphore.Wait(0);
-            return ok ? CELL_OK : CELL_EBUSY;
+            return ok ? CellOk : CellEBusy;
         }
 
         internal ulong Wait(PPUThread ppu, ulong us_timeout)
@@ -76,7 +76,7 @@ namespace PS3Sharp.OS.LV2
                 ok = InterruptableWait(ppu);
             }
 
-            return ok ? CELL_OK : CELL_ETIMEDOUT;
+            return ok ? CellOk : CellETimedout;
         }
 
         private bool InterruptableWait(PPUThread ppu)

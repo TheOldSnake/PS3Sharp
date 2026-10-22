@@ -30,9 +30,9 @@ namespace PS3Sharp.OS.Modules
         ];
 
         internal const uint RSXCallbackSysID = 0x4C4C;
-        internal const uint DEFAULT_SEGMENT_WORD_SIZE = 0x2000;
-        internal const uint COMMAND_BUFFER_SIZE = 32 * 1024;
-        internal const uint DEFAULT_COMMAND_WORD_SIZE = 0x20000;
+        internal const uint DefaultSegmentWordSize = 0x2000;
+        internal const uint CommandBufferSize = 32 * 1024;
+        internal const uint DefaultCommandWordSize = 0x20000;
 
         private readonly MemoryManager _memoryManager;
         private RealitySynthesizer _rsx;
@@ -58,10 +58,10 @@ namespace PS3Sharp.OS.Modules
         internal ulong CellGcmInitBody(PPUThread ppu)
         {
             //TODO
-            uint ctx_ptr = ppu.ReadArg<uint>(ARG0);
-            uint cmd_size = ppu.ReadArg<uint>(ARG1);
-            uint io_size = ppu.ReadArg<uint>(ARG2);
-            uint io_addr = ppu.ReadArg<uint>(ARG3);
+            uint ctx_ptr = ppu.ReadArg<uint>(Arg0);
+            uint cmd_size = ppu.ReadArg<uint>(Arg1);
+            uint io_size = ppu.ReadArg<uint>(Arg2);
+            uint io_addr = ppu.ReadArg<uint>(Arg3);
 
             // Can _CellGcmInitBody get called more than once?
             if (_rsx.MemoryAllocated)
@@ -83,7 +83,7 @@ namespace PS3Sharp.OS.Modules
             // Intialize CellGcmConfig
             CellGcmConfig initialConfig = new()
             {
-                Local_Size = VRAM_SIZE,
+                Local_Size = VramSize,
                 Local_Addr = _rsx.VRAMPtr.Address,
                 IO_Addr = io_addr,
                 IO_Size = io_size,
@@ -97,7 +97,7 @@ namespace PS3Sharp.OS.Modules
             CellGcmCtxData initialCtx = new()
             {
                 Begin = io_addr + 4096,
-                End = io_addr + COMMAND_BUFFER_SIZE - 4,
+                End = io_addr + CommandBufferSize - 4,
                 Current = io_addr + 4096,
                 Callback = callback.VirtualAddress
             };
@@ -112,10 +112,10 @@ namespace PS3Sharp.OS.Modules
 
             //Start RSX thread
             _rsx.StartThread();
-            TotalCommandBuffers = cmd_size / COMMAND_BUFFER_SIZE;
+            TotalCommandBuffers = cmd_size / CommandBufferSize;
 
             Console.WriteLine($"[CellGcmSys] _cellGcmInitBody ctx = {ctx_ptr:X8} cmd_size = {cmd_size:X} io_size = {io_size:X} io_addr = {io_addr:X8} numberOfCommandBuffers = {TotalCommandBuffers}");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal void InitOffsetTable(ref CellGcmConfig config)
@@ -180,7 +180,7 @@ namespace PS3Sharp.OS.Modules
             uint ptr = _rsx.CtxPtr;
             _memoryManager.Write<BigEndian<uint>>(DefaultCtxPtr, ptr);
             Console.WriteLine($"[CellGcmSys] cellGcmSetDefaultCommandBuffer");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal MemoryManager.MemoryBlock CreateRSXCallback()
@@ -204,7 +204,7 @@ namespace PS3Sharp.OS.Modules
         {
             //CellGcmCallback syscall 
 
-            GuestPtr<CellGcmCtxData> ctx_ptr = ppu.ReadArg<GuestPtr<CellGcmCtxData>>(ARG0);
+            GuestPtr<CellGcmCtxData> ctx_ptr = ppu.ReadArg<GuestPtr<CellGcmCtxData>>(Arg0);
             //Console.WriteLine($"CellGcmCallback");
 
             // Flush RSX remaining commands (if any)
@@ -235,7 +235,7 @@ namespace PS3Sharp.OS.Modules
             CellGcmCtrlRegister ctrl = _memoryManager.Read<CellGcmCtrlRegister>(_rsx.CtrlPtr);
 
             // Go to next command buffer if we did not reach the last one, otherwise reset to the beginning
-            uint currentCommandBuffer = (ctx.Begin - (config.IO_Addr + 4096)) / COMMAND_BUFFER_SIZE;
+            uint currentCommandBuffer = (ctx.Begin - (config.IO_Addr + 4096)) / CommandBufferSize;
             uint nextCommandBuffer = currentCommandBuffer + 1;
 
             // Console.WriteLine($"CURRENT COMMAND BUFFER: {currentCommandBuffer}");
@@ -243,14 +243,14 @@ namespace PS3Sharp.OS.Modules
             if (nextCommandBuffer < TotalCommandBuffers)
             {
                 // Advance by one command buffer
-                newBegin = (nextCommandBuffer * COMMAND_BUFFER_SIZE) + config.IO_Addr + 4096;
-                newEnd = ctx.Begin + COMMAND_BUFFER_SIZE - 4;
+                newBegin = (nextCommandBuffer * CommandBufferSize) + config.IO_Addr + 4096;
+                newEnd = ctx.Begin + CommandBufferSize - 4;
             }
             else
             {
                 // Reset
                 newBegin = config.IO_Addr + 4096;
-                newEnd = config.IO_Addr + COMMAND_BUFFER_SIZE - 4;
+                newEnd = config.IO_Addr + CommandBufferSize - 4;
             }
 
             // Inject a Jump command to the new location in the current stream
@@ -263,14 +263,14 @@ namespace PS3Sharp.OS.Modules
             ctx.Current = ctx.Begin;
             _memoryManager.Write(ctx_ptr, ctx);
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmGetConfiguration(PPUThread ppu)
         {
             // Console.WriteLine($"[CellGcmSys] cellGcmGetConfiguration");
 
-            GuestPtr<CellGcmConfig> gcmConfigPtr = ppu.ReadArg<GuestPtr<CellGcmConfig>>(ARG0);
+            GuestPtr<CellGcmConfig> gcmConfigPtr = ppu.ReadArg<GuestPtr<CellGcmConfig>>(Arg0);
 
             //Ensure it was allocated
             if (_rsx.ConfigPtr.IsNullPtr)
@@ -283,12 +283,12 @@ namespace PS3Sharp.OS.Modules
             CellGcmConfig rsxConfig = _memoryManager.Read<CellGcmConfig>(_rsx.ConfigPtr);
             _memoryManager.Write(gcmConfigPtr, rsxConfig);
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmGetControlRegister(PPUThread ppu)
         {
-            uint ctr_ptr = ppu.ReadArg<uint>(ARG0);
+            uint ctr_ptr = ppu.ReadArg<uint>(Arg0);
             uint ret = _rsx.CtrlPtr.Address;
             //  Console.WriteLine($"[CellGcmSys] cellGcmGetControlRegister ret = {ret:X8}");
             return ret; //Address goes to R3
@@ -296,18 +296,18 @@ namespace PS3Sharp.OS.Modules
 
         internal ulong CellGcmAddressToOffset(PPUThread ppu)
         {
-            uint address = ppu.ReadArg<uint>(ARG0);
-            uint offset_ptr = ppu.ReadArg<uint>(ARG1);
+            uint address = ppu.ReadArg<uint>(Arg0);
+            uint offset_ptr = ppu.ReadArg<uint>(Arg1);
             uint offset = _rsx.AddressToOffset(address);
             _memoryManager.Write<BigEndian<uint>>(offset_ptr, offset);
 
             //  Console.WriteLine($"[CellGcmSys] cellGcmAddressToOffset address = {address:X8} offset_ptr = {offset_ptr:X8} ret = {offset:X8}");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmGetLabelAddress(PPUThread ppu)
         {
-            uint index = ppu.ReadArg<uint>(ARG0);
+            uint index = ppu.ReadArg<uint>(Arg0);
             uint ret = _rsx.LabelsPtr + (index * 0x10);
             //Console.WriteLine($"[CellGcmSys] cellGcmGetLabelAddress index = {index:X8} ret = {ret:X8}");
             return ret;
@@ -316,18 +316,18 @@ namespace PS3Sharp.OS.Modules
         internal ulong CellGcmSetFlipMode(PPUThread ppu)
         {
             //Console.WriteLine($"[CellGcmSys] cellGcmSetFlipMode");
-            uint ret = ppu.ReadArg<uint>(ARG0);
+            uint ret = ppu.ReadArg<uint>(Arg0);
             return ret; //No return ?
         }
 
         internal ulong CellGcmSetDisplayBuffer(PPUThread ppu)
         {
             //const u8 bufferId,const u32 offset,const u32 pitch,const u32 width,const u32 height
-            byte bufferId = ppu.ReadArg<byte>(ARG0);
-            uint offset = ppu.ReadArg<uint>(ARG1);
-            uint pitch = ppu.ReadArg<uint>(ARG2);
-            uint width = ppu.ReadArg<uint>(ARG3);
-            uint height = ppu.ReadArg<uint>(ARG4);
+            byte bufferId = ppu.ReadArg<byte>(Arg0);
+            uint offset = ppu.ReadArg<uint>(Arg1);
+            uint pitch = ppu.ReadArg<uint>(Arg2);
+            uint width = ppu.ReadArg<uint>(Arg3);
+            uint height = ppu.ReadArg<uint>(Arg4);
 
             _rsx.EnqueueCommand(new WorkItem(() =>
             {
@@ -344,7 +344,7 @@ namespace PS3Sharp.OS.Modules
             }));
 
             Console.WriteLine($"[CellGcmSys] cellGcmSetDisplayBuffer bufferId = {bufferId} offset = 0x{offset:X} pitch = 0x{pitch:X} width = {width} height = {height}");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmResetFlipStatus(PPUThread ppu)
@@ -353,7 +353,7 @@ namespace PS3Sharp.OS.Modules
             //Interlocked.Exchange<uint>(ref FlipStatus, 1);
             Interlocked.Exchange<ulong>(ref FlipStatus, 1);
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmGetFlipStatus(PPUThread ppu)
@@ -365,8 +365,8 @@ namespace PS3Sharp.OS.Modules
         internal ulong CellGcmSetFlip(PPUThread ppu)
         {
             //TODO
-            GuestPtr<CellGcmCtxData> ctx_ptr = ppu.ReadArg<GuestPtr<CellGcmCtxData>>(ARG0); // Ctx argument
-            byte bufferId = ppu.ReadArg<byte>(ARG1);
+            GuestPtr<CellGcmCtxData> ctx_ptr = ppu.ReadArg<GuestPtr<CellGcmCtxData>>(Arg0); // Ctx argument
+            byte bufferId = ppu.ReadArg<byte>(Arg1);
 
             CellGcmCtxData ctx = _memoryManager.Read<CellGcmCtxData>(ctx_ptr);
 
@@ -377,7 +377,7 @@ namespace PS3Sharp.OS.Modules
             }
 
             // Inject a flip command
-            uint flipCommand = RSXCommand.GCM_FLIP_COMMAND | (1 << RSXCommand.RSX_METHOD_COUNT_SHIFT); // 1 Argument
+            uint flipCommand = RSXCommand.GcmFlipCommand | (1 << RSXCommand.RsxMethodCountShift); // 1 Argument
             _memoryManager.Write<BigEndian<uint>>(ctx.Current, flipCommand);
             _memoryManager.Write<BigEndian<uint>>(ctx.Current + 4, bufferId);
             ctx.Current += 8;
@@ -385,7 +385,7 @@ namespace PS3Sharp.OS.Modules
             _memoryManager.Write<CellGcmCtxData>(ctx_ptr, ctx);
 
             //Console.WriteLine($"[CellGcmSys] CellGcmSetFlip bufferId = {bufferId}");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmSetWaitFlip(PPUThread ppu)
@@ -414,14 +414,14 @@ namespace PS3Sharp.OS.Modules
              }*/
 
             //Console.WriteLine($"[CellGcmSys] CellGcmSetWaitFlip ok");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmGetTiledPitchSize(PPUThread ppu)
         {
             Console.WriteLine($"[CellGcmSys] CellGcmGetTiledPitchSize");
 
-            uint size = ppu.ReadArg<uint>(ARG0);
+            uint size = ppu.ReadArg<uint>(Arg0);
             int length = TILED_PITCHES.Length - 1;
 
             for (int i = 0; i < length; i++)
@@ -435,51 +435,51 @@ namespace PS3Sharp.OS.Modules
                 }
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmSetTileInfo(PPUThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellGcmSys] cellGcmSetTileInfo");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmBindTile(PPUThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellGcmSys] cellGcmBindTile");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmSetTile(PPUThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellGcmSys] cellGcmSetTile");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmBindZcull(PPUThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellGcmSys] cellGcmBindZcull");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmSetDebugOutputLevel(PPUThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellGcmSys] CellGcmSetDebugOutputLevel");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmMapMainMemory(PPUThread ppu)
         {
             //TODO
 
-            GuestVoidPtr address = ppu.ReadArg<GuestVoidPtr>(ARG0);
-            uint size = ppu.ReadArg<uint>(ARG1);
-            GuestPtr<uint> offset_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG2);
+            GuestVoidPtr address = ppu.ReadArg<GuestVoidPtr>(Arg0);
+            uint size = ppu.ReadArg<uint>(Arg1);
+            GuestPtr<uint> offset_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg2);
 
             Console.WriteLine($"[CellGcmSys] cellGcmMapMainMemory -- !!");
 
@@ -488,7 +488,7 @@ namespace PS3Sharp.OS.Modules
             uint freePages = 0;
             uint offs;
 
-            for (offs = 0; offs < (MemoryManager.RAM_SIZE >> 20); offs++)
+            for (offs = 0; offs < (MemoryManager.RamSize >> 20); offs++)
             {
                 if (!IsIoOffsMapped(offs << 20))
                 {
@@ -514,16 +514,16 @@ namespace PS3Sharp.OS.Modules
             }
 
             _memoryManager.Write<BigEndian<uint>>(offset_ptr, offs << 20);
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmMapEaIoAddress(PPUThread ppu)
         {
             Console.WriteLine($"[{ppu.ThreadName}] [CellGcmSys] cellGcmMapEaIoAddress");
 
-            uint ea = ppu.ReadArg<uint>(ARG0);
-            uint io = ppu.ReadArg<uint>(ARG1);
-            uint size = ppu.ReadArg<uint>(ARG2);
+            uint ea = ppu.ReadArg<uint>(Arg0);
+            uint io = ppu.ReadArg<uint>(Arg1);
+            uint size = ppu.ReadArg<uint>(Arg2);
 
             uint pageCount = size >> 20;
 
@@ -533,7 +533,7 @@ namespace PS3Sharp.OS.Modules
                 MapEaIo(ea + pageOffset, io + pageOffset);
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmMapEaIoAddressWithFlags(PPUThread ppu)
@@ -545,43 +545,43 @@ namespace PS3Sharp.OS.Modules
 
         internal ulong CellGcmGetOffsetTable(PPUThread ppu)
         {
-            GuestPtr<CellGcmOffsetTable> offset_table_ptr = ppu.ReadArg<GuestPtr<CellGcmOffsetTable>>(ARG0);
+            GuestPtr<CellGcmOffsetTable> offset_table_ptr = ppu.ReadArg<GuestPtr<CellGcmOffsetTable>>(Arg0);
             Console.WriteLine($"[{ppu.ThreadName}] [CellGcmSys] cellGcmGetOffsetTable");
 
             // Copy our internal offset table
             _memoryManager.Write(offset_table_ptr, OffsetTable);
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmSetSecondVFrequency(PPUThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellGcmSys] cellGcmSetSecondVFrequency");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmSetVBlankFrequency(PPUThread ppu)
         {
-            uint freq = ppu.ReadArg<uint>(ARG0);
+            uint freq = ppu.ReadArg<uint>(Arg0);
             Console.WriteLine($"[CellGcmSys] cellGcmSetVBlankFrequency");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmSetVBlankHandler(PPUThread ppu)
         { // very important
             //TODO
             Console.WriteLine($"[CellGcmSys] cellGcmSetVBlankHandler");
-            VblankHandler = ppu.ReadArg<GuestVoidPtr>(ARG0);
+            VblankHandler = ppu.ReadArg<GuestVoidPtr>(Arg0);
 
             // throw new NotImplementedException();
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmSetFlipHandler(PPUThread ppu)
         { // very important
             Console.WriteLine($"[CellGcmSys] cellGcmSetFlipHandler");
-            FlipHandler = ppu.ReadArg<GuestVoidPtr>(ARG0);
-            return CELL_OK;
+            FlipHandler = ppu.ReadArg<GuestVoidPtr>(Arg0);
+            return CellOk;
         }
 
         internal ulong CellGcmGetLastFlipTime(PPUThread ppu)
@@ -593,19 +593,19 @@ namespace PS3Sharp.OS.Modules
         internal ulong CellGcmGetLastSecondVTime(PPUThread ppu)
         {
             // Console.WriteLine($"[CellGcmSys] cellGcmGetLastSecondVTime");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGcmGetDefaultCommandWordSize(PPUThread ppu)
         {
             Console.WriteLine($"[CellGcmSys] cellGcmGetDefaultCommandWordSize");
-            return DEFAULT_COMMAND_WORD_SIZE;
+            return DefaultCommandWordSize;
         }
 
         internal ulong CellGcmGetDefaultSegmentWordSize(PPUThread ppu)
         {
             Console.WriteLine($"[CellGcmSys] cellGcmGetDefaultSegmentWordSize");
-            return DEFAULT_SEGMENT_WORD_SIZE;
+            return DefaultSegmentWordSize;
         }
     }
 }

@@ -115,11 +115,11 @@ namespace PS3Sharp.Cell.SPU
 
             switch (segment.Type)
             {
-                case SysSPU.SYS_SPU_SEGMENT_TYPE_COPY:
+                case SysSPU.SysSpuSegmentTypeCopy:
                     _memoryManager.ReadBufferFromVirtualMemory(src_value, dest);
                     break;
 
-                case SysSPU.SYS_SPU_SEGMENT_TYPE_FILL:
+                case SysSPU.SysSpuSegmentTypeFill:
                     dest.Fill((byte)src_value);
                     break;
             }

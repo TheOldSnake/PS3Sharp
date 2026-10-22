@@ -7,7 +7,7 @@ namespace PS3Sharp.Cell.RSX
 {
     internal partial class FragmentShaderGenerator
     {
-        internal const uint INSTRUCTION_SIZE = 4 * sizeof(uint);          //4 32-bit words
+        internal const uint InstructionSize = 4 * sizeof(uint);          //4 32-bit words
         private static readonly string _fragmentProgramBase = @"
             #version 460        
 
@@ -194,10 +194,10 @@ namespace PS3Sharp.Cell.RSX
 
             FragmentInstruction instruction = new()
             {
-                OPDEST_Raw = raw0,
-                SRC0_Raw = raw1,
-                SRC1_Raw = raw2,
-                SRC2_Raw = raw3
+                OpDestRaw = raw0,
+                Src0Raw = raw1,
+                Src1Raw = raw2,
+                Src2Raw = raw3
             };
 
             return instruction;
@@ -219,10 +219,10 @@ namespace PS3Sharp.Cell.RSX
                     FragmentInstruction instruction = GetFragmentInstruction(currentAddress);
                     instructionCount++;
 
-                    checksum += instruction.OPDEST_Raw;
-                    checksum += instruction.SRC0_Raw;
-                    checksum += instruction.SRC1_Raw;
-                    checksum += instruction.SRC2_Raw;
+                    checksum += instruction.OpDestRaw;
+                    checksum += instruction.Src0Raw;
+                    checksum += instruction.Src1Raw;
+                    checksum += instruction.Src2Raw;
 
                     if (instruction.ProgramEnd)
                     {
@@ -230,7 +230,7 @@ namespace PS3Sharp.Cell.RSX
                     }
                 }
 
-                currentAddress += INSTRUCTION_SIZE;
+                currentAddress += InstructionSize;
 
                 if (instructionCount > 512)
                 {
@@ -253,7 +253,7 @@ namespace PS3Sharp.Cell.RSX
             while (true)
             {
                 FragmentInstruction instruction = GetFragmentInstruction(_currentAddress);
-                _currentAddress += INSTRUCTION_SIZE;
+                _currentAddress += InstructionSize;
                 _currentFragmentShaderBody += HandleFragmentInstruction(instruction);
 
                 if (instruction.ProgramEnd || stop)
@@ -273,7 +273,7 @@ namespace PS3Sharp.Cell.RSX
         internal string HandleFragmentInstruction(FragmentInstruction instruction)
         {
 
-            if (instruction.Opcode == NVFX_FP_OP_OPCODE_NOP)
+            if (instruction.Opcode == NvfxFpOpOpcodeNop)
             {
                 return string.Empty;
             }
@@ -290,12 +290,12 @@ namespace PS3Sharp.Cell.RSX
 
             switch (instruction.Opcode)
             {
-                case NVFX_FP_OP_OPCODE_NOP:
-                case NVFX_FP_OP_OPCODE_FENCT:
-                case NVFX_FP_OP_OPCODE_FENCB:
+                case NvfxFpOpOpcodeNop:
+                case NvfxFpOpOpcodeFenct:
+                case NvfxFpOpOpcodeFencb:
                     return string.Empty;
 
-                case NVFX_FP_OP_OPCODE_MOV:
+                case NvfxFpOpOpcodeMov:
                     if (instruction.IsDestinationFp16)
                     {
                         generatedSource = $"clampToFloat16({src0})";
@@ -306,7 +306,7 @@ namespace PS3Sharp.Cell.RSX
                     }
                     break;
 
-                case NVFX_FP_OP_OPCODE_MUL:
+                case NvfxFpOpOpcodeMul:
                     if (instruction.IsDestinationFp16)
                     {
                         generatedSource = $"clampToFloat16(({src0} * {src1}))";
@@ -317,12 +317,12 @@ namespace PS3Sharp.Cell.RSX
                     }
                     break;
 
-                case NVFX_FP_OP_OPCODE_ADD:
+                case NvfxFpOpOpcodeAdd:
                     generatedSource = $"({src0} + {src1})";
                     break;
 
 
-                case NVFX_FP_OP_OPCODE_MAD:
+                case NvfxFpOpOpcodeMad:
                     if (instruction.IsDestinationFp16)
                     {
                         generatedSource = $"clampToFloat16(fma({src0}, {src1}, {src2}))";
@@ -333,7 +333,7 @@ namespace PS3Sharp.Cell.RSX
                     }
                     break;
 
-                case NVFX_FP_OP_OPCODE_DP3:
+                case NvfxFpOpOpcodeDp3:
                     if (instruction.IsDestinationFp16)
                     {
                         generatedSource = $"clampToFloat16(vec4(dot(vec3({src0}), vec3({src1}))))";
@@ -344,7 +344,7 @@ namespace PS3Sharp.Cell.RSX
                     }
                     break;
 
-                case NVFX_FP_OP_OPCODE_DP4:
+                case NvfxFpOpOpcodeDp4:
                     if (instruction.IsDestinationFp16)
                     {
                         generatedSource = $"clampToFloat16(vec4(dot(vec4({src0}), vec4({src1}))))";
@@ -357,48 +357,48 @@ namespace PS3Sharp.Cell.RSX
 
                 /* todo: NVFX_FP_OP_OPCODE_DST */
 
-                case NVFX_FP_OP_OPCODE_MIN:
+                case NvfxFpOpOpcodeMin:
                     generatedSource = $"min({src0}, {src1})";
                     break;
 
-                case NVFX_FP_OP_OPCODE_MAX:
+                case NvfxFpOpOpcodeMax:
                     generatedSource = $"max({src0}, {src1})";
                     break;
 
 
-                case NVFX_FP_OP_OPCODE_SLT:
+                case NvfxFpOpOpcodeSlt:
                     generatedSource = $"vec4(lessThan({src0}, {src1}))";
                     break;
 
-                case NVFX_FP_OP_OPCODE_SGE:
+                case NvfxFpOpOpcodeSge:
                     generatedSource = $"vec4(greaterThanEqual({src0}, {src1}))";
                     break;
 
-                case NVFX_FP_OP_OPCODE_SLE:
+                case NvfxFpOpOpcodeSle:
                     generatedSource = $"vec4(lessThanEqual({src0}, {src1}))";
                     break;
 
-                case NVFX_FP_OP_OPCODE_SGT:
+                case NvfxFpOpOpcodeSgt:
                     generatedSource = $"vec4(greaterThan({src0}, {src1}))";
                     break;
 
-                case NVFX_FP_OP_OPCODE_SNE:
+                case NvfxFpOpOpcodeSne:
                     generatedSource = $"vec4(notEqual({src0}, {src1}))";
                     break;
 
-                case NVFX_FP_OP_OPCODE_SEQ:
+                case NvfxFpOpOpcodeSeq:
                     generatedSource = $"vec4(equal({src0}, {src1}))";
                     break;
 
-                case NVFX_FP_OP_OPCODE_FRC:
+                case NvfxFpOpOpcodeFrc:
                     generatedSource = $"fract({src0})";
                     break;
 
-                case NVFX_FP_OP_OPCODE_FLR:
+                case NvfxFpOpOpcodeFlr:
                     generatedSource = $"floor({src0})";
                     break;
 
-                case NVFX_FP_OP_OPCODE_KIL:
+                case NvfxFpOpOpcodeKil:
                     generatedSource = $"discard";
                     break;
 
@@ -406,15 +406,15 @@ namespace PS3Sharp.Cell.RSX
 
                 /* NVFX_FP_OP_OPCODE_UP4B */
 
-                case NVFX_FP_OP_OPCODE_DDX:
+                case NvfxFpOpOpcodeDdx:
                     generatedSource = $"dFdx({src0})";
                     break;
 
-                case NVFX_FP_OP_OPCODE_DDY:
+                case NvfxFpOpOpcodeDdy:
                     generatedSource = $"dFdy({src0})";
                     break;
 
-                case NVFX_FP_OP_OPCODE_TEX:
+                case NvfxFpOpOpcodeTex:
                     generatedSource = $"texture(u_tex{instruction.TextureIndex}, getTexCoords({instruction.TextureIndex}, {src0}.xy))";
                     break;
 
@@ -422,33 +422,33 @@ namespace PS3Sharp.Cell.RSX
                 // these instuctiosn only take the x part ?
                 // need to check
 
-                case NVFX_FP_OP_OPCODE_RCP:
+                case NvfxFpOpOpcodeRcp:
                     generatedSource = $"(1.0f / {src0}).xxxx";
                     break;
 
-                case NVFX_FP_OP_OPCODE_RSQ:
+                case NvfxFpOpOpcodeRsq:
                     generatedSource = $"(1.0f / abs(sqrt({src0}.x))).xxxx";
                     break;
 
 
-                case NVFX_FP_OP_OPCODE_EX2:
+                case NvfxFpOpOpcodeEx2:
                     generatedSource = $"vec4(exp2({src0}.x))";
                     break;
 
-                case NVFX_FP_OP_OPCODE_LG2:
+                case NvfxFpOpOpcodeLg2:
                     generatedSource = $"vec4(log2({src0}.x))";
                     break;
 
-                case NVFX_FP_OP_OPCODE_COS:
+                case NvfxFpOpOpcodeCos:
                     generatedSource = $"cos({src0}.xxxx)";
                     break;
 
-                case NVFX_FP_OP_OPCODE_SIN:
+                case NvfxFpOpOpcodeSin:
                     generatedSource = $"sin({src0}.xxxx)";
                     break;
 
 
-                case NVFX_FP_OP_OPCODE_DP2:
+                case NvfxFpOpOpcodeDp2:
                     if (instruction.IsDestinationFp16)
                     {
                         generatedSource = $"clampToFloat16(vec4(dot(vec2({src0}), vec2({src1}))))";
@@ -459,21 +459,21 @@ namespace PS3Sharp.Cell.RSX
                     }
                     break;
 
-                case NVFX_FP_OP_OPCODE_TXB:
+                case NvfxFpOpOpcodeTxb:
                     //same as NVFX_FP_OP_OPCODE_TEX, but with a bias ?
                     generatedSource = $"/* TODO */ texture(u_tex{instruction.TextureIndex}, getTexCoords({instruction.TextureIndex}, {src0}.xy), {src1}.x)";
                     break;
 
-                case NVFX_FP_OP_OPCODE_NRM:
+                case NvfxFpOpOpcodeNrm:
                     //normalize the xyz part, and extend z from the output to make vec4
                     generatedSource = $"normalize3(vec3({src0})).xyzz";
                     break;
 
-                case NVFX_FP_OP_OPCODE_DIV:
+                case NvfxFpOpOpcodeDiv:
                     generatedSource = $"({src0} / {src1}.x)";
                     break;
 
-                case NVFX_FP_OP_OPCODE_DIVSQ:
+                case NvfxFpOpOpcodeDivsq:
                     generatedSource = $"({src0} / abs(sqrt({src1})))";
                     break;
 
@@ -498,7 +498,7 @@ namespace PS3Sharp.Cell.RSX
             }
             else
             {
-                if (instruction.Opcode != NVFX_FP_OP_OPCODE_KIL)
+                if (instruction.Opcode != NvfxFpOpOpcodeKil)
                 {
                     output = $"{destination}.{destinationChannels} = {generatedSource}.{destinationChannels};\n";
                 }
@@ -527,17 +527,17 @@ namespace PS3Sharp.Cell.RSX
             {
                 case 0:
                     src = instruction.SRC0;
-                    isAbsolute = instruction.SRC0_Abs;
+                    isAbsolute = instruction.SRC0Abs;
                     break;
 
                 case 1:
                     src = instruction.SRC1;
-                    isAbsolute = instruction.SRC1_Abs;
+                    isAbsolute = instruction.SRC1Abs;
                     break;
 
                 case 2:
                     src = instruction.SRC2;
-                    isAbsolute = instruction.SRC2_Abs;
+                    isAbsolute = instruction.SRC2Abs;
                     break;
 
                 default:
@@ -567,7 +567,7 @@ namespace PS3Sharp.Cell.RSX
                         break;
                     }
 
-                    if (srcName.StartsWith("fs_tex") && instruction.Perspective_Correction)
+                    if (srcName.StartsWith("fs_tex") && instruction.PerspectiveCorrection)
                     {
                         srcName = $"({srcName} * gl_FragCoord.w)";
                         break;
@@ -659,7 +659,7 @@ namespace PS3Sharp.Cell.RSX
             {
                 if (instruction.SetCC)
                 {
-                    destName = $"cc{instruction.CC_Index}";
+                    destName = $"cc{instruction.CCIndex}";
                 }
                 else
                 {
@@ -681,25 +681,25 @@ namespace PS3Sharp.Cell.RSX
             string channels = string.Empty;
             int numberOfChannels = 0;
 
-            if (instruction.X_Mask)
+            if (instruction.XMask)
             {
                 channels += "x";
                 numberOfChannels++;
             }
 
-            if (instruction.Y_Mask)
+            if (instruction.YMask)
             {
                 channels += "y";
                 numberOfChannels++;
             }
 
-            if (instruction.Z_Mask)
+            if (instruction.ZMask)
             {
                 channels += "z";
                 numberOfChannels++;
             }
 
-            if (instruction.W_Mask)
+            if (instruction.WMask)
             {
                 channels += "w";
                 numberOfChannels++;
@@ -743,21 +743,21 @@ namespace PS3Sharp.Cell.RSX
             }
 
             // Generate the condition register
-            string cc = $"cc{instruction.CC_Index}";
+            string cc = $"cc{instruction.CCIndex}";
 
             // CC swizzle
             string xyzw = "xyzw";
             string channels = string.Empty;
-            channels += xyzw[(int)instruction.CC_SwizzleX];
-            channels += xyzw[(int)instruction.CC_SwizzleY];
-            channels += xyzw[(int)instruction.CC_SwizzleZ];
-            channels += xyzw[(int)instruction.CC_SwizzleW];
+            channels += xyzw[(int)instruction.CCSwizzleX];
+            channels += xyzw[(int)instruction.CCSwizzleY];
+            channels += xyzw[(int)instruction.CCSwizzleZ];
+            channels += xyzw[(int)instruction.CCSwizzleW];
             cc += $".{channels}";
 
             string resultCode = string.Empty;
 
             int numberOfChannels = destinationChannels.Length;
-            if (instruction.Opcode != NVFX_FP_OP_OPCODE_KIL)
+            if (instruction.Opcode != NvfxFpOpOpcodeKil)
             {
 
                 // Assign based on channel-wise comparison (can we just use mix() ?)

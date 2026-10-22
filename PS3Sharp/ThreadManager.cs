@@ -53,7 +53,7 @@ namespace PS3Sharp
                     throw new InvalidOperationException($"[ThreadManager] Only one main thread is allowed");
                 }
 
-                uint stackSize = MemoryManager.DEFAULT_STACK_SIZE;
+                uint stackSize = MemoryManager.DefaultStackSize;
                 ulong arg = 0;
 
                 PPUThread ppu = CreatePPUThread("main_thread", entryPointer, stackSize, arg, syscallDispatcher, executablePath);
@@ -79,7 +79,7 @@ namespace PS3Sharp
 
                 if (stackSize < 0x1000)
                 {
-                    stackSize = MemoryManager.DEFAULT_STACK_SIZE;
+                    stackSize = MemoryManager.DefaultStackSize;
                 }
 
                 uint id = GetNewID();

@@ -113,22 +113,22 @@ namespace PS3Sharp.FileSystem
             // Error if it's a directory
             if (IsDirectory(hostPath))
             {
-                return CELL_EISDIR;
+                return CellEIsDir;
             }
 
             // Error if the file does not exist (and create flag is not set)
             bool exists = IsFile(hostPath);
-            bool create = (flags & O_CREAT) != 0;
+            bool create = (flags & OCreat) != 0;
 
             if (!(exists || create))
             {
-                return CELL_ENOENT;
+                return CellENoEnt;
             }
 
             // Open file
             GuestFile file = new(hostPath, fd, ownerThread, flags);
             _openFiles.TryAdd(fd, file);
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong OpenDirectory(string hostPath, int fd, uint ownerThread)
@@ -136,20 +136,20 @@ namespace PS3Sharp.FileSystem
             // Error if it's a file
             if (IsFile(hostPath))
             {
-                return CELL_ENOTDIR;
+                return CellENotDir;
             }
 
             // Error if the directory does not exist
             if (!IsDirectory(hostPath))
             {
-                return CELL_ENOENT;
+                return CellENoEnt;
             }
 
             // Open directory
             GuestDirectory directory = new(hostPath, fd, ownerThread);
             _openDirectories.TryAdd(fd, directory);
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal void CloseFile(int fd)

@@ -9,27 +9,27 @@ namespace PS3Sharp
         internal readonly struct ProgramHeader
         {
             //Segment types (PT_*)
-            internal const uint PT_NULL = 0;
-            internal const uint PT_LOAD = 1;
-            internal const uint PT_DYNAMIC = 2;
-            internal const uint PT_INTERP = 3;
-            internal const uint PT_NOTE = 4;
-            internal const uint PT_SHLIB = 5;
-            internal const uint PT_PHDR = 6;
-            internal const uint PT_TLS = 7;
+            internal const uint PtNull = 0;
+            internal const uint PtLoad = 1;
+            internal const uint PtDynamic = 2;
+            internal const uint PtInterp = 3;
+            internal const uint PtNote = 4;
+            internal const uint PtShlib = 5;
+            internal const uint PtPhdr = 6;
+            internal const uint PtTls = 7;
 
             //OS-specific
-            internal const uint PT_LOOS = 0x60000000;
-            internal const uint PT_HIOS = 0x6FFFFFFF;
+            internal const uint PtLoos = 0x60000000;
+            internal const uint PtHios = 0x6FFFFFFF;
 
             //Processor-specific
-            internal const uint PT_LOPROC = 0x70000000;
-            internal const uint PT_HIPROC = 0x7FFFFFFF;
+            internal const uint PtLoproc = 0x70000000;
+            internal const uint PtHiproc = 0x7FFFFFFF;
 
             //PS3-specific
-            internal const uint PROC_PARAM = 0x60000001;
-            internal const uint PRX_PARAM = 0x60000002;
-            internal const uint SCE_PPURELA = 0x700000A4;
+            internal const uint ProcParam = 0x60000001;
+            internal const uint PrxParam = 0x60000002;
+            internal const uint ScePpurela = 0x700000A4;
 
             //Fields
             internal readonly BigEndian<uint> p_type;      /* Segment type */
@@ -46,17 +46,17 @@ namespace PS3Sharp
                 ulong type = programHeader.p_type;
                 switch (type)
                 {
-                    case PT_NULL: return "PT_NULL";
-                    case PT_LOAD: return "PT_LOAD";
-                    case PT_DYNAMIC: return "PT_DYNAMIC";
-                    case PT_INTERP: return "PT_INTERP";
-                    case PT_NOTE: return "PT_NOTE";
-                    case PT_SHLIB: return "PT_SHLIB";
-                    case PT_PHDR: return "PT_PHDR";
-                    case PT_TLS: return "PT_TLS";
+                    case PtNull: return "PT_NULL";
+                    case PtLoad: return "PT_LOAD";
+                    case PtDynamic: return "PT_DYNAMIC";
+                    case PtInterp: return "PT_INTERP";
+                    case PtNote: return "PT_NOTE";
+                    case PtShlib: return "PT_SHLIB";
+                    case PtPhdr: return "PT_PHDR";
+                    case PtTls: return "PT_TLS";
 
-                    case PROC_PARAM: return "PROC_PARAM";
-                    case PRX_PARAM: return "PRX_PARAM";
+                    case ProcParam: return "PROC_PARAM";
+                    case PrxParam: return "PRX_PARAM";
 
                     default: return $"Unknown type: ({type})";
                 }

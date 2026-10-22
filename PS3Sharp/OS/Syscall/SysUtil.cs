@@ -12,7 +12,6 @@ namespace PS3Sharp.OS.Syscall
 {
     internal class SysUtil
     {
-
         [StructLayout(LayoutKind.Sequential)]
         internal struct CellAudioState : IPS3Struct
         {
@@ -39,111 +38,110 @@ namespace PS3Sharp.OS.Syscall
             internal GuestVoidPtr UserDataPtr;
         }
 
-
         // Should probably move these somewhere else
-        internal enum SYSTEM_PARAM : uint
+        internal enum SystemParam : uint
         {
             // Integers
-            CELL_SYSUTIL_SYSTEMPARAM_ID_LANG = 0x0111,
-            CELL_SYSUTIL_SYSTEMPARAM_ID_ENTER_BUTTON_ASSIGN = 0x0112,
-            CELL_SYSUTIL_SYSTEMPARAM_ID_DATE_FORMAT = 0x0114,
-            CELL_SYSUTIL_SYSTEMPARAM_ID_TIME_FORMAT = 0x0115,
-            CELL_SYSUTIL_SYSTEMPARAM_ID_TIMEZONE = 0x0116,
-            CELL_SYSUTIL_SYSTEMPARAM_ID_SUMMERTIME = 0x0117,
-            CELL_SYSUTIL_SYSTEMPARAM_ID_GAME_PARENTAL_LEVEL = 0x0121,
-            CELL_SYSUTIL_SYSTEMPARAM_ID_GAME_PARENTAL_LEVEL0_RESTRICT = 0x0123,
-            CELL_SYSUTIL_SYSTEMPARAM_ID_CURRENT_USER_HAS_NP_ACCOUNT = 0x0141,
-            CELL_SYSUTIL_SYSTEMPARAM_ID_CAMERA_PLFREQ = 0x0151,
-            CELL_SYSUTIL_SYSTEMPARAM_ID_PAD_RUMBLE = 0x0152,
-            CELL_SYSUTIL_SYSTEMPARAM_ID_KEYBOARD_TYPE = 0x0153,
-            CELL_SYSUTIL_SYSTEMPARAM_ID_JAPANESE_KEYBOARD_ENTRY_METHOD = 0x0154,
-            CELL_SYSUTIL_SYSTEMPARAM_ID_CHINESE_KEYBOARD_ENTRY_METHOD = 0x0155,
-            CELL_SYSUTIL_SYSTEMPARAM_ID_PAD_AUTOOFF = 0x0156,
+            CellSysUtilSystemParamIdLang = 0x0111,
+            CellSysUtilSystemParamIdEnterButtonAssign = 0x0112,
+            CellSysUtilSystemParamIdDateFormat = 0x0114,
+            CellSysUtilSystemParamIdTimeFormat = 0x0115,
+            CellSysUtilSystemParamIdTimezone = 0x0116,
+            CellSysUtilSystemParamIdSummertime = 0x0117,
+            CellSysUtilSystemParamIdGameParentalLevel = 0x0121,
+            CellSysUtilSystemParamIdGameParentalLevel0Restrict = 0x0123,
+            CellSysUtilSystemParamIdCurrentUserHasNpAccount = 0x0141,
+            CellSysUtilSystemParamIdCameraPlfreq = 0x0151,
+            CellSysUtilSystemParamIdPadRumble = 0x0152,
+            CellSysUtilSystemParamIdKeyboardType = 0x0153,
+            CellSysUtilSystemParamIdJapaneseKeyboardEntryMethod = 0x0154,
+            CellSysUtilSystemParamIdChineseKeyboardEntryMethod = 0x0155,
+            CellSysUtilSystemParamIdPadAutooff = 0x0156,
 
             // Strings
-            CELL_SYSUTIL_SYSTEMPARAM_ID_NICKNAME = 0x0113,
-            CELL_SYSUTIL_SYSTEMPARAM_ID_CURRENT_USERNAME = 0x0131,
+            CellSysUtilSystemParamIdNickName = 0x0113,
+            CellSysUtilSystemParamIdCurrentUserName = 0x0131,
         }
 
-        internal enum SYSTEM_LANG : uint
+        internal enum SystemLang : uint
         {
-            CELL_SYSUTIL_LANG_JAPANESE = 0,
-            CELL_SYSUTIL_LANG_ENGLISH_US = 1,
-            CELL_SYSUTIL_LANG_FRENCH = 2,
-            CELL_SYSUTIL_LANG_SPANISH = 3,
-            CELL_SYSUTIL_LANG_GERMAN = 4,
-            CELL_SYSUTIL_LANG_ITALIAN = 5,
-            CELL_SYSUTIL_LANG_DUTCH = 6,
-            CELL_SYSUTIL_LANG_PORTUGUESE_PT = 7,
-            CELL_SYSUTIL_LANG_RUSSIAN = 8,
-            CELL_SYSUTIL_LANG_KOREAN = 9,
-            CELL_SYSUTIL_LANG_CHINESE_T = 10,
-            CELL_SYSUTIL_LANG_CHINESE_S = 11,
-            CELL_SYSUTIL_LANG_FINNISH = 12,
-            CELL_SYSUTIL_LANG_SWEDISH = 13,
-            CELL_SYSUTIL_LANG_DANISH = 14,
-            CELL_SYSUTIL_LANG_NORWEGIAN = 15,
-            CELL_SYSUTIL_LANG_POLISH = 16,
-            CELL_SYSUTIL_LANG_PORTUGUESE_BR = 17,
-            CELL_SYSUTIL_LANG_ENGLISH_GB = 18,
+            CellSysutilLangJapanese = 0,
+            CellSysutilLangEnglishUs = 1,
+            CellSysutilLangFrench = 2,
+            CellSysutilLangSpanish = 3,
+            CellSysutilLangGerman = 4,
+            CellSysutilLangItalian = 5,
+            CellSysutilLangDutch = 6,
+            CellSysutilLangPortuguesePt = 7,
+            CellSysutilLangRussian = 8,
+            CellSysutilLangKorean = 9,
+            CellSysutilLangChineseT = 10,
+            CellSysutilLangChineseS = 11,
+            CellSysutilLangFinnish = 12,
+            CellSysutilLangSwedish = 13,
+            CellSysutilLangDanish = 14,
+            CellSysutilLangNorwegian = 15,
+            CellSysutilLangPolish = 16,
+            CellSysutilLangPortugueseBr = 17,
+            CellSysutilLangEnglishGb = 18,
         }
 
-        internal enum ENTER_BUTTON : uint
+        internal enum EnterButton : uint
         {
-            CELL_SYSUTIL_ENTER_BUTTON_ASSIGN_CIRCLE = 0,
-            CELL_SYSUTIL_ENTER_BUTTON_ASSIGN_CROSS = 1,
+            CellSysutilEnterButtonAssignCircle = 0,
+            CellSysutilEnterButtonAssignCross = 1,
         }
 
-        internal enum DATE_FMT : uint
+        internal enum DateFmt : uint
         {
-            CELL_SYSUTIL_DATE_FMT_YYYYMMDD = 0,
-            CELL_SYSUTIL_DATE_FMT_DDMMYYYY = 1,
-            CELL_SYSUTIL_DATE_FMT_MMDDYYYY = 2,
+            CellSysutilDateFmtYyyymmdd = 0,
+            CellSysutilDateFmtDdmmyyyy = 1,
+            CellSysutilDateFmtMmddyyyy = 2,
         }
 
-        internal enum TIME_FMT : uint
+        internal enum TimeFmt : uint
         {
-            CELL_SYSUTIL_TIME_FMT_CLOCK12 = 0,
-            CELL_SYSUTIL_TIME_FMT_CLOCK24 = 1,
+            CellSysutilTimeFmtClock12 = 0,
+            CellSysutilTimeFmtClock24 = 1,
         }
 
-        internal enum PARENTAL_LEVEL : uint
+        internal enum ParentalLevel : uint
         {
-            CELL_SYSUTIL_GAME_PARENTAL_OFF = 0,
-            CELL_SYSUTIL_GAME_PARENTAL_LEVEL01 = 1,
-            CELL_SYSUTIL_GAME_PARENTAL_LEVEL02 = 2,
-            CELL_SYSUTIL_GAME_PARENTAL_LEVEL03 = 3,
-            CELL_SYSUTIL_GAME_PARENTAL_LEVEL04 = 4,
-            CELL_SYSUTIL_GAME_PARENTAL_LEVEL05 = 5,
-            CELL_SYSUTIL_GAME_PARENTAL_LEVEL06 = 6,
-            CELL_SYSUTIL_GAME_PARENTAL_LEVEL07 = 7,
-            CELL_SYSUTIL_GAME_PARENTAL_LEVEL08 = 8,
-            CELL_SYSUTIL_GAME_PARENTAL_LEVEL09 = 9,
-            CELL_SYSUTIL_GAME_PARENTAL_LEVEL10 = 10,
-            CELL_SYSUTIL_GAME_PARENTAL_LEVEL11 = 11,
+            CellSysutilGameParentalOff = 0,
+            CellSysutilGameParentalLevel01 = 1,
+            CellSysutilGameParentalLevel02 = 2,
+            CellSysutilGameParentalLevel03 = 3,
+            CellSysutilGameParentalLevel04 = 4,
+            CellSysutilGameParentalLevel05 = 5,
+            CellSysutilGameParentalLevel06 = 6,
+            CellSysutilGameParentalLevel07 = 7,
+            CellSysutilGameParentalLevel08 = 8,
+            CellSysutilGameParentalLevel09 = 9,
+            CellSysutilGameParentalLevel10 = 10,
+            CellSysutilGameParentalLevel11 = 11,
         }
 
-        internal enum PAD_RUMBLE : uint
+        internal enum PadRumble : uint
         {
-            CELL_SYSUTIL_PAD_RUMBLE_OFF = 0,
-            CELL_SYSUTIL_PAD_RUMBLE_ON = 1,
+            CellSysutilPadRumbleOff = 0,
+            CellSysutilPadRumbleOn = 1,
         }
 
-        internal enum CAMERA_PLFREQ : uint
+        internal enum CameraPlfreq : uint
         {
-            CELL_SYSUTIL_CAMERA_PLFREQ_DISABLED = 0,
-            CELL_SYSUTIL_CAMERA_PLFREQ_50HZ = 1,
-            CELL_SYSUTIL_CAMERA_PLFREQ_60HZ = 2,
-            CELL_SYSUTIL_CAMERA_PLFREQ_DEVCIE_DEPEND = 4,
+            CellSysutilCameraPlfreqDisabled = 0,
+            CellSysutilCameraPlfreq50Hz = 1,
+            CellSysutilCameraPlfreq60Hz = 2,
+            CellSysutilCameraPlfreqDevcieDepend = 4,
         }
 
-        internal enum STRING_SIZES : uint
+        internal enum StringSizes : uint
         {
-            CELL_SYSUTIL_SYSTEMPARAM_NICKNAME_SIZE = 0x80,
-            CELL_SYSUTIL_SYSTEMPARAM_CURRENT_USERNAME_SIZE = 0x40
+            CellSysutilSystemparamNicknameSize = 0x80,
+            CellSysutilSystemparamCurrentUsernameSize = 0x40
         }
 
-        internal const uint CELL_SYSUTIL_ERROR_VALUE = 0x8002B102;
+        internal const uint CellSysutilErrorValue = 0x8002B102;
         private readonly MemoryManager _memoryManager;
 
         internal SysUtil(MemoryManager memoryManager)
@@ -154,13 +152,13 @@ namespace PS3Sharp.OS.Syscall
         internal ulong CellSysutilRegisterCallback(PPUThread ppu)
         {
             //TODO
-            uint index = ppu.ReadArg<uint>(ARG0);
-            GuestVoidPtr address_ptr = ppu.ReadArg<GuestVoidPtr>(ARG1); //this is a pointer to the address, not the code
-            GuestVoidPtr userdata_ptr = ppu.ReadArg<GuestVoidPtr>(ARG2);
+            uint index = ppu.ReadArg<uint>(Arg0);
+            GuestVoidPtr address_ptr = ppu.ReadArg<GuestVoidPtr>(Arg1); //this is a pointer to the address, not the code
+            GuestVoidPtr userdata_ptr = ppu.ReadArg<GuestVoidPtr>(Arg2);
 
             if (index > 3)
             {
-                return CELL_SYSUTIL_ERROR_VALUE;
+                return CellSysutilErrorValue;
             }
 
             ppu.SysUtilCallbacks[index] = new SysUtilCallback
@@ -170,23 +168,23 @@ namespace PS3Sharp.OS.Syscall
             };
 
             Console.WriteLine($"[CellSysutil] cellSysutilRegisterCallback index = {index} - address: 0x{address_ptr:X8}");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellSysutilUnregisterCallback(PPUThread ppu)
         {
-            uint index = ppu.ReadArg<uint>(ARG0);
+            uint index = ppu.ReadArg<uint>(Arg0);
 
             if (index > 3)
             {
-                return CELL_SYSUTIL_ERROR_VALUE;
+                return CellSysutilErrorValue;
             }
 
             ppu.SysUtilCallbacks[index].AddressPtr = 0;
             ppu.SysUtilCallbacks[index].UserDataPtr = 0;
 
             Console.WriteLine($"[CellSysutil] cellSysutilUnregisterCallback");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellSysutilCheckCallback(PPUThread ppu)
@@ -196,7 +194,7 @@ namespace PS3Sharp.OS.Syscall
             // LittleBigPlanet Seems to need this - other games might crash so idk
 
             // Console.WriteLine($"[CellSysutil] cellSysutilCheckCallback -> CELL_OK");
-            // return CELL_OK;
+            // return CellOk;
 
             Span<ulong> oldArgs = stackalloc ulong[5];
             Span<ulong> args = stackalloc ulong[5];
@@ -205,11 +203,11 @@ namespace PS3Sharp.OS.Syscall
             oldArgs.Clear();
 
             // Save old arg registers
-            oldArgs[0] = ppu.ReadArg<ulong>(ARG0);
-            oldArgs[1] = ppu.ReadArg<ulong>(ARG1);
-            oldArgs[2] = ppu.ReadArg<ulong>(ARG2);
-            oldArgs[3] = ppu.ReadArg<ulong>(ARG3);
-            oldArgs[4] = ppu.ReadArg<ulong>(ARG4);
+            oldArgs[0] = ppu.ReadArg<ulong>(Arg0);
+            oldArgs[1] = ppu.ReadArg<ulong>(Arg1);
+            oldArgs[2] = ppu.ReadArg<ulong>(Arg2);
+            oldArgs[3] = ppu.ReadArg<ulong>(Arg3);
+            oldArgs[4] = ppu.ReadArg<ulong>(Arg4);
 
             for (int i = 0; i < ppu.SysUtilCallbacks.Length; i++)
             {
@@ -235,88 +233,87 @@ namespace PS3Sharp.OS.Syscall
             }
 
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellAudioOutGetSoundAvailability(PPUThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellAudioOutGetSoundAvailability");
-            const ulong CELL_AUDIO_OUT_PRIMARY = 2;
-            return CELL_OK;
+            const ulong CellAudioOutPrimary = 2;
+            return CellOk;
         }
 
         internal ulong CellAudioOutConfigure(PPUThread ppu)
         {
             //TODO
-            const ulong CELL_AUDIO_OUT_ERROR_UNSUPPORTED_AUDIO_OUT = 0x8002b245;
+            const ulong CellAudioOutErrorUnsupportedAudioOut = 0x8002b245;
             Console.WriteLine($"[CellSysutil] cellAudioOutConfigure");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellAudioOutGetState(PPUThread ppu)
         {
             //TODO
-            const byte CELL_AUDIO_OUT_OUTPUT_STATE_ENABLED = 0;
-            const byte CELL_AUDIO_OUT_OUTPUT_STATE_DISABLED = 1;
-            const byte CELL_AUDIO_OUT_OUTPUT_STATE_PREPARING = 2;
+            const byte CellAudioOutOutputStateEnabled = 0;
+            const byte CellAudioOutOutputStateDisabled = 1;
+            const byte CellAudioOutOutputStatePreparing = 2;
 
-            GuestPtr<CellAudioState> state_ptr = ppu.ReadArg<GuestPtr<CellAudioState>>(ARG2);
+            GuestPtr<CellAudioState> state_ptr = ppu.ReadArg<GuestPtr<CellAudioState>>(Arg2);
 
             CellAudioState state = _memoryManager.Read<CellAudioState>(state_ptr);
-            state.State = CELL_AUDIO_OUT_OUTPUT_STATE_ENABLED;
+            state.State = CellAudioOutOutputStateEnabled;
             _memoryManager.Write(state_ptr, state);
 
             Console.WriteLine($"[CellSysutil] cellAudioOutGetState");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellSysutilGetSystemParamInt(PPUThread ppu)
         {
-            uint param = ppu.ReadArg<uint>(ARG0);
-            uint value_ptr = ppu.ReadArg<uint>(ARG1);
+            uint param = ppu.ReadArg<uint>(Arg0);
+            uint value_ptr = ppu.ReadArg<uint>(Arg1);
 
-            Console.WriteLine($"[CellSysutil] cellSysutilGetSystemParamInt param = {(SYSTEM_PARAM)param} ptr = 0x{value_ptr:X8}");
+            Console.WriteLine($"[CellSysutil] cellSysutilGetSystemParamInt param = {(SystemParam)param} ptr = 0x{value_ptr:X8}");
 
             if (param == 0)
             {
-                return CELL_SYSUTIL_ERROR_VALUE;
+                return CellSysutilErrorValue;
             }
 
-            SYSTEM_PARAM system_param = (SYSTEM_PARAM)param;
+            SystemParam system_param = (SystemParam)param;
             uint value;
 
             switch (system_param)
             {
-                case SYSTEM_PARAM.CELL_SYSUTIL_SYSTEMPARAM_ID_LANG:
-                    value = (uint)SYSTEM_LANG.CELL_SYSUTIL_LANG_ENGLISH_US;
+                case SystemParam.CellSysUtilSystemParamIdLang:
+                    value = (uint)SystemLang.CellSysutilLangEnglishUs;
                     break;
 
-                case SYSTEM_PARAM.CELL_SYSUTIL_SYSTEMPARAM_ID_ENTER_BUTTON_ASSIGN:
-                    value = (uint)ENTER_BUTTON.CELL_SYSUTIL_ENTER_BUTTON_ASSIGN_CROSS;
+                case SystemParam.CellSysUtilSystemParamIdEnterButtonAssign:
+                    value = (uint)EnterButton.CellSysutilEnterButtonAssignCross;
                     break;
 
-                case SYSTEM_PARAM.CELL_SYSUTIL_SYSTEMPARAM_ID_DATE_FORMAT:
-                    value = (uint)DATE_FMT.CELL_SYSUTIL_DATE_FMT_DDMMYYYY;
+                case SystemParam.CellSysUtilSystemParamIdDateFormat:
+                    value = (uint)DateFmt.CellSysutilDateFmtDdmmyyyy;
                     break;
 
-                case SYSTEM_PARAM.CELL_SYSUTIL_SYSTEMPARAM_ID_TIME_FORMAT:
-                    value = (uint)TIME_FMT.CELL_SYSUTIL_TIME_FMT_CLOCK24;
+                case SystemParam.CellSysUtilSystemParamIdTimeFormat:
+                    value = (uint)TimeFmt.CellSysutilTimeFmtClock24;
                     break;
 
-                case SYSTEM_PARAM.CELL_SYSUTIL_SYSTEMPARAM_ID_TIMEZONE:
-                case SYSTEM_PARAM.CELL_SYSUTIL_SYSTEMPARAM_ID_SUMMERTIME:
+                case SystemParam.CellSysUtilSystemParamIdTimezone:
+                case SystemParam.CellSysUtilSystemParamIdSummertime:
                     value = 0;
                     break;
 
-                case SYSTEM_PARAM.CELL_SYSUTIL_SYSTEMPARAM_ID_GAME_PARENTAL_LEVEL:
-                    value = (uint)PARENTAL_LEVEL.CELL_SYSUTIL_GAME_PARENTAL_OFF;
+                case SystemParam.CellSysUtilSystemParamIdGameParentalLevel:
+                    value = (uint)ParentalLevel.CellSysutilGameParentalOff;
                     break;
 
-                case SYSTEM_PARAM.CELL_SYSUTIL_SYSTEMPARAM_ID_CURRENT_USER_HAS_NP_ACCOUNT:
+                case SystemParam.CellSysUtilSystemParamIdCurrentUserHasNpAccount:
                     value = 0;
                     break;
-
 
                 default:
                     throw new Exception($"[CellSysutil] unknown param = 0x{param:X8}");
@@ -324,22 +321,22 @@ namespace PS3Sharp.OS.Syscall
 
 
             _memoryManager.Write<BigEndian<uint>>(value_ptr, value);
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellSysutilGetSystemParamString(PPUThread ppu)
         {
             //TODO
 
-            uint param = ppu.ReadArg<uint>(ARG0);
-            GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(ARG1);
-            int size = ppu.ReadArg<int>(ARG2);
+            uint param = ppu.ReadArg<uint>(Arg0);
+            GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(Arg1);
+            int size = ppu.ReadArg<int>(Arg2);
 
             Console.WriteLine($"[CellSysutil] CellSysutilGetSystemParamString param = 0x{param:X8}");
 
             if (buf.IsNullPtr)
             {
-                return CELL_SYSUTIL_ERROR_VALUE;
+                return CellSysutilErrorValue;
             }
 
             byte[] data = Encoding.UTF8.GetBytes("Snake\0");
@@ -347,39 +344,39 @@ namespace PS3Sharp.OS.Syscall
             _memoryManager.ClearMemory(buf, size);
             _memoryManager.CopyBufferToVirtualMemory(data, buf);
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellSaveDataUserAutoLoad(PPUThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellSaveDataUserAutoLoad");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellSaveDataAutoLoad2(PPUThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellSaveDataAutoLoad2");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellSaveDataAutoSave2(PPUThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellSaveDataAutoSave2");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellMsgDialogOpen2(PPUThread ppu)
         {
             //TODO: Implement actual dialog
 
-            uint type = ppu.ReadArg<uint>(ARG0);
-            GuestVoidPtr msg_ptr = ppu.ReadArg<GuestVoidPtr>(ARG1);
-            GuestVoidPtr callback_ptr = ppu.ReadArg<GuestVoidPtr>(ARG2);
-            GuestVoidPtr user_data = ppu.ReadArg<GuestVoidPtr>(ARG3);       //is this a pointer?
-            uint param = ppu.ReadArg<uint>(ARG3);
+            uint type = ppu.ReadArg<uint>(Arg0);
+            GuestVoidPtr msg_ptr = ppu.ReadArg<GuestVoidPtr>(Arg1);
+            GuestVoidPtr callback_ptr = ppu.ReadArg<GuestVoidPtr>(Arg2);
+            GuestVoidPtr user_data = ppu.ReadArg<GuestVoidPtr>(Arg3);       //is this a pointer?
+            uint param = ppu.ReadArg<uint>(Arg3);
 
             string msg = _memoryManager.ReadString(msg_ptr);
 
@@ -394,34 +391,34 @@ namespace PS3Sharp.OS.Syscall
             PPUInterpreter.PrintCallstack(ppu);
 
             PPUInterpreter.ExecuteFunction(ppu, callback_ptr, toc: false, [1, user_data, 0, 0, 0]); //First arg = 1 for "Pressed OK"
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellMsgDialogProgressBarSetMsg(PPUThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellMsgDialogProgressBarSetMsg");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellMsgDialogProgressBarInc(PPUThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellMsgDialogProgressBarInc");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellMsgDialogClose(PPUThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellMsgDialogClose");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellSaveDataEnableOverlay(PPUThread ppu)
         {
             Console.WriteLine($"[CellSysutil] cellSaveDataEnableOverlay");
-            return CELL_OK;
+            return CellOk;
         }
     }
 }

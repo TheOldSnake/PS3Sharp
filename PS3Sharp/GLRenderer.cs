@@ -10,7 +10,7 @@ namespace PS3Sharp
     internal class GLRenderer : IDisposable
     {
         // Default shaders that sample a given texture and draw it on screen - unused -
-        private const string DEFAULT_VERTEX_SHADER = @"
+        private const string DefaultVertexShader = @"
             #version 460
             out vec2 uv;
 
@@ -33,7 +33,7 @@ namespace PS3Sharp
                 uv = texcoords[gl_VertexID];
             }";
 
-        private const string DEFAULT_FRAGMENT_SHADER = @"
+        private const string DefaultFragmentShader = @"
             #version 460
 
             in vec2 uv;
@@ -44,7 +44,7 @@ namespace PS3Sharp
                 FragColor = texture(sourceTexture, uv);
             }";
 
-        internal const int FBO_TEXTURE_UNIT = 20; // or anything more than 15
+        internal const int FboTextureUnit = 20; // or anything more than 15
 
         private readonly GameWindow _gameWindow;
 
@@ -104,8 +104,8 @@ namespace PS3Sharp
             CreateGLObjects();
 
             // Compile the default program
-            int vertex = CompileShader(ShaderType.VertexShader, DEFAULT_VERTEX_SHADER);
-            int fragment = CompileShader(ShaderType.FragmentShader, DEFAULT_FRAGMENT_SHADER);
+            int vertex = CompileShader(ShaderType.VertexShader, DefaultVertexShader);
+            int fragment = CompileShader(ShaderType.FragmentShader, DefaultFragmentShader);
             DefaultGLProgram = CreateAndUseProgram(vertex, fragment);
 
             // Bind VAO
@@ -237,7 +237,7 @@ namespace PS3Sharp
         internal void SetSurface(uint address)
         {
             // Activate the fbo texture unit, we don't want to bind to one of the 16 units accidentally
-            GL.ActiveTexture(TextureUnit.Texture0 + FBO_TEXTURE_UNIT);
+            GL.ActiveTexture(TextureUnit.Texture0 + FboTextureUnit);
 
             // If we created it before we can bind directly 
             if (Surfaces.TryGetValue(address, out (int fbo, int texture) surface))

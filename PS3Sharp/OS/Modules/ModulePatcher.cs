@@ -14,46 +14,46 @@ namespace PS3Sharp.OS.Modules
         [StructLayout(LayoutKind.Sequential)]
         internal struct PRXParam : IPS3Struct
         {
-            internal BigEndian<uint> size;
-            internal BigEndian<uint> magic;
-            internal BigEndian<uint> version;
-            internal BigEndian<uint> pad0;
-            internal BigEndian<uint> libentstart;
-            internal BigEndian<uint> libentend;
-            internal BigEndian<uint> libstubstart;
-            internal BigEndian<uint> libstubend;
-            internal BigEndian<ushort> ver;
-            internal BigEndian<ushort> pad1;
-            internal BigEndian<uint> pad2;
+            internal BigEndian<uint> Size;
+            internal BigEndian<uint> Magic;
+            internal BigEndian<uint> Version;
+            internal BigEndian<uint> Pad0;
+            internal BigEndian<uint> LibEntStart;
+            internal BigEndian<uint> LibEntEnd;
+            internal BigEndian<uint> LibStubStart;
+            internal BigEndian<uint> LibsSubEnd;
+            internal BigEndian<ushort> Ver;
+            internal BigEndian<ushort> Pad1;
+            internal BigEndian<uint> Pad2;
         }
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct PRXStubHeader : IPS3Struct
         {
-            internal byte s_size;
-            internal byte s_unk0;
-            internal BigEndian<ushort> s_version;
-            internal BigEndian<ushort> s_unk1;
-            internal BigEndian<ushort> s_imports;
-            internal BigEndian<uint> s_unk2;
-            internal BigEndian<uint> s_unk3;
-            internal BigEndian<uint> s_modulename;
-            internal BigEndian<uint> s_nid;
-            internal BigEndian<uint> s_text;
-            internal BigEndian<uint> s_unk4;
-            internal BigEndian<uint> s_unk5;
-            internal BigEndian<uint> s_unk6;
-            internal BigEndian<uint> s_unk7;
+            internal byte SSize;
+            internal byte SUnk0;
+            internal BigEndian<ushort> SVersion;
+            internal BigEndian<ushort> SUnk1;
+            internal BigEndian<ushort> SImports;
+            internal BigEndian<uint> SUnk2;
+            internal BigEndian<uint> SUnk3;
+            internal BigEndian<uint> SModuleName;
+            internal BigEndian<uint> SNid;
+            internal BigEndian<uint> SText;
+            internal BigEndian<uint> SUnk4;
+            internal BigEndian<uint> SUnk5;
+            internal BigEndian<uint> SUnk6;
+            internal BigEndian<uint> SUnk7;
         }
 
-        internal const ushort ModuleCallSysID = 0x7C7C;
+        internal const ushort ModuleCallSysId = 0x7C7C;
 
         private readonly List<ModuleStubInfo> Stubs = [];
 
         // For main elf
         internal void HandleMainElfImports(BinaryReader reader, ElfHeader mainHeader, MemoryManager memoryManager, ElfLoader elfLoader)
         {
-            ProgramHeader? prxProgram = elfLoader.FindProgram(reader, ref mainHeader, ProgramHeader.PRX_PARAM);
+            ProgramHeader? prxProgram = elfLoader.FindProgram(reader, ref mainHeader, ProgramHeader.PrxParam);
 
             if (prxProgram != null)
             {
@@ -61,9 +61,9 @@ namespace PS3Sharp.OS.Modules
                 PRXParam prx = elfLoader.ReadElfStruct<PRXParam>(reader, (long)offs);
 
                 uint sizeOfStubHeader = (uint)Unsafe.SizeOf<PRXStubHeader>();
-                uint spanLength = (prx.libstubend - prx.libstubstart) / sizeOfStubHeader;
+                uint spanLength = (prx.LibsSubEnd - prx.LibStubStart) / sizeOfStubHeader;
 
-                ReadOnlySpan<PRXStubHeader> moduleStubs = memoryManager.ReadArray<PRXStubHeader>(prx.libstubstart, (int)spanLength);
+                ReadOnlySpan<PRXStubHeader> moduleStubs = memoryManager.ReadArray<PRXStubHeader>(prx.LibStubStart, (int)spanLength);
                 ImportModules(moduleStubs, memoryManager);
             }
             else
@@ -79,11 +79,11 @@ namespace PS3Sharp.OS.Modules
             for (int i = 0; i < length; i++)
             {
                 PRXStubHeader moduleStub = moduleStubs[i];
-                string moduleName = memoryManager.ReadString(moduleStub.s_modulename);
+                string moduleName = memoryManager.ReadString(moduleStub.SModuleName);
                 Console.WriteLine($"Module Import: {moduleName}");
 
-                Span<BigEndian<uint>> nids = memoryManager.ReadArray<BigEndian<uint>>(moduleStub.s_nid, moduleStub.s_imports);
-                Span<BigEndian<uint>> stubCodeAddresses = memoryManager.ReadArray<BigEndian<uint>>(moduleStub.s_text, moduleStub.s_imports);
+                Span<BigEndian<uint>> nids = memoryManager.ReadArray<BigEndian<uint>>(moduleStub.SNid, moduleStub.SImports);
+                Span<BigEndian<uint>> stubCodeAddresses = memoryManager.ReadArray<BigEndian<uint>>(moduleStub.SText, moduleStub.SImports);
                 ImportFunctions(moduleName, nids, stubCodeAddresses, memoryManager);
             }
         }
@@ -152,11 +152,11 @@ namespace PS3Sharp.OS.Modules
             }
 
             //Check which type the branch is
-            bool is_bctr = false;
+            bool isBctr = false;
             instruction.Raw = memoryManager.Read<BigEndian<uint>>(stubAddress + 8);
             if (instruction.Op == Op.G13 && instruction.G13 == G13.BCCTR)
             {
-                is_bctr = (instruction.Raw & 1) == 0;
+                isBctr = (instruction.Raw & 1) == 0;
             }
             else
             {
@@ -164,14 +164,14 @@ namespace PS3Sharp.OS.Modules
             }
 
             //Write the patch
-            const uint li = 0x39600000 | ModuleCallSysID;    //li r11, ModuleCallSysID
-            const uint sc = 0x44000002;                      //syscall
-            const uint blr = 0x4e800020;                      //return
-            const uint nop = 0x60000000;                      //nop
+            const uint Li = 0x39600000 | ModuleCallSysId;    //li r11, ModuleCallSysID
+            const uint Sc = 0x44000002;                      //syscall
+            const uint Blr = 0x4e800020;                     //return
+            const uint Nop = 0x60000000;                     //nop
 
-            memoryManager.Write<BigEndian<uint>>(stubAddress + 0, li);                 //instead of lwz r2
-            memoryManager.Write<BigEndian<uint>>(stubAddress + 4, sc);                 //instead of mtspr CTR,r0
-            memoryManager.Write<BigEndian<uint>>(stubAddress + 8, is_bctr ? blr : nop);  //instead of bctr / bctrl 
+            memoryManager.Write<BigEndian<uint>>(stubAddress + 0, Li);                 //instead of lwz r2
+            memoryManager.Write<BigEndian<uint>>(stubAddress + 4, Sc);                 //instead of mtspr CTR,r0
+            memoryManager.Write<BigEndian<uint>>(stubAddress + 8, isBctr ? Blr : Nop);  //instead of bctr / bctrl 
 
             //Return the address where the patch starts
             return stubAddress;
@@ -200,17 +200,17 @@ namespace PS3Sharp.OS.Modules
         internal void PrintPRXParam(PRXParam p)
         {
             Console.WriteLine("PRXParam:");
-            Console.WriteLine($"size         = 0x{p.size:X8}");
-            Console.WriteLine($"magic        = 0x{p.magic:X8}");
-            Console.WriteLine($"version      = 0x{p.version:X8}");
-            Console.WriteLine($"pad0         = 0x{p.pad0:X8}");
-            Console.WriteLine($"libentstart  = 0x{p.libentstart:X8}");
-            Console.WriteLine($"libentend    = 0x{p.libentend:X8}");
-            Console.WriteLine($"libstubstart = 0x{p.libstubstart:X8}");
-            Console.WriteLine($"libstubend   = 0x{p.libstubend:X8}");
-            Console.WriteLine($"ver          = 0x{p.ver:X4}");
-            Console.WriteLine($"pad1         = 0x{p.pad1:X4}");
-            Console.WriteLine($"pad2         = 0x{p.pad2:X8}");
+            Console.WriteLine($"size         = 0x{p.Size:X8}");
+            Console.WriteLine($"magic        = 0x{p.Magic:X8}");
+            Console.WriteLine($"version      = 0x{p.Version:X8}");
+            Console.WriteLine($"pad0         = 0x{p.Pad0:X8}");
+            Console.WriteLine($"libentstart  = 0x{p.LibEntStart:X8}");
+            Console.WriteLine($"libentend    = 0x{p.LibEntEnd:X8}");
+            Console.WriteLine($"libstubstart = 0x{p.LibStubStart:X8}");
+            Console.WriteLine($"libstubend   = 0x{p.LibsSubEnd:X8}");
+            Console.WriteLine($"ver          = 0x{p.Ver:X4}");
+            Console.WriteLine($"pad1         = 0x{p.Pad1:X4}");
+            Console.WriteLine($"pad2         = 0x{p.Pad2:X8}");
         }
     }
 }

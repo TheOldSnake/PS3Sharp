@@ -8,8 +8,8 @@ namespace PS3Sharp.FileSystem
     {
         internal sealed class GuestDirectory
         {
-            internal const byte CELL_FS_TYPE_DIRECTORY = 1;
-            internal const byte CELL_FS_TYPE_REGULAR = 2;
+            internal const byte CellFsTypeDirectory = 1;
+            internal const byte CellFsTypeRegular = 2;
 
             private static readonly CellFsDirent _currentDirectoryEntry;
             private static readonly CellFsDirent _previousDirectoryEntry;
@@ -30,13 +30,13 @@ namespace PS3Sharp.FileSystem
             {
                 _currentDirectoryEntry = new()
                 {
-                    Type = CELL_FS_TYPE_DIRECTORY,
+                    Type = CellFsTypeDirectory,
                     NameLength = 1,
                 };
 
                 _previousDirectoryEntry = new()
                 {
-                    Type = CELL_FS_TYPE_DIRECTORY,
+                    Type = CellFsTypeDirectory,
                     NameLength = 2,
                 };
 
@@ -95,7 +95,7 @@ namespace PS3Sharp.FileSystem
             {
                 Span<byte> name = Encoding.UTF8.GetBytes(fileSystemInfo.Name);
                 bool isDirectory = (fileSystemInfo.Attributes & FileAttributes.Directory) != 0;
-                byte type = isDirectory ? CELL_FS_TYPE_DIRECTORY : CELL_FS_TYPE_REGULAR;
+                byte type = isDirectory ? CellFsTypeDirectory : CellFsTypeRegular;
 
                 CellFsDirent entry = new()
                 {

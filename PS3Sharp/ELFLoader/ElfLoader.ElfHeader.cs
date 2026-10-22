@@ -11,24 +11,24 @@ namespace PS3Sharp
         internal readonly struct ElfHeader
         {
             // e_ident constants
-            internal const int EI_NIDENT = 16;
+            internal const int EiNident = 16;
 
             // ELFMAG bytes - these must appear at the beginning of every valid ELF file
-            internal const byte ELFMAG0 = 0x7F;
-            internal const byte ELFMAG1 = (byte)'E';
-            internal const byte ELFMAG2 = (byte)'L';
-            internal const byte ELFMAG3 = (byte)'F';
+            internal const byte Elfmag0 = 0x7F;
+            internal const byte Elfmag1 = (byte)'E';
+            internal const byte Elfmag2 = (byte)'L';
+            internal const byte Elfmag3 = (byte)'F';
 
             // ELFMAG as a ROS
-            internal static ReadOnlySpan<byte> ELFMAG_ROS => [ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3];
+            internal static ReadOnlySpan<byte> ELFMAG_ROS => [Elfmag0, Elfmag1, Elfmag2, Elfmag3];
 
-            internal const byte ELFCLASS32 = 1;
-            internal const byte ELFCLASS64 = 2;
+            internal const byte Elfclass32 = 1;
+            internal const byte Elfclass64 = 2;
 
-            internal const byte ELFDATA2LSB = 1;
-            internal const byte ELFDATA2MSB = 2;
+            internal const byte Elfdata2lsb = 1;
+            internal const byte Elfdata2msb = 2;
 
-            internal const byte EV_CURRENT = 1;
+            internal const byte EvCurrent = 1;
 
             //Actual Fields          
             internal readonly InlineArray16<byte> e_ident;   /* ELF identification */

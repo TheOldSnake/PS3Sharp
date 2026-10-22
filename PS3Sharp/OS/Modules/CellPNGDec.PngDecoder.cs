@@ -18,7 +18,7 @@ namespace PS3Sharp.OS.Modules
             internal ImageInfo ImageInfo { get; private set; }
             internal int NumberOfComponents => ImageInfo.ColorComponents == ColorComponents.RedGreenBlue ? 3 : 4;
             internal int BitsPerPixel => ImageInfo.BitsPerChannel * NumberOfComponents;
-            internal int ColorSpace => NumberOfComponents == 3 ? CELL_PNGDEC_RGB : CELL_PNGDEC_RGBA;
+            internal int ColorSpace => NumberOfComponents == 3 ? CellPngdecRgb : CellPngdecRgba;
 
             internal PngDecoder(MemoryManager memoryManager)
             {
@@ -46,7 +46,7 @@ namespace PS3Sharp.OS.Modules
                 ColorComponents colorComponenents = ToStbImageColorComponents((uint)cellColorSpace);
                 ImageResult decodedImage = ImageResult.FromStream(_srcDataStream, colorComponenents);
 
-                if (cellColorSpace == CELL_PNGDEC_ARGB)
+                if (cellColorSpace == CellPngdecArgb)
                 {
                     ConvertRGBAToARGB(decodedImage.Data);
                 }
@@ -70,7 +70,7 @@ namespace PS3Sharp.OS.Modules
 
                 Stream dataStream;
 
-                if (src.SrcSelect == CELL_PNGDEC_FILE)
+                if (src.SrcSelect == CellPngdecFile)
                 {
                     string guestPath = _memoryManager.ReadString(src.Filename_ptr);
                     string hostPath = FileSystemManager.GetHostPath(guestPath);
@@ -117,11 +117,11 @@ namespace PS3Sharp.OS.Modules
             {
                 switch (cellPngDecColor)
                 {
-                    case CELL_PNGDEC_RGB:
+                    case CellPngdecRgb:
                         return 3;
 
-                    case CELL_PNGDEC_RGBA:
-                    case CELL_PNGDEC_ARGB:
+                    case CellPngdecRgba:
+                    case CellPngdecArgb:
                         return 4;
 
                     default:
@@ -133,11 +133,11 @@ namespace PS3Sharp.OS.Modules
             {
                 switch (cellPngDecColor)
                 {
-                    case CELL_PNGDEC_RGB:
+                    case CellPngdecRgb:
                         return ColorComponents.RedGreenBlue;
 
-                    case CELL_PNGDEC_RGBA:
-                    case CELL_PNGDEC_ARGB:
+                    case CellPngdecRgba:
+                    case CellPngdecArgb:
                         return ColorComponents.RedGreenBlueAlpha;
 
                     default:

@@ -14,7 +14,7 @@ namespace PS3Sharp.OS
 {
     internal partial class LV2SyscallDispatcher : IDisposable
     {
-        private const int SYSCALL_ID_REG = 11;      // R11 contains syscall number
+        private const int SyscallIdReg = 11;      // R11 contains syscall number
 
         private readonly ThreadManager _threadManager;
         private readonly MemoryManager _memoryManager;
@@ -124,7 +124,7 @@ namespace PS3Sharp.OS
 
         internal void DispatchSyscall(PPUThread ppu, uint lev)
         {
-            SyscallID id = (SyscallID)ppu.ReadArg<uint>(SYSCALL_ID_REG);
+            SyscallID id = (SyscallID)ppu.ReadArg<uint>(SyscallIdReg);
 
             if (id == SyscallID.ModuleCall)
             {
@@ -180,15 +180,15 @@ namespace PS3Sharp.OS
         private ulong ModuleStub(ModuleStubInfo info, PPUThread ppu)
         {
             Console.WriteLine($"[{ppu.ThreadName}] unimplemented {info.ModuleName} -> {info.FunctionName}");
-            return CELL_OK;
+            return CellOk;
         }
 
         private void LogLLECall(PPUThread ppu, uint ptr, ModuleStubInfo info, ulong returnValue)
         {
             uint pc = _memoryManager.Read<BigEndian<uint>>(ptr);
-            uint arg0 = ppu.ReadArg<uint>(ARG0);
-            uint arg1 = ppu.ReadArg<uint>(ARG1);
-            uint arg2 = ppu.ReadArg<uint>(ARG2);
+            uint arg0 = ppu.ReadArg<uint>(Arg0);
+            uint arg1 = ppu.ReadArg<uint>(Arg1);
+            uint arg2 = ppu.ReadArg<uint>(Arg2);
             uint lr = ppu.GetLR();
             Console.WriteLine($"[{ppu.ThreadName}] LLE function: {info.FunctionName} arg0 = 0x{arg0:X8} arg1 = 0x{arg1:X8} arg2 = 0x{arg2:X8} lr = 0x{lr:X8} pc: 0x{pc:X8} - reutned: 0x{returnValue}");
         }

@@ -22,72 +22,72 @@ namespace PS3Sharp.OS.Modules
             internal BigEndian<int> SysSizeKB;
         }
 
-        internal const uint CELL_GAME_PARAMID_TITLE = 0;
-        internal const uint CELL_GAME_PARAMID_TITLE_DEFAULT = 1;
-        internal const uint CELL_GAME_PARAMID_TITLE_JAPANESE = 2;
-        internal const uint CELL_GAME_PARAMID_TITLE_ENGLISH = 3;
-        internal const uint CELL_GAME_PARAMID_TITLE_FRENCH = 4;
-        internal const uint CELL_GAME_PARAMID_TITLE_SPANISH = 5;
-        internal const uint CELL_GAME_PARAMID_TITLE_GERMAN = 6;
-        internal const uint CELL_GAME_PARAMID_TITLE_ITALIAN = 7;
-        internal const uint CELL_GAME_PARAMID_TITLE_DUTCH = 8;
-        internal const uint CELL_GAME_PARAMID_TITLE_PORTUGUESE = 9;
-        internal const uint CELL_GAME_PARAMID_TITLE_RUSSIAN = 10;
-        internal const uint CELL_GAME_PARAMID_TITLE_KOREAN = 11;
-        internal const uint CELL_GAME_PARAMID_TITLE_CHINESE_T = 12;
-        internal const uint CELL_GAME_PARAMID_TITLE_CHINESE_S = 13;
-        internal const uint CELL_GAME_PARAMID_TITLE_FINNISH = 14;
-        internal const uint CELL_GAME_PARAMID_TITLE_SWEDISH = 15;
-        internal const uint CELL_GAME_PARAMID_TITLE_DANISH = 16;
-        internal const uint CELL_GAME_PARAMID_TITLE_NORWEGIAN = 17;
-        internal const uint CELL_GAME_PARAMID_TITLE_POLISH = 18;
-        internal const uint CELL_GAME_PARAMID_TITLE_PORTUGUESE_BRAZIL = 19;
-        internal const uint CELL_GAME_PARAMID_TITLE_ENGLISH_UK = 20;
-        internal const uint CELL_GAME_PARAMID_TITLE_TURKISH = 21;
+        internal const uint CellGameParamidTitle = 0;
+        internal const uint CellGameParamidTitleDefault = 1;
+        internal const uint CellGameParamidTitleJapanese = 2;
+        internal const uint CellGameParamidTitleEnglish = 3;
+        internal const uint CellGameParamidTitleFrench = 4;
+        internal const uint CellGameParamidTitleSpanish = 5;
+        internal const uint CellGameParamidTitleGerman = 6;
+        internal const uint CellGameParamidTitleItalian = 7;
+        internal const uint CellGameParamidTitleDutch = 8;
+        internal const uint CellGameParamidTitlePortuguese = 9;
+        internal const uint CellGameParamidTitleRussian = 10;
+        internal const uint CellGameParamidTitleKorean = 11;
+        internal const uint CellGameParamidTitleChineseT = 12;
+        internal const uint CellGameParamidTitleChineseS = 13;
+        internal const uint CellGameParamidTitleFinnish = 14;
+        internal const uint CellGameParamidTitleSwedish = 15;
+        internal const uint CellGameParamidTitleDanish = 16;
+        internal const uint CellGameParamidTitleNorwegian = 17;
+        internal const uint CellGameParamidTitlePolish = 18;
+        internal const uint CellGameParamidTitlePortugueseBrazil = 19;
+        internal const uint CellGameParamidTitleEnglishUk = 20;
+        internal const uint CellGameParamidTitleTurkish = 21;
 
-        internal const uint CELL_GAME_PARAMID_TITLE_ID = 100;
-        internal const uint CELL_GAME_PARAMID_VERSION = 101;
-        internal const uint CELL_GAME_PARAMID_PARENTAL_LEVEL = 102;
-        internal const uint CELL_GAME_PARAMID_RESOLUTION = 103;
-        internal const uint CELL_GAME_PARAMID_SOUND_FORMAT = 104;
-        internal const uint CELL_GAME_PARAMID_PS3_SYSTEM_VER = 105;
-        internal const uint CELL_GAME_PARAMID_APP_VER = 106;
+        internal const uint CellGameParamidTitleId = 100;
+        internal const uint CellGameParamidVersion = 101;
+        internal const uint CellGameParamidParentalLevel = 102;
+        internal const uint CellGameParamidResolution = 103;
+        internal const uint CellGameParamidSoundFormat = 104;
+        internal const uint CellGameParamidPs3SystemVer = 105;
+        internal const uint CellGameParamidAppVer = 106;
 
-        internal const uint CELL_GAME_ERROR_NOTPATCH = 0x8002CB27;
+        internal const uint CellGameErrorNotpatch = 0x8002CB27;
 
         internal static readonly ImmutableDictionary<uint, string> CellGameParamId = new Dictionary<uint, string>()
         {
-            [CELL_GAME_PARAMID_TITLE] = "TITLE",
-            [CELL_GAME_PARAMID_TITLE_DEFAULT] = "TITLE",
-            [CELL_GAME_PARAMID_TITLE_JAPANESE] = "TITLE_00",
-            [CELL_GAME_PARAMID_TITLE_ENGLISH] = "TITLE_01",
-            [CELL_GAME_PARAMID_TITLE_FRENCH] = "TITLE_02",
-            [CELL_GAME_PARAMID_TITLE_SPANISH] = "TITLE_03",
-            [CELL_GAME_PARAMID_TITLE_GERMAN] = "TITLE_04",
-            [CELL_GAME_PARAMID_TITLE_ITALIAN] = "TITLE_05",
-            [CELL_GAME_PARAMID_TITLE_DUTCH] = "TITLE_06",
-            [CELL_GAME_PARAMID_TITLE_PORTUGUESE] = "TITLE_07",
-            [CELL_GAME_PARAMID_TITLE_RUSSIAN] = "TITLE_08",
-            [CELL_GAME_PARAMID_TITLE_KOREAN] = "TITLE_09",
-            [CELL_GAME_PARAMID_TITLE_CHINESE_T] = "TITLE_10",
-            [CELL_GAME_PARAMID_TITLE_CHINESE_S] = "TITLE_11",
-            [CELL_GAME_PARAMID_TITLE_FINNISH] = "TITLE_12",
-            [CELL_GAME_PARAMID_TITLE_SWEDISH] = "TITLE_13",
-            [CELL_GAME_PARAMID_TITLE_DANISH] = "TITLE_14",
-            [CELL_GAME_PARAMID_TITLE_NORWEGIAN] = "TITLE_15",
-            [CELL_GAME_PARAMID_TITLE_POLISH] = "TITLE_16",
-            [CELL_GAME_PARAMID_TITLE_PORTUGUESE_BRAZIL] = "TITLE_17",
-            [CELL_GAME_PARAMID_TITLE_ENGLISH_UK] = "TITLE_18",
-            [CELL_GAME_PARAMID_TITLE_TURKISH] = "TITLE_19",
+            [CellGameParamidTitle] = "TITLE",
+            [CellGameParamidTitleDefault] = "TITLE",
+            [CellGameParamidTitleJapanese] = "TITLE_00",
+            [CellGameParamidTitleEnglish] = "TITLE_01",
+            [CellGameParamidTitleFrench] = "TITLE_02",
+            [CellGameParamidTitleSpanish] = "TITLE_03",
+            [CellGameParamidTitleGerman] = "TITLE_04",
+            [CellGameParamidTitleItalian] = "TITLE_05",
+            [CellGameParamidTitleDutch] = "TITLE_06",
+            [CellGameParamidTitlePortuguese] = "TITLE_07",
+            [CellGameParamidTitleRussian] = "TITLE_08",
+            [CellGameParamidTitleKorean] = "TITLE_09",
+            [CellGameParamidTitleChineseT] = "TITLE_10",
+            [CellGameParamidTitleChineseS] = "TITLE_11",
+            [CellGameParamidTitleFinnish] = "TITLE_12",
+            [CellGameParamidTitleSwedish] = "TITLE_13",
+            [CellGameParamidTitleDanish] = "TITLE_14",
+            [CellGameParamidTitleNorwegian] = "TITLE_15",
+            [CellGameParamidTitlePolish] = "TITLE_16",
+            [CellGameParamidTitlePortugueseBrazil] = "TITLE_17",
+            [CellGameParamidTitleEnglishUk] = "TITLE_18",
+            [CellGameParamidTitleTurkish] = "TITLE_19",
 
-            [CELL_GAME_PARAMID_TITLE_ID] = "TITLE_ID",
-            [CELL_GAME_PARAMID_VERSION] = "VERSION",
-            [CELL_GAME_PARAMID_PS3_SYSTEM_VER] = "PS3_SYSTEM_VER",
-            [CELL_GAME_PARAMID_APP_VER] = "APP_VER",
+            [CellGameParamidTitleId] = "TITLE_ID",
+            [CellGameParamidVersion] = "VERSION",
+            [CellGameParamidPs3SystemVer] = "PS3_SYSTEM_VER",
+            [CellGameParamidAppVer] = "APP_VER",
 
-            [CELL_GAME_PARAMID_PARENTAL_LEVEL] = "PARENTAL_LEVEL",
-            [CELL_GAME_PARAMID_RESOLUTION] = "RESOLUTION",
-            [CELL_GAME_PARAMID_SOUND_FORMAT] = "SOUND_FORMAT",
+            [CellGameParamidParentalLevel] = "PARENTAL_LEVEL",
+            [CellGameParamidResolution] = "RESOLUTION",
+            [CellGameParamidSoundFormat] = "SOUND_FORMAT",
         }.ToImmutableDictionary();
 
         private readonly MemoryManager _memoryManager;
@@ -104,10 +104,10 @@ namespace PS3Sharp.OS.Modules
 
         internal ulong CellGameBootCheck(PPUThread ppu)
         {
-            GuestPtr<uint> typePtr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
-            GuestPtr<uint> attribPtr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
-            GuestPtr<CellGameContentSize> sizePtr = ppu.ReadArg<GuestPtr<CellGameContentSize>>(ARG2);
-            GuestVoidPtr dirPtr = ppu.ReadArg<GuestVoidPtr>(ARG3);
+            GuestPtr<uint> typePtr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
+            GuestPtr<uint> attribPtr = ppu.ReadArg<GuestPtr<uint>>(Arg1);
+            GuestPtr<CellGameContentSize> sizePtr = ppu.ReadArg<GuestPtr<CellGameContentSize>>(Arg2);
+            GuestVoidPtr dirPtr = ppu.ReadArg<GuestVoidPtr>(Arg3);
 
             if (!dirPtr.IsNullPtr)
             {
@@ -133,13 +133,13 @@ namespace PS3Sharp.OS.Modules
                 _memoryManager.Write(sizePtr, sizeStruct);
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGameContentPermit(PPUThread ppu)
         {
-            uint contentDirPtr = ppu.ReadArg<uint>(ARG0);
-            uint UsrDirPtr = ppu.ReadArg<uint>(ARG1);
+            uint contentDirPtr = ppu.ReadArg<uint>(Arg0);
+            uint UsrDirPtr = ppu.ReadArg<uint>(Arg1);
 
             // Strings are null terminated
             byte[] ContentChars = Encoding.UTF8.GetBytes(GuestContentDirectory);
@@ -148,13 +148,13 @@ namespace PS3Sharp.OS.Modules
             _memoryManager.CopyBufferToVirtualMemory(UsrDirChars, UsrDirPtr);
 
             Console.WriteLine($"[CellGame] cellGameContentPermit path = {GuestContentDirectory}");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGameGetParamInt(PPUThread ppu)
         {
-            uint id = ppu.ReadArg<uint>(ARG0);
-            GuestPtr<uint> value_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
+            uint id = ppu.ReadArg<uint>(Arg0);
+            GuestPtr<uint> value_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg1);
 
             string key = CellGameParamId[id];
 
@@ -176,14 +176,14 @@ namespace PS3Sharp.OS.Modules
                 throw new Exception($"[CellGame] Could not get SFO for the current executable");
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGameGetParamString(PPUThread ppu)
         {
-            uint id = ppu.ReadArg<uint>(ARG0);
-            GuestPtr<uint> bufferPtr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
-            int bufferSize = ppu.ReadArg<int>(ARG2);
+            uint id = ppu.ReadArg<uint>(Arg0);
+            GuestPtr<uint> bufferPtr = ppu.ReadArg<GuestPtr<uint>>(Arg1);
+            int bufferSize = ppu.ReadArg<int>(Arg2);
 
             _memoryManager.ClearMemory(bufferPtr, bufferSize);
             string key = CellGameParamId[id];
@@ -215,25 +215,25 @@ namespace PS3Sharp.OS.Modules
                 throw new Exception($"[CellGame] Could not get SFO for the current executable");
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGameDataCheck(PPUThread ppu)
         {
             Console.WriteLine($"[CellGame] cellGameDataCheck");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGameGetDiscContentInfoUpdatePath(PPUThread ppu)
         {
             Console.WriteLine($"[CellGame] cellGameGetDiscContentInfoUpdatePath");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellGamePatchCheck(PPUThread ppu)
         {
             Console.WriteLine($"[CellGame] CellGamePatchCheck");
-            return CELL_GAME_ERROR_NOTPATCH;
+            return CellGameErrorNotpatch;
         }
     }
 }

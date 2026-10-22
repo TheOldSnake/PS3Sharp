@@ -12,27 +12,27 @@ namespace PS3Sharp.Memory
     {
 
         // Constants
-        internal const ulong VIRTUAL_MEMORY_SIZE = 0x1_0000_0000; // 32-bit - 4 GiB
-        internal const uint RAM_SIZE = 256 * 1024 * 1024;
-        internal const uint RAM_START = 0x00010000;
-        internal const uint RAM_END = RAM_START + RAM_SIZE;
-        internal const uint STACK_REGION_START = 0xD0000000;
-        internal const uint STACK_REGION_SIZE = 0x10000000;
-        internal const uint STACK_REGION_BASE = STACK_REGION_START + STACK_REGION_SIZE - 16; //must be 16-byte aligned?
-        internal const uint DEFAULT_STACK_SIZE = 0x40000;
-        internal const uint RSX_VIDEO_MEM_SIZE = 256 * 1024 * 1024;
-        internal const uint RSX_VIDEO_MEM_START = 0xC0000000;
-        internal const uint RSX_VIDEO_MEM_END = RSX_VIDEO_MEM_START + RSX_VIDEO_MEM_SIZE;
-        internal const uint SPU_LS_SIZE = 256 * 1024;
-        internal const uint RAW_SPU_MEM_START = 0xE0000000;
-        internal const uint RAW_SPU_OFFSET = 0x100000;
-        internal const uint RAW_SPU_PROBLEM_OFFSET = 0x40000;
+        internal const ulong VirtualMemorySize = 0x1_0000_0000; // 32-bit - 4 GiB
+        internal const uint RamSize = 256 * 1024 * 1024;
+        internal const uint RamStart = 0x00010000;
+        internal const uint RamEnd = RamStart + RamSize;
+        internal const uint StackRegionStart = 0xD0000000;
+        internal const uint StackRegionSize = 0x10000000;
+        internal const uint StackRegionBase = StackRegionStart + StackRegionSize - 16; //must be 16-byte aligned?
+        internal const uint DefaultStackSize = 0x40000;
+        internal const uint RsxVideoMemSize = 256 * 1024 * 1024;
+        internal const uint RsxVideoMemStart = 0xC0000000;
+        internal const uint RsxVideoMemEnd = RsxVideoMemStart + RsxVideoMemSize;
+        internal const uint SpuLsSize = 256 * 1024;
+        internal const uint RawSpuMemStart = 0xE0000000;
+        internal const uint RawSpuOffset = 0x100000;
+        internal const uint RawSpuProblemOffset = 0x40000;
 
         // MemoryBlock table (managed array)
-        private readonly MemoryBlock[] _memoryBlockTable = new MemoryBlock[Fastmem.PAGE_SIZE];
+        private readonly MemoryBlock[] _memoryBlockTable = new MemoryBlock[Fastmem.PageSize];
 
         // Virtual memory safe handle
-        private VirtualMemoryHandle? _guestMemoryHandle = new((nuint)VIRTUAL_MEMORY_SIZE, NativeMethods.WIN_API_PAGE_NOACCESS);
+        private VirtualMemoryHandle? _guestMemoryHandle = new((nuint)VirtualMemorySize, NativeMethods.WinApiPageNoaccess);
 
         // Base address of virtual memory
         private void* GuestMemoryBase => (void*)_guestMemoryHandle!.DangerousGetHandle();
@@ -44,7 +44,7 @@ namespace PS3Sharp.Memory
         private readonly Dictionary<uint, MemoryReservation> _reservations = [];
 
         private uint _nextAllocationAddress = 0x30000000; // I don't know where to start
-        private uint _nextStackAllocationAddress = STACK_REGION_START;
+        private uint _nextStackAllocationAddress = StackRegionStart;
         private uint _nextHandle = 0x100;
 
         private GuestVoidPtr _tlsImagePtr;
@@ -77,7 +77,7 @@ namespace PS3Sharp.Memory
             }
 
             nint address = (nint)((byte*)GuestMemoryBase + (nint)virtualAddress);
-            void* result = (void*)NativeMethods.VirtualAlloc(address, size, NativeMethods.WIN_API_MEM_COMMIT, NativeMethods.WIN_API_PAGE_READWRITE);
+            void* result = (void*)NativeMethods.VirtualAlloc(address, size, NativeMethods.WinApiMemCommit, NativeMethods.WinApiPageReadwrite);
 
             if (result == null)
             {
@@ -98,7 +98,7 @@ namespace PS3Sharp.Memory
             }
 
             nint address = (nint)((byte*)GuestMemoryBase + (nint)virtualAddress);
-            int ok = NativeMethods.VirtualFree(address, size, NativeMethods.WIN_API_MEM_DECOMMIT);
+            int ok = NativeMethods.VirtualFree(address, size, NativeMethods.WinApiMemDecommit);
 
             if (ok == 0)
             {
@@ -123,7 +123,7 @@ namespace PS3Sharp.Memory
         internal MemoryBlock GetBlockInfo(uint virtualAddress)
         {
             // Lookup the block struct in the block table
-            uint page = virtualAddress >> (int)Fastmem.PAGE_SHIFT;
+            uint page = virtualAddress >> (int)Fastmem.PageShift;
             return _memoryBlockTable[page];
         }
 
@@ -135,7 +135,7 @@ namespace PS3Sharp.Memory
         private static uint PageAlign(uint size)
         {
             // Aligns to page size
-            return (uint)Utility.AlignPowerOfTwo(size, Fastmem.PAGE_SIZE);
+            return (uint)Utility.AlignPowerOfTwo(size, Fastmem.PageSize);
         }
 
         internal uint ReadPPUInstruction(uint virtualAddress)
@@ -289,8 +289,8 @@ namespace PS3Sharp.Memory
         {     // Does not allocate
             lock (_managerLock)
             {
-                uint startPage = block.VirtualAddress >> (int)Fastmem.PAGE_SHIFT;
-                uint numberOfPages = block.Size / Fastmem.PAGE_SIZE;
+                uint startPage = block.VirtualAddress >> (int)Fastmem.PageShift;
+                uint numberOfPages = block.Size / Fastmem.PageSize;
                 uint endPage = startPage + numberOfPages;
                 SetMemoryBlockTable((int)startPage, (int)endPage, ref block);
 
@@ -306,8 +306,8 @@ namespace PS3Sharp.Memory
         {   // Does not free
             lock (_managerLock)
             {
-                uint startPage = block.VirtualAddress >> (int)Fastmem.PAGE_SHIFT;
-                uint numberOfPages = block.Size / Fastmem.PAGE_SIZE;
+                uint startPage = block.VirtualAddress >> (int)Fastmem.PageShift;
+                uint numberOfPages = block.Size / Fastmem.PageSize;
                 uint endPage = startPage + numberOfPages;
                 MemoryBlock defaultBlock = default;
                 SetMemoryBlockTable((int)startPage, (int)endPage, ref defaultBlock);
@@ -417,7 +417,7 @@ namespace PS3Sharp.Memory
 
         internal MemoryBlock AllocatePages(int pageCount)
         {
-            return AllocateVirtualMemory(Fastmem.PAGE_SIZE * (uint)pageCount);
+            return AllocateVirtualMemory(Fastmem.PageSize * (uint)pageCount);
         }
 
         internal MemoryBlock AllocatePhysicalMemory(uint size)

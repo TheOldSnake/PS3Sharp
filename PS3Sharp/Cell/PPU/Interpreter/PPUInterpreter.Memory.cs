@@ -154,7 +154,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
 
             uint value = ppu.GPR[instruction.Rs].Value32;
             bool ok = ppu.MemoryManager.StoreConditional<BigEndian<uint>>(ea, ppu.ThreadID, value, ppu);
-            ppu.State->CR.WriteCRField(CRNumber.CR0, ok ? PPUThread.ConditionRegister.EQ : 0);
+            ppu.State->CR.WriteCRField(CRNumber.CR0, ok ? PPUThread.ConditionRegister.Eq : 0);
         }
 
         private static void STMW(PPUInstruction instruction, PPUThread ppu)
@@ -209,7 +209,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
 
             ulong value = ppu.GPR[instruction.Rs].Value64;
             bool ok = ppu.MemoryManager.StoreConditional<BigEndian<ulong>>(ea, ppu.ThreadID, value, ppu);
-            ppu.State->CR.WriteCRField(CRNumber.CR0, ok ? PPUThread.ConditionRegister.EQ : 0);
+            ppu.State->CR.WriteCRField(CRNumber.CR0, ok ? PPUThread.ConditionRegister.Eq : 0);
         }
 
         // Load Byte Instructions

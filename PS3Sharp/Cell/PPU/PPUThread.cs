@@ -20,7 +20,7 @@ namespace PS3Sharp.Cell.PPU
             Stopped
         }
 
-        internal const uint STACK_REG = 1;
+        internal const uint StackReg = 1;
 
         internal Thread NativeThread { get; }
         internal CancellationTokenSource? LocalCancellationSource { get; private set; } = new();
@@ -136,7 +136,7 @@ namespace PS3Sharp.Cell.PPU
 
         internal uint GetLR() => State->LR;
 
-        internal void Return(ulong result) => GPR[ARG0].Value64 = result;
+        internal void Return(ulong result) => GPR[Arg0].Value64 = result;
 
         internal T ReadArg<T>(uint index) where T : unmanaged
         {
@@ -261,7 +261,7 @@ namespace PS3Sharp.Cell.PPU
             WriteStack(0);
 
             //Save argv pointer (current SP)
-            GPR[4].Value64 = GPR[STACK_REG].Value64;
+            GPR[4].Value64 = GPR[StackReg].Value64;
 
             //Push argc
             GPR[3].Value64 = 0;
@@ -271,9 +271,9 @@ namespace PS3Sharp.Cell.PPU
             WriteStack(0);
 
             // Allocate 0x70 bytes for main()
-            GPR[STACK_REG].Value64 -= 0x70;
+            GPR[StackReg].Value64 -= 0x70;
 
-            if ((GPR[STACK_REG].Value64 & 0xF) > 0)
+            if ((GPR[StackReg].Value64 & 0xF) > 0)
             {
                 throw new Exception("Alignment check fails");
             }
@@ -298,9 +298,9 @@ namespace PS3Sharp.Cell.PPU
 
         private void WriteStack(ulong value)
         {
-            GPR[STACK_REG].Value32 -= sizeof(ulong); // -= 8
-            MemoryManager.Write<BigEndian<ulong>>(GPR[STACK_REG].Value32, value);
-            Console.WriteLine($"STACK[{GPR[STACK_REG].Value32:X8}] = {value:X16}");
+            GPR[StackReg].Value32 -= sizeof(ulong); // -= 8
+            MemoryManager.Write<BigEndian<ulong>>(GPR[StackReg].Value32, value);
+            Console.WriteLine($"STACK[{GPR[StackReg].Value32:X8}] = {value:X16}");
         }
 
         private uint WritePathArg(string path)

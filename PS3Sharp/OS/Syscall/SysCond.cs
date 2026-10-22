@@ -24,14 +24,14 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysCondCreate(PPUThread ppu)
         {
-            GuestPtr<uint> cond_id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
-            uint mutex_id = ppu.ReadArg<uint>(ARG1);
-            GuestPtr<SysCondAttribute> attribute_ptr = ppu.ReadArg<GuestPtr<SysCondAttribute>>(ARG2);
+            GuestPtr<uint> cond_id_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
+            uint mutex_id = ppu.ReadArg<uint>(Arg1);
+            GuestPtr<SysCondAttribute> attribute_ptr = ppu.ReadArg<GuestPtr<SysCondAttribute>>(Arg2);
 
             // Get the requested sys_mutex 
             if (!_sysMutex.TryGetMutex(mutex_id, out LV2Mutex? mutex))
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
 
             // Get the attribute
@@ -44,21 +44,21 @@ namespace PS3Sharp.OS.Syscall
             // Write the cond id
             _memoryManager.Write<BigEndian<uint>>(cond_id_ptr, cond.Handle);
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysCondDestroy(PPUThread ppu)
         {
-            uint cond_id = ppu.ReadArg<uint>(ARG0);
+            uint cond_id = ppu.ReadArg<uint>(Arg0);
 
             RemoveCond(cond_id);
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysCondWait(PPUThread ppu)
         {
-            uint cond_id = ppu.ReadArg<uint>(ARG0);
-            ulong us_timeout = ppu.ReadArg<ulong>(ARG1);
+            uint cond_id = ppu.ReadArg<uint>(Arg0);
+            ulong us_timeout = ppu.ReadArg<ulong>(Arg1);
 
             if (TryGetCond(cond_id, out LV2Cond cond))
             {
@@ -66,13 +66,13 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 
         internal ulong SysCondSignal(PPUThread ppu)
         {
-            uint cond_id = ppu.ReadArg<uint>(ARG0);
+            uint cond_id = ppu.ReadArg<uint>(Arg0);
 
 
             if (TryGetCond(cond_id, out LV2Cond cond))
@@ -82,13 +82,13 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 
         internal ulong SysCondSignalAll(PPUThread ppu)
         {
-            uint cond_id = ppu.ReadArg<uint>(ARG0);
+            uint cond_id = ppu.ReadArg<uint>(Arg0);
 
             if (TryGetCond(cond_id, out LV2Cond cond))
             {
@@ -97,14 +97,14 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 
         internal ulong SysCondSignalTo(PPUThread ppu)
         {
-            uint cond_id = ppu.ReadArg<uint>(ARG0);
-            uint thread_id = ppu.ReadArg<uint>(ARG1);
+            uint cond_id = ppu.ReadArg<uint>(Arg0);
+            uint thread_id = ppu.ReadArg<uint>(Arg1);
 
             if (TryGetCond(cond_id, out LV2Cond cond))
             {
@@ -113,7 +113,7 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 

@@ -17,42 +17,42 @@ namespace PS3Sharp.OS.Modules
 
         internal ulong CellRescInit(PPUThread ppu)
         {
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellRescVideoOutResolutionId2RescBufferMode(PPUThread ppu)
         {
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellRescSetDsts(PPUThread ppu)
         {
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellRescSetDisplayMode(PPUThread ppu)
         {
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellRescGetBufferSize(PPUThread ppu)
         {
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellRescSetBufferAddress(PPUThread ppu)
         {
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellRescGcmSurface2RescSrc(PPUThread ppu)
         {
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellRescSetSrc(PPUThread ppu)
         {
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellRescGetFlipStatus(PPUThread ppu)

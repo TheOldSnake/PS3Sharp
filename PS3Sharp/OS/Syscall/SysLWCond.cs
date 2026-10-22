@@ -24,7 +24,7 @@ namespace PS3Sharp.OS.Syscall
         {
             uint handle = _memoryManager.GetHandle();
 
-            GuestPtr<uint> id_ptr = ppu.ReadArg<uint>(ARG0);
+            GuestPtr<uint> id_ptr = ppu.ReadArg<uint>(Arg0);
             //uint lwmutexId = ppu.ReadArg<uint>(ARG1);           // do we use this to bind ??
 
             //GuestPtr<LV2LWCond.SysLWCond> control_ptr = ppu.ReadArg<GuestPtr<LV2LWCond.SysLWCond>>(ARG2);
@@ -45,7 +45,7 @@ namespace PS3Sharp.OS.Syscall
             //AddLWCond(handle, lv2lwcond);
 
             _memoryManager.Write<BigEndian<uint>>(id_ptr, handle);
-            return CELL_OK;
+            return CellOk;
         }
 
         internal bool TryGetLWCond(uint cond_id, out LV2LWCond cond) => _conds.TryGetValue(cond_id, out cond);

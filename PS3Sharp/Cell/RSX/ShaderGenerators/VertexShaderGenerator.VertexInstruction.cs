@@ -10,65 +10,65 @@ namespace PS3Sharp.Cell.RSX
         [StructLayout(LayoutKind.Sequential)]
         internal struct VertexInstruction
         {
-            internal uint Raw_0;
-            internal uint Raw_1;
-            internal uint Raw_2;
-            internal uint Raw_3;
+            internal uint Raw0;
+            internal uint Raw1;
+            internal uint Raw2;
+            internal uint Raw3;
 
             //Raw 0
 
             //Dest swizzle
-            internal uint Addr_Reg_Swizzle => (Raw_0 >> 00) & 0x3;
+            internal uint AddrRegSwizzle => (Raw0 >> 00) & 0x3;
 
             // Condition register swizzle
-            internal uint Cond_Swizzle_W => (Raw_0 >> 02) & 0x3;
-            internal uint Cond_Swizzle_Z => (Raw_0 >> 04) & 0x3;
-            internal uint Cond_Swizzle_Y => (Raw_0 >> 06) & 0x3;
-            internal uint Cond_Swizzle_X => (Raw_0 >> 08) & 0x3;
-            internal uint Cond => (Raw_0 >> 10) & 0x7;                // condition type (lessThan, greaterThan, etc..) 
-            internal bool CondEnabled => ((Raw_0 >> 13) & 1) == 1;    // if enabled assign conditionally
+            internal uint CondSwizzleW => (Raw0 >> 02) & 0x3;
+            internal uint CondSwizzleZ => (Raw0 >> 04) & 0x3;
+            internal uint CondSwizzleY => (Raw0 >> 06) & 0x3;
+            internal uint CondSwizzleX => (Raw0 >> 08) & 0x3;
+            internal uint Cond => (Raw0 >> 10) & 0x7;                // condition type (lessThan, greaterThan, etc..) 
+            internal bool CondEnabled => ((Raw0 >> 13) & 1) == 1;    // if enabled assign conditionally
 
-            internal uint Vec_Dest_Temp => (Raw_0 >> 15) & 0x3F;
-            internal bool Src0Abs => ((Raw_0 >> 21) & 1) == 1;
-            internal bool Src1Abs => ((Raw_0 >> 22) & 1) == 1;
-            internal bool Src2Abs => ((Raw_0 >> 23) & 1) == 1;
-            internal uint Addr_Reg_Sel => (Raw_0 >> 24) & 0x1;        // addr0 / addr1 selector
-            internal uint Cond_Reg_Sel => (Raw_0 >> 25) & 0x1;        // cc0 / cc1 selector
-            internal bool Saturate => ((Raw_0 >> 26) & 1) == 1;
-            internal bool IsVectorResult => ((Raw_0 >> 30) & 1) == 1;
+            internal uint VecDestTemp => (Raw0 >> 15) & 0x3F;
+            internal bool Src0Abs => ((Raw0 >> 21) & 1) == 1;
+            internal bool Src1Abs => ((Raw0 >> 22) & 1) == 1;
+            internal bool Src2Abs => ((Raw0 >> 23) & 1) == 1;
+            internal uint AddrRegSel => (Raw0 >> 24) & 0x1;        // addr0 / addr1 selector
+            internal uint CondRegSel => (Raw0 >> 25) & 0x1;        // cc0 / cc1 selector
+            internal bool Saturate => ((Raw0 >> 26) & 1) == 1;
+            internal bool IsVectorResult => ((Raw0 >> 30) & 1) == 1;
 
             //Raw 1
-            internal uint Src0_Hi => Raw_1 & 0xFF;
-            internal uint VectorOp => (Raw_1 >> 22) & 0x1F;
-            internal uint ScalarOp => (Raw_1 >> 27) & 0x1F;
-            internal uint ConstSrc => (Raw_1 >> 12) & 0x3FF;
-            internal uint InputSrc => (Raw_1 >> 08) & 0xF;        //Index into InputNames array
+            internal uint Src0Hi => Raw1 & 0xFF;
+            internal uint VectorOp => (Raw1 >> 22) & 0x1F;
+            internal uint ScalarOp => (Raw1 >> 27) & 0x1F;
+            internal uint ConstSrc => (Raw1 >> 12) & 0x3FF;
+            internal uint InputSrc => (Raw1 >> 08) & 0xF;        //Index into InputNames array
 
 
             //Raw 2
-            internal uint Src2_Hi => Raw_2 & 0x3F;
-            internal uint Src1 => (Raw_2 >> 6) & 0x1FFFF;
-            internal uint Src0_Lo => (Raw_2 >> 23) & 0x1FF;
+            internal uint Src2Hi => Raw2 & 0x3F;
+            internal uint Src1 => (Raw2 >> 6) & 0x1FFFF;
+            internal uint Src0Lo => (Raw2 >> 23) & 0x1FF;
 
 
             //Raw 3
-            internal bool End => (Raw_3 & 1) == 1;            // End of shader program
-            internal bool IsIndexedConst => ((Raw_3 >> 1) & 1) == 1;
-            internal uint Dest => (Raw_3 >> 2) & 0x1F;
-            internal uint Sca_Dest_Temp => (Raw_3 >> 7) & 0x3F;
-            internal bool W_Vec_Mask => ((Raw_3 >> 13) & 1) == 1;
-            internal bool Z_Vec_Mask => ((Raw_3 >> 14) & 1) == 1;
-            internal bool Y_Vec_Mask => ((Raw_3 >> 15) & 1) == 1;
-            internal bool X_Vec_Mask => ((Raw_3 >> 16) & 1) == 1;
-            internal bool W_Sca_Mask => ((Raw_3 >> 17) & 1) == 1;
-            internal bool Z_Sca_Mask => ((Raw_3 >> 18) & 1) == 1;
-            internal bool Y_Sca_Mask => ((Raw_3 >> 19) & 1) == 1;
-            internal bool X_Sca_Mask => ((Raw_3 >> 20) & 1) == 1;
+            internal bool End => (Raw3 & 1) == 1;            // End of shader program
+            internal bool IsIndexedConst => ((Raw3 >> 1) & 1) == 1;
+            internal uint Dest => (Raw3 >> 2) & 0x1F;
+            internal uint Sca_Dest_Temp => (Raw3 >> 7) & 0x3F;
+            internal bool WVecMask => ((Raw3 >> 13) & 1) == 1;
+            internal bool ZVecMask => ((Raw3 >> 14) & 1) == 1;
+            internal bool YVecMask => ((Raw3 >> 15) & 1) == 1;
+            internal bool XVecMask => ((Raw3 >> 16) & 1) == 1;
+            internal bool WScaMask => ((Raw3 >> 17) & 1) == 1;
+            internal bool ZScaMask => ((Raw3 >> 18) & 1) == 1;
+            internal bool YScaMask => ((Raw3 >> 19) & 1) == 1;
+            internal bool XScaMask => ((Raw3 >> 20) & 1) == 1;
 
-            internal uint Src2_Lo => (Raw_3 >> 21) & 0x7FF;
+            internal uint Src2Lo => (Raw3 >> 21) & 0x7FF;
 
-            internal uint Src0 => Src0_Lo | (Src0_Hi << 9);
-            internal uint Src2 => Src2_Lo | (Src2_Hi << 11);
+            internal uint Src0 => Src0Lo | (Src0Hi << 9);
+            internal uint Src2 => Src2Lo | (Src2Hi << 11);
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -79,10 +79,10 @@ namespace PS3Sharp.Cell.RSX
             internal uint TempID => (Raw >> 2) & 0x1F;
 
             //Source swizzle
-            internal uint Src_Swizzle_W => (Raw >> 08) & 0x3;
-            internal uint Src_Swizzle_Z => (Raw >> 10) & 0x3;
-            internal uint Src_Swizzle_Y => (Raw >> 12) & 0x3;
-            internal uint Src_Swizzle_X => (Raw >> 14) & 0x3;
+            internal uint SrcSwizzleW => (Raw >> 08) & 0x3;
+            internal uint SrcSwizzleZ => (Raw >> 10) & 0x3;
+            internal uint SrcSwizzleY => (Raw >> 12) & 0x3;
+            internal uint SrcSwizzleX => (Raw >> 14) & 0x3;
             internal bool Negate => ((Raw >> 16) & 1) == 1;
         }
 
@@ -125,49 +125,49 @@ namespace PS3Sharp.Cell.RSX
         ];
 
 
-        internal const uint NVFX_VP_INST_SCA_OP_NOP = 0x00;
-        internal const uint NVFX_VP_INST_SCA_OP_MOV = 0x01;
-        internal const uint NVFX_VP_INST_SCA_OP_RCP = 0x02;
-        internal const uint NVFX_VP_INST_SCA_OP_RCC = 0x03;
-        internal const uint NVFX_VP_INST_SCA_OP_RSQ = 0x04;
-        internal const uint NVFX_VP_INST_SCA_OP_EXP = 0x05;
-        internal const uint NVFX_VP_INST_SCA_OP_LOG = 0x06;
-        internal const uint NVFX_VP_INST_SCA_OP_LIT = 0x07;
-        internal const uint NVFX_VP_INST_SCA_OP_BRA = 0x09;
-        internal const uint NVFX_VP_INST_SCA_OP_CAL = 0x0B;
-        internal const uint NVFX_VP_INST_SCA_OP_RET = 0x0C;
-        internal const uint NVFX_VP_INST_SCA_OP_LG2 = 0x0D;
-        internal const uint NVFX_VP_INST_SCA_OP_EX2 = 0x0E;
-        internal const uint NVFX_VP_INST_SCA_OP_SIN = 0x0F;
-        internal const uint NVFX_VP_INST_SCA_OP_COS = 0x10;
+        internal const uint NvfxVpInstScaOpNop = 0x00;
+        internal const uint NvfxVpInstScaOpMov = 0x01;
+        internal const uint NvfxVpInstScaOpRcp = 0x02;
+        internal const uint NvfxVpInstScaOpRcc = 0x03;
+        internal const uint NvfxVpInstScaOpRsq = 0x04;
+        internal const uint NvfxVpInstScaOpExp = 0x05;
+        internal const uint NvfxVpInstScaOpLog = 0x06;
+        internal const uint NvfxVpInstScaOpLit = 0x07;
+        internal const uint NvfxVpInstScaOpBra = 0x09;
+        internal const uint NvfxVpInstScaOpCal = 0x0B;
+        internal const uint NvfxVpInstScaOpRet = 0x0C;
+        internal const uint NvfxVpInstScaOpLg2 = 0x0D;
+        internal const uint NvfxVpInstScaOpEx2 = 0x0E;
+        internal const uint NvfxVpInstScaOpSin = 0x0F;
+        internal const uint NvfxVpInstScaOpCos = 0x10;
 
-        internal const uint NV40_VP_INST_SCA_OP_PUSHA = 0x13;
-        internal const uint NV40_VP_INST_SCA_OP_POPA = 0x14;
+        internal const uint Nv40VpInstScaOpPusha = 0x13;
+        internal const uint Nv40VpInstScaOpPopa = 0x14;
 
-        internal const uint NVFX_VP_INST_VEC_OP_NOP = 0x00;
-        internal const uint NVFX_VP_INST_VEC_OP_MOV = 0x01;
-        internal const uint NVFX_VP_INST_VEC_OP_MUL = 0x02;
-        internal const uint NVFX_VP_INST_VEC_OP_ADD = 0x03;
-        internal const uint NVFX_VP_INST_VEC_OP_MAD = 0x04;
-        internal const uint NVFX_VP_INST_VEC_OP_DP3 = 0x05;
-        internal const uint NVFX_VP_INST_VEC_OP_DPH = 0x06;
-        internal const uint NVFX_VP_INST_VEC_OP_DP4 = 0x07;
-        internal const uint NVFX_VP_INST_VEC_OP_DST = 0x08;
-        internal const uint NVFX_VP_INST_VEC_OP_MIN = 0x09;
-        internal const uint NVFX_VP_INST_VEC_OP_MAX = 0x0A;
-        internal const uint NVFX_VP_INST_VEC_OP_SLT = 0x0B;
-        internal const uint NVFX_VP_INST_VEC_OP_SGE = 0x0C;
-        internal const uint NVFX_VP_INST_VEC_OP_ARL = 0x0D; // Load to address register
-        internal const uint NVFX_VP_INST_VEC_OP_FRC = 0x0E;
-        internal const uint NVFX_VP_INST_VEC_OP_FLR = 0x0F;
-        internal const uint NVFX_VP_INST_VEC_OP_SEQ = 0x10;
-        internal const uint NVFX_VP_INST_VEC_OP_SFL = 0x11;
-        internal const uint NVFX_VP_INST_VEC_OP_SGT = 0x12;
-        internal const uint NVFX_VP_INST_VEC_OP_SLE = 0x13;
-        internal const uint NVFX_VP_INST_VEC_OP_SNE = 0x14;
-        internal const uint NVFX_VP_INST_VEC_OP_STR = 0x15;
-        internal const uint NVFX_VP_INST_VEC_OP_SSG = 0x16;
-        internal const uint NVFX_VP_INST_VEC_OP_ARR = 0x17;
-        internal const uint NVFX_VP_INST_VEC_OP_ARA = 0x18;
+        internal const uint NvfxVpInstVecOpNop = 0x00;
+        internal const uint NvfxVpInstVecOpMov = 0x01;
+        internal const uint NvfxVpInstVecOpMul = 0x02;
+        internal const uint NvfxVpInstVecOpAdd = 0x03;
+        internal const uint NvfxVpInstVecOpMad = 0x04;
+        internal const uint NvfxVpInstVecOpDp3 = 0x05;
+        internal const uint NvfxVpInstVecOpDph = 0x06;
+        internal const uint NvfxVpInstVecOpDp4 = 0x07;
+        internal const uint NvfxVpInstVecOpDst = 0x08;
+        internal const uint NvfxVpInstVecOpMin = 0x09;
+        internal const uint NvfxVpInstVecOpMax = 0x0A;
+        internal const uint NvfxVpInstVecOpSlt = 0x0B;
+        internal const uint NvfxVpInstVecOpSge = 0x0C;
+        internal const uint NvfxVpInstVecOpArl = 0x0D; // Load to address register
+        internal const uint NvfxVpInstVecOpFrc = 0x0E;
+        internal const uint NvfxVpInstVecOpFlr = 0x0F;
+        internal const uint NvfxVpInstVecOpSeq = 0x10;
+        internal const uint NvfxVpInstVecOpSfl = 0x11;
+        internal const uint NvfxVpInstVecOpSgt = 0x12;
+        internal const uint NvfxVpInstVecOpSle = 0x13;
+        internal const uint NvfxVpInstVecOpSne = 0x14;
+        internal const uint NvfxVpInstVecOpStr = 0x15;
+        internal const uint NvfxVpInstVecOpSsg = 0x16;
+        internal const uint NvfxVpInstVecOpArr = 0x17;
+        internal const uint NvfxVpInstVecOpAra = 0x18;
     }
 }

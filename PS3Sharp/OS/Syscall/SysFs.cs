@@ -19,8 +19,8 @@ namespace PS3Sharp.OS.Syscall
         internal struct CellFsStat : IPS3Struct
         {
             internal BigEndian<int> Mode;          // s32
-            internal BigEndian<int> UID;           // s32
-            internal BigEndian<int> GID;           // s32
+            internal BigEndian<int> UId;           // s32
+            internal BigEndian<int> GId;           // s32
             internal BigEndian<ulong> AccessTime;  // u64
             internal BigEndian<ulong> ModifyTime;  // u64
             internal BigEndian<ulong> CreateTime;  // u64
@@ -37,63 +37,63 @@ namespace PS3Sharp.OS.Syscall
         }
 
         // Same as Linux (uses base 8)
-        internal static readonly uint CELL_FS_S_IFDIR = Oct("0040000"); // Directory
-        internal static readonly uint CELL_FS_S_IFREG = Oct("0100000"); // Regular
-        internal static readonly uint CELL_FS_S_IFLNK = Oct("0120000"); // Symbolic link
-        internal static readonly uint CELL_FS_S_IFWHT = Oct("0160000"); // Unknown
+        internal static readonly uint CellFsSIfdir = Oct("0040000"); // Directory
+        internal static readonly uint CellFsSIfreg = Oct("0100000"); // Regular
+        internal static readonly uint CellFsSiflnk = Oct("0120000"); // Symbolic link
+        internal static readonly uint CellFsSifwht = Oct("0160000"); // Unknown
 
-        internal static readonly uint CELL_FS_S_IRUSR = Oct("0000400"); // R for owner
-        internal static readonly uint CELL_FS_S_IWUSR = Oct("0000200"); // W for owner
-        internal static readonly uint CELL_FS_S_IXUSR = Oct("0000100"); // X for owner
+        internal static readonly uint CellFsSIrusr = Oct("0000400"); // R for owner
+        internal static readonly uint CellFsSIwusr = Oct("0000200"); // W for owner
+        internal static readonly uint CellFsSIxusr = Oct("0000100"); // X for owner
 
-        internal static readonly uint CELL_FS_S_IRGRP = Oct("0000040"); // R for group
-        internal static readonly uint CELL_FS_S_IWGRP = Oct("0000020"); // W for group
-        internal static readonly uint CELL_FS_S_IXGRP = Oct("0000010"); // X for group
+        internal static readonly uint CellFsSIrgrp = Oct("0000040"); // R for group
+        internal static readonly uint CellFsSIwgrp = Oct("0000020"); // W for group
+        internal static readonly uint CellFsSIxgrp = Oct("0000010"); // X for group
 
-        internal static readonly uint CELL_FS_S_IROTH = Oct("0000004"); // R for other
-        internal static readonly uint CELL_FS_S_IWOTH = Oct("0000002"); // W for other
-        internal static readonly uint CELL_FS_S_IXOTH = Oct("0000001"); // X for other
+        internal static readonly uint CellFsSIroth = Oct("0000004"); // R for other
+        internal static readonly uint CellFsSIwoth = Oct("0000002"); // W for other
+        internal static readonly uint CellFsSIxoth = Oct("0000001"); // X for other
 
         // Default Modes
-        internal static readonly uint DIR_MODE = Oct("0777") | CELL_FS_S_IFDIR;   // RWX RWX RWX
-        internal static readonly uint FILE_MODE = Oct("0666") | CELL_FS_S_IFREG;   // RW- RW- RW-
+        internal static readonly uint DirMode = Oct("0777") | CellFsSIfdir;   // RWX RWX RWX
+        internal static readonly uint FileMode = Oct("0666") | CellFsSIfreg;   // RW- RW- RW-
 
         // SysFsOpen flags
-        internal static readonly uint O_RDONLY = Oct("0000");              // Read only
-        internal static readonly uint O_WRONLY = Oct("0001");              // Write only
-        internal static readonly uint O_RDWR = Oct("0002");                // Read/write
+        internal static readonly uint ORdonly = Oct("0000");              // Read only
+        internal static readonly uint OWronly = Oct("0001");              // Write only
+        internal static readonly uint ORdwr = Oct("0002");                // Read/write
 
-        internal static readonly uint O_CREAT = Oct("0100");          // Create file if it does not exist
-        internal static readonly uint O_EXCL = Oct("0200");           // Exclusive create
-        internal static readonly uint O_NOCTTY = Oct("0400");         // Do not assign controlling terminal
-        internal static readonly uint O_TRUNC = Oct("01000");         // Truncate file
-        internal static readonly uint O_APPEND = Oct("02000");        // Append on each write
-        internal static readonly uint O_NONBLOCK = Oct("04000");      // Non-blocking I/O
+        internal static readonly uint OCreat = Oct("0100");          // Create file if it does not exist
+        internal static readonly uint OExcl = Oct("0200");           // Exclusive create
+        internal static readonly uint ONoctty = Oct("0400");         // Do not assign controlling terminal
+        internal static readonly uint OTrunc = Oct("01000");         // Truncate file
+        internal static readonly uint OAppend = Oct("02000");        // Append on each write
+        internal static readonly uint ONonblock = Oct("04000");      // Non-blocking I/O
 
-        internal static readonly uint O_DSYNC = Oct("010000");        // Synchronized writes (data only)
-        internal static readonly uint O_SYNC = Oct("04010000");       // Synchronized writes (data + metadata)
-        internal readonly uint O_RSYNC = O_SYNC;
+        internal static readonly uint ODsync = Oct("010000");        // Synchronized writes (data only)
+        internal static readonly uint OSync = Oct("04010000");       // Synchronized writes (data + metadata)
+        internal readonly uint ORsync = OSync;
 
-        internal static readonly uint O_DIRECTORY = Oct("0200000");   // Must be a directory
-        internal static readonly uint O_NOFOLLOW = Oct("0400000");    // Do not follow symlinks
-        internal static readonly uint O_CLOEXEC = Oct("02000000");    // Close on exec
+        internal static readonly uint ODirectory = Oct("0200000");   // Must be a directory
+        internal static readonly uint ONofollow = Oct("0400000");    // Do not follow symlinks
+        internal static readonly uint OCloexec = Oct("02000000");    // Close on exec
 
         // Same as linux?
-        internal const uint FD_STDIN = 0;
-        internal const uint FD_STDOUT = 1;
-        internal const uint FD_STDERR = 2;
-        internal const uint FD_EOF = 4;
+        internal const uint FdStdin = 0;
+        internal const uint FdStdout = 1;
+        internal const uint FdStderr = 2;
+        internal const uint FdEof = 4;
 
         // For the console
         private static CellFsStat ConsoleFsStat = new()
         {
-            Mode = (int)(CELL_FS_S_IRUSR | CELL_FS_S_IWUSR | CELL_FS_S_IXUSR |
-                         CELL_FS_S_IRGRP | CELL_FS_S_IWGRP | CELL_FS_S_IXGRP |
-                         CELL_FS_S_IROTH | CELL_FS_S_IWOTH | CELL_FS_S_IXOTH |
-                         CELL_FS_S_IFREG),
+            Mode = (int)(CellFsSIrusr | CellFsSIwusr | CellFsSIxusr |
+                         CellFsSIrgrp | CellFsSIwgrp | CellFsSIxgrp |
+                         CellFsSIroth | CellFsSIwoth | CellFsSIxoth |
+                         CellFsSIfreg),
 
-            UID = 0,
-            GID = 0,
+            UId = 0,
+            GId = 0,
             AccessTime = 0,
             ModifyTime = 0,
             CreateTime = 0,
@@ -115,17 +115,17 @@ namespace PS3Sharp.OS.Syscall
         internal ulong SysFsAioInit(PPUThread ppu)
         {
             Console.WriteLine($"[{ppu.ThreadName}] [SysFs] SysFsAioInit");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal uint SysFsStat(PPUThread ppu)
         {
-            uint pathPtr = ppu.ReadArg<uint>(ARG0);
-            GuestPtr<CellFsStat> statPtr = ppu.ReadArg<GuestPtr<CellFsStat>>(ARG1);
+            uint pathPtr = ppu.ReadArg<uint>(Arg0);
+            GuestPtr<CellFsStat> statPtr = ppu.ReadArg<GuestPtr<CellFsStat>>(Arg1);
 
             if (pathPtr == 0)
             {
-                return CELL_EFAULT;
+                return CellEFault;
             }
 
             string guestPath = _memoryManager.ReadString(pathPtr);
@@ -133,7 +133,7 @@ namespace PS3Sharp.OS.Syscall
             // ?
             if (string.IsNullOrEmpty(guestPath))
             {
-                return CELL_ENOENT;
+                return CellENoEnt;
             }
 
             // TODO
@@ -149,14 +149,14 @@ namespace PS3Sharp.OS.Syscall
             if (!isDirectory && !isFile)
             {
                 Console.WriteLine($"[{ppu.ThreadName}] [SysFs] SysFstat file: {guestPath} does not exist");
-                return CELL_ENOENT;
+                return CellENoEnt;
             }
 
             CellFsStat stat = new()
             {
-                Mode = (int)(isDirectory ? DIR_MODE : FILE_MODE),
-                UID = 0,
-                GID = 0,
+                Mode = (int)(isDirectory ? DirMode : FileMode),
+                UId = 0,
+                GId = 0,
                 AccessTime = 0,
                 ModifyTime = 0,
                 CreateTime = 0,
@@ -166,15 +166,15 @@ namespace PS3Sharp.OS.Syscall
 
             _memoryManager.Write(statPtr, stat);
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysFsFstat(PPUThread ppu)
         {
-            int fd = ppu.ReadArg<int>(ARG0);
-            GuestPtr<CellFsStat> statPtr = ppu.ReadArg<GuestPtr<CellFsStat>>(ARG1);
+            int fd = ppu.ReadArg<int>(Arg0);
+            GuestPtr<CellFsStat> statPtr = ppu.ReadArg<GuestPtr<CellFsStat>>(Arg1);
 
-            bool isConsole = fd == FD_STDIN || fd == FD_STDOUT || fd == FD_STDERR;
+            bool isConsole = fd == FdStdin || fd == FdStdout || fd == FdStderr;
 
             // Console.WriteLine($"[{ppu.ThreadName}] [SysFs] SysFsFstat fd = 0x{fd:X}");
 
@@ -182,7 +182,7 @@ namespace PS3Sharp.OS.Syscall
             {
                 _memoryManager.Write(statPtr, ConsoleFsStat);
                 Console.WriteLine($"[{ppu.ThreadName}] [SysFs] SysFsFstat => CELL_EBADF");
-                return CELL_EBADF;
+                return CellEBadF;
             }
 
             ulong size;
@@ -191,24 +191,24 @@ namespace PS3Sharp.OS.Syscall
             if (_fileSystemManager.TryGetFile(fd, out GuestFile? guestFile))
             {
                 size = guestFile.Size;
-                mode = (int)FILE_MODE;
+                mode = (int)FileMode;
             }
             else if (_fileSystemManager.TryGetDirectory(fd, out GuestDirectory? directory))
             {
                 size = directory.Size;
-                mode = (int)DIR_MODE;
+                mode = (int)DirMode;
             }
             else
             {
                 Console.WriteLine($"[{ppu.ThreadName}] [SysFs] SysFsFstat => CELL_EBADF");
-                return CELL_EBADF;
+                return CellEBadF;
             }
 
             CellFsStat stat = new()
             {
                 Mode = mode,
-                UID = 0,
-                GID = 0,
+                UId = 0,
+                GId = 0,
                 AccessTime = 0,
                 ModifyTime = 0,
                 CreateTime = 0,
@@ -218,14 +218,14 @@ namespace PS3Sharp.OS.Syscall
 
             _memoryManager.Write(statPtr, stat);
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysFsOpen(PPUThread ppu)
         {
-            uint pathPtr = ppu.ReadArg<uint>(ARG0);
-            uint flags = ppu.ReadArg<uint>(ARG1);
-            GuestPtr<int> fdPtr = ppu.ReadArg<GuestPtr<int>>(ARG2);
+            uint pathPtr = ppu.ReadArg<uint>(Arg0);
+            uint flags = ppu.ReadArg<uint>(Arg1);
+            GuestPtr<int> fdPtr = ppu.ReadArg<GuestPtr<int>>(Arg2);
 
             // uint64_t mode, const void *arg, uint64_t size <- ARG3/4/5
             // the mode is only in the syscall not the library
@@ -235,7 +235,7 @@ namespace PS3Sharp.OS.Syscall
             if (!IsGuestAbsolutePath(guestPath))
             {
                 Console.WriteLine($"[{ppu.ThreadName}] [SysFsOpen] Error, path: {guestPath} is not absolute (CELL_ENOENT)");
-                return CELL_ENOENT;
+                return CellENoEnt;
             }
 
             string hostPath = GetHostPath(guestPath);
@@ -259,7 +259,7 @@ namespace PS3Sharp.OS.Syscall
             int handle = (int)_memoryManager.GetHandle();
             ulong result = _fileSystemManager.OpenFile(hostPath, handle, ppu.ThreadID, flags);
 
-            if (result != CELL_OK)
+            if (result != CellOk)
             {
                 Console.WriteLine($"[{ppu.ThreadName}] [SysFsOpen] path: {guestPath} failed: {CellErrorNames[result]}");
             }
@@ -275,37 +275,37 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysFsLseek(PPUThread ppu)
         {
-            int fd = ppu.ReadArg<int>(ARG0);
-            long offset = ppu.ReadArg<long>(ARG1);
-            int whence = ppu.ReadArg<int>(ARG2);
-            GuestPtr<ulong> posPtr = ppu.ReadArg<GuestPtr<ulong>>(ARG3);
+            int fd = ppu.ReadArg<int>(Arg0);
+            long offset = ppu.ReadArg<long>(Arg1);
+            int whence = ppu.ReadArg<int>(Arg2);
+            GuestPtr<ulong> posPtr = ppu.ReadArg<GuestPtr<ulong>>(Arg3);
 
             // Console.WriteLine($"[{ppu.ThreadName}] [SysFsLseek] cellFsLseek fd = 0x{fd:X} seek offset: 0x{offset:X} mode = {whence}");
 
             if (!_fileSystemManager.IsFileOpen(fd))
             {
-                return CELL_EINVAL;
+                return CellEInval;
             }
 
             ulong position = (ulong)_fileSystemManager.Seek(fd, offset, whence);
             _memoryManager.Write<BigEndian<ulong>>(posPtr, position);
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysFsRead(PPUThread ppu)
         {
-            int fd = ppu.ReadArg<int>(ARG0);
-            GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(ARG1);
-            ulong nbytes = ppu.ReadArg<ulong>(ARG2);
-            GuestPtr<ulong> nreadPtr = ppu.ReadArg<GuestPtr<ulong>>(ARG3);
+            int fd = ppu.ReadArg<int>(Arg0);
+            GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(Arg1);
+            ulong nbytes = ppu.ReadArg<ulong>(Arg2);
+            GuestPtr<ulong> nreadPtr = ppu.ReadArg<GuestPtr<ulong>>(Arg3);
 
             // MemoryManager.MemoryBlock block = _memoryManager.GetAllocationByVirtualAddress(buf);
             // Console.WriteLine($"[{ppu.ThreadName}] [SysFsRead] cellFsRead fd = 0x{fd:X} amount: 0x{nbytes:X} dest: 0x{buf:X} base = 0x{b.VirtualAddress:X8}");
 
             if (buf.IsNullPtr || nreadPtr.IsNullPtr || nbytes == 0)
             {
-                return CELL_EFAULT;
+                return CellEFault;
             }
 
             // Read into the buffer
@@ -318,43 +318,43 @@ namespace PS3Sharp.OS.Syscall
             }
 
             // TODO: Seems like this syscall returns CELL_EFAULT if number of bytes read == 0, while CellFsRead does not
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysFsWrite(PPUThread ppu)
         {
-            int fd = ppu.ReadArg<int>(ARG0);
-            GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(ARG1);
-            ulong nbytes = ppu.ReadArg<ulong>(ARG2);
-            GuestPtr<ulong> nwrite_ptr = ppu.ReadArg<GuestPtr<ulong>>(ARG3);
+            int fd = ppu.ReadArg<int>(Arg0);
+            GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(Arg1);
+            ulong nbytes = ppu.ReadArg<ulong>(Arg2);
+            GuestPtr<ulong> nwrite_ptr = ppu.ReadArg<GuestPtr<ulong>>(Arg3);
 
             ulong nrwite = _fileSystemManager.Write(fd, (int)nbytes, buf);
             _memoryManager.Write<BigEndian<ulong>>(nwrite_ptr, nrwite); //Write back the number of bytes written
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysFsClose(PPUThread ppu)
         {
-            int fd = ppu.ReadArg<int>(ARG0);
+            int fd = ppu.ReadArg<int>(Arg0);
 
             _fileSystemManager.CloseFile(fd);
             //Console.WriteLine($"[SysFsClose] cellFsClose fd = 0x{fd:X}");
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysFsMkDir(PPUThread ppu)
         {
             // todo
-            Console.WriteLine($"[SysFsMkDir] SysFsMkDir . CELL_OK");
-            return CELL_OK;
+            Console.WriteLine($"[SysFsMkDir] SysFsMkDir -> CellOk");
+            return CellOk;
         }
 
         internal ulong SysFsOpenDir(PPUThread ppu)
         {
-            GuestVoidPtr pathPtr = ppu.ReadArg<GuestVoidPtr>(ARG0);
-            GuestPtr<uint> fdPtr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
+            GuestVoidPtr pathPtr = ppu.ReadArg<GuestVoidPtr>(Arg0);
+            GuestPtr<uint> fdPtr = ppu.ReadArg<GuestPtr<uint>>(Arg1);
 
             string guestPath = _memoryManager.ReadString(pathPtr);
             string hostPath = GetHostPath(guestPath);
@@ -364,7 +364,7 @@ namespace PS3Sharp.OS.Syscall
             int handle = (int)_memoryManager.GetHandle();
             ulong result = _fileSystemManager.OpenDirectory(hostPath, handle, ppu.ThreadID);
 
-            if (result == CELL_OK)
+            if (result == CellOk)
             {
                 _memoryManager.Write<BigEndian<uint>>(fdPtr, (uint)handle);
             }
@@ -378,23 +378,23 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysFsReadDir(PPUThread ppu)
         {
-            int fd = ppu.ReadArg<int>(ARG0);
-            GuestPtr<CellFsDirent> direentPtr = ppu.ReadArg<GuestPtr<CellFsDirent>>(ARG1);
-            GuestPtr<ulong> bytesReadPtr = ppu.ReadArg<GuestPtr<ulong>>(ARG2);
+            int fd = ppu.ReadArg<int>(Arg0);
+            GuestPtr<CellFsDirent> direentPtr = ppu.ReadArg<GuestPtr<CellFsDirent>>(Arg1);
+            GuestPtr<ulong> bytesReadPtr = ppu.ReadArg<GuestPtr<ulong>>(Arg2);
 
             ulong bytesRead = _fileSystemManager.ReadDirectory(fd, out CellFsDirent dirent);
 
             _memoryManager.Write(direentPtr, dirent);
             _memoryManager.Write<BigEndian<ulong>>(bytesReadPtr, bytesRead);
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysFsCloseDir(PPUThread ppu)
         {
-            int fd = ppu.ReadArg<int>(ARG0);
+            int fd = ppu.ReadArg<int>(Arg0);
             _fileSystemManager.CloseDirectory(fd);
-            return CELL_OK;
+            return CellOk;
         }
     }
 }

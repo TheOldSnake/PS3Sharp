@@ -77,14 +77,14 @@ namespace PS3Sharp.Cell.RSX
         {
             switch (PixelFormatValue)
             {
-                case NV40TCL_TEX_FORMAT_FORMAT_A8R8G8B8: return PixelInternalFormat.Rgba8;
-                case NV40TCL_TEX_FORMAT_FORMAT_R5G6B5: return (PixelInternalFormat)All.Rgb565;
-                case NV40TCL_TEX_FORMAT_FORMAT_G8B8: return PixelInternalFormat.Rg8;
-                case NV40TCL_TEX_FORMAT_FORMAT_L8: return PixelInternalFormat.R8;
+                case Nv40TclTexFormatFormatA8r8g8b8: return PixelInternalFormat.Rgba8;
+                case Nv40TclTexFormatFormatR5g6b5: return (PixelInternalFormat)All.Rgb565;
+                case Nv40TclTexFormatFormatG8b8: return PixelInternalFormat.Rg8;
+                case Nv40TclTexFormatFormatL8: return PixelInternalFormat.R8;
 
-                case NV40TCL_TEX_FORMAT_FORMAT_DXT1: return PixelInternalFormat.CompressedRgbaS3tcDxt1Ext;
-                case NV40TCL_TEX_FORMAT_FORMAT_DXT3: return PixelInternalFormat.CompressedRgbaS3tcDxt3Ext;
-                case NV40TCL_TEX_FORMAT_FORMAT_DXT5: return PixelInternalFormat.CompressedRgbaS3tcDxt5Ext;
+                case Nv40TclTexFormatFormatDxt1: return PixelInternalFormat.CompressedRgbaS3tcDxt1Ext;
+                case Nv40TclTexFormatFormatDxt3: return PixelInternalFormat.CompressedRgbaS3tcDxt3Ext;
+                case Nv40TclTexFormatFormatDxt5: return PixelInternalFormat.CompressedRgbaS3tcDxt5Ext;
 
                 default:
                     throw new NotImplementedException($"[RSX] TODO: Texture Format = 0x{PixelFormatValue:X8}");
@@ -97,9 +97,9 @@ namespace PS3Sharp.Cell.RSX
 
             switch (PixelFormatValue)
             {
-                case NV40TCL_TEX_FORMAT_FORMAT_DXT1: return InternalFormat.CompressedRgbaS3tcDxt1Ext;  //CELL_GCM_TEXTURE_DXT1 - used by LBP and gta sa
-                case NV40TCL_TEX_FORMAT_FORMAT_DXT3: return InternalFormat.CompressedRgbaS3tcDxt3Ext;  //CELL_GCM_TEXTURE_DXT3 - used by gta sa
-                case NV40TCL_TEX_FORMAT_FORMAT_DXT5: return InternalFormat.CompressedRgbaS3tcDxt5Ext;  //CELL_GCM_TEXTURE_DXT3 - used by gta sa
+                case Nv40TclTexFormatFormatDxt1: return InternalFormat.CompressedRgbaS3tcDxt1Ext;  //CELL_GCM_TEXTURE_DXT1 - used by LBP and gta sa
+                case Nv40TclTexFormatFormatDxt3: return InternalFormat.CompressedRgbaS3tcDxt3Ext;  //CELL_GCM_TEXTURE_DXT3 - used by gta sa
+                case Nv40TclTexFormatFormatDxt5: return InternalFormat.CompressedRgbaS3tcDxt5Ext;  //CELL_GCM_TEXTURE_DXT3 - used by gta sa
                 default:
                     throw new NotImplementedException($"[RSX] TODO: Texture Compressed Format = 0x{PixelFormatValue:X8}");
             }
@@ -109,15 +109,15 @@ namespace PS3Sharp.Cell.RSX
         {
             switch (PixelFormatValue)
             {
-                case NV40TCL_TEX_FORMAT_FORMAT_A8R8G8B8: return PixelFormat.Bgra; // ARGB in big endian == BGRA
+                case Nv40TclTexFormatFormatA8r8g8b8: return PixelFormat.Bgra; // ARGB in big endian == BGRA
 
-                case NV40TCL_TEX_FORMAT_FORMAT_R5G6B5: return PixelFormat.Rgb;
-                case NV40TCL_TEX_FORMAT_FORMAT_G8B8: return PixelFormat.Rg;
-                case NV40TCL_TEX_FORMAT_FORMAT_L8: return PixelFormat.Red;
+                case Nv40TclTexFormatFormatR5g6b5: return PixelFormat.Rgb;
+                case Nv40TclTexFormatFormatG8b8: return PixelFormat.Rg;
+                case Nv40TclTexFormatFormatL8: return PixelFormat.Red;
 
-                case NV40TCL_TEX_FORMAT_FORMAT_DXT1: return PixelFormat.Rgba;
-                case NV40TCL_TEX_FORMAT_FORMAT_DXT3: return PixelFormat.Rgba;
-                case NV40TCL_TEX_FORMAT_FORMAT_DXT5: return PixelFormat.Rgba;
+                case Nv40TclTexFormatFormatDxt1: return PixelFormat.Rgba;
+                case Nv40TclTexFormatFormatDxt3: return PixelFormat.Rgba;
+                case Nv40TclTexFormatFormatDxt5: return PixelFormat.Rgba;
                 default:
                     throw new NotImplementedException($"[RSX] TODO: Texture Format = 0x{PixelFormatValue:X8}");
             }
@@ -128,7 +128,7 @@ namespace PS3Sharp.Cell.RSX
 
             switch (PixelFormatValue)
             {
-                case NV40TCL_TEX_FORMAT_FORMAT_R5G6B5: return PixelType.UnsignedShort565;
+                case Nv40TclTexFormatFormatR5g6b5: return PixelType.UnsignedShort565;
 
                 default:
                     return PixelType.UnsignedByte;
@@ -139,10 +139,10 @@ namespace PS3Sharp.Cell.RSX
         {
             switch (PixelFormatValue)
             {
-                case NV40TCL_TEX_FORMAT_FORMAT_A8R8G8B8: return 4;
-                case NV40TCL_TEX_FORMAT_FORMAT_R5G6B5: return 2;
-                case NV40TCL_TEX_FORMAT_FORMAT_G8B8: return 2;
-                case NV40TCL_TEX_FORMAT_FORMAT_L8: return 1;
+                case Nv40TclTexFormatFormatA8r8g8b8: return 4;
+                case Nv40TclTexFormatFormatR5g6b5: return 2;
+                case Nv40TclTexFormatFormatG8b8: return 2;
+                case Nv40TclTexFormatFormatL8: return 1;
 
                 default:
                     throw new NotImplementedException($"[RSX] TODO: Texture Format = 0x{PixelFormatValue:X8}");
@@ -154,9 +154,9 @@ namespace PS3Sharp.Cell.RSX
             uint pixelFormat = PixelFormatValue;
 
             bool isCompressed =
-                pixelFormat == NV40TCL_TEX_FORMAT_FORMAT_DXT1 ||
-                pixelFormat == NV40TCL_TEX_FORMAT_FORMAT_DXT3 ||
-                pixelFormat == NV40TCL_TEX_FORMAT_FORMAT_DXT5;
+                pixelFormat == Nv40TclTexFormatFormatDxt1 ||
+                pixelFormat == Nv40TclTexFormatFormatDxt3 ||
+                pixelFormat == Nv40TclTexFormatFormatDxt5;
 
             return isCompressed;
         }
@@ -174,9 +174,9 @@ namespace PS3Sharp.Cell.RSX
 
             int bytesPerBlock = PixelFormatValue switch
             {
-                NV40TCL_TEX_FORMAT_FORMAT_DXT1 => 8,
-                NV40TCL_TEX_FORMAT_FORMAT_DXT3 => 16,
-                NV40TCL_TEX_FORMAT_FORMAT_DXT5 => 16,
+                Nv40TclTexFormatFormatDxt1 => 8,
+                Nv40TclTexFormatFormatDxt3 => 16,
+                Nv40TclTexFormatFormatDxt5 => 16,
                 _ => throw new Exception($"Texture format 0x{PixelFormatValue:X8} is not compressed"),
             };
 
@@ -206,7 +206,7 @@ namespace PS3Sharp.Cell.RSX
 
             // CELL_GCM_TEXTURE_B8 is a single channel format,
             // we use the RED channel for all of them
-            if (pixelFormat == NV40TCL_TEX_FORMAT_FORMAT_L8)
+            if (pixelFormat == Nv40TclTexFormatFormatL8)
             {
                 swizzleResult.A = _swizzleTable[1];
                 swizzleResult.R = _swizzleTable[1];
@@ -217,7 +217,7 @@ namespace PS3Sharp.Cell.RSX
 
 
             // NV40TCL_TEX_FORMAT_FORMAT_G8B8 
-            if (pixelFormat == NV40TCL_TEX_FORMAT_FORMAT_G8B8)
+            if (pixelFormat == Nv40TclTexFormatFormatG8b8)
             {
                 swizzleResult.A = _swizzleTable[1]; // R
                 swizzleResult.R = _swizzleTable[2]; // G
@@ -228,7 +228,7 @@ namespace PS3Sharp.Cell.RSX
 
             // TODO: Handle more special cases
 
-            if (pixelFormat == NV40TCL_TEX_FORMAT_FORMAT_A8R8G8B8 && !IsSurface)
+            if (pixelFormat == Nv40TclTexFormatFormatA8r8g8b8 && !IsSurface)
             {
                 // For A8R8G8B8 mode we used BGRA which sets the color channels correctly
                 // We have to reverse the swizzle lookup because our tabel is ARGB, but the indexer is BRGA

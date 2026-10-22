@@ -140,7 +140,7 @@ namespace PS3Sharp.OS
             // debug
             SysDbgPpuExceptionHandler = 0x3DC,
             CellGCMCallback = CellGcmSys.RSXCallbackSysID,
-            ModuleCall = ModulePatcher.ModuleCallSysID
+            ModuleCall = ModulePatcher.ModuleCallSysId
         }
     }
 }
