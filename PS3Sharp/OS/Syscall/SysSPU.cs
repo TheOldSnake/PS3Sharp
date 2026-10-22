@@ -1,10 +1,13 @@
+using OpenTK.Graphics.ES20;
 using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Cell.SPU;
 using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.LV2;
+using System.Buffers;
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
@@ -61,6 +64,9 @@ namespace PS3Sharp.OS.Syscall
             internal BigEndian<ulong> Arg4;
         }
 
+        internal const uint SysSpuImageProtect = 0;
+        internal const uint SysSpuImageDirect = 1;
+
         internal const uint SysSpuThreadEventUser = 1;
         internal const ulong SysSpuThreadEventUserKey = 0xFFFFFFFF53505501;
         internal const uint SysSpuThreadGroupEventRun = 1;
@@ -73,12 +79,14 @@ namespace PS3Sharp.OS.Syscall
         internal const int SysSpuSegmentTypeFill = 0x0002;
         internal const int SysSpuSegmentTypeInfo = 0x0004;
 
+        private readonly ElfLoader _elfLoader;
         private readonly ThreadManager _threadManager;
         private readonly MemoryManager _memoryManager;
         private readonly ConcurrentDictionary<uint, LV2SPUThreadGroup> _spuThreadGroupes = new();
 
-        internal SysSPU(ThreadManager threadManager, MemoryManager memoryManager)
+        internal SysSPU(ElfLoader elfLoader, ThreadManager threadManager, MemoryManager memoryManager)
         {
+            _elfLoader = elfLoader;
             _threadManager = threadManager;
             _memoryManager = memoryManager;
         }
@@ -106,6 +114,48 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysSPUInitialize(PPUThread ppu)
         {
+            return CellOk;
+        }
+
+        internal ulong SysSPUImageImport(PPUThread ppu)
+        {
+            GuestPtr<SysSPUImage> imagePtr = ppu.ReadArg<GuestPtr<SysSPUImage>>(Arg0);
+            uint src = ppu.ReadArg<uint>(Arg1); // Ptr to elf32 image
+            uint type = ppu.ReadArg<uint>(Arg2);
+
+            if (type != SysSpuImageProtect && type != SysSpuImageDirect)
+            {
+                return CellEInval;
+            }
+
+            // Load elf32
+            (ElfLoader.ElfHeader32 header, List<SysSPUSegment> segments) = _elfLoader.LoadSPUElf(src, _memoryManager);
+
+            // Allocate SysSPUSegment array
+            int segmentArraySize = Unsafe.SizeOf<SysSPU.SysSPUSegment>() * 32;
+            GuestPtr<SysSPU.SysSPUSegment> segmentArrayPtr = _memoryManager.AllocateVirtualMemory((uint)segmentArraySize).VirtualAddress;
+
+            if (segments.Count > 0)
+            {
+                // Copy segment array
+                Span<SysSPUSegment> segmentsSpan = CollectionsMarshal.AsSpan(segments);
+                _memoryManager.WriteArray(segmentArrayPtr, segmentsSpan);
+            }
+
+            // Write SysSPUImage data
+            BigEndian<uint> actualEntry = _memoryManager.Read<BigEndian<uint>>(header.e_entry);
+            SysSPUImage image = new()
+            {
+                Type = type,
+                Entry = actualEntry,
+                SegmentsPtr = (uint)segmentArrayPtr,
+                SegmentsCount = (uint)segments.Count
+            };
+
+            _memoryManager.Write(imagePtr, image);
+
+            Console.WriteLine($"[SysPrxForUser] sys_spu_image_import: Type = 0x{type:X} entry = 0x{actualEntry:X8} segment count = {segments.Count}");
+
             return CellOk;
         }
 
@@ -157,7 +207,7 @@ namespace PS3Sharp.OS.Syscall
 
             _memoryManager.Write<BigEndian<uint>>(id_ptr, id);
 
-            Console.WriteLine($"[SysSPUThreadInitialize] Created SPU thread: {thread_name} - Group: 0x{group_id:X8}");
+            Console.WriteLine($"[SysSPUThreadInitialize] Created SPU thread: {thread_name} - Group: 0x{group_id:X8} entry = 0x{img.Entry:X8}");
             return CellOk;
         }
 

@@ -63,10 +63,11 @@ namespace PS3Sharp.OS
         internal CellIO CellIOHandler { get; }
 
         internal LV2SyscallDispatcher(
+            ElfLoader elfLoader,
+            PRX.PRXManager prxManager,
+            ModulePatcher modulePatcher,
             ThreadManager threadManager, 
-            MemoryManager memoryManager, 
-            ModulePatcher modulePatcher, 
-            PRX.PRXManager prxManager, 
+            MemoryManager memoryManager,      
             FileSystemManager fileSystemManager, 
             CellGcmSys cellGcmSys, 
             CellPad cellPad, 
@@ -96,7 +97,7 @@ namespace PS3Sharp.OS
             SysVmHandler = new(_memoryManager);
             SysUtilHandler = new(_memoryManager);
             SysPPUThreadHandler = new(_threadManager, _memoryManager);
-            SysSPUHandler = new(_threadManager, _memoryManager);
+            SysSPUHandler = new(elfLoader, _threadManager, _memoryManager);
             SysCondHandler = new(_memoryManager, SysMutexHandler);
 
             // Initialize all module handlers

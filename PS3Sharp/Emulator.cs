@@ -36,7 +36,7 @@ namespace PS3Sharp
             _rsxSubSystem         = new(_threadManager, _memoryManager, _fileSystemManager);
             _cellPad              = new(_memoryManager, _rsxSubSystem.Widnow.JoystickReader);
             _cellGame             = new(_memoryManager, _fileSystemManager);
-            _lv2SyscallDispatcher = new(_threadManager, _memoryManager, _modulePatcher, _prxManager, _fileSystemManager, _rsxSubSystem.GCM, _cellPad, _cellGame);
+            _lv2SyscallDispatcher = new(_elfLoader, _prxManager, _modulePatcher, _threadManager, _memoryManager, _fileSystemManager, _rsxSubSystem.GCM, _cellPad, _cellGame);
         }
 
         internal void RunEmulator()
@@ -64,7 +64,7 @@ namespace PS3Sharp
         {
             // Load and patch elf
             BinaryReader reader = new(File.OpenRead(path));
-            ElfHeader header = _elfLoader.LoadMainElf(reader, _memoryManager);
+            ElfHeader64 header = _elfLoader.LoadMainElf(reader, _memoryManager);
             _modulePatcher.HandleMainElfImports(reader, header, _memoryManager, _elfLoader);
             ulong entry = header.e_entry;
             return (uint)entry;

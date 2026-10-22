@@ -1,5 +1,6 @@
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.OS.NID;
+using PS3Sharp.OS.Syscall;
 using System.Collections.Immutable;
 
 namespace PS3Sharp.OS
@@ -146,6 +147,9 @@ namespace PS3Sharp.OS
                 [NIDManager.GetNID("sys_ppu_thread_exit")] = SysPPUThreadHandler.SysPPUThreadExit,
                 [NIDManager.GetNID("sys_ppu_thread_once")] = SysPPUThreadHandler.SysPPUThreadOnce,
 
+                // Sys SPU
+                [NIDManager.GetNID("sys_spu_image_import")] = SysSPUHandler.SysSPUImageImport,
+
                 // SysTime
                 [NIDManager.GetNID("sys_time_get_system_time")] = SysTimeHandler.SysTimeGetSystemTime,
 
@@ -154,7 +158,6 @@ namespace PS3Sharp.OS
                 [NIDManager.GetNID("_sys_process_at_Exitspawn")] = SysPrxForUserHandler._Sys_Process_at_Exitspawn,
                 [NIDManager.GetNID("sys_game_process_exitspawn2")] = SysPrxForUserHandler.Sys_game_process_exitspawn2,
                 [NIDManager.GetNID("sys_prx_exitspawn_with_level")] = SysPrxForUserHandler.Sys_Prx_Exitspawn_With_Level,
-                [NIDManager.GetNID("sys_spu_image_import")] = SysPrxForUserHandler.Sys_SPU_Image_Import,
 
                 // CellGcmSys
                 [NIDManager.GetNID("_cellGcmInitBody")] = CellGcmSysHandler.CellGcmInitBody,

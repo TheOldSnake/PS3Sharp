@@ -153,13 +153,6 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong Sys_SPU_Image_Import(PPUThread ppu)
-        {
-            //TODO
-            Console.WriteLine($"[SysPrxForUser] sys_spu_image_import");
-            return CellOk;
-        }
-
         internal ulong _Sys_Memset(PPUThread ppu)
         {
             GuestVoidPtr dest = ppu.ReadArg<GuestVoidPtr>(Arg0);

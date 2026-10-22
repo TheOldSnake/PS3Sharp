@@ -1,7 +1,11 @@
 using PS3Sharp.Common;
 using PS3Sharp.Memory;
+using PS3Sharp.OS.Syscall;
+using System.Buffers;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using static PS3Sharp.OS.Syscall.SysSPU;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace PS3Sharp
 {
@@ -10,16 +14,16 @@ namespace PS3Sharp
         // Custom struct - not from ELF spec
         internal struct LoadedPRXSegment
         {
-            internal ProgramHeader ProgramHeader;
+            internal ProgramHeader64 ProgramHeader;
             internal uint ActualEntry;
         }
 
         private long _stringTableLocation;
 
-        internal ElfHeader LoadMainElf(BinaryReader reader, MemoryManager memoryManager)
+        internal ElfHeader64 LoadMainElf(BinaryReader reader, MemoryManager memoryManager)
         {
             // Read Main Header 
-            ElfHeader mainHeader = ReadElfStruct<ElfHeader>(reader, 0);
+            ElfHeader64 mainHeader = ReadElfStruct<ElfHeader64>(reader, 0);
             ReadOnlySpan<byte> ident = mainHeader.e_ident;
 
             if (!IsValidELF(ident))
@@ -39,7 +43,7 @@ namespace PS3Sharp
             List<LoadedPRXSegment> loadedSegments = new();
 
             // Read Main Header 
-            ElfHeader mainHeader = ReadElfStruct<ElfHeader>(reader, 0);
+            ElfHeader64 mainHeader = ReadElfStruct<ElfHeader64>(reader, 0);
 
             // Ensure it is valid
             ReadOnlySpan<byte> ident = mainHeader.e_ident;
@@ -52,12 +56,12 @@ namespace PS3Sharp
 
             unsafe
             {
-                ReadOnlySpan<ProgramHeader> programHeaders = GetProgramHeadersArray(reader, ref mainHeader);
+                ReadOnlySpan<ProgramHeader64> programHeaders = GetProgramHeadersArray(reader, ref mainHeader);
                 for (int i = 0; i < programHeaders.Length; i++)
                 {
-                    ProgramHeader programHeader = programHeaders[i];
+                    ProgramHeader64 programHeader = programHeaders[i];
 
-                    if (programHeader.p_type == ProgramHeader.PtLoad && programHeader.p_memsz > 0)
+                    if (programHeader.p_type == PtLoad && programHeader.p_memsz > 0)
                     {
                         LoadedPRXSegment loadedSegment;
                         loadedSegment.ProgramHeader = programHeader;
@@ -71,13 +75,83 @@ namespace PS3Sharp
             return loadedSegments;
         }
 
-        internal ProgramHeader? FindProgram(BinaryReader reader, ref ElfHeader header, uint p_type)
+        internal (ElfHeader32 header, List<SysSPU.SysSPUSegment> segments) LoadSPUElf(GuestVoidPtr elfPtr, MemoryManager memoryManager)
+        {
+            // Note: SPU elf is 32-bit BE
+
+            // Read Main Header 
+            ElfHeader32 mainHeader = memoryManager.Read<ElfHeader32>(elfPtr);
+            ReadOnlySpan<byte> ident = mainHeader.e_ident;
+
+            if (!IsValidELF(ident))
+            {
+                throw new Exception("Invalid SPU ELF");
+            }
+
+            List<SysSPU.SysSPUSegment> segments = [];
+            ReadOnlySpan<ProgramHeader32> programHeaders = GetProgramHeadersArray(memoryManager, elfPtr, ref mainHeader);
+
+            // Load the loadable segments
+            for (int i = 0; i < programHeaders.Length; i++)
+            {
+                ProgramHeader32 programHeader = programHeaders[i];
+
+                if (programHeader.p_type == PtLoad && programHeader.p_memsz > 0)
+                {
+                    LoadSegmentSPU(elfPtr, segments, ref programHeader, memoryManager);
+                }
+            }
+
+            return (mainHeader, segments);
+        }
+
+        private static SysSPU.SysSPUSegment CreateSPUSegment(uint elfPtr, ref ProgramHeader32 programHeader, bool isFill)
+        {
+            uint offset = programHeader.p_offset;   // With respect to elf image
+            uint dataAddress = elfPtr + offset;
+
+            uint dest = programHeader.p_vaddr;
+            uint fileSize = programHeader.p_filesz;
+            uint memSize = programHeader.p_memsz;
+
+            int type;
+            uint ls;
+            uint src;
+            int size;
+
+            if (isFill)
+            {
+                type = SysSPU.SysSpuSegmentTypeFill;
+                ls = dest + fileSize;
+                src = 0;
+                size = (int)(memSize - fileSize);
+            }
+            else
+            {
+                type = SysSPU.SysSpuSegmentTypeCopy;
+                ls = dest;
+                src = dataAddress;
+                size = (int)memSize;
+            }
+
+            SysSPU.SysSPUSegment segment = new()
+            {
+                Type = type,
+                LSAddress = ls,
+                Src = src,
+                Size = size
+            };
+
+            return segment;
+        }
+
+        internal ProgramHeader64? FindProgram(BinaryReader reader, ref ElfHeader64 header, uint p_type)
         {
             //Search for requested p_type
             for (uint i = 0; i < header.e_phnum; i++)
             {
                 long phOff = (long)(header.e_phoff + (i * header.e_phentsize));
-                ProgramHeader programHeader = ReadElfStruct<ProgramHeader>(reader, phOff);
+                ProgramHeader64 programHeader = ReadElfStruct<ProgramHeader64>(reader, phOff);
                 if (programHeader.p_type == p_type)
                 {
                     return programHeader;
@@ -99,32 +173,73 @@ namespace PS3Sharp
             return MemoryMarshal.Read<T>(buffer);
         }
 
-        private ReadOnlySpan<ProgramHeader> GetProgramHeadersArray(BinaryReader reader, ref ElfHeader header)
+        private ReadOnlySpan<ProgramHeader64> GetProgramHeadersArray(BinaryReader reader, ref ElfHeader64 header)
         {
             // Get the array of program headers in the ELF
             ushort numberOfProgramHeaders = header.e_phnum; // how many program headers
             ushort programHeaderSize = header.e_phentsize;  // size of a single header
             ulong programHeadersOffset = header.e_phoff;    // offset of the array
-            return ReadElfSpan<ProgramHeader>(reader, (long)programHeadersOffset, numberOfProgramHeaders);
+            return ReadElfSpan<ProgramHeader64>(reader, (long)programHeadersOffset, numberOfProgramHeaders);
         }
 
-        internal void HandleELFLoadableSegments(BinaryReader reader, ref ElfHeader mainHeader, MemoryManager memoryManager)
+        private ReadOnlySpan<ProgramHeader32> GetProgramHeadersArray(MemoryManager memory, uint elfBase, ref ElfHeader32 header)
         {
-            ReadOnlySpan<ProgramHeader> programHeaders = GetProgramHeadersArray(reader, ref mainHeader);
+            // Get the array of program headers in the ELF
+            ushort numberOfProgramHeaders = header.e_phnum; // how many program headers
+            ushort programHeaderSize = header.e_phentsize;  // size of a single header
+            uint programHeadersOffset = header.e_phoff;    // offset of the array
+            return memory.ReadArray<ProgramHeader32>(elfBase + programHeadersOffset, numberOfProgramHeaders);
+        }
+
+        internal void HandleELFLoadableSegments(BinaryReader reader, ref ElfHeader64 mainHeader, MemoryManager memoryManager)
+        {
+            ReadOnlySpan<ProgramHeader64> programHeaders = GetProgramHeadersArray(reader, ref mainHeader);
 
             // Load the loadable segments
             for (int i = 0; i < programHeaders.Length; i++)
             {
-                ProgramHeader programHeader = programHeaders[i];
+                ProgramHeader64 programHeader = programHeaders[i];
 
-                if (programHeader.p_type == ProgramHeader.PtLoad && programHeader.p_memsz > 0)
+                if (programHeader.p_type == PtLoad && programHeader.p_memsz > 0)
                 {
                     LoadSegment(reader, ref programHeader, memoryManager);
                 }
             }
         }
 
-        private uint LoadSegmentPRX(BinaryReader reader, ref ProgramHeader programHeader, MemoryManager memoryManager)
+        private void LoadSegmentSPU(uint elfPtr, List<SysSPU.SysSPUSegment> segments, ref ProgramHeader32 programHeader, MemoryManager memoryManager)
+        {
+            uint offset = programHeader.p_offset;   // offset with respect to elf image
+            uint fileSize = programHeader.p_filesz;
+            uint memSize = programHeader.p_memsz;
+            uint dest = programHeader.p_vaddr;
+            uint srcAddress = elfPtr + offset;
+
+            if (!memoryManager.IsVirtualAddressAllocated(dest))
+            {
+                memoryManager.AllocateVirtualAddress(dest, memSize);
+            }
+
+            // Copy segment to destination
+            memoryManager.CopyVirtualMemory(srcAddress, dest, (int)fileSize);
+
+            // Create SysSPUSegment
+            SysSPU.SysSPUSegment segment = CreateSPUSegment(elfPtr, ref programHeader, isFill: false);
+            segments.Add(segment);
+
+            if (memSize > fileSize)
+            {
+                uint clearDest = dest + fileSize;
+                uint clearBytes = memSize - fileSize;
+                memoryManager.ClearMemory(clearDest, (int)clearBytes);
+
+                // Create SysSPUSegment for the filler
+                SysSPU.SysSPUSegment fillSegment = CreateSPUSegment(elfPtr, ref programHeader, isFill: true);
+                segments.Add(fillSegment);
+            }
+        }
+
+        private uint LoadSegmentPRX(BinaryReader reader, ref ProgramHeader64 programHeader, MemoryManager memoryManager)
         {
             // Relocatable segments, not loaded at a specific virtual addreess
             byte[] segmentData = GetSegmentData(reader, ref programHeader);
@@ -133,9 +248,9 @@ namespace PS3Sharp
             return block.VirtualAddress;
         }
 
-        private uint LoadSegment(BinaryReader reader, ref ProgramHeader programHeader, MemoryManager memoryManager)
+        private uint LoadSegment(BinaryReader reader, ref ProgramHeader64 programHeader, MemoryManager memoryManager)
         {
-            string pt_name = ProgramHeader.GetName(programHeader);
+            string pt_name = GetProgramHeaderName(programHeader);
             uint p_memsz = (uint)(ulong)programHeader.p_memsz;
             uint p_vaddr = (uint)(ulong)programHeader.p_vaddr;
 
@@ -185,14 +300,14 @@ namespace PS3Sharp
             return dest;
         }
 
-        private void HandleRelocations(BinaryReader reader, ref ElfHeader header, List<LoadedPRXSegment> loadedSegments, MemoryManager memoryManager)
+        private void HandleRelocations(BinaryReader reader, ref ElfHeader64 header, List<LoadedPRXSegment> loadedSegments, MemoryManager memoryManager)
         {
             for (uint i = 0; i < header.e_phnum; i++)
             {
                 long phOff = (long)(header.e_phoff + (i * header.e_phentsize));
-                ProgramHeader programHeader = ReadElfStruct<ProgramHeader>(reader, phOff);
+                ProgramHeader64 programHeader = ReadElfStruct<ProgramHeader64>(reader, phOff);
 
-                if (programHeader.p_type == ProgramHeader.ScePpurela)
+                if (programHeader.p_type == ScePpurela)
                 {
                     byte[] segmentData = GetSegmentData(reader, ref programHeader);
                     ReadOnlySpan<PRXRelocation> relocations = MemoryMarshal.Cast<byte, PRXRelocation>(segmentData);
@@ -249,13 +364,13 @@ namespace PS3Sharp
             }
         }
 
-        private void HandleTLSSegment(BinaryReader reader, ref ElfHeader header, MemoryManager memoryManager)
+        private void HandleTLSSegment(BinaryReader reader, ref ElfHeader64 header, MemoryManager memoryManager)
         {
             //Handle TLS segment
-            ProgramHeader? tlsImage = FindProgram(reader, ref header, ProgramHeader.PtTls);
+            ProgramHeader64? tlsImage = FindProgram(reader, ref header, PtTls);
             if (tlsImage != null)
             {
-                ProgramHeader tlsImage_casted = (ProgramHeader)tlsImage;
+                ProgramHeader64 tlsImage_casted = (ProgramHeader64)tlsImage;
                 uint tlsvaddr = (uint)(tlsImage_casted.p_vaddr);
                 uint tlsSize = (uint)(tlsImage_casted.p_memsz);
 
@@ -285,7 +400,7 @@ namespace PS3Sharp
         //    }
         //}
 
-        private void PrintSections(BinaryReader reader, ref ElfHeader header)
+        private void PrintSections(BinaryReader reader, ref ElfHeader64 header)
         {
             for (uint i = 0; i < header.e_shnum; i++)
             {
@@ -301,7 +416,7 @@ namespace PS3Sharp
             }
         }
 
-        private long FindStringTable(BinaryReader reader, ref ElfHeader header)
+        private long FindStringTable(BinaryReader reader, ref ElfHeader64 header)
         {
             long stringTableOffset = -1;
             for (uint i = 0; i < header.e_shnum; i++)
@@ -343,7 +458,7 @@ namespace PS3Sharp
             return name;
         }
 
-        private byte[] GetSegmentData(BinaryReader reader, ref ProgramHeader programHeader)
+        private byte[] GetSegmentData(BinaryReader reader, ref ProgramHeader64 programHeader)
         {
             ulong offset = programHeader.p_offset;
             ulong size = programHeader.p_filesz;
@@ -355,17 +470,17 @@ namespace PS3Sharp
         private bool IsValidELF(ReadOnlySpan<byte> ident)
         {
             // Ensure ELFMAG is present in the first 4 bytes
-            int length = ElfHeader.ELFMAG_ROS.Length;
+            int length = ElfMagRos.Length;
             ReadOnlySpan<byte> mag = ident.Slice(0, length);
-            return mag.SequenceEqual<byte>(ElfHeader.ELFMAG_ROS);
+            return mag.SequenceEqual<byte>(ElfMagRos);
         }
 
-        private void PrintElfInfo(ElfHeader mainHeader)
+        private void PrintElfInfo(ElfHeader64 mainHeader)
         {
             ReadOnlySpan<byte> ident = mainHeader.e_ident;
             byte bitSize = ident[4];     // 1 = 32bit, 2 = 64bit
             byte endianness = ident[5];  // endianness
-            bool is64 = bitSize == ElfHeader.Elfclass64;
+            bool is64 = bitSize == ElfClass64;
 
             Console.WriteLine($"ELF {(is64 ? "64" : "32")}-bit");
             Console.WriteLine($"Machine: 0x{mainHeader.e_machine:X}");

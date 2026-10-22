@@ -51,13 +51,13 @@ namespace PS3Sharp.OS.Modules
         private readonly List<ModuleStubInfo> Stubs = [];
 
         // For main elf
-        internal void HandleMainElfImports(BinaryReader reader, ElfHeader mainHeader, MemoryManager memoryManager, ElfLoader elfLoader)
+        internal void HandleMainElfImports(BinaryReader reader, ElfHeader64 mainHeader, MemoryManager memoryManager, ElfLoader elfLoader)
         {
-            ProgramHeader? prxProgram = elfLoader.FindProgram(reader, ref mainHeader, ProgramHeader.PrxParam);
+            ProgramHeader64? prxProgram = elfLoader.FindProgram(reader, ref mainHeader, PrxParam);
 
             if (prxProgram != null)
             {
-                ulong offs = ((ProgramHeader)prxProgram).p_offset;
+                ulong offs = ((ProgramHeader64)prxProgram).p_offset;
                 PRXParam prx = elfLoader.ReadElfStruct<PRXParam>(reader, (long)offs);
 
                 uint sizeOfStubHeader = (uint)Unsafe.SizeOf<PRXStubHeader>();
