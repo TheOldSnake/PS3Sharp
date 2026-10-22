@@ -69,6 +69,7 @@ namespace PS3Sharp.PRX
         }
 
         // List of function that are forced to be HLE
+        // TODO: Make it configurable
         private readonly List<string> ForceHLE = [
             "sys_process_exit",
             "sys_initialize_tls",
@@ -96,6 +97,7 @@ namespace PS3Sharp.PRX
         ];
 
         // List of LLEd libraries file names
+        // TODO: Make it configurable
         private readonly List<string> PRXList = [
             "liblv2",
             "libsync2",

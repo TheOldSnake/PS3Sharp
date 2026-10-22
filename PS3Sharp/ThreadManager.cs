@@ -1,10 +1,12 @@
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Cell.PPU.Recompiler;
 using PS3Sharp.Cell.RSX;
+using PS3Sharp.Cell.SPU;
 using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using PS3Sharp.OS;
 using PS3Sharp.OS.Modules;
+using PS3Sharp.OS.Syscall;
 
 namespace PS3Sharp
 {
@@ -14,6 +16,7 @@ namespace PS3Sharp
         private readonly MemoryManager _memoryManager;
         private readonly PPURecompiler _ppuRecompiler;
         private readonly List<PPUThread> _ppuThreads = [];
+        private readonly List<SPUThread> _spuThreads = [];
         private readonly object _threadManagerLock = new();
         private bool _hasCreatedMainThread;
         private bool _hasCreatedRSXThread;
@@ -101,6 +104,13 @@ namespace PS3Sharp
             _hasCreatedRSXThread = true;
 
             return RSXThread;
+        }
+
+        internal SPUThread CreateSPUThread(string name, uint id, uint groupID, SysSPU.SysSPUImage img, SysSPU.SysSPUThreadArgument arg)
+        {
+            SPUThread spu = new(name, id, groupID, img, arg, _memoryManager);
+            _spuThreads.Add(spu);
+            return spu;
         }
 
         internal void JoinPPUThread(PPUThread ppu_thread, bool timeout = false)

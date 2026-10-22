@@ -89,7 +89,6 @@ namespace PS3Sharp.OS
             SysPRXHandler = new(_memoryManager);
             SysRWLockHandler = new(_memoryManager);
             SysSemaphoreHandler = new(_memoryManager);
-            SysSPUHandler = new(_memoryManager);
             SysStorageHandler = new(_memoryManager);
             SysTimeHandler = new(_memoryManager);
             SysTimerHandler = new(_memoryManager);
@@ -97,6 +96,7 @@ namespace PS3Sharp.OS
             SysVmHandler = new(_memoryManager);
             SysUtilHandler = new(_memoryManager);
             SysPPUThreadHandler = new(_threadManager, _memoryManager);
+            SysSPUHandler = new(_threadManager, _memoryManager);
             SysCondHandler = new(_memoryManager, SysMutexHandler);
 
             // Initialize all module handlers

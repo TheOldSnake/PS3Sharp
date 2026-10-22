@@ -73,11 +73,13 @@ namespace PS3Sharp.OS.Syscall
         internal const int SysSpuSegmentTypeFill = 0x0002;
         internal const int SysSpuSegmentTypeInfo = 0x0004;
 
+        private readonly ThreadManager _threadManager;
         private readonly MemoryManager _memoryManager;
         private readonly ConcurrentDictionary<uint, LV2SPUThreadGroup> _spuThreadGroupes = new();
 
-        internal SysSPU(MemoryManager memoryManager)
+        internal SysSPU(ThreadManager threadManager, MemoryManager memoryManager)
         {
+            _threadManager = threadManager;
             _memoryManager = memoryManager;
         }
 
@@ -106,7 +108,6 @@ namespace PS3Sharp.OS.Syscall
         {
             return CellOk;
         }
-
 
         // TODO
         internal ulong SysSPUThreadGroupCreate(PPUThread ppu)
@@ -151,7 +152,7 @@ namespace PS3Sharp.OS.Syscall
             GuestVoidPtr name_ptr = attribute.NamePtr;
             string thread_name = name_ptr.IsNullPtr ? "Unnamed-SPU" : _memoryManager.ReadString(name_ptr);
 
-            SPUThread spu = new(thread_name, id, group_id, img, arg, _memoryManager);
+            SPUThread spu = _threadManager.CreateSPUThread(thread_name, id, group_id, img, arg);
             threadGroup.AddThread(spu);
 
             _memoryManager.Write<BigEndian<uint>>(id_ptr, id);
@@ -187,7 +188,6 @@ namespace PS3Sharp.OS.Syscall
             {
                 return CellESrch;
             }
-
 
             // Find a port that is free on all SPU threads 
             List<SPUThread> threads = threadGroup.SPUThreads;
@@ -237,6 +237,21 @@ namespace PS3Sharp.OS.Syscall
 
             Console.WriteLine($"[SysSPUThreadGroupConnectEventAllThreads] Connected SPU group: 0x{group_id:X8} port = {port}");
             return CellOk;
+        }
+
+        internal ulong SysSPUThreadReadLS(PPUThread thread)
+        {
+            throw new NotImplementedException("todo: SysSPUThreadReadLS");
+        }
+
+        internal ulong SysSPUThreadWriteSPUMB(PPUThread thread)
+        {
+            throw new NotImplementedException("todo: SysSPUThreadWriteSPUMB");
+        }
+
+        internal ulong SysSpuThreadGroupConnectEventAllThreads(PPUThread thread)
+        {
+            throw new NotImplementedException("todo: SysSpuThreadGroupConnectEventAllThreads");
         }
     }
 }
