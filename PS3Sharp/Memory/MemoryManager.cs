@@ -82,7 +82,7 @@ namespace PS3Sharp.Memory
             if (result == null)
             {
                 int error = Marshal.GetLastPInvokeError();
-                Console.WriteLine($"[MemoryManager] Could not release decommit memory - error: 0x{error:X8}");
+                Console.WriteLine($"[MemoryManager] Could not commit memory - error: 0x{error:X8}");
                 throw new Win32Exception(error);
             }
 
