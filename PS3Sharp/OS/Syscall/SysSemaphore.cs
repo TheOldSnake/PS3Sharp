@@ -21,32 +21,32 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysSemaphoreCreate(PPUThread ppu)
         {
-            GuestPtr<uint> semaphore_id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
-            GuestPtr<SysSemaphoreAttribute> semaphore_attribute_ptr = ppu.ReadArg<GuestPtr<SysSemaphoreAttribute>>(ARG1);
-            uint initialCount = ppu.ReadArg<uint>(ARG2);
-            uint maxCount = ppu.ReadArg<uint>(ARG3);
+            GuestPtr<uint> semaphore_id_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
+            GuestPtr<SysSemaphoreAttribute> semaphore_attribute_ptr = ppu.ReadArg<GuestPtr<SysSemaphoreAttribute>>(Arg1);
+            uint initialCount = ppu.ReadArg<uint>(Arg2);
+            uint maxCount = ppu.ReadArg<uint>(Arg3);
 
             SysSemaphoreAttribute attribute = _memoryManager.Read<SysSemaphoreAttribute>(semaphore_attribute_ptr);
             LV2Semaphore semaphore = new((int)initialCount, (int)maxCount, attribute, _memoryManager);
             AddSemaphore(semaphore.Handle, semaphore);
 
             _memoryManager.Write<BigEndian<uint>>(semaphore_id_ptr, semaphore.Handle);
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysSemaphoreDestroy(PPUThread ppu)
         {
-            uint handle = ppu.ReadArg<uint>(ARG0);
+            uint handle = ppu.ReadArg<uint>(Arg0);
 
             RemoveSemaphore(handle);
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysSemaphoreWait(PPUThread ppu)
         {
-            uint handle = ppu.ReadArg<uint>(ARG0);
-            ulong timeout_us = ppu.ReadArg<ulong>(ARG1);
+            uint handle = ppu.ReadArg<uint>(Arg0);
+            ulong timeout_us = ppu.ReadArg<ulong>(Arg1);
 
             // Console.WriteLine($"[{ppu.ThreadName}] [SysSemaphore] SysSemaphoreWait id = 0x{handle:X8} timeout = {timeout_us}us");
 
@@ -57,7 +57,7 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                result = CELL_ESRCH;
+                result = CellESrch;
             }
 
             // Console.WriteLine($"[{ppu.ThreadName}] [SysSemaphore] SysSemaphoreWait result = {CellErrorNames[result]}");
@@ -66,7 +66,7 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysSemaphoreTryWait(PPUThread ppu)
         {
-            uint handle = ppu.ReadArg<uint>(ARG0);
+            uint handle = ppu.ReadArg<uint>(Arg0);
 
             if (TryGetSemaphore(handle, out LV2Semaphore? semaphore))
             {
@@ -74,14 +74,14 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 
         internal ulong SysSemaphorePost(PPUThread ppu)
         {
-            uint handle = ppu.ReadArg<uint>(ARG0);
-            uint count = ppu.ReadArg<uint>(ARG1);
+            uint handle = ppu.ReadArg<uint>(Arg0);
+            uint count = ppu.ReadArg<uint>(Arg1);
 
             ulong result;
 
@@ -91,7 +91,7 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                result = CELL_ESRCH;
+                result = CellESrch;
             }
 
             //  Console.WriteLine($"[{ppu.ThreadName}] [SysSemaphore] SysSemaphorePost id = 0x{handle:X8} count = {count} result = {CellErrorNames[result]}");

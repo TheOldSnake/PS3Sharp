@@ -171,9 +171,9 @@ namespace PS3Sharp.OS.Modules
 
         internal void Log_CellFontGetCharGlyphMetrics(PPUGPR[] gprs)
         {
-            GuestPtr<CellFont_> font_ptr = gprs[ARG0].Value32;
-            uint code = gprs[ARG1].Value32;
-            GuestPtr<CellFontGlyphMetrics> metrics_ptr = gprs[ARG2].Value32;
+            GuestPtr<CellFont_> font_ptr = gprs[Arg0].Value32;
+            uint code = gprs[Arg1].Value32;
+            GuestPtr<CellFontGlyphMetrics> metrics_ptr = gprs[Arg2].Value32;
 
 
             char character = (char)code;
@@ -186,15 +186,15 @@ namespace PS3Sharp.OS.Modules
 
         internal void Log_CellFontRenderCharGlyphImage(PPUGPR[] gprs, PPUFPR[] fprs)
         {
-            GuestPtr<CellFont_> font_ptr = gprs[ARG0].Value32;
-            uint code = gprs[ARG1].Value32;
-            GuestPtr<CellFontRenderSurface> surface_ptr = gprs[ARG2].Value32;
+            GuestPtr<CellFont_> font_ptr = gprs[Arg0].Value32;
+            uint code = gprs[Arg1].Value32;
+            GuestPtr<CellFontRenderSurface> surface_ptr = gprs[Arg2].Value32;
 
             float x = (float)fprs[1].Float64;
             float y = (float)fprs[2].Float64;
 
-            GuestPtr<CellFontGlyphMetrics> metrics_ptr = gprs[ARG5].Value32;
-            GuestPtr<CellFontImageTransInfo> trans_info_ptr = gprs[ARG6].Value32;
+            GuestPtr<CellFontGlyphMetrics> metrics_ptr = gprs[Arg5].Value32;
+            GuestPtr<CellFontImageTransInfo> trans_info_ptr = gprs[Arg6].Value32;
 
 
             //char character = (char)code;

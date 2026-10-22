@@ -83,7 +83,7 @@ namespace PS3Sharp.OS.LV2
                 }
             }
 
-            return ok ? CELL_OK : CELL_ETIMEDOUT;
+            return ok ? CellOk : CellETimedout;
         }
 
         internal ulong Signal()
@@ -94,7 +94,7 @@ namespace PS3Sharp.OS.LV2
                 waiter?.Event.Set();
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SignalAll()
@@ -107,7 +107,7 @@ namespace PS3Sharp.OS.LV2
                 }
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SignalTo(uint waiterID)
@@ -120,7 +120,7 @@ namespace PS3Sharp.OS.LV2
             }
 
             waiter?.Event.Set();
-            return CELL_OK;
+            return CellOk;
         }
 
         private bool InterruptableWait(PPUThread ppu, LV2CondWaiter waiter)

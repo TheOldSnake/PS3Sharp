@@ -9,8 +9,8 @@ namespace PS3Sharp.OS.LV2
 {
     internal sealed class LV2Mutex
     {
-        internal const uint SYS_SYNC_RECURSIVE = 0x10;
-        internal const uint SYS_SYNC_NOT_RECURSIVE = 0x20;
+        internal const uint SysSyncRecursive = 0x10;
+        internal const uint SysSyncNotRecursive = 0x20;
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct SysMutexAttribute : IPS3Struct
@@ -32,7 +32,7 @@ namespace PS3Sharp.OS.LV2
         internal uint Handle { get; }
         internal SysMutexAttribute Attribute => _attribute;
         internal bool IsEntered => Monitor.IsEntered(_mutex);
-        private bool IsRecursive => _attribute.protocol == SYS_SYNC_RECURSIVE;
+        private bool IsRecursive => _attribute.protocol == SysSyncRecursive;
 
         internal LV2Mutex(SysMutexAttribute attribute, MemoryManager memoryManager)
         {
@@ -60,7 +60,7 @@ namespace PS3Sharp.OS.LV2
                     ok = InterruptableWait(ppu);
                 }
 
-                return ok ? CELL_OK : CELL_EBUSY;
+                return ok ? CellOk : CellEBusy;
             }
         }
 
@@ -69,28 +69,28 @@ namespace PS3Sharp.OS.LV2
             // Check if we're allowed to re-enter
             if (!IsRecursive)
             {
-                return CELL_EDEADLK;
+                return CellEDeadlk;
             }
 
             bool ok = InterruptableWait(ppu);
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong TryLock()
         {
             bool success = Monitor.TryEnter(_mutex, 0);
-            return success ? CELL_OK : CELL_EBUSY;
+            return success ? CellOk : CellEBusy;
         }
 
         internal ulong Unlock()
         {
             if (!Monitor.IsEntered(_mutex))
             {
-                return CELL_EPERM;
+                return CellEPerm;
             }
 
             Monitor.Exit(_mutex);
-            return CELL_OK;
+            return CellOk;
         }
 
         private bool InterruptableWait(PPUThread ppu)

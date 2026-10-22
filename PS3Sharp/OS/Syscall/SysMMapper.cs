@@ -25,10 +25,10 @@ namespace PS3Sharp.Syscall
 
             //Allocates virtual memory, writes the virtual address at alloc_addr
 
-            uint size = ppu.ReadArg<uint>(ARG0);
-            ulong flags = ppu.ReadArg<ulong>(ARG1);
-            uint alignment = ppu.ReadArg<uint>(ARG2);
-            GuestVoidPtr alloc_addr = ppu.ReadArg<GuestVoidPtr>(ARG3);
+            uint size = ppu.ReadArg<uint>(Arg0);
+            ulong flags = ppu.ReadArg<ulong>(Arg1);
+            uint alignment = ppu.ReadArg<uint>(Arg2);
+            GuestVoidPtr alloc_addr = ppu.ReadArg<GuestVoidPtr>(Arg3);
 
             Console.WriteLine($"sys_mmapper_allocate_address: size = {size:X16}, flags = {flags:X16}, alignment = {alignment:X16}, alloc_addr = {alloc_addr:X8}");
 
@@ -44,59 +44,59 @@ namespace PS3Sharp.Syscall
                 Console.WriteLine($"sys_mmapper_allocate_address size == 0");
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysMMapperFreeAddress(PPUThread ppu)
         {
-            GuestVoidPtr addr = ppu.ReadArg<GuestVoidPtr>(ARG0);
+            GuestVoidPtr addr = ppu.ReadArg<GuestVoidPtr>(Arg0);
             if (!addr.IsNullPtr)
             {
                 _memoryManager.FreeByVirtualAddress(addr.Address);
             }
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysMMapperAllocateMemory(PPUThread ppu)
         {
-            ulong ipc_key = ppu.ReadArg<ulong>(ARG0);
-            ulong size = ppu.ReadArg<ulong>(ARG1);
-            ulong flags = ppu.ReadArg<ulong>(ARG2);
-            GuestPtr<uint> handle_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG3);
+            ulong ipc_key = ppu.ReadArg<ulong>(Arg0);
+            ulong size = ppu.ReadArg<ulong>(Arg1);
+            ulong flags = ppu.ReadArg<ulong>(Arg2);
+            GuestPtr<uint> handle_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg3);
 
             // todo: check if we have enough memory
 
             MemoryBlock block = _memoryManager.AllocatePhysicalMemory((uint)size);
             _memoryManager.Write<BigEndian<uint>>(handle_ptr, block.Handle);
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysMMapperSearchAndMap(PPUThread ppu)
         {
             //Search for block by Handle (id) and remap it
 
-            GuestVoidPtr start_addr = ppu.ReadArg<GuestVoidPtr>(ARG0);
-            ulong mem_id = ppu.ReadArg<ulong>(ARG1);
-            ulong flags = ppu.ReadArg<ulong>(ARG2);
-            GuestVoidPtr alloc_addr = ppu.ReadArg<GuestVoidPtr>(ARG3);
+            GuestVoidPtr start_addr = ppu.ReadArg<GuestVoidPtr>(Arg0);
+            ulong mem_id = ppu.ReadArg<ulong>(Arg1);
+            ulong flags = ppu.ReadArg<ulong>(Arg2);
+            GuestVoidPtr alloc_addr = ppu.ReadArg<GuestVoidPtr>(Arg3);
 
             uint newAddress = _memoryManager.RemapByHandle((uint)mem_id, start_addr.Address);
             _memoryManager.Write<BigEndian<uint>>(alloc_addr.Address, newAddress);
 
             Console.WriteLine($"Sys_MMapper_Search_And_Map: start_addr = {start_addr:X8}, mem_id = {mem_id:X8}, flags = {flags:X16}, alloc_addr = {alloc_addr:X8}");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysMMapperMapSharedMemory(PPUThread ppu)
         {
-            uint address = ppu.ReadArg<uint>(ARG0);
-            uint handle = ppu.ReadArg<uint>(ARG1);
-            ulong flags = ppu.ReadArg<ulong>(ARG2);
+            uint address = ppu.ReadArg<uint>(Arg0);
+            uint handle = ppu.ReadArg<uint>(Arg1);
+            ulong flags = ppu.ReadArg<ulong>(Arg2);
 
             // todo
 
-            return CELL_OK;
+            return CellOk;
         }
     }
 }

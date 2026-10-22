@@ -21,9 +21,9 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysEventFlagCreate(PPUThread ppu)
         {
-            GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
-            GuestVoidPtr attributes_ptr = ppu.ReadArg<GuestVoidPtr>(ARG1);
-            ulong initialValue = ppu.ReadArg<ulong>(ARG2);
+            GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
+            GuestVoidPtr attributes_ptr = ppu.ReadArg<GuestVoidPtr>(Arg1);
+            ulong initialValue = ppu.ReadArg<ulong>(Arg2);
 
             LV2EventFlag eventFlag = new(initialValue, _memoryManager);
             AddEventFlag(eventFlag.Handle, eventFlag);
@@ -31,25 +31,25 @@ namespace PS3Sharp.OS.Syscall
             _memoryManager.Write<BigEndian<uint>>(id_ptr, eventFlag.Handle);
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_flag_create id = 0x{eventFlag.Handle:X8}");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysEventFlagDestroy(PPUThread ppu)
         {
-            uint id = ppu.ReadArg<uint>(ARG0);
+            uint id = ppu.ReadArg<uint>(Arg0);
             RemoveEventFlag(id);
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_flag_destroy id = 0x{id:X8}");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysEventFlagWait(PPUThread ppu)
         {
-            uint id = ppu.ReadArg<uint>(ARG0);
-            ulong bitPattern = ppu.ReadArg<ulong>(ARG1);
-            uint mode = ppu.ReadArg<uint>(ARG2);
-            GuestPtr<ulong> result_ptr = ppu.ReadArg<GuestPtr<ulong>>(ARG3);
-            ulong timeout_us = ppu.ReadArg<ulong>(ARG4);
+            uint id = ppu.ReadArg<uint>(Arg0);
+            ulong bitPattern = ppu.ReadArg<ulong>(Arg1);
+            uint mode = ppu.ReadArg<uint>(Arg2);
+            GuestPtr<ulong> result_ptr = ppu.ReadArg<GuestPtr<ulong>>(Arg3);
+            ulong timeout_us = ppu.ReadArg<ulong>(Arg4);
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_flag_wait id = 0x{id:X8} mode = 0x{mode:X8} bp = 0x{bitPattern:X8}");
 
@@ -59,7 +59,7 @@ namespace PS3Sharp.OS.Syscall
 
                 //Console.WriteLine($"[{ppu.ThreadName}] sys_event_flag_wait: woke up - returned: 0x{result:X8}");
 
-                if (errorCode == CELL_OK)
+                if (errorCode == CellOk)
                 {
                     _memoryManager.Write<BigEndian<ulong>>(result_ptr, result);
                 }
@@ -69,14 +69,14 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 
         internal ulong SysEventFlagSet(PPUThread ppu)
         {
-            uint id = ppu.ReadArg<uint>(ARG0);
-            ulong bitPattern = ppu.ReadArg<ulong>(ARG1);
+            uint id = ppu.ReadArg<uint>(Arg0);
+            ulong bitPattern = ppu.ReadArg<ulong>(Arg1);
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_flag_set id = 0x{id:X} bp = 0x{bitPattern:X8}");
 
@@ -87,16 +87,16 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysEventFlagClear(PPUThread ppu)
         {
-            uint id = ppu.ReadArg<uint>(ARG0);
-            ulong bitPattern = ppu.ReadArg<ulong>(ARG1);
+            uint id = ppu.ReadArg<uint>(Arg0);
+            ulong bitPattern = ppu.ReadArg<ulong>(Arg1);
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_flag_clear id = 0x{id:X} bp = 0x{bitPattern:X8}");
 
@@ -107,10 +107,10 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal bool TryGetEventFlag(uint handle, out LV2EventFlag? eventFlag) => _eventFlags.TryGetValue(handle, out eventFlag);

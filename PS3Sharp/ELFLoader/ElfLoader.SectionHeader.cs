@@ -9,26 +9,26 @@ namespace PS3Sharp
         internal readonly struct SectionHeader
         {
             //Section types (SHT_*)
-            internal const uint SHT_NULL = 0;
-            internal const uint SHT_PROGBITS = 1;
-            internal const uint SHT_SYMTAB = 2;
-            internal const uint SHT_STRTAB = 3;
-            internal const uint SHT_RELA = 4;
-            internal const uint SHT_HASH = 5;
-            internal const uint SHT_DYNAMIC = 6;
-            internal const uint SHT_NOTE = 7;
-            internal const uint SHT_NOBITS = 8;
-            internal const uint SHT_REL = 9;
-            internal const uint SHT_SHLIB = 10;
-            internal const uint SHT_DYNSYM = 11;
+            internal const uint ShtNull = 0;
+            internal const uint ShtProgbits = 1;
+            internal const uint ShtSymtab = 2;
+            internal const uint ShtStrtab = 3;
+            internal const uint ShtRela = 4;
+            internal const uint ShtHash = 5;
+            internal const uint ShtDynamic = 6;
+            internal const uint ShtNote = 7;
+            internal const uint ShtNobits = 8;
+            internal const uint ShtRel = 9;
+            internal const uint ShtShlib = 10;
+            internal const uint ShtDynsym = 11;
 
             //OS-specific
-            internal const uint SHT_LOOS = 0x60000000;
-            internal const uint SHT_HIOS = 0x6FFFFFFF;
+            internal const uint ShtLoos = 0x60000000;
+            internal const uint ShtHios = 0x6FFFFFFF;
 
             //Processor-specific
-            internal const uint SHT_LOPROC = 0x70000000;
-            internal const uint SHT_HIPROC = 0x7FFFFFFF;
+            internal const uint ShtLoproc = 0x70000000;
+            internal const uint ShtHiproc = 0x7FFFFFFF;
 
             //Fields
             internal readonly BigEndian<uint> sh_name;        /* section name */

@@ -76,20 +76,20 @@ namespace PS3Sharp.FileSystem
 
             private static FileMode GetFileMode(uint flags)
             {
-                bool create = (flags & O_CREAT) != 0;
-                return create ? FileMode.OpenOrCreate : FileMode.Open;
+                bool create = (flags & OCreat) != 0;
+                return create ? System.IO.FileMode.OpenOrCreate : System.IO.FileMode.Open;
             }
 
             private static FileAccess GetFileAccess(uint flags)
             {
                 uint access = flags & 0x3;
 
-                if (access == O_RDONLY)
+                if (access == ORdonly)
                 {
                     return FileAccess.Read;
                 }
 
-                if (access == O_WRONLY)
+                if (access == OWronly)
                 {
                     return FileAccess.Write;
                 }

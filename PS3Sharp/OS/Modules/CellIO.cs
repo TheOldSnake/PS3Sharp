@@ -15,12 +15,12 @@ namespace PS3Sharp.OS.Modules
 
         internal ulong CellMouseGetInfo(PPUThread ppu)
         {
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellPadPeriphGetInfo(PPUThread ppu)
         {
-            return CELL_OK;
+            return CellOk;
         }
     }
 }

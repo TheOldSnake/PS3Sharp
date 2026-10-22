@@ -106,9 +106,9 @@ namespace PS3Sharp.Cell.PPU
 
         internal struct ConditionRegister
         {
-            internal const uint EQ = 0b0010;
-            internal const uint GT = 0b0100;
-            internal const uint LT = 0b1000;
+            internal const uint Eq = 0b0010;
+            internal const uint Gt = 0b0100;
+            internal const uint Lt = 0b1000;
 
             internal uint Raw;
 

@@ -29,9 +29,9 @@ namespace PS3Sharp.OS.Syscall
         {
             //int sys_memory_allocate(size_t size, uint64_t flags, sys_addr_t * alloc_addr); 
 
-            uint size = ppu.ReadArg<uint>(ARG0);
-            ulong flags = ppu.ReadArg<ulong>(ARG1);
-            GuestVoidPtr alloc_addr = ppu.ReadArg<GuestVoidPtr>(ARG2);
+            uint size = ppu.ReadArg<uint>(Arg0);
+            ulong flags = ppu.ReadArg<ulong>(Arg1);
+            GuestVoidPtr alloc_addr = ppu.ReadArg<GuestVoidPtr>(Arg2);
 
             uint alignment = (uint)(flags == 0x400 ? 1 * 1024 * 1024 : 64 * 1024);
 
@@ -50,12 +50,12 @@ namespace PS3Sharp.OS.Syscall
                 Console.WriteLine($"[SysMemory] sys_memory_allocate size == 0");
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysMemoryFree(PPUThread ppu)
         {
-            GuestVoidPtr ptr = ppu.ReadArg<GuestVoidPtr>(ARG0);
+            GuestVoidPtr ptr = ppu.ReadArg<GuestVoidPtr>(Arg0);
 
             if (!ptr.IsNullPtr)
             {
@@ -63,14 +63,14 @@ namespace PS3Sharp.OS.Syscall
             }
 
             Console.WriteLine($"[SysMemory] sys_Memory_Free");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysMemoryGetUserMemorySize(PPUThread ppu)
         {
-            GuestPtr<SysMemoryInfo> memory_info_ptr = ppu.ReadArg<GuestPtr<SysMemoryInfo>>(ARG0);
+            GuestPtr<SysMemoryInfo> memory_info_ptr = ppu.ReadArg<GuestPtr<SysMemoryInfo>>(Arg0);
 
-            uint total_size = MemoryManager.RAM_SIZE;
+            uint total_size = MemoryManager.RamSize;
 
             SysMemoryInfo memory_info = new()
             {
@@ -80,7 +80,7 @@ namespace PS3Sharp.OS.Syscall
 
             _memoryManager.Write(memory_info_ptr, memory_info);
             Console.WriteLine($"[SysMemory] sys_memory_get_user_memory_size");
-            return CELL_OK;
+            return CellOk;
         }
     }
 }

@@ -22,30 +22,30 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysRWLockCreate(PPUThread ppu)
         {
-            GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
-            GuestPtr<SysRWLockAttribute> attribut_ptr = ppu.ReadArg<GuestPtr<SysRWLockAttribute>>(ARG1);
+            GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
+            GuestPtr<SysRWLockAttribute> attribut_ptr = ppu.ReadArg<GuestPtr<SysRWLockAttribute>>(Arg1);
 
             SysRWLockAttribute attribute = _memoryManager.Read<SysRWLockAttribute>(attribut_ptr);
             LV2RWLock rwlock = new(attribute, _memoryManager);
             AddRWLock(rwlock.Handle, rwlock);
 
             _memoryManager.Write<BigEndian<uint>>(id_ptr, rwlock.Handle);
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysRWLockDestroy(PPUThread ppu)
         {
-            uint id = ppu.ReadArg<uint>(ARG0);
+            uint id = ppu.ReadArg<uint>(Arg0);
 
             RemoveRWLock(id);
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysRWLockRLock(PPUThread ppu)
         {
-            uint id = ppu.ReadArg<uint>(ARG0);
-            ulong us_timeout = ppu.ReadArg<ulong>(ARG1);
+            uint id = ppu.ReadArg<uint>(Arg0);
+            ulong us_timeout = ppu.ReadArg<ulong>(Arg1);
 
             if (TryGetRWLock(id, out LV2RWLock rwlock))
             {
@@ -54,13 +54,13 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 
         internal ulong SysRWLockTryRLock(PPUThread ppu)
         {
-            uint id = ppu.ReadArg<uint>(ARG0);
+            uint id = ppu.ReadArg<uint>(Arg0);
 
             if (TryGetRWLock(id, out LV2RWLock rwlock))
             {
@@ -69,13 +69,13 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 
         internal ulong SysRWLockRUnlock(PPUThread ppu)
         {
-            uint id = ppu.ReadArg<uint>(ARG0);
+            uint id = ppu.ReadArg<uint>(Arg0);
             if (TryGetRWLock(id, out LV2RWLock rwlock))
             {
                 return rwlock.RUnlock();
@@ -83,14 +83,14 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 
         internal ulong SysRWLockWLock(PPUThread ppu)
         {
-            uint id = ppu.ReadArg<uint>(ARG0);
-            ulong us_timeout = ppu.ReadArg<ulong>(ARG1);
+            uint id = ppu.ReadArg<uint>(Arg0);
+            ulong us_timeout = ppu.ReadArg<ulong>(Arg1);
 
             if (TryGetRWLock(id, out LV2RWLock rwlock))
             {
@@ -99,13 +99,13 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 
         internal ulong SysRWLockTryWLock(PPUThread ppu)
         {
-            uint id = ppu.ReadArg<uint>(ARG0);
+            uint id = ppu.ReadArg<uint>(Arg0);
 
             if (TryGetRWLock(id, out LV2RWLock rwlock))
             {
@@ -114,13 +114,13 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 
         internal ulong SysRWLockWUnlock(PPUThread ppu)
         {
-            uint id = ppu.ReadArg<uint>(ARG0);
+            uint id = ppu.ReadArg<uint>(Arg0);
 
             if (TryGetRWLock(id, out LV2RWLock rwlock))
             {
@@ -129,7 +129,7 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 

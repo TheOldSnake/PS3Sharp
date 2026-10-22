@@ -21,8 +21,8 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysMutexCreate(PPUThread ppu)
         {
-            GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
-            GuestPtr<SysMutexAttribute> attrib_ptr = ppu.ReadArg<GuestPtr<SysMutexAttribute>>(ARG1);
+            GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
+            GuestPtr<SysMutexAttribute> attrib_ptr = ppu.ReadArg<GuestPtr<SysMutexAttribute>>(Arg1);
 
             // Create and add the mutex to the dictionary
             SysMutexAttribute attribute = _memoryManager.Read<SysMutexAttribute>(attrib_ptr);
@@ -32,20 +32,20 @@ namespace PS3Sharp.OS.Syscall
             // Write the handle
             _memoryManager.Write<BigEndian<uint>>(id_ptr, mutex.Handle);
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysMutexDestroy(PPUThread ppu)
         {
-            uint id = ppu.ReadArg<uint>(ARG0);
+            uint id = ppu.ReadArg<uint>(Arg0);
             _mutexes.TryRemove(id, out _);
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SysMutexLock(PPUThread ppu)
         {
-            uint id = ppu.ReadArg<uint>(ARG0);
-            ulong us_timeout = ppu.ReadArg<ulong>(ARG1);
+            uint id = ppu.ReadArg<uint>(Arg0);
+            ulong us_timeout = ppu.ReadArg<ulong>(Arg1);
 
             if (TryGetMutex(id, out LV2Mutex? mutex))
             {
@@ -54,13 +54,13 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 
         internal ulong SysMutexTryLock(PPUThread ppu)
         {
-            uint id = ppu.ReadArg<uint>(ARG0);
+            uint id = ppu.ReadArg<uint>(Arg0);
 
             if (TryGetMutex(id, out LV2Mutex? mutex))
             {
@@ -69,13 +69,13 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 
         internal ulong SysMutexUnlock(PPUThread ppu)
         {
-            uint id = ppu.ReadArg<uint>(ARG0);
+            uint id = ppu.ReadArg<uint>(Arg0);
 
             if (TryGetMutex(id, out LV2Mutex? mutex))
             {
@@ -84,7 +84,7 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 

@@ -19,33 +19,33 @@ namespace PS3Sharp.OS.Modules
         internal ulong SCENpTrophyInit(PPUThread ppu)
         {
             Console.WriteLine($"[SCENPTrophy] sceNpTrophyInit");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SCENpTrophyCreateContext(PPUThread ppu)
         {
-            GuestVoidPtr context_ptr = ppu.ReadArg<GuestVoidPtr>(ARG0);
-            GuestVoidPtr command_id_ptr = ppu.ReadArg<GuestVoidPtr>(ARG1);
-            GuestVoidPtr command_sign_ptr = ppu.ReadArg<GuestVoidPtr>(ARG2);
-            ulong options = ppu.ReadArg<ulong>(ARG3);
+            GuestVoidPtr context_ptr = ppu.ReadArg<GuestVoidPtr>(Arg0);
+            GuestVoidPtr command_id_ptr = ppu.ReadArg<GuestVoidPtr>(Arg1);
+            GuestVoidPtr command_sign_ptr = ppu.ReadArg<GuestVoidPtr>(Arg2);
+            ulong options = ppu.ReadArg<ulong>(Arg3);
 
             Console.WriteLine($"[SCENPTrophy] sceNpTrophyCreateContext context_ptr = 0x{context_ptr:X8}");
 
             uint handle = _memoryManager.GetHandle();
             _memoryManager.Write<BigEndian<uint>>(context_ptr, handle);
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SCENpTrophyRegisterContext(PPUThread ppu)
         {
             // I am not sure how this works, but this code is baes on RPCS3 and chonkystation 
 
-            uint ctx = ppu.ReadArg<uint>(ARG0);
-            uint handle = ppu.ReadArg<uint>(ARG1);
-            GuestVoidPtr callback = ppu.ReadArg<GuestVoidPtr>(ARG2);
-            uint arg = ppu.ReadArg<GuestVoidPtr>(ARG3);
-            uint options = ppu.ReadArg<GuestVoidPtr>(ARG4);
+            uint ctx = ppu.ReadArg<uint>(Arg0);
+            uint handle = ppu.ReadArg<uint>(Arg1);
+            GuestVoidPtr callback = ppu.ReadArg<GuestVoidPtr>(Arg2);
+            uint arg = ppu.ReadArg<GuestVoidPtr>(Arg3);
+            uint options = ppu.ReadArg<GuestVoidPtr>(Arg4);
 
             Span<ulong> args = stackalloc ulong[5];
             //uint callback_pc = MemoryManager.Read<uint>(callback);
@@ -75,59 +75,59 @@ namespace PS3Sharp.OS.Modules
             }
 
             Console.WriteLine($"[SCENPTrophy] sceNpTrophyRegisterContext");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SCENpTrophyCreateHandle(PPUThread ppu)
         {
-            GuestVoidPtr handle_ptr = ppu.ReadArg<GuestVoidPtr>(ARG0);
+            GuestVoidPtr handle_ptr = ppu.ReadArg<GuestVoidPtr>(Arg0);
 
             uint handle = _memoryManager.GetHandle();
             _memoryManager.Write<BigEndian<uint>>(handle_ptr, handle);
 
             Console.WriteLine($"[SCENPTrophy] SCENpTrophyCreateHandle handle_ptr = 0x{handle_ptr:X8} handle = 0x{handle:X8}");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SCENpTrophyGetRequiredDiskSpace(PPUThread ppu)
         {
-            GuestVoidPtr require_space_ptr = ppu.ReadArg<GuestVoidPtr>(ARG2);
+            GuestVoidPtr require_space_ptr = ppu.ReadArg<GuestVoidPtr>(Arg2);
             _memoryManager.Write<BigEndian<uint>>(require_space_ptr, 0);
             Console.WriteLine($"[SCENPTrophy] SCENpTrophyGetRequiredDiskSpace");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SCENpTrophyGetGameInfo(PPUThread ppu)
         {
             Console.WriteLine($"[SCENPTrophy] sceNpTrophyGetGameInfo");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SCENpTrophyGetTrophyUnlockState(PPUThread ppu)
         {
             //This can be stubbed more
 
-            uint ctx = ppu.ReadArg<uint>(ARG0);
-            uint handle = ppu.ReadArg<uint>(ARG1);
-            GuestPtr<byte> flags_ptr = ppu.ReadArg<GuestPtr<byte>>(ARG2);
-            GuestPtr<uint> count_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG3);
+            uint ctx = ppu.ReadArg<uint>(Arg0);
+            uint handle = ppu.ReadArg<uint>(Arg1);
+            GuestPtr<byte> flags_ptr = ppu.ReadArg<GuestPtr<byte>>(Arg2);
+            GuestPtr<uint> count_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg3);
 
             _memoryManager.Write<byte>(flags_ptr, 0x80);
             _memoryManager.Write<BigEndian<uint>>(count_ptr, 32);
 
             Console.WriteLine($"[SCENPTrophy] sceNpTrophyGetTrophyUnlockState");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong SCENpTrophyUnlockTrophy(PPUThread ppu)
         {
-            uint ctx = ppu.ReadArg<uint>(ARG0);
-            uint handle = ppu.ReadArg<uint>(ARG1);
-            int trophyId = ppu.ReadArg<int>(ARG2);
-            GuestPtr<int> platinumId = ppu.ReadArg<GuestPtr<int>>(ARG3);
+            uint ctx = ppu.ReadArg<uint>(Arg0);
+            uint handle = ppu.ReadArg<uint>(Arg1);
+            int trophyId = ppu.ReadArg<int>(Arg2);
+            GuestPtr<int> platinumId = ppu.ReadArg<GuestPtr<int>>(Arg3);
 
             Console.WriteLine($"[SCENPTrophy] sceNpTrophyUnlockTrophy - ulocked trophy id: {trophyId}");
-            return CELL_OK;
+            return CellOk;
         }
     }
 }

@@ -26,19 +26,19 @@ namespace PS3Sharp.OS.Syscall
         {
             // TODO
 
-            GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
-            uint protocol = ppu.ReadArg<uint>(ARG1);
-            GuestPtr<LWMutex> control = ppu.ReadArg<GuestPtr<LWMutex>>(ARG2);
-            int hasName = ppu.ReadArg<int>(ARG3);
-            ulong name = ppu.ReadArg<ulong>(ARG4);
+            GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
+            uint protocol = ppu.ReadArg<uint>(Arg1);
+            GuestPtr<LWMutex> control = ppu.ReadArg<GuestPtr<LWMutex>>(Arg2);
+            int hasName = ppu.ReadArg<int>(Arg3);
+            ulong name = ppu.ReadArg<ulong>(Arg4);
 
             uint handle = _memoryManager.GetHandle();
        
             Console.WriteLine($"[_SysLWMutex] _sys_lwmutex_create id: 0x{handle:X8}");
 
-            if (protocol != SYS_SYNC_FIFO && protocol != SYS_SYNC_RETRY && protocol != SYS_SYNC_PRIORITY)
+            if (protocol != SysSyncFifo && protocol != SysSyncRetry && protocol != SysSyncPriority)
             {
-                return CELL_EINVAL;
+                return CellEInval;
             }
 
             // Create the lwmutex, attribute not needed for these syscalls i guess
@@ -48,25 +48,25 @@ namespace PS3Sharp.OS.Syscall
             // Write the handle
             _memoryManager.Write<BigEndian<uint>>(id_ptr, handle);
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong _SysLWmutexDestroy(PPUThread ppu)
         {
             // TODO
-            uint id = ppu.ReadArg<uint>(ARG0);
+            uint id = ppu.ReadArg<uint>(Arg0);
 
             Console.WriteLine($"[_SysLWMutex] _sys_lwmutex_destroy id: 0x{id:X8}");
             RemoveLWMutex(id);
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong _SysLWmutexLock(PPUThread ppu)
         {
             // TODO
-            uint id = ppu.ReadArg<uint>(ARG0);
-            ulong us_timeout = ppu.ReadArg<ulong>(ARG1);
+            uint id = ppu.ReadArg<uint>(Arg0);
+            ulong us_timeout = ppu.ReadArg<ulong>(Arg1);
 
             Console.WriteLine($"[_SysLWMutex] _sys_lwmutex_lock id: 0x{id:X8}");
 
@@ -77,14 +77,14 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 
         internal ulong _SysLWmutexTryLock(PPUThread ppu)
         {
             // TODO
-            uint id = ppu.ReadArg<uint>(ARG0);
+            uint id = ppu.ReadArg<uint>(Arg0);
 
             Console.WriteLine($"[_SysLWMutex] _sys_lwmutex_trylock id: 0x{id:X8}");
 
@@ -95,14 +95,14 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 
         internal ulong _SysLWmutexUnlock(PPUThread ppu)
         {
             // TODO
-            uint id = ppu.ReadArg<uint>(ARG0);
+            uint id = ppu.ReadArg<uint>(Arg0);
 
             Console.WriteLine($"[_SysLWMutex] _sys_lwmutex_unlock id: 0x{id:X8}");
 
@@ -113,7 +113,7 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                return CELL_ESRCH;
+                return CellESrch;
             }
         }
 

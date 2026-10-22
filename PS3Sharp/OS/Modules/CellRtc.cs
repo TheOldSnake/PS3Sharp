@@ -30,16 +30,16 @@ namespace PS3Sharp.OS.Modules
         internal ulong CellRtcGetCurrentTick(PPUThread ppu)
         {
             Console.WriteLine($"[CellRtc] cellRtcGetCurrentTick");
-            uint ptr = ppu.ReadArg<uint>(ARG0);
+            uint ptr = ppu.ReadArg<uint>(Arg0);
             ulong tick = Utility.GetCurrentTickSince1970();
             _memoryManager.Write<BigEndian<ulong>>(ptr, tick);
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellRtcGetCurrentClockLocalTime(PPUThread ppu)
         {
             Console.WriteLine($"[CellRtc] cellRtcGetCurrentClockLocalTime");
-            GuestPtr<CellRtcDateTime> clock_ptr = ppu.ReadArg<GuestPtr<CellRtcDateTime>>(ARG0);
+            GuestPtr<CellRtcDateTime> clock_ptr = ppu.ReadArg<GuestPtr<CellRtcDateTime>>(Arg0);
 
             DateTime dateTimeNow = DateTime.Now;
             CellRtcDateTime clock = new()
@@ -55,7 +55,7 @@ namespace PS3Sharp.OS.Modules
 
             _memoryManager.Write(clock_ptr, clock);
 
-            return CELL_OK;
+            return CellOk;
         }
     }
 }

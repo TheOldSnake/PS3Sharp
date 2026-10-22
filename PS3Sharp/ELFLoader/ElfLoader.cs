@@ -57,7 +57,7 @@ namespace PS3Sharp
                 {
                     ProgramHeader programHeader = programHeaders[i];
 
-                    if (programHeader.p_type == ProgramHeader.PT_LOAD && programHeader.p_memsz > 0)
+                    if (programHeader.p_type == ProgramHeader.PtLoad && programHeader.p_memsz > 0)
                     {
                         LoadedPRXSegment loadedSegment;
                         loadedSegment.ProgramHeader = programHeader;
@@ -117,7 +117,7 @@ namespace PS3Sharp
             {
                 ProgramHeader programHeader = programHeaders[i];
 
-                if (programHeader.p_type == ProgramHeader.PT_LOAD && programHeader.p_memsz > 0)
+                if (programHeader.p_type == ProgramHeader.PtLoad && programHeader.p_memsz > 0)
                 {
                     LoadSegment(reader, ref programHeader, memoryManager);
                 }
@@ -192,7 +192,7 @@ namespace PS3Sharp
                 long phOff = (long)(header.e_phoff + (i * header.e_phentsize));
                 ProgramHeader programHeader = ReadElfStruct<ProgramHeader>(reader, phOff);
 
-                if (programHeader.p_type == ProgramHeader.SCE_PPURELA)
+                if (programHeader.p_type == ProgramHeader.ScePpurela)
                 {
                     byte[] segmentData = GetSegmentData(reader, ref programHeader);
                     ReadOnlySpan<PRXRelocation> relocations = MemoryMarshal.Cast<byte, PRXRelocation>(segmentData);
@@ -252,7 +252,7 @@ namespace PS3Sharp
         private void HandleTLSSegment(BinaryReader reader, ref ElfHeader header, MemoryManager memoryManager)
         {
             //Handle TLS segment
-            ProgramHeader? tlsImage = FindProgram(reader, ref header, ProgramHeader.PT_TLS);
+            ProgramHeader? tlsImage = FindProgram(reader, ref header, ProgramHeader.PtTls);
             if (tlsImage != null)
             {
                 ProgramHeader tlsImage_casted = (ProgramHeader)tlsImage;
@@ -308,7 +308,7 @@ namespace PS3Sharp
             {
                 long secOff = (long)(header.e_shoff + (i * header.e_shentsize));
                 SectionHeader sec = ReadElfStruct<SectionHeader>(reader, secOff);
-                if (sec.sh_type == SectionHeader.SHT_STRTAB)
+                if (sec.sh_type == SectionHeader.ShtStrtab)
                 {     //SHT_STRTAB is the string table
                     stringTableOffset = (long)(ulong)sec.sh_offset;
                     break;
@@ -365,7 +365,7 @@ namespace PS3Sharp
             ReadOnlySpan<byte> ident = mainHeader.e_ident;
             byte bitSize = ident[4];     // 1 = 32bit, 2 = 64bit
             byte endianness = ident[5];  // endianness
-            bool is64 = bitSize == ElfHeader.ELFCLASS64;
+            bool is64 = bitSize == ElfHeader.Elfclass64;
 
             Console.WriteLine($"ELF {(is64 ? "64" : "32")}-bit");
             Console.WriteLine($"Machine: 0x{mainHeader.e_machine:X}");

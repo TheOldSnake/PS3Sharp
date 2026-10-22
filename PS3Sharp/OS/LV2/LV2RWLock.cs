@@ -47,24 +47,24 @@ namespace PS3Sharp.OS.LV2
                 ok = InterruptableWait(ppu, _rlock);
             }
 
-            return ok ? CELL_OK : CELL_ETIMEDOUT;
+            return ok ? CellOk : CellETimedout;
         }
 
         internal ulong TryRLock()
         {
             bool ok = Monitor.TryEnter(_rlock, 0);
-            return ok ? CELL_OK : CELL_EBUSY;
+            return ok ? CellOk : CellEBusy;
         }
 
         internal ulong RUnlock()
         {
             if (!Monitor.IsEntered(_rlock))
             {
-                return CELL_EINVAL;
+                return CellEInval;
             }
 
             Monitor.Exit(_rlock);
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong WLock(PPUThread ppu, ulong us_timeout)
@@ -80,24 +80,24 @@ namespace PS3Sharp.OS.LV2
                 ok = InterruptableWait(ppu, _wlock);
             }
 
-            return ok ? CELL_OK : CELL_ETIMEDOUT;
+            return ok ? CellOk : CellETimedout;
         }
 
         internal ulong TryWLock()
         {
             bool ok = Monitor.TryEnter(_wlock, 0);
-            return ok ? CELL_OK : CELL_EBUSY;
+            return ok ? CellOk : CellEBusy;
         }
 
         internal ulong WUnlock()
         {
             if (!Monitor.IsEntered(_wlock))
             {
-                return CELL_EINVAL;
+                return CellEInval;
             }
 
             Monitor.Exit(_wlock);
-            return CELL_OK;
+            return CellOk;
         }
 
         private bool InterruptableWait(PPUThread ppu, object lockObject)

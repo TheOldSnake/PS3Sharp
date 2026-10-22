@@ -25,7 +25,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
                 _irContext.CurrentPC += 4;
 
-                if (instruction.Raw != Interpreter.PPUInterpreter.NOP)
+                if (instruction.Raw != Interpreter.PPUInterpreter.Nop)
                 {
                     GenerateIR(instruction);
                 }

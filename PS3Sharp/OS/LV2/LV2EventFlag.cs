@@ -70,14 +70,14 @@ namespace PS3Sharp.OS.LV2
                         {
                             // timeout
                             resultValue = 0;
-                            return CELL_ETIMEDOUT;
+                            return CellETimedout;
                         }
 
                         if (!Monitor.Wait(_lock, remaining_time))
                         {
                             // timeout
                             resultValue = 0;
-                            return CELL_ETIMEDOUT;
+                            return CellETimedout;
                         }
 
                     }
@@ -88,7 +88,7 @@ namespace PS3Sharp.OS.LV2
                         if (!ok)
                         {
                             resultValue = 0;
-                            return CELL_OK;
+                            return CellOk;
                         }
                     }
                 }
@@ -97,7 +97,7 @@ namespace PS3Sharp.OS.LV2
                 Clear(mode, pattern);
                 Monitor.PulseAll(_lock);
 
-                return CELL_OK;
+                return CellOk;
             }
         }
 

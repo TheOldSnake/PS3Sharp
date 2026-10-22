@@ -14,7 +14,7 @@ namespace PS3Sharp.Memory
             unsafe
             {
                 Size = size;
-                nint alloc = NativeMethods.VirtualAlloc(0, size, NativeMethods.WIN_API_MEM_RESERVE, type);
+                nint alloc = NativeMethods.VirtualAlloc(0, size, NativeMethods.WinApiMemReserve, type);
 
                 if (alloc == nint.Zero)
                 {
@@ -36,7 +36,7 @@ namespace PS3Sharp.Memory
             unsafe
             {
                 // Pass 0 in size for MEM_RELEASE
-                bool ok = NativeMethods.VirtualFree(handle, 0, NativeMethods.WIN_API_MEM_RELEASE) != 0;
+                bool ok = NativeMethods.VirtualFree(handle, 0, NativeMethods.WinApiMemRelease) != 0;
 
                 if (ok)
                 {

@@ -56,12 +56,12 @@ namespace PS3Sharp.Cell.RSX
         }
 
         // Constants
-        internal const uint GCM_LOCATION_RSX = 0;     // Memory buffer is located in RSX memory.
-        internal const uint GCM_LOCATION_CELL = 1;    // Memory buffer is located in main memory.
-        internal const uint GCM_LOCATION_REPORT = 2;  // Memory buffer is located in report memory.
-        internal const uint VRAM_SIZE = 249 * 1024 * 1024;
-        internal const uint LABELS_SIZE = 0x10 * 256;
-        internal const ulong FRAME_TIME_US = (ulong)(16.666 * 1000);
+        internal const uint GcmLocationRsx = 0;     // Memory buffer is located in RSX memory.
+        internal const uint GcmLocationCell = 1;    // Memory buffer is located in main memory.
+        internal const uint GcmLocationReport = 2;  // Memory buffer is located in report memory.
+        internal const uint VramSize = 249 * 1024 * 1024;
+        internal const uint LabelsSize = 0x10 * 256;
+        internal const ulong FrameTimeUs = (ulong)(16.666 * 1000);
 
         private PPU.PPUThread? _RSX_PPU_Thread;            // For executing rsx callbacks that are ppu functions
         private readonly ThreadManager _threadManager;
@@ -136,7 +136,7 @@ namespace PS3Sharp.Cell.RSX
         internal void AllocateRSXMemory()
         {
             // Allocate vram
-            MemoryManager.MemoryBlock vram = _memoryManager.AllocateVirtualMemory(VRAM_SIZE);
+            MemoryManager.MemoryBlock vram = _memoryManager.AllocateVirtualMemory(VramSize);
             VRAMPtr = vram.VirtualAddress;
 
             // Allocate a page for structs + labels
@@ -155,7 +155,7 @@ namespace PS3Sharp.Cell.RSX
             ulong ctxStartAddress = Utility.AlignPowerOfTwo(ctrlStartAddress + ctrlSize, alignment);
             ulong labelsStartAddress = Utility.AlignPowerOfTwo(ctxStartAddress + ctxSize, alignment);
 
-            Debug.Assert(labelsStartAddress + LABELS_SIZE < pageEnd);
+            Debug.Assert(labelsStartAddress + LabelsSize < pageEnd);
 
             ConfigPtr = (uint)configStartAddress;
             CtrlPtr = (uint)ctrlStartAddress;
@@ -172,7 +172,7 @@ namespace PS3Sharp.Cell.RSX
             CellGcmCtxData ctx = _memoryManager.Read<CellGcmCtxData>(CtxPtr);
             CellGcmConfig config = _memoryManager.Read<CellGcmConfig>(ConfigPtr);
 
-            if (address >= VRAMPtr.Address && address < VRAMPtr.Address + VRAM_SIZE)
+            if (address >= VRAMPtr.Address && address < VRAMPtr.Address + VramSize)
             { // Relative to VRAM
                 return address - VRAMPtr.Address;
             }
@@ -191,7 +191,7 @@ namespace PS3Sharp.Cell.RSX
         internal uint OffsetToAddress(uint offset, uint location)
         {
             uint address;
-            if (location == GCM_LOCATION_RSX)
+            if (location == GcmLocationRsx)
             {
                 // Relative to VRAM (Local_Addr)
                 CellGcmConfig config = _memoryManager.Read<CellGcmConfig>(ConfigPtr);

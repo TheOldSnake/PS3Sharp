@@ -128,10 +128,10 @@ namespace PS3Sharp.Cell.RSX
         internal VertexInstruction GetVertexInstruction(ReadOnlySpan<uint> data)
         {
             VertexInstruction v;
-            v.Raw_0 = data[0];
-            v.Raw_1 = data[1];
-            v.Raw_2 = data[2];
-            v.Raw_3 = data[3];
+            v.Raw0 = data[0];
+            v.Raw1 = data[1];
+            v.Raw2 = data[2];
+            v.Raw3 = data[3];
             return v;
         }
 
@@ -172,10 +172,10 @@ namespace PS3Sharp.Cell.RSX
             {
                 VertexInstruction instruction = new()
                 { // Or we can do casts
-                    Raw_0 = _vertexShaderBuffer[i + 0],
-                    Raw_1 = _vertexShaderBuffer[i + 1],
-                    Raw_2 = _vertexShaderBuffer[i + 2],
-                    Raw_3 = _vertexShaderBuffer[i + 3],
+                    Raw0 = _vertexShaderBuffer[i + 0],
+                    Raw1 = _vertexShaderBuffer[i + 1],
+                    Raw2 = _vertexShaderBuffer[i + 2],
+                    Raw3 = _vertexShaderBuffer[i + 3],
                 };
 
                 _currentVetrexShader += HandleVectorInstruction(instruction);
@@ -204,84 +204,84 @@ namespace PS3Sharp.Cell.RSX
 
             switch (instruction.VectorOp)
             {
-                case NVFX_VP_INST_VEC_OP_NOP:
+                case NvfxVpInstVecOpNop:
                     return string.Empty;
 
-                case NVFX_VP_INST_VEC_OP_MOV:
+                case NvfxVpInstVecOpMov:
                     generatedSource = $"{src0}";
                     break;
 
-                case NVFX_VP_INST_VEC_OP_MUL:
+                case NvfxVpInstVecOpMul:
                     generatedSource = $"({src0} * {src1})";
                     break;
 
-                case NVFX_VP_INST_VEC_OP_ADD:
+                case NvfxVpInstVecOpAdd:
                     // For some reason ADD works with src0 and src2, so this is not a bug.
                     generatedSource = $"({src0} + {src2})";
                     break;
 
-                case NVFX_VP_INST_VEC_OP_MAD:
+                case NvfxVpInstVecOpMad:
                     generatedSource = $"fma({src0}, {src1}, {src2})";
                     break;
 
-                case NVFX_VP_INST_VEC_OP_DP3:
+                case NvfxVpInstVecOpDp3:
                     generatedSource = $"vec4(dot(vec3({src0}), vec3({src1})))";
                     break;
 
-                case NVFX_VP_INST_VEC_OP_DPH:
+                case NvfxVpInstVecOpDph:
                     generatedSource = $"vec4(dot(vec4({src0}.xyz, 1.0), vec4({src1})))";
                     break;
 
-                case NVFX_VP_INST_VEC_OP_DP4:
+                case NvfxVpInstVecOpDp4:
                     generatedSource = $"vec4(dot(vec4({src0}), vec4({src1})))";
                     break;
 
 
                 /* todo: NVFX_VP_INST_VEC_OP_DST */
 
-                case NVFX_VP_INST_VEC_OP_MIN:
+                case NvfxVpInstVecOpMin:
                     generatedSource = $"min({src0}, {src1})";
                     break;
 
-                case NVFX_VP_INST_VEC_OP_MAX:
+                case NvfxVpInstVecOpMax:
                     generatedSource = $"max({src0}, {src1})";
                     break;
 
-                case NVFX_VP_INST_VEC_OP_SLT:
+                case NvfxVpInstVecOpSlt:
                     generatedSource = $"vec4(lessThan({src0}, {src1}))";
                     break;
 
-                case NVFX_VP_INST_VEC_OP_SGE:
+                case NvfxVpInstVecOpSge:
                     generatedSource = $"vec4(greaterThanEqual({src0}, {src1}))";
                     break;
 
-                case NVFX_VP_INST_VEC_OP_ARL:
+                case NvfxVpInstVecOpArl:
                     generatedSource = $"ivec4({src0})";
                     break;
 
-                case NVFX_VP_INST_VEC_OP_FRC:
+                case NvfxVpInstVecOpFrc:
                     generatedSource = $"fract({src0})";
                     break;
 
-                case NVFX_VP_INST_VEC_OP_FLR:
+                case NvfxVpInstVecOpFlr:
                     generatedSource = $"floor({src0})";
                     break;
 
-                case NVFX_VP_INST_VEC_OP_SEQ:
+                case NvfxVpInstVecOpSeq:
                     generatedSource = $"vec4(equal({src0}, {src1}))";
                     break;
 
                 /* todo: NVFX_VP_INST_VEC_OP_SFL */
 
-                case NVFX_VP_INST_VEC_OP_SGT:
+                case NvfxVpInstVecOpSgt:
                     generatedSource = $"vec4(greaterThan({src0}, {src1}))";
                     break;
 
-                case NVFX_VP_INST_VEC_OP_SLE:
+                case NvfxVpInstVecOpSle:
                     generatedSource = $"vec4(lessThanEqual({src0}, {src1}))";
                     break;
 
-                case NVFX_VP_INST_VEC_OP_SNE:
+                case NvfxVpInstVecOpSne:
                     generatedSource = $"vec4(notEqual({src0}, {src1}))";
                     break;
 
@@ -334,31 +334,31 @@ namespace PS3Sharp.Cell.RSX
 
             switch (instruction.ScalarOp)
             {
-                case NVFX_VP_INST_SCA_OP_NOP:
+                case NvfxVpInstScaOpNop:
                     /* NOP */
                     return string.Empty;
 
-                case NVFX_VP_INST_SCA_OP_RCP:
+                case NvfxVpInstScaOpRcp:
                     generatedSource = $"vec4(1.0f / {src2})";
                     break;
 
-                case NVFX_VP_INST_SCA_OP_RSQ: // was using inversesqrt
+                case NvfxVpInstScaOpRsq: // was using inversesqrt
                     generatedSource = $"(1.0f / sqrt(max({src2}, 0.0000000001))).xxxx";
                     break;
 
-                case NVFX_VP_INST_SCA_OP_EXP:
+                case NvfxVpInstScaOpExp:
                     generatedSource = $"exp({src2})";
                     break;
 
-                case NVFX_VP_INST_SCA_OP_LOG:
+                case NvfxVpInstScaOpLog:
                     generatedSource = $"log({src2})";
                     break;
 
-                case NVFX_VP_INST_SCA_OP_LG2:
+                case NvfxVpInstScaOpLg2:
                     generatedSource = $"log2({src2})";
                     break;
 
-                case NVFX_VP_INST_SCA_OP_EX2:
+                case NvfxVpInstScaOpEx2:
                     generatedSource = $"exp2({src2})";
                     break;
 
@@ -431,8 +431,8 @@ namespace PS3Sharp.Cell.RSX
                     {
                         // index is offseted by addr0 / addr1
                         // the swizzle selects a single channel from the vector
-                        char addr_reg_swizzle = xyzw[(int)instruction.Addr_Reg_Swizzle];
-                        c_index = $"{const_src} + addr{instruction.Addr_Reg_Sel}.{addr_reg_swizzle}";
+                        char addr_reg_swizzle = xyzw[(int)instruction.AddrRegSwizzle];
+                        c_index = $"{const_src} + addr{instruction.AddrRegSel}.{addr_reg_swizzle}";
 
                     }
                     else
@@ -452,10 +452,10 @@ namespace PS3Sharp.Cell.RSX
             string channels = string.Empty;
 
             //The XYZW values in the src can act as indices 
-            channels += xyzw[(int)src.Src_Swizzle_X];
-            channels += xyzw[(int)src.Src_Swizzle_Y];
-            channels += xyzw[(int)src.Src_Swizzle_Z];
-            channels += xyzw[(int)src.Src_Swizzle_W];
+            channels += xyzw[(int)src.SrcSwizzleX];
+            channels += xyzw[(int)src.SrcSwizzleY];
+            channels += xyzw[(int)src.SrcSwizzleZ];
+            channels += xyzw[(int)src.SrcSwizzleW];
 
             srcName += $".{channels}";
 
@@ -476,9 +476,9 @@ namespace PS3Sharp.Cell.RSX
         {
             string destName = string.Empty;
 
-            bool isDestAddr = instruction.VectorOp == NVFX_VP_INST_VEC_OP_ARL; // Load to address register
+            bool isDestAddr = instruction.VectorOp == NvfxVpInstVecOpArl; // Load to address register
             bool isOutput = isScalar ? !instruction.IsVectorResult : instruction.IsVectorResult;
-            uint temp_index = isScalar ? instruction.Sca_Dest_Temp : instruction.Vec_Dest_Temp;
+            uint temp_index = isScalar ? instruction.Sca_Dest_Temp : instruction.VecDestTemp;
             uint output_index = instruction.Dest;
 
             if (isOutput && output_index != 0x1F)
@@ -492,7 +492,7 @@ namespace PS3Sharp.Cell.RSX
 
                 if (isDestAddr)
                 {
-                    destName = $"addr{instruction.Vec_Dest_Temp}";   // always vec_dest_temp ?
+                    destName = $"addr{instruction.VecDestTemp}";   // always vec_dest_temp ?
 
                 }
                 else
@@ -500,7 +500,7 @@ namespace PS3Sharp.Cell.RSX
                     if (temp_index == 0x3F)
                     {
                         //CC
-                        destName = $"cc{instruction.Cond_Reg_Sel}";
+                        destName = $"cc{instruction.CondRegSel}";
                     }
                     else
                     {
@@ -522,17 +522,17 @@ namespace PS3Sharp.Cell.RSX
 
             if (isScalar)
             {
-                x_mask = instruction.X_Sca_Mask;
-                y_mask = instruction.Y_Sca_Mask;
-                z_mask = instruction.Z_Sca_Mask;
-                w_mask = instruction.W_Sca_Mask;
+                x_mask = instruction.XScaMask;
+                y_mask = instruction.YScaMask;
+                z_mask = instruction.ZScaMask;
+                w_mask = instruction.WScaMask;
             }
             else
             {
-                x_mask = instruction.X_Vec_Mask;
-                y_mask = instruction.Y_Vec_Mask;
-                z_mask = instruction.Z_Vec_Mask;
-                w_mask = instruction.W_Vec_Mask;
+                x_mask = instruction.XVecMask;
+                y_mask = instruction.YVecMask;
+                z_mask = instruction.ZVecMask;
+                w_mask = instruction.WVecMask;
             }
 
 
@@ -581,14 +581,14 @@ namespace PS3Sharp.Cell.RSX
         internal string ConditionalSelect(VertexInstruction instruction, string destination, string destinationMask, string source)
         { // dest and source are already masked
             // Select CC
-            string cc = $"cc{instruction.Cond_Reg_Sel}";
+            string cc = $"cc{instruction.CondRegSel}";
 
             // Handle CC swizzle
             string channels = string.Empty;
-            channels += xyzw[(int)instruction.Cond_Swizzle_X];
-            channels += xyzw[(int)instruction.Cond_Swizzle_Y];
-            channels += xyzw[(int)instruction.Cond_Swizzle_Z];
-            channels += xyzw[(int)instruction.Cond_Swizzle_W];
+            channels += xyzw[(int)instruction.CondSwizzleX];
+            channels += xyzw[(int)instruction.CondSwizzleY];
+            channels += xyzw[(int)instruction.CondSwizzleZ];
+            channels += xyzw[(int)instruction.CondSwizzleW];
             cc += $".{channels}";
 
             // this line will evaluate the condition register agains 0, with the selected function

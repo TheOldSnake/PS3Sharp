@@ -8,8 +8,8 @@ namespace PS3Sharp.OS.Syscall
 {
     internal class SysTTY
     {
-        internal const uint STDOUT = 1;
-        internal const uint STDERR = 2;
+        internal const uint Stdout = 1;
+        internal const uint Stderr = 2;
         private readonly MemoryManager _memoryManager;
 
         // private StreamWriter output = File.AppendText();
@@ -28,16 +28,16 @@ namespace PS3Sharp.OS.Syscall
         internal ulong SysTTYWrite(PPUThread ppu)
         {
 
-            uint ch = ppu.ReadArg<uint>(ARG0);                               //channel? probably file descriptor
-            GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(ARG1);              //void*
-            uint len = ppu.ReadArg<uint>(ARG2);                              //uint32_t
-            GuestPtr<uint> pwritelen = ppu.ReadArg<GuestPtr<uint>>(ARG3);    //uint32_t*
+            uint ch = ppu.ReadArg<uint>(Arg0);                               //channel? probably file descriptor
+            GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(Arg1);              //void*
+            uint len = ppu.ReadArg<uint>(Arg2);                              //uint32_t
+            GuestPtr<uint> pwritelen = ppu.ReadArg<GuestPtr<uint>>(Arg3);    //uint32_t*
 
             string text = _memoryManager.ReadString(buf);
-            ConsoleColor color = ch == STDOUT ? ConsoleColor.Green : ConsoleColor.Red;
+            ConsoleColor color = ch == Stdout ? ConsoleColor.Green : ConsoleColor.Red;
             Print(text, color);
 
-            return CELL_OK;
+            return CellOk;
         }
     }
 }

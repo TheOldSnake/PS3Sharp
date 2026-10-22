@@ -22,548 +22,548 @@ namespace PS3Sharp.Cell.RSX
             {
                 switch (methodRegister)
                 {
-                    case NV40TCL_NOP:                    /* NOP */
-                    case NV40TCL_VTX_CACHE_INVALIDATE:   /* NOP?? */
-                    case NV40TCL_VTX_CACHE_INVALIDATE2:  /* NOP?? */
+                    case Nv40TclNop:                    /* NOP */
+                    case Nv40TclVtxCacheInvalidate:   /* NOP?? */
+                    case Nv40TclVtxCacheInvalidate2:  /* NOP?? */
 
-                    case NV40TCL_POLYGON_OFFSET_FILL_ENABLE:
-                    case NV40TCL_POLYGON_OFFSET_FACTOR:
-                    case NV40TCL_CULL_FACE:
-                    case NV40TCL_CULL_FACE_ENABLE:
-                    case NV40TCL_STENCIL_BACK_ENABLE:
-                    case NV40TCL_FP_PACKER:
-                    case NV40TCL_POLYGON_MODE_FRONT:
-                    case NV40TCL_DEPTH_BOUNDS_MIN:
-                    case NV40TCL_DEPTH_BOUNDS_TEST_ENABLE:
-                    case NV40TCL_ANTI_ALIASING_CONTROL:
-                    case NV30_3D_ALPHA_FUNC_ENABLE:
-                    case NV30_3D_FOG_ENABLE:
+                    case Nv40TclPolygonOffsetFillEnable:
+                    case Nv40TclPolygonOffsetFactor:
+                    case Nv40TclCullFace:
+                    case Nv40TclCullFaceEnable:
+                    case Nv40TclStencilBackEnable:
+                    case Nv40TclFpPacker:
+                    case Nv40TclPolygonModeFront:
+                    case Nv40TclDepthBoundsMin:
+                    case Nv40TclDepthBoundsTestEnable:
+                    case Nv40TclAntiAliasingControl:
+                    case Nv303dAlphaFuncEnable:
+                    case Nv303dFogEnable:
 
                         param.Clear();
                         break;
 
-                    case GCM_FLIP_COMMAND:
+                    case GcmFlipCommand:
                         Flip(param);
                         break;
 
-                    case NV406ETCL_SET_REF:
+                    case Nv406eTclSetRef:
                         SetRef(param);
                         break;
 
-                    case NV406ETCL_SEMAPHORE_OFFSET:
-                    case NV40TCL_SEMAPHORE_BACKENDWRITE_OFFSET:
+                    case Nv406eTclSemaphoreOffset:
+                    case Nv40TclSemaphoreBackendwriteOffset:
                         SemaphoreBackendwriteOffset(param);
                         break;
 
-                    case NV406ETCL_SET_CTX_DMA_SEMAPHORE:
+                    case Nv406eTclSetCtxDmaSemaphore:
                         SET_CTX_DMA_SEMAPHORE(param);
                         break;
 
-                    case NV40TCL_SEMAPHORE_BACKENDWRITE_RELEASE:
+                    case Nv40TclSemaphoreBackendwriteRelease:
                         SemaphoreBackendwriteRelease(param);
                         break;
 
-                    case NV406ETCL_SEMAPHORE_ACQUIRE:
+                    case Nv406eTclSemaphoreAcquire:
                         SemaphoreAcquire(param);
                         break;
 
-                    case NV406ETCL_SEMAPHORE_RELEASE:
+                    case Nv406eTclSemaphoreRelease:
                         SemaphoreRelease(param);
                         break;
 
-                    case NV34_TCL_PRIMITIVE_3D_COLOR_MASK:
+                    case Nv34TclPrimitive3dColorMask:
                         Primitive3DColorMask(param);
                         break;
 
-                    case NV34_TCL_PRIMITIVE_3D_FOG_COLOR:
+                    case Nv34TclPrimitive3dFogColor:
                         Primitive3DFogColor(param);
                         break;
 
-                    case NV40TCL_VIEWPORT_HORIZ:
+                    case Nv40TclViewportHoriz:
                         ViewPortHorizontal(param);
                         break;
 
-                    case NV40TCL_VIEWPORT_VERT:
+                    case Nv40TclViewportVert:
                         ViewPortVertical(param);
                         break;
 
-                    case NV40TCL_DEPTH_RANGE:
+                    case Nv40TclDepthRange:
                         DepthRange(param);
                         break;
 
-                    case NV40TCL_VIEWPORT_OFFSET_X:
-                    case NV40TCL_VIEWPORT_OFFSET_Y:
-                    case NV40TCL_VIEWPORT_OFFSET_Z:
-                    case NV40TCL_VIEWPORT_OFFSET_W:
+                    case Nv40TclViewportOffsetX:
+                    case Nv40TclViewportOffsetY:
+                    case Nv40TclViewportOffsetZ:
+                    case Nv40TclViewportOffsetW:
                         ViewPortOffset(methodRegister, param);
                         break;
 
-                    case NV40TCL_VIEWPORT_SCALE_X:
-                    case NV40TCL_VIEWPORT_SCALE_Y:
-                    case NV40TCL_VIEWPORT_SCALE_Z:
-                    case NV40TCL_VIEWPORT_SCALE_W:
+                    case Nv40TclViewportScaleX:
+                    case Nv40TclViewportScaleY:
+                    case Nv40TclViewportScaleZ:
+                    case Nv40TclViewportScaleW:
                         ViewPortScale(methodRegister, param);
                         break;
 
-                    case NV40TCL_SCISSOR_HORIZ:
+                    case Nv40TclScissorHoriz:
                         ScissorHorizontal(param);
                         break;
 
-                    case NV40TCL_SCISSOR_VERT:
+                    case Nv40TclScissorVert:
                         ScissorVertical(param);
                         break;
 
-                    case NV40TCL_DEPTH_TEST_ENABLE:
+                    case Nv40TclDepthTestEnable:
                         DepthTestEnable(param);
                         break;
 
-                    case NV40TCL_DEPTH_FUNC:
+                    case Nv40TclDepthFunc:
                         DepthFunction(param);
                         break;
 
-                    case NV40TCL_SHADE_MODEL:
+                    case Nv40TclShadeModel:
                         ShadeModel(param);
                         break;
 
-                    case NV40TCL_DEPTH_WRITE_ENABLE:
+                    case Nv40TclDepthWriteEnable:
                         DepthWriteEnable(param);
                         break;
 
-                    case NV40TCL_FRONT_FACE:
+                    case Nv40TclFrontFace:
                         FrontFace(param);
                         break;
 
-                    case NV40TCL_DMA_COLOR0:
-                    case NV40TCL_DMA_COLOR1:
-                    case NV40TCL_DMA_COLOR2:
-                    case NV40TCL_DMA_COLOR3:
+                    case Nv40TclDmaColor0:
+                    case Nv40TclDmaColor1:
+                    case Nv40TclDmaColor2:
+                    case Nv40TclDmaColor3:
                         DMAColor(methodRegister, param);
                         break;
 
-                    case NV34_TCL_PRIMITIVE_3D_DMA_IN_MEMORY0:
-                    case NV34_TCL_PRIMITIVE_3D_DMA_IN_MEMORY1:
+                    case Nv34TclPrimitive3dDmaInMemory0:
+                    case Nv34TclPrimitive3dDmaInMemory1:
                     //   case NV34_TCL_PRIMITIVE_3D_DMA_IN_MEMORY2:
                     //   case NV34_TCL_PRIMITIVE_3D_DMA_IN_MEMORY3:
-                    case NV34_TCL_PRIMITIVE_3D_DMA_IN_MEMORY4:
-                    case NV34_TCL_PRIMITIVE_3D_DMA_IN_MEMORY5:
-                    case NV34_TCL_PRIMITIVE_3D_DMA_IN_MEMORY6:
-                    case NV34_TCL_PRIMITIVE_3D_DMA_IN_MEMORY7:
-                    case NV34_TCL_PRIMITIVE_3D_DMA_IN_MEMORY8:
+                    case Nv34TclPrimitive3dDmaInMemory4:
+                    case Nv34TclPrimitive3dDmaInMemory5:
+                    case Nv34TclPrimitive3dDmaInMemory6:
+                    case Nv34TclPrimitive3dDmaInMemory7:
+                    case Nv34TclPrimitive3dDmaInMemory8:
                         Primitive_3D_DMA_In_Memory(param);
                         break;
 
-                    case NV40TCL_RT_FORMAT:
+                    case Nv40TclRtFormat:
                         RTFormat(param);
                         break;
 
-                    case NV40TCL_ZETA_PITCH:
+                    case Nv40TclZetaPitch:
                         ZetaPitch(param);
                         break;
 
-                    case NV40TCL_COLOR2_PITCH:
+                    case Nv40TclColor2Pitch:
                         Color2Pitch(param);
                         break;
 
-                    case NV40TCL_COLOR3_PITCH:
+                    case Nv40TclColor3Pitch:
                         Color3Pitch(param);
                         break;
 
-                    case NV40TCL_RT_ENABLE:
+                    case Nv40TclRtEnable:
                         RTEnable(param);
                         break;
 
-                    case NV40TCL_WINDOW_OFFSET:
+                    case Nv40TclWindowOffset:
                         WindowOffset(param);
                         break;
 
-                    case NV40TCL_RT_HORIZ:
+                    case Nv40TclRtHoriz:
                         RTHorizontal(param);
                         break;
 
-                    case NV40TCL_RT_VERT:
+                    case Nv40TclRtVert:
                         RTVertical(param);
                         break;
 
-                    case NV40TCL_SHADER_WINDOW:
+                    case Nv40TclShaderWindow:
                         ShaderWindow(param);
                         break;
 
-                    case NV40TCL_CLEAR_VALUE_COLOR:
+                    case Nv40TclClearValueColor:
                         ClearValueColor(param);
                         break;
 
-                    case NV40TCL_CLEAR_VALUE_DEPTH:
+                    case Nv40TclClearValueDepth:
                         ClearValueDepth(param);
                         break;
 
-                    case NV40TCL_CLEAR_BUFFERS:
+                    case Nv40TclClearBuffers:
                         ClearBuffers(param);
                         break;
 
-                    case NV40TCL_DEPTH_CONTROL:
+                    case Nv40TclDepthControl:
                         DepthControl(param);
                         break;
 
-                    case NV40TCL_VIEWPORT_CLIP_HORIZ_0:
-                    case NV40TCL_VIEWPORT_CLIP_HORIZ_1:
-                    case NV40TCL_VIEWPORT_CLIP_HORIZ_2:
-                    case NV40TCL_VIEWPORT_CLIP_HORIZ_3:
-                    case NV40TCL_VIEWPORT_CLIP_HORIZ_4:
-                    case NV40TCL_VIEWPORT_CLIP_HORIZ_5:
-                    case NV40TCL_VIEWPORT_CLIP_HORIZ_6:
-                    case NV40TCL_VIEWPORT_CLIP_HORIZ_7:
+                    case Nv40TclViewportClipHoriz0:
+                    case Nv40TclViewportClipHoriz1:
+                    case Nv40TclViewportClipHoriz2:
+                    case Nv40TclViewportClipHoriz3:
+                    case Nv40TclViewportClipHoriz4:
+                    case Nv40TclViewportClipHoriz5:
+                    case Nv40TclViewportClipHoriz6:
+                    case Nv40TclViewportClipHoriz7:
                         ViewPortClipHorizontal(param);
                         break;
 
-                    case NV40TCL_VP_UPLOAD_FROM_ID:
+                    case Nv40TclVpUploadFromId:
                         VP_UploadFromID(param);
                         break;
 
-                    case NV40TCL_VP_START_FROM_ID:
+                    case Nv40TclVpStartFromId:
                         VP_StartFromID(param);
                         break;
 
-                    case NV40TCL_VP_UPLOAD_INST:
+                    case Nv40TclVpUploadInst:
                         VP_UploadInstructions(param);
                         break;
 
-                    case NV40TCL_VP_ATTRIB_EN:
+                    case Nv40TclVpAttribEn:
                         VP_AttributeEnable(param);
                         break;
 
-                    case NV40TCL_VP_RESULT_EN:
+                    case Nv40TclVpResultEn:
                         VP_ResultEnable(param);
                         break;
 
-                    case NV40TCL_TRANSFORM_TIMEOUT:
+                    case Nv40TclTransformTimeout:
                         TransformTimeout(param);
                         break;
 
-                    case NV40TCL_VP_UPLOAD_CONST_ID:
+                    case Nv40TclVpUploadConstId:
                         VP_UploadConstantID(param);
                         break;
 
-                    case NV40TCL_VP_UPLOAD_CONST_X:
+                    case Nv40TclVpUploadConstX:
                         VP_UploadConstantX(param);
                         break;
 
-                    case NV40TCL_FP_ADDRESS:
+                    case Nv40TclFpAddress:
                         FP_Address(param);
                         break;
 
-                    case NV40TCL_FP_CONTROL:
+                    case Nv40TclFpControl:
                         FP_Control(param);
                         break;
 
-                    case NV40TCL_CLIP_PLANE_ENABLE:
+                    case Nv40TclClipPlaneEnable:
                         ClipPlaneEnable(param);
                         break;
 
-                    case NV40TCL_TEX_COORD_CONTROL:
-                    case NV40TCL_TEX_COORD_CONTROL + 4:
+                    case Nv40TclTexCoordControl:
+                    case Nv40TclTexCoordControl + 4:
                         TexCoordControl(param);
                         break;
 
-                    case NV3062_SET_CONTEXT_DMA_IMAGE_DESTIN:
+                    case Nv3062SetContextDmaImageDestin:
                         SetContextDMAImageDest(param);
                         break;
 
-                    case NV3062_SET_OFFSET_DESTIN:
+                    case Nv3062SetOffsetDestin:
                         SetOffsetDest(param);
                         break;
 
-                    case NV3062_SET_COLOR_FORMAT:
+                    case Nv3062SetColorFormat:
                         SetColorFormat(param);
                         break;
 
-                    case NV308A_POINT:
+                    case Nv308aPoint:
                         Point_Position(param);
                         break;
 
-                    case NV308A_SIZE_OUT:
+                    case Nv308aSizeOut:
                         SizeOut(param);
                         break;
 
-                    case NV308A_COLOR:
+                    case Nv308aColor:
                         Point_Color(param);
                         break;
 
-                    case NV40TCL_BLEND_ENABLE:
+                    case Nv40TclBlendEnable:
                         BlendEnable(param);
                         break;
 
-                    case NV40TCL_BLEND_FUNC_SRC:
+                    case Nv40TclBlendFuncSrc:
                         BlendFunctionSRC(param);
                         break;
 
-                    case NV40TCL_BLEND_FUNC_DST:
+                    case Nv40TclBlendFuncDst:
                         BlendFunctionDST(param);
                         break;
 
-                    case NV40TCL_BLEND_COLOR:
+                    case Nv40TclBlendColor:
                         BlendColor(param);
                         break;
 
-                    case NV40TCL_BLEND_EQUATION:
+                    case Nv40TclBlendEquation:
                         BlendEquation(param);
                         break;
 
-                    case NV40TCL_COLOR_LOGIC_OP_ENABLE:
+                    case Nv40TclColorLogicOpEnable:
                         ColorLogicOPEnable(param);
                         break;
 
-                    case NV40TCL_COLOR_LOGIC_OP:
+                    case Nv40TclColorLogicOp:
                         ColorLogicOP(param);
                         break;
 
-                    case NV40TCL_TEX_OFFSET_0:
-                    case NV40TCL_TEX_OFFSET_1:
-                    case NV40TCL_TEX_OFFSET_2:
-                    case NV40TCL_TEX_OFFSET_3:
-                    case NV40TCL_TEX_OFFSET_4:
-                    case NV40TCL_TEX_OFFSET_5:
-                    case NV40TCL_TEX_OFFSET_6:
-                    case NV40TCL_TEX_OFFSET_7:
-                    case NV40TCL_TEX_OFFSET_8:
-                    case NV40TCL_TEX_OFFSET_9:
-                    case NV40TCL_TEX_OFFSET_10:
-                    case NV40TCL_TEX_OFFSET_11:
-                    case NV40TCL_TEX_OFFSET_12:
-                    case NV40TCL_TEX_OFFSET_13:
-                    case NV40TCL_TEX_OFFSET_14:
-                    case NV40TCL_TEX_OFFSET_15:
+                    case Nv40TclTexOffset0:
+                    case Nv40TclTexOffset1:
+                    case Nv40TclTexOffset2:
+                    case Nv40TclTexOffset3:
+                    case Nv40TclTexOffset4:
+                    case Nv40TclTexOffset5:
+                    case Nv40TclTexOffset6:
+                    case Nv40TclTexOffset7:
+                    case Nv40TclTexOffset8:
+                    case Nv40TclTexOffset9:
+                    case Nv40TclTexOffset10:
+                    case Nv40TclTexOffset11:
+                    case Nv40TclTexOffset12:
+                    case Nv40TclTexOffset13:
+                    case Nv40TclTexOffset14:
+                    case Nv40TclTexOffset15:
                         TexOffset(methodRegister, param);
                         break;
 
-                    case NV40TCL_TEX_FORMAT_0:
-                    case NV40TCL_TEX_FORMAT_1:
-                    case NV40TCL_TEX_FORMAT_2:
-                    case NV40TCL_TEX_FORMAT_3:
-                    case NV40TCL_TEX_FORMAT_4:
-                    case NV40TCL_TEX_FORMAT_5:
-                    case NV40TCL_TEX_FORMAT_6:
-                    case NV40TCL_TEX_FORMAT_7:
-                    case NV40TCL_TEX_FORMAT_8:
-                    case NV40TCL_TEX_FORMAT_9:
-                    case NV40TCL_TEX_FORMAT_10:
-                    case NV40TCL_TEX_FORMAT_11:
-                    case NV40TCL_TEX_FORMAT_12:
-                    case NV40TCL_TEX_FORMAT_13:
-                    case NV40TCL_TEX_FORMAT_14:
-                    case NV40TCL_TEX_FORMAT_15:
+                    case Nv40TclTexFormat0:
+                    case Nv40TclTexFormat1:
+                    case Nv40TclTexFormat2:
+                    case Nv40TclTexFormat3:
+                    case Nv40TclTexFormat4:
+                    case Nv40TclTexFormat5:
+                    case Nv40TclTexFormat6:
+                    case Nv40TclTexFormat7:
+                    case Nv40TclTexFormat8:
+                    case Nv40TclTexFormat9:
+                    case Nv40TclTexFormat10:
+                    case Nv40TclTexFormat11:
+                    case Nv40TclTexFormat12:
+                    case Nv40TclTexFormat13:
+                    case Nv40TclTexFormat14:
+                    case Nv40TclTexFormat15:
                         TexFormat(methodRegister, param);
                         break;
 
-                    case NV40TCL_TEX_SWIZZLE_0:
-                    case NV40TCL_TEX_SWIZZLE_1:
-                    case NV40TCL_TEX_SWIZZLE_2:
-                    case NV40TCL_TEX_SWIZZLE_3:
-                    case NV40TCL_TEX_SWIZZLE_4:
-                    case NV40TCL_TEX_SWIZZLE_5:
-                    case NV40TCL_TEX_SWIZZLE_6:
-                    case NV40TCL_TEX_SWIZZLE_7:
-                    case NV40TCL_TEX_SWIZZLE_8:
-                    case NV40TCL_TEX_SWIZZLE_9:
-                    case NV40TCL_TEX_SWIZZLE_10:
-                    case NV40TCL_TEX_SWIZZLE_11:
-                    case NV40TCL_TEX_SWIZZLE_12:
-                    case NV40TCL_TEX_SWIZZLE_13:
-                    case NV40TCL_TEX_SWIZZLE_14:
-                    case NV40TCL_TEX_SWIZZLE_15:
+                    case Nv40TclTexSwizzle0:
+                    case Nv40TclTexSwizzle1:
+                    case Nv40TclTexSwizzle2:
+                    case Nv40TclTexSwizzle3:
+                    case Nv40TclTexSwizzle4:
+                    case Nv40TclTexSwizzle5:
+                    case Nv40TclTexSwizzle6:
+                    case Nv40TclTexSwizzle7:
+                    case Nv40TclTexSwizzle8:
+                    case Nv40TclTexSwizzle9:
+                    case Nv40TclTexSwizzle10:
+                    case Nv40TclTexSwizzle11:
+                    case Nv40TclTexSwizzle12:
+                    case Nv40TclTexSwizzle13:
+                    case Nv40TclTexSwizzle14:
+                    case Nv40TclTexSwizzle15:
                         TesSwizzle(methodRegister, param);
                         break;
 
-                    case NV40TCL_TEX_SIZE0_0:
-                    case NV40TCL_TEX_SIZE0_1:
-                    case NV40TCL_TEX_SIZE0_2:
-                    case NV40TCL_TEX_SIZE0_3:
-                    case NV40TCL_TEX_SIZE0_4:
-                    case NV40TCL_TEX_SIZE0_5:
-                    case NV40TCL_TEX_SIZE0_6:
-                    case NV40TCL_TEX_SIZE0_7:
-                    case NV40TCL_TEX_SIZE0_8:
-                    case NV40TCL_TEX_SIZE0_9:
-                    case NV40TCL_TEX_SIZE0_10:
-                    case NV40TCL_TEX_SIZE0_11:
-                    case NV40TCL_TEX_SIZE0_12:
-                    case NV40TCL_TEX_SIZE0_13:
-                    case NV40TCL_TEX_SIZE0_14:
-                    case NV40TCL_TEX_SIZE0_15:
+                    case Nv40TclTexSize00:
+                    case Nv40TclTexSize01:
+                    case Nv40TclTexSize02:
+                    case Nv40TclTexSize03:
+                    case Nv40TclTexSize04:
+                    case Nv40TclTexSize05:
+                    case Nv40TclTexSize06:
+                    case Nv40TclTexSize07:
+                    case Nv40TclTexSize08:
+                    case Nv40TclTexSize09:
+                    case Nv40TclTexSize010:
+                    case Nv40TclTexSize011:
+                    case Nv40TclTexSize012:
+                    case Nv40TclTexSize013:
+                    case Nv40TclTexSize014:
+                    case Nv40TclTexSize015:
                         TexSize0(methodRegister, param);
                         break;
 
-                    case NV40TCL_TEX_SIZE1_0:
-                    case NV40TCL_TEX_SIZE1_1:
-                    case NV40TCL_TEX_SIZE1_2:
-                    case NV40TCL_TEX_SIZE1_3:
-                    case NV40TCL_TEX_SIZE1_4:
-                    case NV40TCL_TEX_SIZE1_5:
-                    case NV40TCL_TEX_SIZE1_6:
-                    case NV40TCL_TEX_SIZE1_7:
-                    case NV40TCL_TEX_SIZE1_8:
-                    case NV40TCL_TEX_SIZE1_9:
-                    case NV40TCL_TEX_SIZE1_10:
-                    case NV40TCL_TEX_SIZE1_11:
-                    case NV40TCL_TEX_SIZE1_12:
-                    case NV40TCL_TEX_SIZE1_13:
-                    case NV40TCL_TEX_SIZE1_14:
-                    case NV40TCL_TEX_SIZE1_15:
+                    case Nv40TclTexSize10:
+                    case Nv40TclTexSize11:
+                    case Nv40TclTexSize12:
+                    case Nv40TclTexSize13:
+                    case Nv40TclTexSize14:
+                    case Nv40TclTexSize15:
+                    case Nv40TclTexSize16:
+                    case Nv40TclTexSize17:
+                    case Nv40TclTexSize18:
+                    case Nv40TclTexSize19:
+                    case Nv40TclTexSize110:
+                    case Nv40TclTexSize111:
+                    case Nv40TclTexSize112:
+                    case Nv40TclTexSize113:
+                    case Nv40TclTexSize114:
+                    case Nv40TclTexSize115:
                         TexSize1(methodRegister, param);
                         break;
 
 
-                    case NV40TCL_TEX_ENABLE_0:
-                    case NV40TCL_TEX_ENABLE_1:
-                    case NV40TCL_TEX_ENABLE_2:
-                    case NV40TCL_TEX_ENABLE_3:
-                    case NV40TCL_TEX_ENABLE_4:
-                    case NV40TCL_TEX_ENABLE_5:
-                    case NV40TCL_TEX_ENABLE_6:
-                    case NV40TCL_TEX_ENABLE_7:
-                    case NV40TCL_TEX_ENABLE_8:
-                    case NV40TCL_TEX_ENABLE_9:
-                    case NV40TCL_TEX_ENABLE_10:
-                    case NV40TCL_TEX_ENABLE_11:
-                    case NV40TCL_TEX_ENABLE_12:
-                    case NV40TCL_TEX_ENABLE_13:
-                    case NV40TCL_TEX_ENABLE_14:
-                    case NV40TCL_TEX_ENABLE_15:
+                    case Nv40TclTexEnable0:
+                    case Nv40TclTexEnable1:
+                    case Nv40TclTexEnable2:
+                    case Nv40TclTexEnable3:
+                    case Nv40TclTexEnable4:
+                    case Nv40TclTexEnable5:
+                    case Nv40TclTexEnable6:
+                    case Nv40TclTexEnable7:
+                    case Nv40TclTexEnable8:
+                    case Nv40TclTexEnable9:
+                    case Nv40TclTexEnable10:
+                    case Nv40TclTexEnable11:
+                    case Nv40TclTexEnable12:
+                    case Nv40TclTexEnable13:
+                    case Nv40TclTexEnable14:
+                    case Nv40TclTexEnable15:
                         TexEnable(methodRegister, param);
                         break;
 
-                    case NV40TCL_TEX_FILTER_0:
-                    case NV40TCL_TEX_FILTER_1:
-                    case NV40TCL_TEX_FILTER_2:
-                    case NV40TCL_TEX_FILTER_3:
-                    case NV40TCL_TEX_FILTER_4:
-                    case NV40TCL_TEX_FILTER_5:
-                    case NV40TCL_TEX_FILTER_6:
-                    case NV40TCL_TEX_FILTER_7:
-                    case NV40TCL_TEX_FILTER_8:
-                    case NV40TCL_TEX_FILTER_9:
-                    case NV40TCL_TEX_FILTER_10:
-                    case NV40TCL_TEX_FILTER_11:
-                    case NV40TCL_TEX_FILTER_12:
-                    case NV40TCL_TEX_FILTER_13:
-                    case NV40TCL_TEX_FILTER_14:
-                    case NV40TCL_TEX_FILTER_15:
+                    case Nv40TclTexFilter0:
+                    case Nv40TclTexFilter1:
+                    case Nv40TclTexFilter2:
+                    case Nv40TclTexFilter3:
+                    case Nv40TclTexFilter4:
+                    case Nv40TclTexFilter5:
+                    case Nv40TclTexFilter6:
+                    case Nv40TclTexFilter7:
+                    case Nv40TclTexFilter8:
+                    case Nv40TclTexFilter9:
+                    case Nv40TclTexFilter10:
+                    case Nv40TclTexFilter11:
+                    case Nv40TclTexFilter12:
+                    case Nv40TclTexFilter13:
+                    case Nv40TclTexFilter14:
+                    case Nv40TclTexFilter15:
                         TexFilter(methodRegister, param);
                         break;
 
-                    case NV40TCL_TEX_WRAP_0:
-                    case NV40TCL_TEX_WRAP_1:
-                    case NV40TCL_TEX_WRAP_2:
-                    case NV40TCL_TEX_WRAP_3:
-                    case NV40TCL_TEX_WRAP_4:
-                    case NV40TCL_TEX_WRAP_5:
-                    case NV40TCL_TEX_WRAP_6:
-                    case NV40TCL_TEX_WRAP_7:
-                    case NV40TCL_TEX_WRAP_8:
-                    case NV40TCL_TEX_WRAP_9:
-                    case NV40TCL_TEX_WRAP_10:
-                    case NV40TCL_TEX_WRAP_11:
-                    case NV40TCL_TEX_WRAP_12:
-                    case NV40TCL_TEX_WRAP_13:
-                    case NV40TCL_TEX_WRAP_14:
-                    case NV40TCL_TEX_WRAP_15:
+                    case Nv40TclTexWrap0:
+                    case Nv40TclTexWrap1:
+                    case Nv40TclTexWrap2:
+                    case Nv40TclTexWrap3:
+                    case Nv40TclTexWrap4:
+                    case Nv40TclTexWrap5:
+                    case Nv40TclTexWrap6:
+                    case Nv40TclTexWrap7:
+                    case Nv40TclTexWrap8:
+                    case Nv40TclTexWrap9:
+                    case Nv40TclTexWrap10:
+                    case Nv40TclTexWrap11:
+                    case Nv40TclTexWrap12:
+                    case Nv40TclTexWrap13:
+                    case Nv40TclTexWrap14:
+                    case Nv40TclTexWrap15:
                         TexWrap(methodRegister, param);
                         break;
 
-                    case NV40TCL_TEX_CACHE_CTL:
+                    case Nv40TclTexCacheCtl:
                         TexCacheCtl(param);
                         break;
 
-                    case NV40TCL_VTXFMT_0:
-                    case NV40TCL_VTXFMT_1:
-                    case NV40TCL_VTXFMT_2:
-                    case NV40TCL_VTXFMT_3:
-                    case NV40TCL_VTXFMT_4:
-                    case NV40TCL_VTXFMT_5:
-                    case NV40TCL_VTXFMT_6:
-                    case NV40TCL_VTXFMT_7:
-                    case NV40TCL_VTXFMT_8:
-                    case NV40TCL_VTXFMT_9:
-                    case NV40TCL_VTXFMT_10:
-                    case NV40TCL_VTXFMT_11:
-                    case NV40TCL_VTXFMT_12:
-                    case NV40TCL_VTXFMT_13:
-                    case NV40TCL_VTXFMT_14:
-                    case NV40TCL_VTXFMT_15:
+                    case Nv40TclVtxfmt0:
+                    case Nv40TclVtxfmt1:
+                    case Nv40TclVtxfmt2:
+                    case Nv40TclVtxfmt3:
+                    case Nv40TclVtxfmt4:
+                    case Nv40TclVtxfmt5:
+                    case Nv40TclVtxfmt6:
+                    case Nv40TclVtxfmt7:
+                    case Nv40TclVtxfmt8:
+                    case Nv40TclVtxfmt9:
+                    case Nv40TclVtxfmt10:
+                    case Nv40TclVtxfmt11:
+                    case Nv40TclVtxfmt12:
+                    case Nv40TclVtxfmt13:
+                    case Nv40TclVtxfmt14:
+                    case Nv40TclVtxfmt15:
                         VertexFormat(methodRegister, param);
                         break;
 
-                    case NV40TCL_VTXBUF_ADDRESS_0:
-                    case NV40TCL_VTXBUF_ADDRESS_1:
-                    case NV40TCL_VTXBUF_ADDRESS_2:
-                    case NV40TCL_VTXBUF_ADDRESS_3:
-                    case NV40TCL_VTXBUF_ADDRESS_4:
-                    case NV40TCL_VTXBUF_ADDRESS_5:
-                    case NV40TCL_VTXBUF_ADDRESS_6:
-                    case NV40TCL_VTXBUF_ADDRESS_7:
-                    case NV40TCL_VTXBUF_ADDRESS_8:
-                    case NV40TCL_VTXBUF_ADDRESS_9:
-                    case NV40TCL_VTXBUF_ADDRESS_10:
-                    case NV40TCL_VTXBUF_ADDRESS_11:
-                    case NV40TCL_VTXBUF_ADDRESS_12:
-                    case NV40TCL_VTXBUF_ADDRESS_13:
-                    case NV40TCL_VTXBUF_ADDRESS_14:
-                    case NV40TCL_VTXBUF_ADDRESS_15:
+                    case Nv40TclVtxbufAddress0:
+                    case Nv40TclVtxbufAddress1:
+                    case Nv40TclVtxbufAddress2:
+                    case Nv40TclVtxbufAddress3:
+                    case Nv40TclVtxbufAddress4:
+                    case Nv40TclVtxbufAddress5:
+                    case Nv40TclVtxbufAddress6:
+                    case Nv40TclVtxbufAddress7:
+                    case Nv40TclVtxbufAddress8:
+                    case Nv40TclVtxbufAddress9:
+                    case Nv40TclVtxbufAddress10:
+                    case Nv40TclVtxbufAddress11:
+                    case Nv40TclVtxbufAddress12:
+                    case Nv40TclVtxbufAddress13:
+                    case Nv40TclVtxbufAddress14:
+                    case Nv40TclVtxbufAddress15:
                         VertexBufferAddress(methodRegister, param);
                         break;
 
-                    case NV40TCL_VTX_ATTR_2F_0:
-                    case NV40TCL_VTX_ATTR_2F_1:
-                    case NV40TCL_VTX_ATTR_2F_2:
-                    case NV40TCL_VTX_ATTR_2F_3:
-                    case NV40TCL_VTX_ATTR_2F_4:
-                    case NV40TCL_VTX_ATTR_2F_5:
-                    case NV40TCL_VTX_ATTR_2F_6:
-                    case NV40TCL_VTX_ATTR_2F_7:
-                    case NV40TCL_VTX_ATTR_2F_8:
-                    case NV40TCL_VTX_ATTR_2F_9:
-                    case NV40TCL_VTX_ATTR_2F_10:
-                    case NV40TCL_VTX_ATTR_2F_11:
-                    case NV40TCL_VTX_ATTR_2F_12:
-                    case NV40TCL_VTX_ATTR_2F_13:
-                    case NV40TCL_VTX_ATTR_2F_14:
+                    case Nv40TclVtxAttr2f0:
+                    case Nv40TclVtxAttr2f1:
+                    case Nv40TclVtxAttr2f2:
+                    case Nv40TclVtxAttr2f3:
+                    case Nv40TclVtxAttr2f4:
+                    case Nv40TclVtxAttr2f5:
+                    case Nv40TclVtxAttr2f6:
+                    case Nv40TclVtxAttr2f7:
+                    case Nv40TclVtxAttr2f8:
+                    case Nv40TclVtxAttr2f9:
+                    case Nv40TclVtxAttr2f10:
+                    case Nv40TclVtxAttr2f11:
+                    case Nv40TclVtxAttr2f12:
+                    case Nv40TclVtxAttr2f13:
+                    case Nv40TclVtxAttr2f14:
                         VertexImmediate2F(methodRegister, param);
                         break;
 
-                    case NV40TCL_VTX_ATTR_4F_0:
-                    case NV40TCL_VTX_ATTR_4F_1:
-                    case NV40TCL_VTX_ATTR_4F_2:
-                    case NV40TCL_VTX_ATTR_4F_3:
-                    case NV40TCL_VTX_ATTR_4F_4:
-                    case NV40TCL_VTX_ATTR_4F_5:
-                    case NV40TCL_VTX_ATTR_4F_6:
-                    case NV40TCL_VTX_ATTR_4F_7:
-                    case NV40TCL_VTX_ATTR_4F_8:
-                    case NV40TCL_VTX_ATTR_4F_9:
-                    case NV40TCL_VTX_ATTR_4F_10:
-                    case NV40TCL_VTX_ATTR_4F_11:
-                    case NV40TCL_VTX_ATTR_4F_12:
-                    case NV40TCL_VTX_ATTR_4F_13:
-                    case NV40TCL_VTX_ATTR_4F_14:
+                    case Nv40TclVtxAttr4f0:
+                    case Nv40TclVtxAttr4f1:
+                    case Nv40TclVtxAttr4f2:
+                    case Nv40TclVtxAttr4f3:
+                    case Nv40TclVtxAttr4f4:
+                    case Nv40TclVtxAttr4f5:
+                    case Nv40TclVtxAttr4f6:
+                    case Nv40TclVtxAttr4f7:
+                    case Nv40TclVtxAttr4f8:
+                    case Nv40TclVtxAttr4f9:
+                    case Nv40TclVtxAttr4f10:
+                    case Nv40TclVtxAttr4f11:
+                    case Nv40TclVtxAttr4f12:
+                    case Nv40TclVtxAttr4f13:
+                    case Nv40TclVtxAttr4f14:
                         VertexImmediate4F(methodRegister, param);
                         break;
 
-                    case NV40TCL_VB_INDEX_BATCH_OFFSET:
+                    case Nv40TclVbIndexBatchOffset:
                         IndexBatchOffset(param);
                         break;
 
-                    case NV40TCL_BEGIN_END:
+                    case Nv40TclBeginEnd:
                         BeginEnd(param);
                         break;
 
-                    case NV40TCL_VB_INDEX_BATCH_DRAW:
+                    case Nv40TclVbIndexBatchDraw:
                         IndexBatchDraw(param);
                         break;
 
-                    case NV40TCL_VB_VERTEX_BATCH:
+                    case Nv40TclVbVertexBatch:
                         VertexBatchDraw(param);
                         break;
 
-                    case NV40TCL_DIVIDER_FREQUENCY_OP:
+                    case Nv40TclDividerFrequencyOp:
                         DividerFrequencyOp(param);
                         break;
 
@@ -687,10 +687,10 @@ namespace PS3Sharp.Cell.RSX
         private void Primitive3DColorMask(Queue<BigEndian<uint>> param)
         {
             uint colorMask = param.Dequeue();
-            bool r = (colorMask & GCM_COLOR_MASK_R) > 0;
-            bool g = (colorMask & GCM_COLOR_MASK_G) > 0;
-            bool b = (colorMask & GCM_COLOR_MASK_B) > 0;
-            bool a = (colorMask & GCM_COLOR_MASK_A) > 0;
+            bool r = (colorMask & GcmColorMaskR) > 0;
+            bool g = (colorMask & GcmColorMaskG) > 0;
+            bool b = (colorMask & GcmColorMaskB) > 0;
+            bool a = (colorMask & GcmColorMaskA) > 0;
 
             bool hasChanged =
                 GLRenderer.ColorMaskR != r ||
@@ -731,7 +731,7 @@ namespace PS3Sharp.Cell.RSX
         private void ViewPortOffset(uint methodRegister, Queue<BigEndian<uint>> param)
         {
             //TODO
-            int index = (int)((methodRegister - NV40TCL_VIEWPORT_OFFSET_X) >> 2);
+            int index = (int)((methodRegister - Nv40TclViewportOffsetX) >> 2);
             uint raw = param.Dequeue();
             float value = Unsafe.BitCast<uint, float>(raw);
 
@@ -747,7 +747,7 @@ namespace PS3Sharp.Cell.RSX
         private void ViewPortScale(uint methodRegister, Queue<BigEndian<uint>> param)
         {
             //TODO
-            int index = (int)((methodRegister - NV40TCL_VIEWPORT_SCALE_X) >> 2);
+            int index = (int)((methodRegister - Nv40TclViewportScaleX) >> 2);
             uint raw = param.Dequeue();
             float value = Unsafe.BitCast<uint, float>(raw);
 
@@ -826,7 +826,7 @@ namespace PS3Sharp.Cell.RSX
 
         private void DMAColor(uint methodRegister, Queue<BigEndian<uint>> param)
         {
-            if (methodRegister == NV40TCL_DMA_COLOR0)
+            if (methodRegister == Nv40TclDmaColor0)
             {
                 CurrentState.SurfaceALocation = param.Dequeue();
             }
@@ -1251,7 +1251,7 @@ namespace PS3Sharp.Cell.RSX
         // Sets texture offset
         private void TexOffset(uint methodRegister, Queue<BigEndian<uint>> param)
         {
-            uint location = (methodRegister - NV40TCL_TEX_OFFSET_0) >> 5;
+            uint location = (methodRegister - Nv40TclTexOffset0) >> 5;
             uint offset = param.Dequeue();
 
             CurrentState.Textures[location].Offset = offset;
@@ -1260,7 +1260,7 @@ namespace PS3Sharp.Cell.RSX
 
         private void TexFormat(uint methodRegister, Queue<BigEndian<uint>> param)
         {
-            uint location = (methodRegister - NV40TCL_TEX_FORMAT_0) >> 5;
+            uint location = (methodRegister - Nv40TclTexFormat0) >> 5;
             uint format = param.Dequeue();
 
             // Texture format contains a bunch of stuff
@@ -1271,14 +1271,14 @@ namespace PS3Sharp.Cell.RSX
 
         private void TesSwizzle(uint methodRegister, Queue<BigEndian<uint>> param)
         {
-            uint location = (methodRegister - NV40TCL_TEX_SWIZZLE_0) >> 5;
+            uint location = (methodRegister - Nv40TclTexSwizzle0) >> 5;
             uint swzzle = param.Dequeue();
             CurrentState.Textures[location].SwizzleValue = swzzle;
         }
 
         private void TexSize0(uint methodRegister, Queue<BigEndian<uint>> param)
         {
-            uint location = (methodRegister - NV40TCL_TEX_SIZE0_0) >> 5;
+            uint location = (methodRegister - Nv40TclTexSize00) >> 5;
             uint size = param.Dequeue();
             uint height = size & 0xFFFF;
             uint width = (size >> 16) & 0xFFFF;
@@ -1288,7 +1288,7 @@ namespace PS3Sharp.Cell.RSX
 
         private void TexSize1(uint methodRegister, Queue<BigEndian<uint>> param)
         {
-            uint location = (methodRegister - NV40TCL_TEX_SIZE1_0) >> 2;
+            uint location = (methodRegister - Nv40TclTexSize10) >> 2;
             uint pitch_depth = param.Dequeue();
             uint pitch = pitch_depth & 0xFFFF;
             uint depth = (pitch_depth >> 20) & 0xFFF;
@@ -1298,7 +1298,7 @@ namespace PS3Sharp.Cell.RSX
 
         private void TexEnable(uint methodRegister, Queue<BigEndian<uint>> param)
         {
-            uint location = (methodRegister - NV40TCL_TEX_ENABLE_0) >> 5;
+            uint location = (methodRegister - Nv40TclTexEnable0) >> 5;
             uint value = param.Dequeue();
             bool isEnabled = (value >> 31) == 1;
             CurrentState.Textures[location].IsEnabled = isEnabled;
@@ -1308,14 +1308,14 @@ namespace PS3Sharp.Cell.RSX
 
         private void TexFilter(uint methodRegister, Queue<BigEndian<uint>> param)
         {
-            uint location = (methodRegister - NV40TCL_TEX_FILTER_0) >> 5;
+            uint location = (methodRegister - Nv40TclTexFilter0) >> 5;
             uint filter = param.Dequeue();
             CurrentState.Textures[location].Filter = filter;
         }
 
         private void TexWrap(uint methodRegister, Queue<BigEndian<uint>> param)
         {
-            uint location = (methodRegister - NV40TCL_TEX_WRAP_0) >> 5;
+            uint location = (methodRegister - Nv40TclTexWrap0) >> 5;
             uint wrap = param.Dequeue();
             CurrentState.Textures[location].Wrap = wrap;
         }
@@ -1329,7 +1329,7 @@ namespace PS3Sharp.Cell.RSX
         {
             // Verex Buffer format
 
-            uint location = (methodRegister - NV40TCL_VTXFMT_0) >> 2;
+            uint location = (methodRegister - Nv40TclVtxfmt0) >> 2;
 
             uint format = param.Dequeue();
             uint type = format & 0xF;
@@ -1370,7 +1370,7 @@ namespace PS3Sharp.Cell.RSX
 
         private void VertexBufferAddress(uint methodRegister, Queue<BigEndian<uint>> param)
         {   //Vertex Buffer Address
-            uint location = (methodRegister - NV40TCL_VTXBUF_ADDRESS_0) >> 2;
+            uint location = (methodRegister - Nv40TclVtxbufAddress0) >> 2;
             uint offset = param.Dequeue();
             uint isEA = offset >> 31;
             CurrentState.VertexBuffers[location].BufferAddress = OffsetToAddress(offset & 0x7FFFFFFF, isEA);
@@ -1380,7 +1380,7 @@ namespace PS3Sharp.Cell.RSX
 
         private void VertexImmediate4F(uint methodRegister, Queue<BigEndian<uint>> param)
         {
-            uint location = (methodRegister - NV40TCL_VTX_ATTR_4F_0) >> 4;
+            uint location = (methodRegister - Nv40TclVtxAttr4f0) >> 4;
 
             // Assuming that X, Y, Z, W are always provided. Othwerise we need to split this into 4 commands.
             float x = Unsafe.BitCast<uint, float>(param.Dequeue());
@@ -1402,7 +1402,7 @@ namespace PS3Sharp.Cell.RSX
 
         private void VertexImmediate2F(uint methodRegister, Queue<BigEndian<uint>> param)
         {
-            uint location = (methodRegister - NV40TCL_VTX_ATTR_2F_0) >> 3;
+            uint location = (methodRegister - Nv40TclVtxAttr2f0) >> 3;
 
             // Assuming that X, Y are always provided. Othwerise we need to split this into 2 commands.
             float x = Unsafe.BitCast<uint, float>(param.Dequeue());

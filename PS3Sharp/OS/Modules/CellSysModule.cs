@@ -132,7 +132,7 @@ namespace PS3Sharp.OS.Modules
         internal ulong CellSysmoduleLoadModule(PPUThread ppu)
         {
             //TODO
-            ushort id = ppu.ReadArg<ushort>(ARG0);
+            ushort id = ppu.ReadArg<ushort>(Arg0);
 
             if (ModuleMap.TryGetValue(id, out string? name))
             {
@@ -144,19 +144,19 @@ namespace PS3Sharp.OS.Modules
                 Console.WriteLine($"[CellSysModule] cellSysmoduleLoadModule requested: unknown");
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellSysmoduleUnloadModule(PPUThread ppu)
         {
             Console.WriteLine($"[CellSysModule] cellSysmoduleUnloadModule");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellSysmoduleIsLoaded(PPUThread ppu)
         {
             Console.WriteLine($"[CellSysModule] cellSysmoduleIsLoaded");
-            return CELL_OK;
+            return CellOk;
         }
     }
 }

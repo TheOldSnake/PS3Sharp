@@ -51,9 +51,9 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
                 Zero = irGenerator.Constant(0);
                 One = irGenerator.Constant(1);
                 MinusOne = irGenerator.Constant(ulong.MaxValue);
-                CompareResult_Eq = irGenerator.Constant(PPUThread.ConditionRegister.EQ);
-                CompareResult_Gt = irGenerator.Constant(PPUThread.ConditionRegister.GT);
-                CompareResult_Lt = irGenerator.Constant(PPUThread.ConditionRegister.LT);
+                CompareResult_Eq = irGenerator.Constant(PPUThread.ConditionRegister.Eq);
+                CompareResult_Gt = irGenerator.Constant(PPUThread.ConditionRegister.Gt);
+                CompareResult_Lt = irGenerator.Constant(PPUThread.ConditionRegister.Lt);
                 SOBit = irGenerator.Constant(PPUThread.XERRegister.SOBit);
                 OVBit = irGenerator.Constant(PPUThread.XERRegister.OVBit);
                 CABit = irGenerator.Constant(PPUThread.XERRegister.CABit);

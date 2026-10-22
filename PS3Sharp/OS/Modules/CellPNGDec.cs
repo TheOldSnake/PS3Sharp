@@ -75,15 +75,15 @@ namespace PS3Sharp.OS.Modules
             internal BigEndian<ulong> OutputBytesPerLine;
         }
 
-        internal const uint PNG_CODEC_VERSION = 0x00420000;
-        internal const uint CELL_PNGDEC_FILE = 0;
-        internal const uint CELL_PNGDEC_BUFFER = 1;
-        internal const int CELL_PNGDEC_GRAYSCALE = 1;
-        internal const int CELL_PNGDEC_RGB = 2;
-        internal const int CELL_PNGDEC_PALETTE = 4;
-        internal const int CELL_PNGDEC_GRAYSCALE_ALPHA = 9;
-        internal const int CELL_PNGDEC_RGBA = 10;
-        internal const int CELL_PNGDEC_ARGB = 20;
+        internal const uint PngCodecVersion = 0x00420000;
+        internal const uint CellPngdecFile = 0;
+        internal const uint CellPngdecBuffer = 1;
+        internal const int CellPngdecGrayscale = 1;
+        internal const int CellPngdecRgb = 2;
+        internal const int CellPngdecPalette = 4;
+        internal const int CellPngdecGrayscaleAlpha = 9;
+        internal const int CellPngdecRgba = 10;
+        internal const int CellPngdecArgb = 20;
 
         private readonly MemoryManager _memoryManager;
         private readonly ConcurrentDictionary<uint, PngDecoder> _decoders = [];
@@ -95,9 +95,9 @@ namespace PS3Sharp.OS.Modules
 
         internal ulong CellPngDecCreate(PPUThread ppu)
         {
-            GuestPtr<uint> handle_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
-            uint thread_in_param_ptr = ppu.ReadArg<uint>(ARG1);
-            GuestPtr<CellPngDecThreadOutParam> thread_out_param_ptr = ppu.ReadArg<GuestPtr<CellPngDecThreadOutParam>>(ARG2);
+            GuestPtr<uint> handle_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
+            uint thread_in_param_ptr = ppu.ReadArg<uint>(Arg1);
+            GuestPtr<CellPngDecThreadOutParam> thread_out_param_ptr = ppu.ReadArg<GuestPtr<CellPngDecThreadOutParam>>(Arg2);
 
             // Create a decoder
             PngDecoder decoder = new(_memoryManager);
@@ -111,19 +111,19 @@ namespace PS3Sharp.OS.Modules
             //Write the codec version
             CellPngDecThreadOutParam out_param = new()
             {
-                CodecVersion = PNG_CODEC_VERSION,
+                CodecVersion = PngCodecVersion,
             };
 
             _memoryManager.Write(thread_out_param_ptr, out_param);
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellPngDecOpen(PPUThread ppu)
         {
-            uint handle = ppu.ReadArg<uint>(ARG0);
-            GuestPtr<uint> sub_handle_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG1);
-            GuestPtr<CellPngDecSrc> src_ptr = ppu.ReadArg<GuestPtr<CellPngDecSrc>>(ARG2);
-            GuestVoidPtr open_info_ptr = ppu.ReadArg<GuestVoidPtr>(ARG3);
+            uint handle = ppu.ReadArg<uint>(Arg0);
+            GuestPtr<uint> sub_handle_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg1);
+            GuestPtr<CellPngDecSrc> src_ptr = ppu.ReadArg<GuestPtr<CellPngDecSrc>>(Arg2);
+            GuestVoidPtr open_info_ptr = ppu.ReadArg<GuestVoidPtr>(Arg3);
 
             if (TryGetPngDec(handle, out PngDecoder? decoder))
             {
@@ -136,14 +136,14 @@ namespace PS3Sharp.OS.Modules
                 throw new Exception($"[CellPngDec] Can't find decoder handle: {handle:X}");
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellPngDecReadHeader(PPUThread ppu)
         {
-            uint handle = ppu.ReadArg<uint>(ARG0);
-            uint sub_handle = ppu.ReadArg<uint>(ARG1);
-            GuestPtr<CellPngDecInfo> info_ptr = ppu.ReadArg<GuestPtr<CellPngDecInfo>>(ARG2);
+            uint handle = ppu.ReadArg<uint>(Arg0);
+            uint sub_handle = ppu.ReadArg<uint>(Arg1);
+            GuestPtr<CellPngDecInfo> info_ptr = ppu.ReadArg<GuestPtr<CellPngDecInfo>>(Arg2);
 
             if (TryGetPngDec(handle, out PngDecoder? decoder))
             {
@@ -167,15 +167,15 @@ namespace PS3Sharp.OS.Modules
                 throw new Exception($"[CellPngDec] Can't find decoder handle: {handle:X}");
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellPngDecSetParameter(PPUThread ppu)
         {
-            uint handle = ppu.ReadArg<uint>(ARG0);
-            uint sub_handle = ppu.ReadArg<uint>(ARG1);
-            GuestPtr<CellPngDecInParam> in_param_ptr = ppu.ReadArg<GuestPtr<CellPngDecInParam>>(ARG2);
-            GuestPtr<CellPngDecOutParam> out_param_ptr = ppu.ReadArg<GuestPtr<CellPngDecOutParam>>(ARG3);
+            uint handle = ppu.ReadArg<uint>(Arg0);
+            uint sub_handle = ppu.ReadArg<uint>(Arg1);
+            GuestPtr<CellPngDecInParam> in_param_ptr = ppu.ReadArg<GuestPtr<CellPngDecInParam>>(Arg2);
+            GuestPtr<CellPngDecOutParam> out_param_ptr = ppu.ReadArg<GuestPtr<CellPngDecOutParam>>(Arg3);
 
             if (TryGetPngDec(handle, out PngDecoder? decoder))
             {
@@ -206,16 +206,16 @@ namespace PS3Sharp.OS.Modules
                 throw new Exception($"[CellPngDec] Can't find decoder handle: {handle:X}");
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellPngDecDecodeData(PPUThread ppu)
         {
-            uint handle = ppu.ReadArg<uint>(ARG0);
-            uint sub_handle = ppu.ReadArg<uint>(ARG1);
-            GuestVoidPtr data_buffer_ptr = ppu.ReadArg<GuestVoidPtr>(ARG2);
-            GuestPtr<CellPngDecDataCtrlParam> data_ctrl_param_ptr = ppu.ReadArg<GuestPtr<CellPngDecDataCtrlParam>>(ARG3);
-            GuestPtr<CellPngDecDataOutInfo> data_out_info_ptr = ppu.ReadArg<GuestPtr<CellPngDecDataOutInfo>>(ARG4);
+            uint handle = ppu.ReadArg<uint>(Arg0);
+            uint sub_handle = ppu.ReadArg<uint>(Arg1);
+            GuestVoidPtr data_buffer_ptr = ppu.ReadArg<GuestVoidPtr>(Arg2);
+            GuestPtr<CellPngDecDataCtrlParam> data_ctrl_param_ptr = ppu.ReadArg<GuestPtr<CellPngDecDataCtrlParam>>(Arg3);
+            GuestPtr<CellPngDecDataOutInfo> data_out_info_ptr = ppu.ReadArg<GuestPtr<CellPngDecDataOutInfo>>(Arg4);
 
             CellPngDecDataCtrlParam data_ctrl_param = _memoryManager.Read<CellPngDecDataCtrlParam>(data_ctrl_param_ptr);
 
@@ -243,12 +243,12 @@ namespace PS3Sharp.OS.Modules
                 throw new Exception($"[CellPngDec] Can't find decoder handle: {handle:X}");
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellPngDecClose(PPUThread ppu)
         {
-            uint handle = ppu.ReadArg<uint>(ARG0);
+            uint handle = ppu.ReadArg<uint>(Arg0);
 
             if (TryGetPngDec(handle, out PngDecoder? decoder))
             {
@@ -260,12 +260,12 @@ namespace PS3Sharp.OS.Modules
                 throw new Exception($"[CellPngDec] Can't find decoder handle: {handle:X}");
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellPngDecDestroy(PPUThread ppu)
         {
-            uint handle = ppu.ReadArg<uint>(ARG0);
+            uint handle = ppu.ReadArg<uint>(Arg0);
 
             if (TryGetPngDec(handle, out PngDecoder? decoder))
             {
@@ -278,7 +278,7 @@ namespace PS3Sharp.OS.Modules
                 throw new Exception($"[CellPngDec] Can't find decoder handle: {handle:X}");
             }
 
-            return CELL_OK;
+            return CellOk;
         }
 
         private void AddPngDecoder(PngDecoder pngDecoder)

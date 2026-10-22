@@ -18,7 +18,7 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysPRXLoadModule(PPUThread ppu)
         {
-            GuestVoidPtr path_ptr = ppu.ReadArg<GuestVoidPtr>(ARG0); //const char* path
+            GuestVoidPtr path_ptr = ppu.ReadArg<GuestVoidPtr>(Arg0); //const char* path
             string path = _memoryManager.ReadString(path_ptr);
             Console.WriteLine($"SysPRXLoadModule: {path}");
             return 0; // should return module id?
@@ -26,7 +26,7 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysPRXGetModuleIDByName(PPUThread ppu)
         {
-            GuestVoidPtr name_ptr = ppu.ReadArg<GuestVoidPtr>(ARG0); //const char* path
+            GuestVoidPtr name_ptr = ppu.ReadArg<GuestVoidPtr>(Arg0); //const char* path
             string name = _memoryManager.ReadString(name_ptr);
             Console.WriteLine($"SysPRXGetModuleIDByName: {name}");
 

@@ -20,8 +20,8 @@ namespace PS3Sharp.OS.LV2
         }
 
         // Event Queue attributes
-        internal const uint SYS_PPU_QUEUE = 1;
-        internal const uint SYS_SPU_QUEUE = 2;
+        internal const uint SysPpuQueue = 1;
+        internal const uint SysSpuQueue = 2;
 
         private readonly MemoryManager _memoryManager;
         private readonly BlockingCollection<SysEventData> _queue;
@@ -29,7 +29,7 @@ namespace PS3Sharp.OS.LV2
 
         internal ulong IPCKey { get; }
         internal uint Handle { get; }
-        internal bool IsSPUQueue => _attribute.Type == SYS_SPU_QUEUE;
+        internal bool IsSPUQueue => _attribute.Type == SysSpuQueue;
 
         internal LV2EventQueue(int size, ulong ipc, SysEventQueueAttribute attribute, MemoryManager memoryManager)
         {
@@ -59,7 +59,7 @@ namespace PS3Sharp.OS.LV2
                 ok = InterruptableWait(ppu, out sysEvent);
             }
 
-            return ok ? CELL_OK : CELL_ETIMEDOUT;
+            return ok ? CellOk : CellETimedout;
         }
 
         // Tries to read "count" events without blocking

@@ -32,30 +32,30 @@ namespace PS3Sharp.OS.Modules
             internal InlineData.InlineArray64<BigEndian<ushort>> Buttons; // This probably stores the button states for all connected controllers
         }
 
-        internal const uint CELL_PAD_ERROR_NO_DEVICE = 0x80121107;
-        internal const uint CELL_PAD_MAX_PORT_NUM = 7;
-        internal const uint CELL_PAD_MAX_CODES = 64;
+        internal const uint CellPadErrorNoDevice = 0x80121107;
+        internal const uint CellPadMaxPortNum = 7;
+        internal const uint CellPadMaxCodes = 64;
 
         // Button bit positions
         // Index 2
-        internal const uint CELL_PAD_CTRL_SELECT = 0;
-        internal const uint CELL_PAD_CTRL_L3 = 1;
-        internal const uint CELL_PAD_CTRL_R3 = 2;
-        internal const uint CELL_PAD_CTRL_START = 3;
-        internal const uint CELL_PAD_CTRL_UP = 4;
-        internal const uint CELL_PAD_CTRL_RIGHT = 5;
-        internal const uint CELL_PAD_CTRL_DOWN = 6;
-        internal const uint CELL_PAD_CTRL_LEFT = 7;
+        internal const uint CellPadCtrlSelect = 0;
+        internal const uint CellPadCtrlL3 = 1;
+        internal const uint CellPadCtrlR3 = 2;
+        internal const uint CellPadCtrlStart = 3;
+        internal const uint CellPadCtrlUp = 4;
+        internal const uint CellPadCtrlRight = 5;
+        internal const uint CellPadCtrlDown = 6;
+        internal const uint CellPadCtrlLeft = 7;
 
         // Index 3
-        internal const uint CELL_PAD_CTRL_L2 = 0 + 16;
-        internal const uint CELL_PAD_CTRL_R2 = 1 + 16;
-        internal const uint CELL_PAD_CTRL_L1 = 2 + 16;
-        internal const uint CELL_PAD_CTRL_R1 = 3 + 16;
-        internal const uint CELL_PAD_CTRL_TRIANGLE = 4 + 16;
-        internal const uint CELL_PAD_CTRL_CIRCLE = 5 + 16;
-        internal const uint CELL_PAD_CTRL_CROSS = 6 + 16;
-        internal const uint CELL_PAD_CTRL_SQUARE = 7 + 16;
+        internal const uint CellPadCtrlL2 = 0 + 16;
+        internal const uint CellPadCtrlR2 = 1 + 16;
+        internal const uint CellPadCtrlL1 = 2 + 16;
+        internal const uint CellPadCtrlR1 = 3 + 16;
+        internal const uint CellPadCtrlTriangle = 4 + 16;
+        internal const uint CellPadCtrlCircle = 5 + 16;
+        internal const uint CellPadCtrlCross = 6 + 16;
+        internal const uint CellPadCtrlSquare = 7 + 16;
 
         // For XInput:
         // Left X, Left Y, Right X, Right Y
@@ -63,20 +63,20 @@ namespace PS3Sharp.OS.Modules
 
         private static readonly ImmutableDictionary<uint, uint> XInputDictionary = new Dictionary<uint, uint>()
         {
-               {0, CELL_PAD_CTRL_CROSS},       // X
-               {1, CELL_PAD_CTRL_CIRCLE},      // Circle
-               {2, CELL_PAD_CTRL_SQUARE},      // Square
-               {3, CELL_PAD_CTRL_TRIANGLE},    // Triangle
-               {4, CELL_PAD_CTRL_L1},          // L1
-               {5, CELL_PAD_CTRL_R1},          // R1
-               {6, CELL_PAD_CTRL_SELECT},      // Select
-               {7, CELL_PAD_CTRL_START},       // Start
-               {8, CELL_PAD_CTRL_L3},          // L3
-               {9, CELL_PAD_CTRL_R3},          // R3
-               {10, CELL_PAD_CTRL_UP},         // Pad up
-               {11, CELL_PAD_CTRL_RIGHT},      // Pad right
-               {12, CELL_PAD_CTRL_DOWN},       // Pad down
-               {13, CELL_PAD_CTRL_LEFT},       // Pad Left
+               {0, CellPadCtrlCross},       // X
+               {1, CellPadCtrlCircle},      // Circle
+               {2, CellPadCtrlSquare},      // Square
+               {3, CellPadCtrlTriangle},    // Triangle
+               {4, CellPadCtrlL1},          // L1
+               {5, CellPadCtrlR1},          // R1
+               {6, CellPadCtrlSelect},      // Select
+               {7, CellPadCtrlStart},       // Start
+               {8, CellPadCtrlL3},          // L3
+               {9, CellPadCtrlR3},          // R3
+               {10, CellPadCtrlUp},         // Pad up
+               {11, CellPadCtrlRight},      // Pad right
+               {12, CellPadCtrlDown},       // Pad down
+               {13, CellPadCtrlLeft},       // Pad Left
 
                // L2 is Axis 4
                // R2 is Axis 5 
@@ -94,23 +94,23 @@ namespace PS3Sharp.OS.Modules
         internal ulong CellPadInit(PPUThread ppu)
         {
             //Console.WriteLine($"[CellPad] cellPadInit");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellPadSetPortSetting(PPUThread ppu)
         {
             //Console.WriteLine($"[CellPad] cellPadSetPortSetting");
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellPadGetData(PPUThread ppu)
         {
-            uint port = ppu.ReadArg<uint>(ARG0);
-            GuestPtr<CellPadData> data_ptr = ppu.ReadArg<GuestPtr<CellPadData>>(ARG1);
+            uint port = ppu.ReadArg<uint>(Arg0);
+            GuestPtr<CellPadData> data_ptr = ppu.ReadArg<GuestPtr<CellPadData>>(Arg1);
 
             if (port != 0 || _joyStickReader() == null)
             {
-                return CELL_PAD_ERROR_NO_DEVICE;
+                return CellPadErrorNoDevice;
             }
 
             CellPadData data = new()
@@ -126,27 +126,27 @@ namespace PS3Sharp.OS.Modules
             data.Buttons[1] = (ushort)v;
 
             _memoryManager.Write(data_ptr, data);
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellPadGetInfo(PPUThread ppu)
         {
-            return CELL_OK;
+            return CellOk;
         }
 
         internal ulong CellPadGetInfo2(PPUThread ppu)
         {
-            GuestPtr<CellPadInfo2> info_ptr = ppu.ReadArg<GuestPtr<CellPadInfo2>>(ARG0);
+            GuestPtr<CellPadInfo2> info_ptr = ppu.ReadArg<GuestPtr<CellPadInfo2>>(Arg0);
             uint nowConnected = _joyStickReader() == null ? 0U : 1U;
 
             CellPadInfo2 info = new()
             {
-                MaxConnect = CELL_PAD_MAX_PORT_NUM,
+                MaxConnect = CellPadMaxPortNum,
                 NowConnect = nowConnected, // Must set to 1 if we are emulating a controller
                 SystemInfo = 0
             };
 
-            for (int i = 0; i < CELL_PAD_MAX_PORT_NUM; i++)
+            for (int i = 0; i < CellPadMaxPortNum; i++)
             {
                 info.PortStatus[i] = 0; //Not connected
                 info.PortSetting[i] = 0;
@@ -164,7 +164,7 @@ namespace PS3Sharp.OS.Modules
             }
 
             _memoryManager.Write(info_ptr, info);
-            return CELL_OK;
+            return CellOk;
         }
 
         private void WriteButtons(ref CellPadData cellPadData)
@@ -189,8 +189,8 @@ namespace PS3Sharp.OS.Modules
 
             // Get L2 and R2
             (bool l2_pressed, bool r2_pressed) = GetL2R2(controllerState);
-            SetButton(CELL_PAD_CTRL_L2, l2_pressed, ref cellPadData);
-            SetButton(CELL_PAD_CTRL_R2, r2_pressed, ref cellPadData);
+            SetButton(CellPadCtrlL2, l2_pressed, ref cellPadData);
+            SetButton(CellPadCtrlR2, r2_pressed, ref cellPadData);
 
             // Write Left/Right stick positions
             (byte leftX, byte leftY, byte rightX, byte rightY) = GetStickPosition(controllerState, XInputAxis);

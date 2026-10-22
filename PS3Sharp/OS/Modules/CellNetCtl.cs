@@ -8,10 +8,10 @@ namespace PS3Sharp.OS.Modules
 {
     internal class CellNetCtl
     {
-        internal const uint CELL_NET_CTL_STATE_Disconnected = 0;
-        internal const uint CELL_NET_CTL_STATE_Connecting = 1;
-        internal const uint CELL_NET_CTL_STATE_IPObtaining = 2;
-        internal const uint CELL_NET_CTL_STATE_IPObtained = 3;
+        internal const uint CellNetCtlStateDisconnected = 0;
+        internal const uint CellNetCtlStateConnecting = 1;
+        internal const uint CellNetCtlStateIpobtaining = 2;
+        internal const uint CellNetCtlStateIpobtained = 3;
 
         private readonly MemoryManager _memoryManager;
 
@@ -22,11 +22,11 @@ namespace PS3Sharp.OS.Modules
 
         internal ulong CellNetCtlGetState(PPUThread ppu)
         {
-            GuestPtr<uint> state_ptr = ppu.ReadArg<GuestPtr<uint>>(ARG0);
-            _memoryManager.Write<BigEndian<uint>>(state_ptr, CELL_NET_CTL_STATE_IPObtained);
+            GuestPtr<uint> state_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
+            _memoryManager.Write<BigEndian<uint>>(state_ptr, CellNetCtlStateIpobtained);
 
             Console.WriteLine($"cellNetCtlGetState -> CELL_NET_CTL_STATE_IPObtained");
-            return CELL_OK;
+            return CellOk;
         }
     }
 }
