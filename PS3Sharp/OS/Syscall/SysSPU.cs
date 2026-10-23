@@ -121,18 +121,17 @@ namespace PS3Sharp.OS.Syscall
             }
 
             // Write SysSPUImage data
-            BigEndian<uint> actualEntry = _memoryManager.Read<BigEndian<uint>>(header.e_entry);
             SysSPUImage image = new()
             {
                 Type = type,
-                Entry = actualEntry,
+                Entry = header.e_entry,
                 SegmentsPtr = (uint)segmentArrayPtr,
                 SegmentsCount = (uint)segments.Count
             };
 
             _memoryManager.Write(imagePtr, image);
 
-            Console.WriteLine($"[SysPrxForUser] sys_spu_image_import: Type = 0x{type:X} entry = 0x{actualEntry:X8} segment count = {segments.Count}");
+            Console.WriteLine($"[SysSPU] sys_spu_image_import: Type = 0x{type:X} entry = 0x{header.e_entry:X8} segment count = {segments.Count}");
 
             return CellOk;
         }
