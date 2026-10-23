@@ -13,16 +13,15 @@ namespace PS3Sharp.Cell.SPU
             Running = 1,
         }
 
-        internal string Name { get; }
+        private readonly uint[] _ports = new uint[64];
+
+        internal string Name { get; } = string.Empty;
         internal uint ID { get; } = 0xFFFFFFFF;
         internal uint GroupID { get; } = 0xFFFFFFFF;
         internal SysSPU.SysSPUImage Image { get; }
         internal SysSPU.SysSPUThreadArgument Argument { get; }
 
-        internal uint[] Ports { get; } = new uint[64];
-        internal object Lock { get; } = new object();
-
-        internal bool PortIsFree(int port) => Ports[port] == 0xFFFFFFFF;
+        internal Lock Lock { get; } = new();
 
         internal static readonly int GPRByteSize = 128 * sizeof(SPURegister);
         internal static readonly int LocalStorageSize = 256 * 1024;
@@ -50,22 +49,29 @@ namespace PS3Sharp.Cell.SPU
             Image = img;
             Argument = arg;
 
-            for (int i = 0; i < Ports.Length; i++)
+            for (int i = 0; i < _ports.Length; i++)
             {
-                Ports[i] = 0xFFFFFFFF;
+                _ports[i] = 0xFFFFFFFF;
             }
         }
 
+        internal bool PortIsFree(int port) => _ports[port] == 0xFFFFFFFF;
+
         internal void SetPort(int port, uint id)
         {
-            if (Ports[port] == 0xFFFFFFFF)
+            if (_ports[port] == 0xFFFFFFFF)
             {
-                Ports[port] = id;
+                _ports[port] = id;
             }
             else
             {
                 throw new Exception($"[SPU] Port is not free");
             }
+        }
+
+        internal uint GetPort(int port)
+        {
+            return _ports[port];
         }
 
         internal void Reset()
@@ -108,19 +114,20 @@ namespace PS3Sharp.Cell.SPU
         private void LoadSegment(SysSPU.SysSPUSegment segment)
         {
             int size = segment.Size;
-            uint src_value = segment.Src;
-            uint ls_offset = segment.LSAddress;
+            uint src = segment.Src;
+            uint ls = segment.LSAddress;
 
-            Span<byte> dest = new(LS + ls_offset, size);
+            // Copy from src to SPU local storage buffer
+            Span<byte> dest = new(LS + ls, size);
 
             switch (segment.Type)
             {
                 case SysSPU.SysSpuSegmentTypeCopy:
-                    _memoryManager.ReadBufferFromVirtualMemory(src_value, dest);
+                    _memoryManager.ReadBufferFromVirtualMemory(src, dest);
                     break;
 
                 case SysSPU.SysSpuSegmentTypeFill:
-                    dest.Fill((byte)src_value);
+                    dest.Fill((byte)src);
                     break;
             }
         }
