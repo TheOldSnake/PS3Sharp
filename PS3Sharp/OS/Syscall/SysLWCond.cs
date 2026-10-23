@@ -3,6 +3,7 @@ using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.LV2;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 
@@ -48,7 +49,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal bool TryGetLWCond(uint cond_id, out LV2LWCond cond) => _conds.TryGetValue(cond_id, out cond);
+        internal bool TryGetLWCond(uint cond_id, [NotNullWhen(true)] out LV2LWCond? cond) => _conds.TryGetValue(cond_id, out cond);
 
         private void AddLWCond(uint id, LV2LWCond cond)
         {

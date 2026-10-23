@@ -3,6 +3,7 @@ using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.LV2;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 using static PS3Sharp.OS.LV2.LV2Semaphore;
@@ -98,7 +99,7 @@ namespace PS3Sharp.OS.Syscall
             return result;
         }
 
-        internal bool TryGetSemaphore(uint id, out LV2Semaphore? semaphore) => _semaphores.TryGetValue(id, out semaphore);
+        internal bool TryGetSemaphore(uint id, [NotNullWhen(true)] out LV2Semaphore? semaphore) => _semaphores.TryGetValue(id, out semaphore);
 
         private void AddSemaphore(uint id, LV2Semaphore semaphore)
         {

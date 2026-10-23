@@ -3,6 +3,7 @@ using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.LV2;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
@@ -246,7 +247,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal bool TryGetEventQueueByID(uint id, out LV2EventQueue? eventQueue) => _eventQueues.TryGetValue(id, out eventQueue);
+        internal bool TryGetEventQueueByID(uint id, [NotNullWhen(true)] out LV2EventQueue? eventQueue) => _eventQueues.TryGetValue(id, out eventQueue);
 
         internal bool TryGetEventPortByID(uint id, out LV2EventPort? evenPort) => _eventPorts.TryGetValue(id, out evenPort);
 

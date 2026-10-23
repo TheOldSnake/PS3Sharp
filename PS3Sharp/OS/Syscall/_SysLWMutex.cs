@@ -3,7 +3,7 @@ using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.LV2;
 using System.Collections.Concurrent;
-
+using System.Diagnostics.CodeAnalysis;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 using static PS3Sharp.OS.LV2.LV2LWMutex;
@@ -70,7 +70,7 @@ namespace PS3Sharp.OS.Syscall
 
             Console.WriteLine($"[_SysLWMutex] _sys_lwmutex_lock id: 0x{id:X8}");
 
-            if (TryGetLWMutex(id, out LV2LWMutex lwmutex))
+            if (TryGetLWMutex(id, out LV2LWMutex? lwmutex))
             {
                 return lwmutex._Sys_Lock(us_timeout);
 
@@ -88,7 +88,7 @@ namespace PS3Sharp.OS.Syscall
 
             Console.WriteLine($"[_SysLWMutex] _sys_lwmutex_trylock id: 0x{id:X8}");
 
-            if (TryGetLWMutex(id, out LV2LWMutex lwmutex))
+            if (TryGetLWMutex(id, out LV2LWMutex? lwmutex))
             {
                 return lwmutex._Sys_TryLock();
 
@@ -106,7 +106,7 @@ namespace PS3Sharp.OS.Syscall
 
             Console.WriteLine($"[_SysLWMutex] _sys_lwmutex_unlock id: 0x{id:X8}");
 
-            if (TryGetLWMutex(id, out LV2LWMutex lwmutex))
+            if (TryGetLWMutex(id, out LV2LWMutex? lwmutex))
             {
                 return lwmutex._Sys_Unlock();
 
@@ -117,7 +117,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal bool TryGetLWMutex(uint id, out LV2LWMutex lwmutex) => _lwMutexes.TryGetValue(id, out lwmutex);
+        internal bool TryGetLWMutex(uint id, [NotNullWhen(true)] out LV2LWMutex? lwmutex) => _lwMutexes.TryGetValue(id, out lwmutex);
 
         private void AddLWMutex(uint id, LV2LWMutex mutex)
         {

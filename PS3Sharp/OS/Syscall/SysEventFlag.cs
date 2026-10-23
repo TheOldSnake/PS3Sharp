@@ -3,6 +3,7 @@ using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.LV2;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 using static PS3Sharp.OS.LV2.LV2EventFlag;
@@ -113,7 +114,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal bool TryGetEventFlag(uint handle, out LV2EventFlag? eventFlag) => _eventFlags.TryGetValue(handle, out eventFlag);
+        internal bool TryGetEventFlag(uint handle, [NotNullWhen(true)] out LV2EventFlag? eventFlag) => _eventFlags.TryGetValue(handle, out eventFlag);
 
         private void AddEventFlag(uint handle, LV2EventFlag eventFlag)
         {

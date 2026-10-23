@@ -3,7 +3,7 @@ using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.LV2;
 using System.Collections.Concurrent;
-
+using System.Diagnostics.CodeAnalysis;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 using static PS3Sharp.OS.LV2.LV2Cond;
@@ -60,7 +60,7 @@ namespace PS3Sharp.OS.Syscall
             uint cond_id = ppu.ReadArg<uint>(Arg0);
             ulong us_timeout = ppu.ReadArg<ulong>(Arg1);
 
-            if (TryGetCond(cond_id, out LV2Cond cond))
+            if (TryGetCond(cond_id, out LV2Cond? cond))
             {
                 return cond.Wait(ppu, us_timeout);
             }
@@ -75,7 +75,7 @@ namespace PS3Sharp.OS.Syscall
             uint cond_id = ppu.ReadArg<uint>(Arg0);
 
 
-            if (TryGetCond(cond_id, out LV2Cond cond))
+            if (TryGetCond(cond_id, out LV2Cond? cond))
             {
                 return cond.Signal();
 
@@ -90,7 +90,7 @@ namespace PS3Sharp.OS.Syscall
         {
             uint cond_id = ppu.ReadArg<uint>(Arg0);
 
-            if (TryGetCond(cond_id, out LV2Cond cond))
+            if (TryGetCond(cond_id, out LV2Cond? cond))
             {
                 return cond.SignalAll();
 
@@ -106,7 +106,7 @@ namespace PS3Sharp.OS.Syscall
             uint cond_id = ppu.ReadArg<uint>(Arg0);
             uint thread_id = ppu.ReadArg<uint>(Arg1);
 
-            if (TryGetCond(cond_id, out LV2Cond cond))
+            if (TryGetCond(cond_id, out LV2Cond? cond))
             {
                 return cond.SignalTo(thread_id);
 
@@ -117,7 +117,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal bool TryGetCond(uint cond_id, out LV2Cond cond) => _conds.TryGetValue(cond_id, out cond);
+        internal bool TryGetCond(uint cond_id, [NotNullWhen(true)] out LV2Cond? cond) => _conds.TryGetValue(cond_id, out cond);
 
         private void AddCond(LV2Cond cond)
         {

@@ -3,6 +3,7 @@ using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.LV2;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 using static PS3Sharp.OS.LV2.LV2Mutex;
@@ -88,7 +89,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal bool TryGetMutex(uint id, out LV2Mutex? mutex) => _mutexes.TryGetValue(id, out mutex);
+        internal bool TryGetMutex(uint id, [NotNullWhen(true)] out LV2Mutex? mutex) => _mutexes.TryGetValue(id, out mutex);
 
         private void AddMutex(LV2Mutex mutex)
         {

@@ -3,7 +3,7 @@ using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.LV2;
 using System.Collections.Concurrent;
-
+using System.Diagnostics.CodeAnalysis;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 using static PS3Sharp.OS.LV2.LV2RWLock;
@@ -47,7 +47,7 @@ namespace PS3Sharp.OS.Syscall
             uint id = ppu.ReadArg<uint>(Arg0);
             ulong us_timeout = ppu.ReadArg<ulong>(Arg1);
 
-            if (TryGetRWLock(id, out LV2RWLock rwlock))
+            if (TryGetRWLock(id, out LV2RWLock? rwlock))
             {
                 return rwlock.RLock(ppu, us_timeout);
 
@@ -62,7 +62,7 @@ namespace PS3Sharp.OS.Syscall
         {
             uint id = ppu.ReadArg<uint>(Arg0);
 
-            if (TryGetRWLock(id, out LV2RWLock rwlock))
+            if (TryGetRWLock(id, out LV2RWLock? rwlock))
             {
                 return rwlock.TryRLock();
 
@@ -76,7 +76,7 @@ namespace PS3Sharp.OS.Syscall
         internal ulong SysRWLockRUnlock(PPUThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
-            if (TryGetRWLock(id, out LV2RWLock rwlock))
+            if (TryGetRWLock(id, out LV2RWLock? rwlock))
             {
                 return rwlock.RUnlock();
 
@@ -92,7 +92,7 @@ namespace PS3Sharp.OS.Syscall
             uint id = ppu.ReadArg<uint>(Arg0);
             ulong us_timeout = ppu.ReadArg<ulong>(Arg1);
 
-            if (TryGetRWLock(id, out LV2RWLock rwlock))
+            if (TryGetRWLock(id, out LV2RWLock? rwlock))
             {
                 return rwlock.WLock(ppu, us_timeout);
 
@@ -107,7 +107,7 @@ namespace PS3Sharp.OS.Syscall
         {
             uint id = ppu.ReadArg<uint>(Arg0);
 
-            if (TryGetRWLock(id, out LV2RWLock rwlock))
+            if (TryGetRWLock(id, out LV2RWLock? rwlock))
             {
                 return rwlock.TryWLock();
 
@@ -122,7 +122,7 @@ namespace PS3Sharp.OS.Syscall
         {
             uint id = ppu.ReadArg<uint>(Arg0);
 
-            if (TryGetRWLock(id, out LV2RWLock rwlock))
+            if (TryGetRWLock(id, out LV2RWLock? rwlock))
             {
                 return rwlock.WUnlock();
 
@@ -133,7 +133,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal bool TryGetRWLock(uint id, out LV2RWLock rwlock) => _readWtrieLocks.TryGetValue(id, out rwlock);
+        internal bool TryGetRWLock(uint id, [NotNullWhen(true)] out LV2RWLock? rwlock) => _readWtrieLocks.TryGetValue(id, out rwlock);
 
         private void AddRWLock(uint id, LV2RWLock rwlock)
         {
