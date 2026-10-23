@@ -95,15 +95,15 @@ namespace PS3Sharp.Cell.SPU
 
         internal void LoadImage()
         {
-            GuestPtr<uint> entry = Image.Entry;
-            uint count = (uint)Image.SegmentsCount;
-
-            if (entry.IsNullPtr)
+            if (Image.Entry == 0)
             {
                 throw new Exception($"[SPU] Image null pointer");
             }
 
-            ReadOnlySpan<SysSpu.SysSPUSegment> segments = _memoryManager.ReadArray<SysSpu.SysSPUSegment>(entry, (int)count);
+            BigEndianGuestPtr<SysSpu.SysSPUSegment> segmentsPtr = Image.SegmentsPtr;
+            uint count = (uint)Image.SegmentsCount;
+
+            ReadOnlySpan<SysSpu.SysSPUSegment> segments = _memoryManager.ReadArray<SysSpu.SysSPUSegment>(segmentsPtr, (int)count);
 
             for (int i = 0; i < segments.Length; i++)
             {
@@ -116,6 +116,8 @@ namespace PS3Sharp.Cell.SPU
             int size = segment.Size;
             uint src = segment.Src;
             uint ls = segment.LSAddress;
+
+            Console.WriteLine($"[SPU] Loading SPU segment at 0x{src:X8} to local address 0x{ls:X8} type = {segment.Type}");
 
             // Copy from src to SPU local storage buffer
             Span<byte> dest = new(LS + ls, size);
