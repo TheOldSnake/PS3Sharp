@@ -239,14 +239,16 @@ namespace PS3Sharp.Cell.PPU
             string exceptionMessage = exception.Message;
             string? trace = exception.StackTrace;
             string threadName = ThreadName;
-            uint id = ThreadID;
             uint pc = GetPC();
             uint lr = GetLR();
-            string msg = $"PPU Exception at thread: [{threadName}] ID: [0x{ThreadID:X8}] --  PC [0x{pc:X8}] -- LR [0x{lr:X8}] " +
-                $"Message: {exceptionMessage} Trace: {trace}";
+
+            string msg = $"PPU Exception at thread: [{threadName}] ID: [0x{ThreadID:X8}] -- PC [0x{pc:X8}] -- LR [0x{lr:X8}] \n" +
+                $"Message: {exceptionMessage}\n" +
+                $"{trace}";
 
             // todo get PPU stack 
             // PPUInterpreter.PPUInterpreter.PrintCallstack(ppu);
+
             return msg;
         }
 
