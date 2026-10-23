@@ -9,6 +9,7 @@ namespace PS3Sharp.OS.LV2
     {
         private readonly MemoryManager _memoryManager;
         private bool _started = false;
+        private readonly ManualResetEventSlim _groupFinished = new(false);
 
         internal uint Handle { get; }
         internal GuestPtr<SysSPUThreadGroupAttribute> AttributePtr { get; }
@@ -43,6 +44,11 @@ namespace PS3Sharp.OS.LV2
             }
 
             _started = true;
+        }
+
+        internal void JoinGroup()
+        {
+            _groupFinished.Wait();
         }
     }
 }

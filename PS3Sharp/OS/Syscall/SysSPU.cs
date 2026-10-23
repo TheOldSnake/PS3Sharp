@@ -5,6 +5,7 @@ using PS3Sharp.Common;
 using PS3Sharp.Elf;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.LV2;
+using SkiaSharp;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -199,8 +200,26 @@ namespace PS3Sharp.OS.Syscall
             threadGroup.StartGroup();
 
             Console.WriteLine($"[SysSPUThreadGroupStart] Started SPU group: 0x{group_id:X8}");
-            throw new Exception("todo");
+            //throw new Exception("todo");
 
+            return CellOk;
+        }
+
+        internal ulong SysSpuThreadGroupJoin(PPUThread ppu)
+        {
+            uint groupId = ppu.ReadArg<uint>(Arg0);
+            GuestPtr<BigEndian<int>> causePtr = ppu.ReadArg<GuestPtr<BigEndian<int>>>(Arg1);
+            GuestPtr<BigEndian<int>> statusPtr = ppu.ReadArg<GuestPtr<BigEndian<int>>>(Arg2);
+
+            if (TryGetSpuThreadGroup(groupId, out LV2SPUThreadGroup? group))
+            {
+                group.JoinGroup();
+            }
+
+            // TODO
+
+            _memoryManager.Write<BigEndian<int>>(causePtr, 0);
+            _memoryManager.Write<BigEndian<int>>(statusPtr, 0);
             return CellOk;
         }
 
