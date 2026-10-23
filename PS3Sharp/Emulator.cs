@@ -1,18 +1,20 @@
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Cell.PPU.Recompiler;
 using PS3Sharp.Cell.RSX;
+using PS3Sharp.Elf;
 using PS3Sharp.FileSystem;
 using PS3Sharp.Memory;
 using PS3Sharp.OS;
 using PS3Sharp.OS.Modules;
 using PS3Sharp.PRX;
-using static PS3Sharp.ElfLoader;
+using static PS3Sharp.Elf.ElfDefinitions;
+using static PS3Sharp.Elf.ElfLoader;
 
 namespace PS3Sharp
 {
     internal class Emulator : IDisposable
     {
-        private readonly ElfLoader _elfLoader;
+        private readonly MainElfLoader _elfLoader;
         private readonly ModulePatcher _modulePatcher;
         private readonly MemoryManager _memoryManager;
         private readonly ThreadManager _threadManager;
@@ -36,7 +38,7 @@ namespace PS3Sharp
             _rsxSubSystem         = new(_threadManager, _memoryManager, _fileSystemManager);
             _cellPad              = new(_memoryManager, _rsxSubSystem.Widnow.JoystickReader);
             _cellGame             = new(_memoryManager, _fileSystemManager);
-            _lv2SyscallDispatcher = new(_elfLoader, _prxManager, _modulePatcher, _threadManager, _memoryManager, _fileSystemManager, _rsxSubSystem.GCM, _cellPad, _cellGame);
+            _lv2SyscallDispatcher = new(_prxManager, _modulePatcher, _threadManager, _memoryManager, _fileSystemManager, _rsxSubSystem.GCM, _cellPad, _cellGame);
         }
 
         internal void RunEmulator()
@@ -50,7 +52,7 @@ namespace PS3Sharp
         private void RunExecutable(string elfPath)
         {
             uint entryPointer = LoadExecutable(elfPath);
-            _prxManager.LoadPRXLibraries(_elfLoader, _modulePatcher);
+            _prxManager.LoadPRXLibraries(_modulePatcher);
 
             PPUThread ppu_main = _threadManager.CreateMainPPUThread(entryPointer, elfPath, _lv2SyscallDispatcher);
             _prxManager.InitializeLibraries(ppu_main);

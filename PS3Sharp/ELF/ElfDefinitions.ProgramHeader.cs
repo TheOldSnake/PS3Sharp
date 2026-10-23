@@ -1,9 +1,9 @@
 using PS3Sharp.Common;
 using System.Runtime.InteropServices;
 
-namespace PS3Sharp
+namespace PS3Sharp.Elf
 {
-    internal partial class ElfLoader
+    internal static partial class ElfDefinitions
     {
         // Constants
 
@@ -30,6 +30,8 @@ namespace PS3Sharp
         internal const uint PrxParam = 0x60000002;
         internal const uint ScePpurela = 0x700000A4;
 
+        // Structs
+
         [StructLayout(LayoutKind.Sequential)]
         internal readonly struct ProgramHeader64
         {
@@ -41,6 +43,9 @@ namespace PS3Sharp
             internal readonly BigEndian<ulong> p_filesz;   /* Segment size in file */
             internal readonly BigEndian<ulong> p_memsz;    /* Segment size in memory */
             internal readonly BigEndian<ulong> p_align;    /* Segment alignment */
+
+            internal bool IsLoadable => p_type == PtLoad && p_memsz > 0;
+            internal string TypeName => PTypeToString(p_type);
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -54,18 +59,9 @@ namespace PS3Sharp
             internal readonly BigEndian<uint> p_memsz;    /* Segment size in memory */
             internal readonly BigEndian<uint> p_flags;     /* Segment flags */
             internal readonly BigEndian<uint> p_align;    /* Segment alignment */
-        }
 
-        internal static string GetProgramHeaderName(ProgramHeader64 programHeader)
-        {
-            ulong type = programHeader.p_type;
-            return PTypeToString(type);
-        }
-
-        internal static string GetProgramHeaderName(ProgramHeader32 programHeader)
-        {
-            ulong type = programHeader.p_type;
-            return PTypeToString(type);
+            internal bool IsLoadable => p_type == PtLoad && p_memsz > 0;
+            internal string TypeName => PTypeToString(p_type);
         }
 
         internal static string PTypeToString(ulong type)

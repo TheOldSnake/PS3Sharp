@@ -2,13 +2,14 @@ using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Cell.PPU.Interpreter;
 using PS3Sharp.Common;
+using PS3Sharp.Elf;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.Modules;
 using PS3Sharp.OS.NID;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using static PS3Sharp.ElfLoader;
+using static PS3Sharp.Elf.PRXElfLoader;
 
 namespace PS3Sharp.PRX
 {
@@ -115,6 +116,7 @@ namespace PS3Sharp.PRX
            // "libgcm_sys"
         ];
 
+        private readonly PRXElfLoader _elfLoader = new();
         private readonly List<LibraryInfo> _loadedLibraries = [];                    // List of loaded libraries
         private readonly List<LibraryInitialization> _libraryInitializations = [];   // List of library initialization functions to be called at startup
         private readonly Dictionary<uint, uint> _exportedFunctions = [];             // List of exported functions from the libraries
@@ -130,13 +132,13 @@ namespace PS3Sharp.PRX
             return _exportedFunctions.TryGetValue(nid, out address);
         }
 
-        internal void LoadPRXLibraries(ElfLoader elfLoader, ModulePatcher modulePatcher)
+        internal void LoadPRXLibraries(ModulePatcher modulePatcher)
         {
             // Load all segments
             for (int i = 0; i < PRXList.Count; i++)
             {
                 string name = PRXList[i];
-                LibraryInfo lib = LoadLibrary(name, elfLoader);
+                LibraryInfo lib = LoadLibrary(name);
                 _loadedLibraries.Add(lib);
             }
 
@@ -155,7 +157,7 @@ namespace PS3Sharp.PRX
             //throw new Exception("done");
         }
 
-        private LibraryInfo LoadLibrary(string name, ElfLoader elfLoader)
+        private LibraryInfo LoadLibrary(string name)
         {
             string path = @"dev_flash\sys\external\" + name + ".prx";
             if (!File.Exists(path))
@@ -166,7 +168,7 @@ namespace PS3Sharp.PRX
             BinaryReader reader = new(File.OpenRead(path));
 
             // Load the loadable segments
-            List<LoadedPRXSegment> loadedSegments = elfLoader.LoadPRXElf(reader, _memoryManager);
+            List<LoadedPRXSegment> loadedSegments = _elfLoader.LoadPRXElf(reader, _memoryManager);
 
             // From PS3DevWiki: The Module Info is at offset Elf32_Phdrs[text_seg_id].p_paddr - Elf32_Phdrs[text_seg_id].p_offset
             LoadedPRXSegment text = loadedSegments[0];

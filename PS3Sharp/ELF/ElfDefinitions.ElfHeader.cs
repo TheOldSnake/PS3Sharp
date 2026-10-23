@@ -2,9 +2,9 @@ using PS3Sharp.Common;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace PS3Sharp
+namespace PS3Sharp.Elf
 {
-    internal partial class ElfLoader
+    internal static partial class ElfDefinitions
     {
         // e_ident constants
         internal const int EIdent = 16;
@@ -26,6 +26,8 @@ namespace PS3Sharp
 
         internal const byte EvCurrent = 1;
 
+        // Structs
+
         // Elf64 Header
         [StructLayout(LayoutKind.Sequential)]
         internal readonly struct ElfHeader64
@@ -44,6 +46,8 @@ namespace PS3Sharp
             internal readonly BigEndian<ushort> e_shentsize; /* size of section header entry */
             internal readonly BigEndian<ushort> e_shnum;     /* number of section header entries */
             internal readonly BigEndian<ushort> e_shstrndx;  /* section name string table index */
+
+            internal bool IsValid => IsValidIdent(e_ident);
         }
 
         // Elf32 Header
@@ -64,6 +68,30 @@ namespace PS3Sharp
             internal readonly BigEndian<ushort> e_shentsize; /* size of section header entry */
             internal readonly BigEndian<ushort> e_shnum;     /* number of section header entries */
             internal readonly BigEndian<ushort> e_shstrndx;  /* section name string table index */
+
+            internal bool IsValid => IsValidIdent(e_ident);
+        }
+
+        private static bool IsValidIdent(ReadOnlySpan<byte> ident)
+        {
+            // Simply check if ELFMAG is present in the first 4 bytes
+            int length = ElfMagRos.Length;
+            ReadOnlySpan<byte> mag = ident.Slice(0, length);
+            return mag.SequenceEqual(ElfMagRos);
+        }
+
+        private static void PrintElfInfo(ElfHeader64 mainHeader)
+        {
+            ReadOnlySpan<byte> ident = mainHeader.e_ident;
+            byte bitSize = ident[4];     // 1 = 32bit, 2 = 64bit
+            byte endianness = ident[5];  // endianness
+            bool is64 = bitSize == ElfClass64;
+
+            Console.WriteLine($"ELF {(is64 ? "64" : "32")}-bit");
+            Console.WriteLine($"Machine: 0x{mainHeader.e_machine:X}");
+            Console.WriteLine($"Endianness: 0x{endianness:X}");
+            Console.WriteLine($"Program Headers: 0x{mainHeader.e_phnum:X}");
+            Console.WriteLine($"Fake Entry: 0x{mainHeader.e_entry:X}");
         }
     }
 }

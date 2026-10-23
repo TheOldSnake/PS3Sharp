@@ -1,11 +1,13 @@
 using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
+using PS3Sharp.Elf;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.NID;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using static PS3Sharp.ElfLoader;
+using static PS3Sharp.Elf.ElfDefinitions;
+using static PS3Sharp.Elf.ElfLoader;
 
 namespace PS3Sharp.OS.Modules
 {
@@ -53,12 +55,12 @@ namespace PS3Sharp.OS.Modules
         // For main elf
         internal void HandleMainElfImports(BinaryReader reader, ElfHeader64 mainHeader, MemoryManager memoryManager, ElfLoader elfLoader)
         {
-            ProgramHeader64? prxProgram = elfLoader.FindProgram(reader, ref mainHeader, PrxParam);
+            ProgramHeader64? prxProgram = FindProgram(reader, ref mainHeader, PrxParam);
 
             if (prxProgram != null)
             {
                 ulong offs = ((ProgramHeader64)prxProgram).p_offset;
-                PRXParam prx = elfLoader.ReadElfStruct<PRXParam>(reader, (long)offs);
+                PRXParam prx = ReadElfStruct<PRXParam>(reader, (long)offs);
 
                 uint sizeOfStubHeader = (uint)Unsafe.SizeOf<PRXStubHeader>();
                 uint spanLength = (prx.LibsSubEnd - prx.LibStubStart) / sizeOfStubHeader;

@@ -3,6 +3,7 @@ using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Cell.SPU;
 using PS3Sharp.Common;
+using PS3Sharp.Elf;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.LV2;
 using System.Buffers;
@@ -79,14 +80,13 @@ namespace PS3Sharp.OS.Syscall
         internal const int SysSpuSegmentTypeFill = 0x0002;
         internal const int SysSpuSegmentTypeInfo = 0x0004;
 
-        private readonly ElfLoader _elfLoader;
         private readonly ThreadManager _threadManager;
         private readonly MemoryManager _memoryManager;
+        private readonly SPUElfLoader _elfLoader = new();
         private readonly ConcurrentDictionary<uint, LV2SPUThreadGroup> _spuThreadGroupes = new();
 
-        internal SysSPU(ElfLoader elfLoader, ThreadManager threadManager, MemoryManager memoryManager)
+        internal SysSPU(ThreadManager threadManager, MemoryManager memoryManager)
         {
-            _elfLoader = elfLoader;
             _threadManager = threadManager;
             _memoryManager = memoryManager;
         }
@@ -129,7 +129,7 @@ namespace PS3Sharp.OS.Syscall
             }
 
             // Load elf32
-            (ElfLoader.ElfHeader32 header, List<SysSPUSegment> segments) = _elfLoader.LoadSPUElf(src, _memoryManager);
+            (ElfDefinitions.ElfHeader32 header, List<SysSPUSegment> segments) = _elfLoader.LoadSPUElf(src, _memoryManager);
 
             // Allocate SysSPUSegment array
             int segmentArraySize = Unsafe.SizeOf<SysSPU.SysSPUSegment>() * 32;

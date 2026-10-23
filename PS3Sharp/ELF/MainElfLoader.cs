@@ -1,0 +1,115 @@
+﻿using PS3Sharp.Memory;
+using static PS3Sharp.Elf.ElfDefinitions;
+
+namespace PS3Sharp.Elf
+{
+    internal class MainElfLoader : ElfLoader
+    {
+        internal ElfHeader64 LoadMainElf(BinaryReader reader, MemoryManager memoryManager)
+        {
+            // Read Main Header 
+            ElfHeader64 mainHeader = ReadElfStruct<ElfHeader64>(reader, 0);
+
+            if (!mainHeader.IsValid)
+            {
+                throw new Exception("Invalid ELF");
+            }
+
+            LoadSegments(reader, ref mainHeader, memoryManager);
+            HandleTLSSegment(reader, ref mainHeader, memoryManager);
+
+            Console.WriteLine($"[ELFLoader] ELF loaded!");
+            return mainHeader;
+        }
+
+        private static void LoadSegments(BinaryReader reader, ref ElfHeader64 mainHeader, MemoryManager memoryManager)
+        {
+            // Load the loadable segments
+            ReadOnlySpan<ProgramHeader64> programHeaders = GetProgramHeadersArray(reader, ref mainHeader);
+
+            for (int i = 0; i < programHeaders.Length; i++)
+            {
+                ProgramHeader64 programHeader = programHeaders[i];
+
+                if (programHeader.IsLoadable)
+                {
+                    LoadSegment(reader, ref programHeader, memoryManager);
+                }
+            }
+        }
+
+        private static uint LoadSegment(BinaryReader reader, ref ProgramHeader64 programHeader, MemoryManager memoryManager)
+        {
+            string pt_name = programHeader.TypeName;
+            uint p_memsz = (uint)(ulong)programHeader.p_memsz;
+            uint p_vaddr = (uint)(ulong)programHeader.p_vaddr;
+
+            // Load segment
+            byte[] segmentData = GetSegmentData(reader, ref programHeader);
+            uint dest;
+
+            if (!memoryManager.IsVirtualAddressAllocated(p_vaddr))
+            {
+                MemoryManager.MemoryBlock block = memoryManager.AllocateVirtualAddress(p_vaddr, p_memsz);
+                dest = block.VirtualAddress;
+            }
+            else
+            {
+                dest = p_vaddr;
+
+                // Make sure the block has enough size
+                uint programEnd = dest + p_memsz;
+                MemoryManager.MemoryBlock block = memoryManager.GetAllocationByVirtualAddress(p_vaddr);
+                int extraBytes = (int)(programEnd - block.End);
+
+                if (extraBytes > 0)
+                {
+                    uint newSize = (uint)(block.Size + extraBytes);
+                    block = memoryManager.ResizeBlock(block, newSize);
+                }
+
+                Console.WriteLine($"[Loader] Warning: Segment overwrite at vaddr = 0x{p_vaddr:X8} size = 0x{p_memsz:X8} segment: {pt_name}");
+            }
+
+            memoryManager.CopyBufferToVirtualMemory(segmentData, dest);
+
+            if (segmentData.Length < p_memsz)
+            {
+                int zeroesCount = (int)p_memsz - segmentData.Length;
+                memoryManager.ClearMemory(dest + (uint)segmentData.Length, zeroesCount);
+            }
+
+            Console.WriteLine(
+                $"Loaded {pt_name,-8} segment: " +
+                $"Offset = 0x{programHeader.p_offset:X8}, " +
+                $"VirtAddr = 0x{programHeader.p_vaddr:X8}, " +
+                $"FileSize = 0x{programHeader.p_filesz:X8}, " +
+                $"MemSize = 0x{programHeader.p_memsz:X8}, " +
+                $"Flags = 0x{programHeader.p_flags:X}");
+
+            return dest;
+        }
+
+        private static void HandleTLSSegment(BinaryReader reader, ref ElfHeader64 header, MemoryManager memoryManager)
+        {
+            ProgramHeader64? tlsImage = FindProgram(reader, ref header, PtTls);
+
+            if (tlsImage != null)
+            {
+                ProgramHeader64 tlsImage_casted = (ProgramHeader64)tlsImage;
+                ulong tlsvaddr = tlsImage_casted.p_vaddr;
+                ulong tlsSize = tlsImage_casted.p_memsz;
+
+                //Load directly
+                LoadSegment(reader, ref tlsImage_casted, memoryManager);
+                memoryManager.SetTLS((uint)tlsvaddr, (uint)tlsSize);
+
+                Console.WriteLine("Found TLS");
+            }
+            else
+            {
+                Console.WriteLine($"Could not find PT_TLS"); // Is it always provided?
+            }
+        }
+    }
+}
