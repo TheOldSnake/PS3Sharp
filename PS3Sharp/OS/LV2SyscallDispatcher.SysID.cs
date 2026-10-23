@@ -97,11 +97,13 @@ namespace PS3Sharp.OS
             SysTimeGetTimebaseFrequency = 0x093,
 
             // sys_spu
-            SysSPUInitialize = 0x0A9,
-            SysSPUThreadGroupCreate = 0x0AA,
-            SysSPUThreadInitialize = 0x0AC,
-            SysSPUThreadReadLS = 0x0B6,
-            SysSPUThreadWriteSPUMB = 0x0BE,
+            SysSpuInitialize = 0x0A9,
+            SysSpuThreadGroupCreate = 0x0AA,
+            SysSpuThreadInitialize = 0x0AC,
+            SysSpuThreadGroupStart = 0x0AD,
+            SysSpuThreadReadLS = 0x0B6,
+            SysSpuThreadGroupConnectEvent = 0x0B9,
+            SysSpuThreadWriteSPUMB = 0x0BE,
             SysSpuThreadGroupConnectEventAllThreads = 0x0FB,
 
             // sys_vm

@@ -37,7 +37,7 @@ namespace PS3Sharp.OS
         internal SysPRX SysPRXHandler { get; }
         internal SysRWLock SysRWLockHandler { get; }
         internal SysSemaphore SysSemaphoreHandler { get; }
-        internal SysSPU SysSPUHandler { get; }   // TODO
+        internal SysSpu SysSPUHandler { get; }   // TODO
         internal SysStorage SysStorageHandler { get; }
         internal SysTime SysTimeHandler { get; }
         internal SysTimer SysTimerHandler { get; }

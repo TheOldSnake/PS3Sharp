@@ -101,11 +101,13 @@ namespace PS3Sharp.OS
                 [SyscallID.SysTimeGetTimeZone] = SysTimeHandler.SysTimeGetTimeZone,
                 [SyscallID.SysTimeGetTimebaseFrequency] = SysTimeHandler.SysTimeGetTimebaseFrequency,
 
-                [SyscallID.SysSPUInitialize] = SysSPUHandler.SysSPUInitialize,
-                [SyscallID.SysSPUThreadGroupCreate] = SysSPUHandler.SysSPUThreadGroupCreate,
-                [SyscallID.SysSPUThreadInitialize] = SysSPUHandler.SysSPUThreadInitialize,
-                [SyscallID.SysSPUThreadReadLS] = SysSPUHandler.SysSPUThreadReadLS,
-                [SyscallID.SysSPUThreadWriteSPUMB] = SysSPUHandler.SysSPUThreadWriteSPUMB,
+                [SyscallID.SysSpuInitialize] = SysSPUHandler.SysSpuInitialize,
+                [SyscallID.SysSpuThreadGroupCreate] = SysSPUHandler.SysSpuThreadGroupCreate,
+                [SyscallID.SysSpuThreadInitialize] = SysSPUHandler.SysSpuThreadInitialize,
+                [SyscallID.SysSpuThreadGroupStart] = SysSPUHandler.SysSpuThreadGroupStart,
+                [SyscallID.SysSpuThreadReadLS] = SysSPUHandler.SysSPUThreadReadLS,
+                [SyscallID.SysSpuThreadGroupConnectEvent] = SysSPUHandler.SysSpuThreadGroupConnectEvent,
+                [SyscallID.SysSpuThreadWriteSPUMB] = SysSPUHandler.SysSPUThreadWriteSPUMB,
                 [SyscallID.SysSpuThreadGroupConnectEventAllThreads] = SysSPUHandler.SysSpuThreadGroupConnectEventAllThreads,
 
                 [SyscallID.SysTimerSleep] = SysTimerHandler.SysTimerSleep,
@@ -148,7 +150,7 @@ namespace PS3Sharp.OS
                 [NIDManager.GetNID("sys_ppu_thread_once")] = SysPPUThreadHandler.SysPPUThreadOnce,
 
                 // Sys SPU
-                [NIDManager.GetNID("sys_spu_image_import")] = SysSPUHandler.SysSPUImageImport,
+                [NIDManager.GetNID("sys_spu_image_import")] = SysSPUHandler.SysSpuImageImport,
 
                 // SysTime
                 [NIDManager.GetNID("sys_time_get_system_time")] = SysTimeHandler.SysTimeGetSystemTime,

@@ -1,7 +1,7 @@
 using PS3Sharp.Cell.SPU;
 using PS3Sharp.Common;
 using PS3Sharp.Memory;
-using static PS3Sharp.OS.Syscall.SysSPU;
+using static PS3Sharp.OS.Syscall.SysSpu;
 
 namespace PS3Sharp.OS.LV2
 {

@@ -1,4 +1,3 @@
-using OpenTK.Graphics.ES20;
 using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Cell.SPU;
@@ -6,15 +5,15 @@ using PS3Sharp.Common;
 using PS3Sharp.Elf;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.LV2;
-using System.Buffers;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 namespace PS3Sharp.OS.Syscall
 {
-    internal class SysSPU
+    internal class SysSpu
     {
 
         [StructLayout(LayoutKind.Sequential)]
@@ -85,39 +84,18 @@ namespace PS3Sharp.OS.Syscall
         private readonly SPUElfLoader _elfLoader = new();
         private readonly ConcurrentDictionary<uint, LV2SPUThreadGroup> _spuThreadGroupes = new();
 
-        internal SysSPU(ThreadManager threadManager, MemoryManager memoryManager)
+        internal SysSpu(ThreadManager threadManager, MemoryManager memoryManager)
         {
             _threadManager = threadManager;
             _memoryManager = memoryManager;
         }
 
-        private void AddSPUThreadGroup(LV2SPUThreadGroup group)
-        {
-            if (!_spuThreadGroupes.TryAdd(group.Handle, group))
-            {
-                throw new Exception($"[SysSPU] Failed to add SPU group");
-            }
-        }
-
-        private void RemoveSPUThreadGroup(uint handle)
-        {
-            if (!_spuThreadGroupes.TryRemove(handle, out _))
-            {
-                throw new Exception($"[SysSPU] Failed to remove SPU group");
-            }
-        }
-
-        internal bool GetSPUThreadGroup(uint handle, out LV2SPUThreadGroup group)
-        {
-            return _spuThreadGroupes.TryGetValue(handle, out group);
-        }
-
-        internal ulong SysSPUInitialize(PPUThread ppu)
+        internal ulong SysSpuInitialize(PPUThread ppu)
         {
             return CellOk;
         }
 
-        internal ulong SysSPUImageImport(PPUThread ppu)
+        internal ulong SysSpuImageImport(PPUThread ppu)
         {
             GuestPtr<SysSPUImage> imagePtr = ppu.ReadArg<GuestPtr<SysSPUImage>>(Arg0);
             uint src = ppu.ReadArg<uint>(Arg1); // Ptr to elf32 image
@@ -132,8 +110,8 @@ namespace PS3Sharp.OS.Syscall
             (ElfDefinitions.ElfHeader32 header, List<SysSPUSegment> segments) = _elfLoader.LoadSPUElf(src, _memoryManager);
 
             // Allocate SysSPUSegment array
-            int segmentArraySize = Unsafe.SizeOf<SysSPU.SysSPUSegment>() * 32;
-            GuestPtr<SysSPU.SysSPUSegment> segmentArrayPtr = _memoryManager.AllocateVirtualMemory((uint)segmentArraySize).VirtualAddress;
+            int segmentArraySize = Unsafe.SizeOf<SysSpu.SysSPUSegment>() * 32;
+            GuestPtr<SysSpu.SysSPUSegment> segmentArrayPtr = _memoryManager.AllocateVirtualMemory((uint)segmentArraySize).VirtualAddress;
 
             if (segments.Count > 0)
             {
@@ -159,8 +137,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        // TODO
-        internal ulong SysSPUThreadGroupCreate(PPUThread ppu)
+        internal ulong SysSpuThreadGroupCreate(PPUThread ppu)
         {
             GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
             uint num = ppu.ReadArg<uint>(Arg1);
@@ -169,14 +146,14 @@ namespace PS3Sharp.OS.Syscall
 
             // Create the thread group
             LV2SPUThreadGroup group = new(attr_ptr, num, prio, _memoryManager);
-            AddSPUThreadGroup(group);
+            AddSpuThreadGroup(group);
             _memoryManager.Write<BigEndian<uint>>(id_ptr, group.Handle);
 
             Console.WriteLine($"[SysSPUThreadInitialize] Created SPU group: 0x{group.Handle:X8}");
             return CellOk;
         }
 
-        internal ulong SysSPUThreadInitialize(PPUThread ppu)
+        internal ulong SysSpuThreadInitialize(PPUThread ppu)
         {
             GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
             uint group_id = ppu.ReadArg<uint>(Arg1);
@@ -187,7 +164,7 @@ namespace PS3Sharp.OS.Syscall
             GuestPtr<SysSPUThreadArgument> arg_ptr = ppu.ReadArg<GuestPtr<SysSPUThreadArgument>>(Arg5);
 
             // there is a lot more checks and errors to be added
-            if (!GetSPUThreadGroup(group_id, out LV2SPUThreadGroup threadGroup))
+            if (!TryGetSpuThreadGroup(group_id, out LV2SPUThreadGroup? threadGroup))
             {
                 return CellESrch;
             }
@@ -211,11 +188,11 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysSPUThreadGroupStart(PPUThread ppu)
+        internal ulong SysSpuThreadGroupStart(PPUThread ppu)
         {
             uint group_id = ppu.ReadArg<uint>(Arg0);
 
-            if (!GetSPUThreadGroup(group_id, out LV2SPUThreadGroup threadGroup))
+            if (!TryGetSpuThreadGroup(group_id, out LV2SPUThreadGroup? threadGroup))
             {
                 return CellESrch;
             }
@@ -224,17 +201,18 @@ namespace PS3Sharp.OS.Syscall
 
             Console.WriteLine($"[SysSPUThreadGroupStart] Started SPU group: 0x{group_id:X8}");
             throw new Exception("todo");
+
             return CellOk;
         }
 
-        internal ulong SysSPUThreadGroupConnectEventAllThreads(PPUThread ppu)
+        internal ulong SysSpuThreadGroupConnectEventAllThreads(PPUThread ppu)
         {
             uint group_id = ppu.ReadArg<uint>(Arg0);
             uint equeue_id = ppu.ReadArg<uint>(Arg1);
             ulong req = ppu.ReadArg<ulong>(Arg2);                        // port bits
             GuestPtr<byte> spup_ptr = ppu.ReadArg<GuestPtr<byte>>(Arg3); // chosen port 
 
-            if (!GetSPUThreadGroup(group_id, out LV2SPUThreadGroup threadGroup))
+            if (!TryGetSpuThreadGroup(group_id, out LV2SPUThreadGroup? threadGroup))
             {
                 return CellESrch;
             }
@@ -246,9 +224,9 @@ namespace PS3Sharp.OS.Syscall
 
             for (port = 0; port < 64; port++)
             {
-
-                // Skip 
-                if (((req >> port) & 1) == 0)
+                // Skip not requested ports
+                bool request = ((req >> port) & 1) != 0;
+                if (!request)
                 {
                     continue;
                 }
@@ -256,10 +234,9 @@ namespace PS3Sharp.OS.Syscall
                 // Check all threads      
                 foundFreePort = true;
 
-                for (int i = 0; i < threads.Count; i++)
+                foreach (SPUThread spu in threads)
                 {
-
-                    if (!threads[i].PortIsFree(port))
+                    if (!spu.PortIsFree(port))
                     {
                         foundFreePort = false;
                         break;
@@ -272,20 +249,22 @@ namespace PS3Sharp.OS.Syscall
                 }
             }
 
-
+            // Error if no free port was found
             if (!foundFreePort)
             {
                 return CellEIsConn;
             }
 
+            // Connect the port to all spu threads
             for (int i = 0; i < threads.Count; i++)
             {
                 threads[i].SetPort(port, equeue_id);
             }
 
-            _memoryManager.Write<byte>(spup_ptr, port);
+            // Write selected port
+            _memoryManager.Write(spup_ptr, port);
 
-            Console.WriteLine($"[SysSPUThreadGroupConnectEventAllThreads] Connected SPU group: 0x{group_id:X8} port = {port}");
+            Console.WriteLine($"[SysSPUThreadGroupConnectEventAllThreads] Connected SPU group: 0x{group_id:X8} port = {port} equeue: 0x{equeue_id:X8}");
             return CellOk;
         }
 
@@ -294,14 +273,32 @@ namespace PS3Sharp.OS.Syscall
             throw new NotImplementedException("todo: SysSPUThreadReadLS");
         }
 
+        internal ulong SysSpuThreadGroupConnectEvent(PPUThread thread)
+        {
+            throw new NotImplementedException($"todo: SysSpuThreadGroupConnectEvent");
+        }
+
         internal ulong SysSPUThreadWriteSPUMB(PPUThread thread)
         {
             throw new NotImplementedException("todo: SysSPUThreadWriteSPUMB");
         }
 
-        internal ulong SysSpuThreadGroupConnectEventAllThreads(PPUThread thread)
+        internal bool TryGetSpuThreadGroup(uint handle, [NotNullWhen(true)] out LV2SPUThreadGroup? group) => _spuThreadGroupes.TryGetValue(handle, out group);
+
+        private void AddSpuThreadGroup(LV2SPUThreadGroup group)
         {
-            throw new NotImplementedException("todo: SysSpuThreadGroupConnectEventAllThreads");
+            if (!_spuThreadGroupes.TryAdd(group.Handle, group))
+            {
+                throw new Exception($"[SysSPU] Failed to add SPU group");
+            }
+        }
+
+        private void RemoveSpuThreadGroup(uint handle)
+        {
+            if (!_spuThreadGroupes.TryRemove(handle, out _))
+            {
+                throw new Exception($"[SysSPU] Failed to remove SPU group");
+            }
         }
     }
 }

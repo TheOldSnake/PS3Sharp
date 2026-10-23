@@ -18,8 +18,8 @@ namespace PS3Sharp.Cell.SPU
         internal string Name { get; } = string.Empty;
         internal uint ID { get; } = 0xFFFFFFFF;
         internal uint GroupID { get; } = 0xFFFFFFFF;
-        internal SysSPU.SysSPUImage Image { get; }
-        internal SysSPU.SysSPUThreadArgument Argument { get; }
+        internal SysSpu.SysSPUImage Image { get; }
+        internal SysSpu.SysSPUThreadArgument Argument { get; }
 
         internal Lock Lock { get; } = new();
 
@@ -40,7 +40,7 @@ namespace PS3Sharp.Cell.SPU
         private readonly MemoryManager _memoryManager;
 
         // TODO: Move to thread manager
-        internal SPUThread(string name, uint id, uint groupID, SysSPU.SysSPUImage img, SysSPU.SysSPUThreadArgument arg, MemoryManager memoryManager)
+        internal SPUThread(string name, uint id, uint groupID, SysSpu.SysSPUImage img, SysSpu.SysSPUThreadArgument arg, MemoryManager memoryManager)
         {
             _memoryManager = memoryManager;
             Name = name;
@@ -103,7 +103,7 @@ namespace PS3Sharp.Cell.SPU
                 throw new Exception($"[SPU] Image null pointer");
             }
 
-            ReadOnlySpan<SysSPU.SysSPUSegment> segments = _memoryManager.ReadArray<SysSPU.SysSPUSegment>(entry, (int)count);
+            ReadOnlySpan<SysSpu.SysSPUSegment> segments = _memoryManager.ReadArray<SysSpu.SysSPUSegment>(entry, (int)count);
 
             for (int i = 0; i < segments.Length; i++)
             {
@@ -111,7 +111,7 @@ namespace PS3Sharp.Cell.SPU
             }
         }
 
-        private void LoadSegment(SysSPU.SysSPUSegment segment)
+        private void LoadSegment(SysSpu.SysSPUSegment segment)
         {
             int size = segment.Size;
             uint src = segment.Src;
@@ -122,11 +122,11 @@ namespace PS3Sharp.Cell.SPU
 
             switch (segment.Type)
             {
-                case SysSPU.SysSpuSegmentTypeCopy:
+                case SysSpu.SysSpuSegmentTypeCopy:
                     _memoryManager.ReadBufferFromVirtualMemory(src, dest);
                     break;
 
-                case SysSPU.SysSpuSegmentTypeFill:
+                case SysSpu.SysSpuSegmentTypeFill:
                     dest.Fill((byte)src);
                     break;
             }
