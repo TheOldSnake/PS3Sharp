@@ -92,23 +92,20 @@ namespace PS3Sharp.Elf
 
         private static void HandleTLSSegment(BinaryReader reader, ref ElfHeader64 header, MemoryManager memoryManager)
         {
-            ProgramHeader64? tlsImage = FindProgram(reader, ref header, PtTls);
-
-            if (tlsImage != null)
+            if (TryFindProgram(reader, ref header, PtTls, out ProgramHeader64 tlsImage))
             {
-                ProgramHeader64 tlsImage_casted = (ProgramHeader64)tlsImage;
-                ulong tlsvaddr = tlsImage_casted.p_vaddr;
-                ulong tlsSize = tlsImage_casted.p_memsz;
+                ulong tlsvaddr = tlsImage.p_vaddr;
+                ulong tlsSize = tlsImage.p_memsz;
 
-                //Load directly
-                LoadSegment(reader, ref tlsImage_casted, memoryManager);
+                // Load directly
+                LoadSegment(reader, ref tlsImage, memoryManager);
                 memoryManager.SetTLS((uint)tlsvaddr, (uint)tlsSize);
 
-                Console.WriteLine("Found TLS");
+                Console.WriteLine("[MainElfLoader] Found TLS");
             }
             else
             {
-                Console.WriteLine($"Could not find PT_TLS"); // Is it always provided?
+                Console.WriteLine($"[MainElfLoader] Could not find PT_TLS"); // Is it always provided?
             }
         }
     }

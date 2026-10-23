@@ -6,7 +6,7 @@ namespace PS3Sharp.Elf
 {
     internal abstract class ElfLoader
     {
-        internal static ProgramHeader64? FindProgram(BinaryReader reader, ref ElfHeader64 header, uint p_type)
+        internal static bool TryFindProgram(BinaryReader reader, ref ElfHeader64 header, uint p_type, out ProgramHeader64 programHeader)
         {
             // Get all program headers
             ReadOnlySpan<ProgramHeader64> programs = GetProgramHeadersArray(reader, ref header);
@@ -16,11 +16,13 @@ namespace PS3Sharp.Elf
             {
                 if (program.p_type == p_type)
                 {
-                    return program;
+                    programHeader = program;
+                    return true;
                 }
             }
 
-            return null;
+            programHeader = default;
+            return false;
         }
 
         internal static T ReadElfStruct<T>(BinaryReader reader, long offset) where T : unmanaged

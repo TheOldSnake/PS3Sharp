@@ -55,11 +55,9 @@ namespace PS3Sharp.OS.Modules
         // For main elf
         internal void HandleMainElfImports(BinaryReader reader, ElfHeader64 mainHeader, MemoryManager memoryManager, ElfLoader elfLoader)
         {
-            ProgramHeader64? prxProgram = FindProgram(reader, ref mainHeader, PrxParam);
-
-            if (prxProgram != null)
+            if (TryFindProgram(reader, ref mainHeader, PrxParam, out ProgramHeader64 prxProgram))
             {
-                ulong offs = ((ProgramHeader64)prxProgram).p_offset;
+                ulong offs = prxProgram.p_offset;
                 PRXParam prx = ReadElfStruct<PRXParam>(reader, (long)offs);
 
                 uint sizeOfStubHeader = (uint)Unsafe.SizeOf<PRXStubHeader>();
