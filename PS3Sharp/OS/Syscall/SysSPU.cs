@@ -82,13 +82,16 @@ namespace PS3Sharp.OS.Syscall
 
         private readonly ThreadManager _threadManager;
         private readonly MemoryManager _memoryManager;
+        private readonly SysEvent _sysEvent;
+
         private readonly SPUElfLoader _elfLoader = new();
         private readonly ConcurrentDictionary<uint, LV2SPUThreadGroup> _spuThreadGroupes = new();
 
-        internal SysSpu(ThreadManager threadManager, MemoryManager memoryManager)
+        internal SysSpu(ThreadManager threadManager, MemoryManager memoryManager, SysEvent sysEvent)
         {
             _threadManager = threadManager;
             _memoryManager = memoryManager;
+            _sysEvent = sysEvent;
         }
 
         internal ulong SysSpuInitialize(PPUThread ppu)
@@ -291,9 +294,28 @@ namespace PS3Sharp.OS.Syscall
             throw new NotImplementedException("todo: SysSPUThreadReadLS");
         }
 
-        internal ulong SysSpuThreadGroupConnectEvent(PPUThread thread)
+        internal ulong SysSpuThreadGroupConnectEvent(PPUThread ppu)
         {
-            throw new NotImplementedException($"todo: SysSpuThreadGroupConnectEvent");
+            uint groupId = ppu.ReadArg<uint>(Arg0);
+            uint equeueId = ppu.ReadArg<uint>(Arg1);
+            uint eventType = ppu.ReadArg<uint>(Arg2);
+
+            if (!TryGetSpuThreadGroup(groupId, out LV2SPUThreadGroup? group))
+            {
+                return CellESrch;
+            }
+
+            if (!_sysEvent.TryGetEventQueueByID(equeueId, out LV2EventQueue? eventQueue))
+            {
+                return CellESrch;
+            }
+
+            if (!group.SetEventQueue(eventType, eventQueue))
+            {
+                return CellEInval;
+            }
+
+            return CellOk;
         }
 
         internal ulong SysSPUThreadWriteSPUMB(PPUThread thread)

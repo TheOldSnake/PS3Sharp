@@ -17,6 +17,10 @@ namespace PS3Sharp.OS.LV2
         internal int Priority { get; }
         internal List<SPUThread> SPUThreads { get; } = [];
 
+        private LV2EventQueue? _runEvents;
+        private LV2EventQueue? _exceptionEvents;
+        private LV2EventQueue? _sysModuleEvents;
+
         internal LV2SPUThreadGroup(GuestPtr<SysSPUThreadGroupAttribute> attrib_ptr, uint number, int prio, MemoryManager memoryManager)
         {
             AttributePtr = attrib_ptr;
@@ -49,6 +53,29 @@ namespace PS3Sharp.OS.LV2
         internal void JoinGroup()
         {
             _groupFinished.Wait();
+        }
+
+        internal bool SetEventQueue(uint type, LV2EventQueue eventQueue)
+        {
+            switch (type)
+            {
+                case SysSpuThreadGroupEventRun:
+                    _runEvents = eventQueue;
+                    break;
+
+                case SysSpuThreadGroupEventException:
+                    _exceptionEvents = eventQueue;
+                    break;
+
+                case SysSpuThreadGroupEventSystemModule:
+                    _sysModuleEvents = eventQueue;
+                    break;
+
+                default:
+                    return false;
+            }
+
+            return true;
         }
     }
 }

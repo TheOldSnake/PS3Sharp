@@ -96,7 +96,7 @@ namespace PS3Sharp.OS
             SysVmHandler = new(_memoryManager);
             SysUtilHandler = new(_memoryManager);
             SysPPUThreadHandler = new(_threadManager, _memoryManager);
-            SysSPUHandler = new(_threadManager, _memoryManager);
+            SysSPUHandler = new(_threadManager, _memoryManager, SysEventHandler);
             SysCondHandler = new(_memoryManager, SysMutexHandler);
 
             // Initialize all module handlers
