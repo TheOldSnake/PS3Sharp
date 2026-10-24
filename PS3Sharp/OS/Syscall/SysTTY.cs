@@ -31,7 +31,7 @@ namespace PS3Sharp.OS.Syscall
             uint ch = ppu.ReadArg<uint>(Arg0);                               //channel? probably file descriptor
             GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(Arg1);              //void*
             uint len = ppu.ReadArg<uint>(Arg2);                              //uint32_t
-            GuestPtr<uint> pwritelen = ppu.ReadArg<GuestPtr<uint>>(Arg3);    //uint32_t*
+            GuestPtr<BigEndian<uint>> pwritelen = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg3);    //uint32_t*
 
             string text = _memoryManager.ReadString(buf);
             ConsoleColor color = ch == Stdout ? ConsoleColor.Green : ConsoleColor.Red;

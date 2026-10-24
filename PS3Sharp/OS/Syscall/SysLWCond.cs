@@ -25,7 +25,7 @@ namespace PS3Sharp.OS.Syscall
         {
             uint handle = _memoryManager.GetHandle();
 
-            GuestPtr<uint> id_ptr = ppu.ReadArg<uint>(Arg0);
+            GuestPtr<BigEndian<uint>> id_ptr = ppu.ReadArg<uint>(Arg0);
             //uint lwmutexId = ppu.ReadArg<uint>(ARG1);           // do we use this to bind ??
 
             //GuestPtr<LV2LWCond.SysLWCond> control_ptr = ppu.ReadArg<GuestPtr<LV2LWCond.SysLWCond>>(ARG2);

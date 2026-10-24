@@ -110,7 +110,7 @@ namespace PS3Sharp.OS.Modules
             uint ctx = ppu.ReadArg<uint>(Arg0);
             uint handle = ppu.ReadArg<uint>(Arg1);
             GuestPtr<byte> flags_ptr = ppu.ReadArg<GuestPtr<byte>>(Arg2);
-            GuestPtr<uint> count_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg3);
+            GuestPtr<BigEndian<uint>> count_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg3);
 
             _memoryManager.Write<byte>(flags_ptr, 0x80);
             _memoryManager.Write<BigEndian<uint>>(count_ptr, 32);
@@ -124,7 +124,7 @@ namespace PS3Sharp.OS.Modules
             uint ctx = ppu.ReadArg<uint>(Arg0);
             uint handle = ppu.ReadArg<uint>(Arg1);
             int trophyId = ppu.ReadArg<int>(Arg2);
-            GuestPtr<int> platinumId = ppu.ReadArg<GuestPtr<int>>(Arg3);
+            GuestPtr<BigEndian<int>> platinumId = ppu.ReadArg<GuestPtr<BigEndian<int>>>(Arg3);
 
             Console.WriteLine($"[SCENPTrophy] sceNpTrophyUnlockTrophy - ulocked trophy id: {trophyId}");
             return CellOk;

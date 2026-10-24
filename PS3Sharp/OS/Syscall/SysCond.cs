@@ -24,7 +24,7 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysCondCreate(PPUThread ppu)
         {
-            GuestPtr<uint> cond_id_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
+            GuestPtr<BigEndian<uint>> cond_id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             uint mutex_id = ppu.ReadArg<uint>(Arg1);
             GuestPtr<SysCondAttribute> attribute_ptr = ppu.ReadArg<GuestPtr<SysCondAttribute>>(Arg2);
 

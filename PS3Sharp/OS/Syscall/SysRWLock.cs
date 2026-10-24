@@ -22,7 +22,7 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysRWLockCreate(PPUThread ppu)
         {
-            GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
+            GuestPtr<BigEndian<uint>> id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             GuestPtr<SysRWLockAttribute> attribut_ptr = ppu.ReadArg<GuestPtr<SysRWLockAttribute>>(Arg1);
 
             SysRWLockAttribute attribute = _memoryManager.Read<SysRWLockAttribute>(attribut_ptr);

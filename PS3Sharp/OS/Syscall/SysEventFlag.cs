@@ -22,7 +22,7 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysEventFlagCreate(PPUThread ppu)
         {
-            GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
+            GuestPtr<BigEndian<uint>> id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             GuestVoidPtr attributes_ptr = ppu.ReadArg<GuestVoidPtr>(Arg1);
             ulong initialValue = ppu.ReadArg<ulong>(Arg2);
 
@@ -49,7 +49,7 @@ namespace PS3Sharp.OS.Syscall
             uint id = ppu.ReadArg<uint>(Arg0);
             ulong bitPattern = ppu.ReadArg<ulong>(Arg1);
             uint mode = ppu.ReadArg<uint>(Arg2);
-            GuestPtr<ulong> result_ptr = ppu.ReadArg<GuestPtr<ulong>>(Arg3);
+            GuestPtr<BigEndian<ulong>> result_ptr = ppu.ReadArg<GuestPtr<BigEndian<ulong>>>(Arg3);
             ulong timeout_us = ppu.ReadArg<ulong>(Arg4);
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_flag_wait id = 0x{id:X8} mode = 0x{mode:X8} bp = 0x{bitPattern:X8}");

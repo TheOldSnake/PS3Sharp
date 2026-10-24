@@ -22,7 +22,7 @@ namespace PS3Sharp.OS.Modules
 
         internal ulong CellNetCtlGetState(PPUThread ppu)
         {
-            GuestPtr<uint> state_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
+            GuestPtr<BigEndian<uint>> state_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             _memoryManager.Write<BigEndian<uint>>(state_ptr, CellNetCtlStateIpobtained);
 
             Console.WriteLine($"cellNetCtlGetState -> CELL_NET_CTL_STATE_IPObtained");

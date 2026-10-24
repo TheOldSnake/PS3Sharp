@@ -132,7 +132,7 @@ namespace PS3Sharp.OS.Modules
 
 
             GuestPtr<CellAudioPortParam> param_ptr = ppu.ReadArg<GuestPtr<CellAudioPortParam>>(Arg0);
-            GuestPtr<uint> portNumber_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg1);
+            GuestPtr<BigEndian<uint>> portNumber_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg1);
 
             // Find a closed port to open
             AudioPort? port = null;
@@ -269,8 +269,8 @@ namespace PS3Sharp.OS.Modules
         internal ulong CellAudioCreateNotifyEventQueue(PPUThread ppu)
         {
             // TODO
-            GuestPtr<uint> equeue_id_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
-            GuestPtr<ulong> key_ptr = ppu.ReadArg<GuestPtr<ulong>>(Arg1);
+            GuestPtr<BigEndian<uint>> equeue_id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
+            GuestPtr<BigEndian<ulong>> key_ptr = ppu.ReadArg<GuestPtr<BigEndian<ulong>>>(Arg1);
 
             // Create a lv2_event_queue
             LV2EventQueue eventQueue = new(1024, EventQueueKey, default, _memoryManager);

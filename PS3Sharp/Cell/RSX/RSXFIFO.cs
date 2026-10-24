@@ -659,8 +659,8 @@ namespace PS3Sharp.Cell.RSX
 
             // Get a reference to the (big endian) value, so we don't spam locking the memory
 
-            // GuestPtr<uint> ptr = OffsetToAddress(CurrentState.CurrentSemaphoreOffset, CurrentState.CurrentSemaphoreLocation);
-            GuestPtr<uint> ptr = LabelsPtr + CurrentState.CurrentSemaphoreOffset;
+            // GuestPtr<BigEndian<uint>> ptr = OffsetToAddress(CurrentState.CurrentSemaphoreOffset, CurrentState.CurrentSemaphoreLocation);
+            GuestPtr<BigEndian<uint>> ptr = LabelsPtr + CurrentState.CurrentSemaphoreOffset;
             ref uint be_val = ref _memoryManager.DangerousBigEndianRef<uint>(ptr);
 
             //while (Volatile.Read(ref be_val) != arg.RawBE) {

@@ -17,8 +17,8 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysTimeGetCurrentTime(PPUThread ppu)
         {
-            GuestPtr<long> sec = ppu.ReadArg<GuestPtr<long>>(Arg0);   //sys_time_sec_t*
-            GuestPtr<long> nsec = ppu.ReadArg<GuestPtr<long>>(Arg1);  //sys_time_nsec_t* 
+            GuestPtr<BigEndian<long>> sec = ppu.ReadArg<GuestPtr<BigEndian<long>>>(Arg0);   //sys_time_sec_t*
+            GuestPtr<BigEndian<long>> nsec = ppu.ReadArg<GuestPtr<BigEndian<long>>>(Arg1);  //sys_time_nsec_t* 
 
             _memoryManager.Write<BigEndian<long>>(sec, (long)Utility.GetCurrentSecondsSince1970());
             _memoryManager.Write<BigEndian<long>>(nsec, (long)Utility.GetCurrentNanosecondsSince1970());
@@ -35,8 +35,8 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysTimeGetTimeZone(PPUThread ppu)
         {
-            GuestPtr<uint> timezone_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
-            GuestPtr<uint> summertime_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg1);
+            GuestPtr<BigEndian<uint>> timezone_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
+            GuestPtr<BigEndian<uint>> summertime_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg1);
 
             // todo: get actual timezone values
 

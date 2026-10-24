@@ -13,8 +13,8 @@ namespace PS3Sharp.OS.Modules
     {
         internal struct CellGcmOffsetTable : IPS3Struct
         {
-            internal BigEndianGuestPtr<ushort> ioTableAddress;
-            internal BigEndianGuestPtr<ushort> eaTableAddress;
+            internal BigEndianGuestPtr<BigEndian<ushort>> ioTableAddress;
+            internal BigEndianGuestPtr<BigEndian<ushort>> eaTableAddress;
         }
 
         private static ReadOnlySpan<uint> TILED_PITCHES => [
@@ -479,7 +479,7 @@ namespace PS3Sharp.OS.Modules
 
             GuestVoidPtr address = ppu.ReadArg<GuestVoidPtr>(Arg0);
             uint size = ppu.ReadArg<uint>(Arg1);
-            GuestPtr<uint> offset_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg2);
+            GuestPtr<BigEndian<uint>> offset_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg2);
 
             Console.WriteLine($"[CellGcmSys] cellGcmMapMainMemory -- !!");
 

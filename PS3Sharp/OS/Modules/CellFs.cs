@@ -46,8 +46,8 @@ namespace PS3Sharp.OS.Modules
         internal ulong CellFsGetFreeSize(PPUThread ppu)
         {
             GuestVoidPtr path_ptr = ppu.ReadArg<GuestVoidPtr>(Arg0);
-            GuestPtr<uint> block_size_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg1);
-            GuestPtr<ulong> block_cnt_ptr = ppu.ReadArg<GuestPtr<ulong>>(Arg2);
+            GuestPtr<BigEndian<uint>> block_size_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg1);
+            GuestPtr<BigEndian<ulong>> block_cnt_ptr = ppu.ReadArg<GuestPtr<BigEndian<ulong>>>(Arg2);
 
             _memoryManager.Write<BigEndian<uint>>(block_size_ptr, 4096);
             _memoryManager.Write<BigEndian<ulong>>(block_cnt_ptr, 5242880); // 20gb / 4096

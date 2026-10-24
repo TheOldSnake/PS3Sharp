@@ -95,7 +95,7 @@ namespace PS3Sharp.OS.Modules
 
         internal ulong CellPngDecCreate(PPUThread ppu)
         {
-            GuestPtr<uint> handle_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
+            GuestPtr<BigEndian<uint>> handle_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             uint thread_in_param_ptr = ppu.ReadArg<uint>(Arg1);
             GuestPtr<CellPngDecThreadOutParam> thread_out_param_ptr = ppu.ReadArg<GuestPtr<CellPngDecThreadOutParam>>(Arg2);
 
@@ -121,7 +121,7 @@ namespace PS3Sharp.OS.Modules
         internal ulong CellPngDecOpen(PPUThread ppu)
         {
             uint handle = ppu.ReadArg<uint>(Arg0);
-            GuestPtr<uint> sub_handle_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg1);
+            GuestPtr<BigEndian<uint>> sub_handle_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg1);
             GuestPtr<CellPngDecSrc> src_ptr = ppu.ReadArg<GuestPtr<CellPngDecSrc>>(Arg2);
             GuestVoidPtr open_info_ptr = ppu.ReadArg<GuestVoidPtr>(Arg3);
 

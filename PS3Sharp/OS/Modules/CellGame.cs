@@ -104,8 +104,8 @@ namespace PS3Sharp.OS.Modules
 
         internal ulong CellGameBootCheck(PPUThread ppu)
         {
-            GuestPtr<uint> typePtr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
-            GuestPtr<uint> attribPtr = ppu.ReadArg<GuestPtr<uint>>(Arg1);
+            GuestPtr<BigEndian<uint>> typePtr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
+            GuestPtr<BigEndian<uint>> attribPtr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg1);
             GuestPtr<CellGameContentSize> sizePtr = ppu.ReadArg<GuestPtr<CellGameContentSize>>(Arg2);
             GuestVoidPtr dirPtr = ppu.ReadArg<GuestVoidPtr>(Arg3);
 
@@ -154,7 +154,7 @@ namespace PS3Sharp.OS.Modules
         internal ulong CellGameGetParamInt(PPUThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
-            GuestPtr<uint> value_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg1);
+            GuestPtr<BigEndian<uint>> value_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg1);
 
             string key = CellGameParamId[id];
 
@@ -182,7 +182,7 @@ namespace PS3Sharp.OS.Modules
         internal ulong CellGameGetParamString(PPUThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
-            GuestPtr<uint> bufferPtr = ppu.ReadArg<GuestPtr<uint>>(Arg1);
+            GuestPtr<BigEndian<uint>> bufferPtr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg1);
             int bufferSize = ppu.ReadArg<int>(Arg2);
 
             _memoryManager.ClearMemory(bufferPtr, bufferSize);

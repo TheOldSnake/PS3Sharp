@@ -136,7 +136,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
             ulong dev = ppu.ReadArg<ulong>(Arg0);
             ulong mode = ppu.ReadArg<ulong>(Arg1);
-            GuestPtr<uint> fd_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg2);
+            GuestPtr<BigEndian<uint>> fd_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg2);
             ulong flags = ppu.ReadArg<ulong>(Arg3);
 
             Devices storage = (Devices)(dev & 0xFFFFF00FFFFFFFF);
@@ -187,7 +187,7 @@ namespace PS3Sharp.OS.Syscall
             uint start_sector = ppu.ReadArg<uint>(Arg2);
             uint num_sectors = ppu.ReadArg<uint>(Arg3);
             GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(Arg4);
-            GuestPtr<uint> sectors_read = ppu.ReadArg<GuestPtr<uint>>(Arg5);
+            GuestPtr<BigEndian<uint>> sectors_read = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg5);
             ulong flags = ppu.ReadArg<ulong>(Arg6);
 
 

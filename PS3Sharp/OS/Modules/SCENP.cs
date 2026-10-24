@@ -52,7 +52,7 @@ namespace PS3Sharp.OS.Modules
 
         internal ulong SCENpManagerGetStatus(PPUThread ppu)
         {
-            GuestPtr<int> stat_ptr = ppu.ReadArg<GuestPtr<int>>(Arg0);
+            GuestPtr<BigEndian<int>> stat_ptr = ppu.ReadArg<GuestPtr<BigEndian<int>>>(Arg0);
             _memoryManager.Write<BigEndian<int>>(stat_ptr, SceNpManagerStatusOffline);
             return CellOk;
         }

@@ -22,7 +22,7 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysSemaphoreCreate(PPUThread ppu)
         {
-            GuestPtr<uint> semaphore_id_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
+            GuestPtr<BigEndian<uint>> semaphore_id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             GuestPtr<SysSemaphoreAttribute> semaphore_attribute_ptr = ppu.ReadArg<GuestPtr<SysSemaphoreAttribute>>(Arg1);
             uint initialCount = ppu.ReadArg<uint>(Arg2);
             uint maxCount = ppu.ReadArg<uint>(Arg3);

@@ -142,7 +142,7 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysSpuThreadGroupCreate(PPUThread ppu)
         {
-            GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
+            GuestPtr<BigEndian<uint>> id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             uint num = ppu.ReadArg<uint>(Arg1);
             int prio = ppu.ReadArg<int>(Arg2);
             GuestPtr<SysSPUThreadGroupAttribute> attr_ptr = ppu.ReadArg<GuestPtr<SysSPUThreadGroupAttribute>>(Arg3);
@@ -158,7 +158,7 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysSpuThreadInitialize(PPUThread ppu)
         {
-            GuestPtr<uint> id_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
+            GuestPtr<BigEndian<uint>> id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             uint group_id = ppu.ReadArg<uint>(Arg1);
             uint spu_num = ppu.ReadArg<uint>(Arg2);     // ?
 

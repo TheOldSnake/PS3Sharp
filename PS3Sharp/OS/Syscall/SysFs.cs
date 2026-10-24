@@ -225,7 +225,7 @@ namespace PS3Sharp.OS.Syscall
         {
             uint pathPtr = ppu.ReadArg<uint>(Arg0);
             uint flags = ppu.ReadArg<uint>(Arg1);
-            GuestPtr<int> fdPtr = ppu.ReadArg<GuestPtr<int>>(Arg2);
+            GuestPtr<BigEndian<int>> fdPtr = ppu.ReadArg<GuestPtr<BigEndian<int>>>(Arg2);
 
             // uint64_t mode, const void *arg, uint64_t size <- ARG3/4/5
             // the mode is only in the syscall not the library
@@ -278,7 +278,7 @@ namespace PS3Sharp.OS.Syscall
             int fd = ppu.ReadArg<int>(Arg0);
             long offset = ppu.ReadArg<long>(Arg1);
             int whence = ppu.ReadArg<int>(Arg2);
-            GuestPtr<ulong> posPtr = ppu.ReadArg<GuestPtr<ulong>>(Arg3);
+            GuestPtr<BigEndian<ulong>> posPtr = ppu.ReadArg<GuestPtr<BigEndian<ulong>>>(Arg3);
 
             // Console.WriteLine($"[{ppu.ThreadName}] [SysFsLseek] cellFsLseek fd = 0x{fd:X} seek offset: 0x{offset:X} mode = {whence}");
 
@@ -298,7 +298,7 @@ namespace PS3Sharp.OS.Syscall
             int fd = ppu.ReadArg<int>(Arg0);
             GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(Arg1);
             ulong nbytes = ppu.ReadArg<ulong>(Arg2);
-            GuestPtr<ulong> nreadPtr = ppu.ReadArg<GuestPtr<ulong>>(Arg3);
+            GuestPtr<BigEndian<ulong>> nreadPtr = ppu.ReadArg<GuestPtr<BigEndian<ulong>>>(Arg3);
 
             // MemoryManager.MemoryBlock block = _memoryManager.GetAllocationByVirtualAddress(buf);
             // Console.WriteLine($"[{ppu.ThreadName}] [SysFsRead] cellFsRead fd = 0x{fd:X} amount: 0x{nbytes:X} dest: 0x{buf:X} base = 0x{b.VirtualAddress:X8}");
@@ -326,7 +326,7 @@ namespace PS3Sharp.OS.Syscall
             int fd = ppu.ReadArg<int>(Arg0);
             GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(Arg1);
             ulong nbytes = ppu.ReadArg<ulong>(Arg2);
-            GuestPtr<ulong> nwrite_ptr = ppu.ReadArg<GuestPtr<ulong>>(Arg3);
+            GuestPtr<BigEndian<ulong>> nwrite_ptr = ppu.ReadArg<GuestPtr<BigEndian<ulong>>>(Arg3);
 
             ulong nrwite = _fileSystemManager.Write(fd, (int)nbytes, buf);
             _memoryManager.Write<BigEndian<ulong>>(nwrite_ptr, nrwite); //Write back the number of bytes written
@@ -354,7 +354,7 @@ namespace PS3Sharp.OS.Syscall
         internal ulong SysFsOpenDir(PPUThread ppu)
         {
             GuestVoidPtr pathPtr = ppu.ReadArg<GuestVoidPtr>(Arg0);
-            GuestPtr<uint> fdPtr = ppu.ReadArg<GuestPtr<uint>>(Arg1);
+            GuestPtr<BigEndian<uint>> fdPtr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg1);
 
             string guestPath = _memoryManager.ReadString(pathPtr);
             string hostPath = GetHostPath(guestPath);
@@ -380,7 +380,7 @@ namespace PS3Sharp.OS.Syscall
         {
             int fd = ppu.ReadArg<int>(Arg0);
             GuestPtr<CellFsDirent> direentPtr = ppu.ReadArg<GuestPtr<CellFsDirent>>(Arg1);
-            GuestPtr<ulong> bytesReadPtr = ppu.ReadArg<GuestPtr<ulong>>(Arg2);
+            GuestPtr<BigEndian<ulong>> bytesReadPtr = ppu.ReadArg<GuestPtr<BigEndian<ulong>>>(Arg2);
 
             ulong bytesRead = _fileSystemManager.ReadDirectory(fd, out CellFsDirent dirent);
 

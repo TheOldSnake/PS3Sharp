@@ -62,7 +62,7 @@ namespace PS3Sharp.Syscall
             ulong ipc_key = ppu.ReadArg<ulong>(Arg0);
             ulong size = ppu.ReadArg<ulong>(Arg1);
             ulong flags = ppu.ReadArg<ulong>(Arg2);
-            GuestPtr<uint> handle_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg3);
+            GuestPtr<BigEndian<uint>> handle_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg3);
 
             // todo: check if we have enough memory
 

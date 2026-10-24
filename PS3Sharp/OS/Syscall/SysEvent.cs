@@ -35,7 +35,7 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysEventQueueCreate(PPUThread ppu)
         {
-            GuestPtr<uint> queue_id_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
+            GuestPtr<BigEndian<uint>> queue_id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             GuestPtr<SysEventQueueAttribute> queue_attribute_ptr = ppu.ReadArg<GuestPtr<SysEventQueueAttribute>>(Arg1);
             ulong sys_ipc_key = ppu.ReadArg<ulong>(Arg2);   //used to connect by sys_event_port?
             int size = ppu.ReadArg<int>(Arg3);
@@ -108,7 +108,7 @@ namespace PS3Sharp.OS.Syscall
             uint queue_id = ppu.ReadArg<uint>(Arg0);
             GuestPtr<SysEventData> event_array_ptr = ppu.ReadArg<GuestPtr<SysEventData>>(Arg1);
             int number_of_events = ppu.ReadArg<int>(Arg2);
-            GuestPtr<int> read_ptr = ppu.ReadArg<GuestPtr<int>>(Arg3); //number of events that we could read
+            GuestPtr<BigEndian<int>> read_ptr = ppu.ReadArg<GuestPtr<BigEndian<int>>>(Arg3); //number of events that we could read
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_queue_tryreceive -- queue id = 0x{queue_id:X8}");
 
@@ -148,7 +148,7 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysEventPortCreate(PPUThread ppu)
         {
-            GuestPtr<uint> eport_id_ptr = ppu.ReadArg<GuestPtr<uint>>(Arg0);
+            GuestPtr<BigEndian<uint>> eport_id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             int port_type = ppu.ReadArg<int>(Arg1);
             ulong name = ppu.ReadArg<ulong>(Arg2);
 

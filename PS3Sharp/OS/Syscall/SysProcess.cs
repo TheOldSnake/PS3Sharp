@@ -48,7 +48,7 @@ namespace PS3Sharp.OS.Syscall
         internal ulong SysProcessGetSDKVersion(PPUThread ppu)
         {
             uint pid = ppu.ReadArg<uint>(Arg0);
-            GuestPtr<uint> ptr = ppu.ReadArg<GuestPtr<uint>>(Arg1);
+            GuestPtr<BigEndian<uint>> ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg1);
             _memoryManager.Write<BigEndian<uint>>(ptr, 0x00360001);
             return CellOk;
         }
