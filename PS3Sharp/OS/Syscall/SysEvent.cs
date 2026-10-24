@@ -23,13 +23,12 @@ namespace PS3Sharp.OS.Syscall
             _memoryManager = memoryManager;
         }
 
-        internal bool GetEventQueueBindingByIPCkey(ulong ipc_key, out LV2EventQueue? eventQueue)
+        internal bool TryGetEventQueueByIPCkey(ulong ipc_key, [NotNullWhen(true)] out LV2EventQueue? eventQueue)
         {
-            //Search for the queue -- we should probably use another dictionary to look up using ipc_key directly
+            // Search for the queue -- we should probably use another dictionary to look up using ipc_key directly
             eventQueue = _eventQueues.FirstOrDefault(eventQueue => eventQueue.Value.IPCKey == ipc_key).Value;
             return eventQueue != null;
         }
-
 
         // sys_event_queue syscalls
 
@@ -37,7 +36,7 @@ namespace PS3Sharp.OS.Syscall
         {
             GuestPtr<BigEndian<uint>> queue_id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             GuestPtr<SysEventQueueAttribute> queue_attribute_ptr = ppu.ReadArg<GuestPtr<SysEventQueueAttribute>>(Arg1);
-            ulong sys_ipc_key = ppu.ReadArg<ulong>(Arg2);   //used to connect by sys_event_port?
+            ulong sys_ipc_key = ppu.ReadArg<ulong>(Arg2);   // used to connect by sys_event_port?
             int size = ppu.ReadArg<int>(Arg3);
 
             // Create the queue
@@ -88,7 +87,6 @@ namespace PS3Sharp.OS.Syscall
                 ppu.WriteReg<ulong>(7, sysEventData.Data3);
             }
 
-
             return errorCode;
         }
 
@@ -98,7 +96,7 @@ namespace PS3Sharp.OS.Syscall
             int mode = ppu.ReadArg<int>(Arg1);      //?
 
             RemoveEventQueue(queue_id);
-            //Console.WriteLine($"[{ppu.ThreadName}] sys_event_queue_destroy -- queue id = 0x{queue_id:X8}");
+            // Console.WriteLine($"[{ppu.ThreadName}] sys_event_queue_destroy -- queue id = 0x{queue_id:X8}");
 
             return CellOk;
         }
@@ -118,11 +116,7 @@ namespace PS3Sharp.OS.Syscall
             }
 
             ReadOnlySpan<SysEventData> received = eventQueue.TryReceive(number_of_events);
-
-            // Write to the array, we can copy raw bytes because the struct is big endian
-            ReadOnlySpan<byte> bytes = MemoryMarshal.Cast<SysEventData, byte>(received);
-            _memoryManager.CopyBufferToVirtualMemory(bytes, event_array_ptr);
-
+            _memoryManager.WriteArray(event_array_ptr, received);
             _memoryManager.Write<BigEndian<int>>(read_ptr, received.Length);
 
             // Are there errors ?
@@ -141,6 +135,7 @@ namespace PS3Sharp.OS.Syscall
             }
 
             eventQueue.Drain();
+
             return CellOk;
         }
 
@@ -160,6 +155,7 @@ namespace PS3Sharp.OS.Syscall
             _memoryManager.Write<BigEndian<uint>>(eport_id_ptr, eventPort.Handle);
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_port_create -- id = 0x{eventPort.Handle:X8}");
+
             return CellOk;
         }
 
@@ -170,6 +166,7 @@ namespace PS3Sharp.OS.Syscall
             RemoveEventPort(eport_id);
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_port_destroy -- eport_id = 0x{eport_id:X8}");
+
             return CellOk;
         }
 
@@ -178,39 +175,43 @@ namespace PS3Sharp.OS.Syscall
             uint event_port_id = ppu.ReadArg<uint>(Arg0);
             uint queue_id = ppu.ReadArg<uint>(Arg1);
 
-            bool foundPort = TryGetEventPortByID(event_port_id, out LV2EventPort? eventPort);
-            bool foundEventQueue = TryGetEventQueueByID(queue_id, out LV2EventQueue? eventQueue);
-
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_port_connect_local -- eport_id = 0x{event_port_id:X8} -> event_queue_id = 0x{queue_id:X8}");
 
-            if (!foundPort || !foundEventQueue)
+            if (!TryGetEventPortByID(event_port_id, out LV2EventPort? eventPort))
             {
-                return CellESrch;
-            }
+				return CellESrch;
+			}
 
-            eventPort.Connect(eventQueue);
+			if (!TryGetEventQueueByID(queue_id, out LV2EventQueue? eventQueue))
+			{
+				return CellESrch;
+			}
 
-            return CellOk;
-        }
+			eventPort.Connect(eventQueue);
 
-        internal ulong SysEventPortConnectIPC(PPUThread ppu)
+			return CellOk;
+		}
+
+		internal ulong SysEventPortConnectIPC(PPUThread ppu)
         {
             uint event_port_id = ppu.ReadArg<uint>(Arg0);
             ulong ipc_key = ppu.ReadArg<ulong>(Arg1);
 
-            bool foundPort = TryGetEventPortByID(event_port_id, out LV2EventPort? eventPort);
-            bool foundEventQueue = GetEventQueueBindingByIPCkey(ipc_key, out LV2EventQueue? eventQueue);
+			//Console.WriteLine($"[{ppu.ThreadName}]  sys_event_port_connect_ipc -- eport_id = 0x{event_port_id:X8} -> event_queue_id = 0x{ipc_key:X8}");
 
-            //Console.WriteLine($"[{ppu.ThreadName}]  sys_event_port_connect_ipc -- eport_id = 0x{event_port_id:X8} -> event_queue_id = 0x{ipc_key:X8}");
+			if (!TryGetEventPortByID(event_port_id, out LV2EventPort? eventPort))
+			{
+				return CellESrch;
+			}
 
-            if (!foundPort || !foundEventQueue)
-            {
-                return CellESrch;
-            }
+			if (!TryGetEventQueueByIPCkey(ipc_key, out LV2EventQueue? eventQueue))
+			{
+				return CellESrch;
+			}
 
-            eventPort.Connect(eventQueue);
+			eventPort.Connect(eventQueue);
 
-            return CellOk;
+			return CellOk;
         }
 
         internal ulong SysEventPortDisconnect(PPUThread ppu)
@@ -244,12 +245,13 @@ namespace PS3Sharp.OS.Syscall
             eventPort.Send(data1, data2, data3);
 
             //Console.WriteLine($"[{ppu.ThreadName}] sys_event_port_send -- eport_id = 0x{event_port_id:X8}");
+
             return CellOk;
         }
 
         internal bool TryGetEventQueueByID(uint id, [NotNullWhen(true)] out LV2EventQueue? eventQueue) => _eventQueues.TryGetValue(id, out eventQueue);
 
-        internal bool TryGetEventPortByID(uint id, out LV2EventPort? evenPort) => _eventPorts.TryGetValue(id, out evenPort);
+        internal bool TryGetEventPortByID(uint id, [NotNullWhen(true)] out LV2EventPort? evenPort) => _eventPorts.TryGetValue(id, out evenPort);
 
         // Request may come from Cell Audio
         internal void AddEventQueue(uint handle, LV2EventQueue eventQueue)
