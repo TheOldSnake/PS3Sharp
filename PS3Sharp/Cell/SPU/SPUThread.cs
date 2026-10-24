@@ -30,9 +30,7 @@ namespace PS3Sharp.Cell.SPU
         internal uint GroupID { get; } = 0xFFFFFFFF;
         internal SysSpu.SysSPUImage Image { get; }
         internal SysSpu.SysSPUThreadArgument Argument { get; }
-
         internal Lock Lock { get; } = new();
-
 
         // Allocate State
         internal static readonly int StateSize = sizeof(SPUState);
@@ -48,7 +46,6 @@ namespace PS3Sharp.Cell.SPU
         internal ThreadStatus Status { get; private set; } = ThreadStatus.Stopped;
         internal MemoryManager MemoryManager { get; }
 
-        // TODO: Move to thread manager
         internal SPUThread(string name, uint id, uint groupID, SysSpu.SysSPUImage img, SysSpu.SysSPUThreadArgument arg, MemoryManager memoryManager)
         {
             NativeThread = new Thread(RunSPU)
