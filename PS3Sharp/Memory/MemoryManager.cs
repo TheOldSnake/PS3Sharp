@@ -150,6 +150,12 @@ namespace PS3Sharp.Memory
             return instruction;
         }
 
+        internal uint ReadSPUInstruction(uint virtualAddress)
+        {
+            BigEndian<uint> instruction = Read<BigEndian<uint>>(virtualAddress);
+            return instruction;
+        }
+
         internal void Write<T>(uint virtualAddress, in T value) where T : unmanaged
         {
             unsafe
