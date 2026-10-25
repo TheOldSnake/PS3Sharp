@@ -142,15 +142,15 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysSpuThreadGroupCreate(PPUThread ppu)
         {
-            GuestPtr<BigEndian<uint>> id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
+            GuestPtr<BigEndian<uint>> idPtr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             uint num = ppu.ReadArg<uint>(Arg1);
             int prio = ppu.ReadArg<int>(Arg2);
-            GuestPtr<SysSPUThreadGroupAttribute> attr_ptr = ppu.ReadArg<GuestPtr<SysSPUThreadGroupAttribute>>(Arg3);
+            GuestPtr<SysSPUThreadGroupAttribute> attribPtr = ppu.ReadArg<GuestPtr<SysSPUThreadGroupAttribute>>(Arg3);
 
             // Create the thread group
-            LV2SpuThreadGroup group = new(_threadManager, _memoryManager, attr_ptr, num, prio);
+            LV2SpuThreadGroup group = new(_threadManager, _memoryManager, attribPtr, num, prio);
             AddSpuThreadGroup(group);
-            _memoryManager.Write<BigEndian<uint>>(id_ptr, group.Handle);
+            _memoryManager.Write<BigEndian<uint>>(idPtr, group.Handle);
 
             Console.WriteLine($"[SysSPUThreadInitialize] Created SPU group: 0x{group.Handle:X8}");
             return CellOk;
@@ -158,43 +158,43 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysSpuThreadInitialize(PPUThread ppu)
         {
-            GuestPtr<BigEndian<uint>> id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
-            uint group_id = ppu.ReadArg<uint>(Arg1);
-            uint spu_num = ppu.ReadArg<uint>(Arg2);     // ?
+            GuestPtr<BigEndian<uint>> idPtr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
+            uint groupId = ppu.ReadArg<uint>(Arg1);
+            uint spuNum = ppu.ReadArg<uint>(Arg2);     // ?
 
-            GuestPtr<SysSPUImage> img_ptr = ppu.ReadArg<GuestPtr<SysSPUImage>>(Arg3);
-            GuestPtr<SysSPUThreadAttribute> attr_ptr = ppu.ReadArg<GuestPtr<SysSPUThreadAttribute>>(Arg4);
-            GuestPtr<SysSPUThreadArgument> arg_ptr = ppu.ReadArg<GuestPtr<SysSPUThreadArgument>>(Arg5);
+            GuestPtr<SysSPUImage> imgPtr = ppu.ReadArg<GuestPtr<SysSPUImage>>(Arg3);
+            GuestPtr<SysSPUThreadAttribute> attribPtr = ppu.ReadArg<GuestPtr<SysSPUThreadAttribute>>(Arg4);
+            GuestPtr<SysSPUThreadArgument> argPtr = ppu.ReadArg<GuestPtr<SysSPUThreadArgument>>(Arg5);
 
             // there is a lot more checks and errors to be added
-            if (!TryGetSpuThreadGroup(group_id, out LV2SpuThreadGroup? threadGroup))
+            if (!TryGetSpuThreadGroup(groupId, out LV2SpuThreadGroup? threadGroup))
             {
                 return CellESrch;
             }
 
-            SysSPUImage img = _memoryManager.Read<SysSPUImage>(img_ptr);
-            SysSPUThreadAttribute attrib = _memoryManager.Read<SysSPUThreadAttribute>(attr_ptr);
-            SysSPUThreadArgument arg = _memoryManager.Read<SysSPUThreadArgument>(arg_ptr);
+            SysSPUImage img = _memoryManager.Read<SysSPUImage>(imgPtr);
+            SysSPUThreadAttribute attrib = _memoryManager.Read<SysSPUThreadAttribute>(attribPtr);
+            SysSPUThreadArgument arg = _memoryManager.Read<SysSPUThreadArgument>(argPtr);
             SPUThread spu = threadGroup.CreateSpuThread(img, attrib, arg);
 
-            _memoryManager.Write<BigEndian<uint>>(id_ptr, spu.ID);
+            _memoryManager.Write<BigEndian<uint>>(idPtr, spu.ID);
 
-            Console.WriteLine($"[SysSPUThreadInitialize] Created SPU thread: {spu.ThreadName} - Group: 0x{group_id:X8} entry = 0x{img.Entry:X8}");
+            Console.WriteLine($"[SysSPUThreadInitialize] Created SPU thread: {spu.ThreadName} - Group: 0x{groupId:X8} entry = 0x{img.Entry:X8}");
             return CellOk;
         }
 
         internal ulong SysSpuThreadGroupStart(PPUThread ppu)
         {
-            uint group_id = ppu.ReadArg<uint>(Arg0);
+            uint groupId = ppu.ReadArg<uint>(Arg0);
 
-            if (!TryGetSpuThreadGroup(group_id, out LV2SpuThreadGroup? threadGroup))
+            if (!TryGetSpuThreadGroup(groupId, out LV2SpuThreadGroup? threadGroup))
             {
                 return CellESrch;
             }
 
             threadGroup.StartGroup();
 
-            Console.WriteLine($"[SysSPUThreadGroupStart] Started SPU group: 0x{group_id:X8}");
+            Console.WriteLine($"[SysSPUThreadGroupStart] Started SPU group: 0x{groupId:X8}");
             //throw new Exception("todo");
 
             return CellOk;
