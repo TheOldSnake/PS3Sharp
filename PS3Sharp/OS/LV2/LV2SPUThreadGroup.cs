@@ -5,49 +5,67 @@ using static PS3Sharp.OS.Syscall.SysSpu;
 
 namespace PS3Sharp.OS.LV2
 {
-    internal sealed class LV2SPUThreadGroup
+    internal sealed class LV2SpuThreadGroup
     {
+        private readonly ThreadManager _threadManager;
         private readonly MemoryManager _memoryManager;
         private bool _started = false;
         private readonly ManualResetEventSlim _groupFinished = new(false);
-
-        internal uint Handle { get; }
-        internal GuestPtr<SysSPUThreadGroupAttribute> AttributePtr { get; }
-        internal uint Number { get; }
-        internal int Priority { get; }
-        internal List<SPUThread> SPUThreads { get; } = [];
+        private readonly List<SPUThread> _spuThreads = [];
+        private readonly Lock _groupLock = new();
 
         private LV2EventQueue? _runEvents;
         private LV2EventQueue? _exceptionEvents;
         private LV2EventQueue? _sysModuleEvents;
 
-        internal LV2SPUThreadGroup(GuestPtr<SysSPUThreadGroupAttribute> attrib_ptr, uint number, int prio, MemoryManager memoryManager)
+        internal uint Handle { get; }
+        internal GuestPtr<SysSPUThreadGroupAttribute> AttributePtr { get; }
+        internal uint Number { get; }
+        internal int Priority { get; }
+
+        internal LV2SpuThreadGroup(ThreadManager threadManager, MemoryManager memoryManager, GuestPtr<SysSPUThreadGroupAttribute> attribPtr, uint number, int prio)
         {
-            AttributePtr = attrib_ptr;
+            _threadManager = threadManager;
+            _memoryManager = memoryManager;
+            AttributePtr = attribPtr;
             Number = number;
             Priority = prio;
-            _memoryManager = memoryManager;
             Handle = _memoryManager.GetHandle();
         }
 
-        internal void AddThread(SPUThread spu)
+        internal SPUThread CreateSpuThread(SysSPUImage img, SysSPUThreadAttribute attribute, SysSPUThreadArgument arg)
         {
-            SPUThreads.Add(spu);
+            using (_groupLock.EnterScope())
+            {
+                uint count = (uint)(_spuThreads.Count & 0xFF);
+                uint id = (count << 24) | (Handle & 0xFFFFFF);
+
+                GuestVoidPtr name_ptr = attribute.NamePtr;
+                string thread_name = name_ptr.IsNullPtr ? "Unnamed-SPU" : _memoryManager.ReadString(name_ptr);
+
+                SPUThread spu = _threadManager.CreateSPUThread(thread_name, id, Handle, img, arg);
+                _spuThreads.Add(spu);
+
+                return spu;
+            }
         }
 
         internal void StartGroup()
         {
-            if (_started)
+            using ( _groupLock.EnterScope())
             {
-                return;
-            }
+                if (_started)
+                {
+                    return;
+                }
 
-            for (int i = 0; i < SPUThreads.Count; i++)
-            {
-                SPUThreads[i].Start();
-            }
+                for (int i = 0; i < _spuThreads.Count; i++)
+                {
+                    _spuThreads[i].Start();
+                }
 
-            _started = true;
+                _started = true;
+            }
         }
 
         internal void JoinGroup()
@@ -57,25 +75,84 @@ namespace PS3Sharp.OS.LV2
 
         internal bool SetEventQueue(uint type, LV2EventQueue eventQueue)
         {
-            switch (type)
+            using (_groupLock.EnterScope())
             {
-                case SysSpuThreadGroupEventRun:
-                    _runEvents = eventQueue;
-                    break;
+                switch (type)
+                {
+                    case SysSpuThreadGroupEventRun:
+                        _runEvents = eventQueue;
+                        break;
 
-                case SysSpuThreadGroupEventException:
-                    _exceptionEvents = eventQueue;
-                    break;
+                    case SysSpuThreadGroupEventException:
+                        _exceptionEvents = eventQueue;
+                        break;
 
-                case SysSpuThreadGroupEventSystemModule:
-                    _sysModuleEvents = eventQueue;
-                    break;
+                    case SysSpuThreadGroupEventSystemModule:
+                        _sysModuleEvents = eventQueue;
+                        break;
 
-                default:
-                    return false;
+                    default:
+                        return false;
+                }
+
+                return true;
             }
+        }
 
-            return true;
+        internal bool TryConnectEventAllThreads(ulong req, uint equeueId, out byte portNumber)
+        {
+            using(_groupLock.EnterScope())
+            {
+                // Find a port that is free on all SPU threads 
+                List<SPUThread> threads = _spuThreads;
+                byte port = 0;
+                bool foundFreePort = false;
+
+                for (port = 0; port < 64; port++)
+                {
+                    // Skip not requested ports
+                    bool request = ((req >> port) & 1) != 0;
+
+                    if (!request)
+                    {
+                        continue;
+                    }
+
+                    // Check all threads      
+                    foundFreePort = true;
+
+                    foreach (SPUThread spu in threads)
+                    {
+                        if (!spu.PortIsFree(port))
+                        {
+                            foundFreePort = false;
+                            break;
+                        }
+                    }
+
+                    if (foundFreePort)
+                    {
+                        break;
+                    }
+                }
+
+                if (foundFreePort)
+                {
+                    // Connect the port to all spu threads
+                    for (int i = 0; i < threads.Count; i++)
+                    {
+                        threads[i].SetPort(port, equeueId);
+                    }
+
+                    portNumber = port;
+                    return true;
+                }
+                else
+                {
+                    portNumber = 0;
+                    return false;
+                }
+            }
         }
     }
 }
