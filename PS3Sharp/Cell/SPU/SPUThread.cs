@@ -99,10 +99,16 @@ namespace PS3Sharp.Cell.SPU
 
         internal void Start()
         {
+            Status = ThreadStatus.Running;
+
             LoadImage();
             SetArgs();
 
-            Status = ThreadStatus.Running;
+            unsafe
+            {
+                State->PC = Image.Entry;
+            }
+
             NativeThread.Start();
         }
 
