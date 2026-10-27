@@ -73,12 +73,12 @@ namespace PS3Sharp
 
                 if (sizeof(GuestPtr<byte>) != sizeof(uint))
                 {
-                    throw new InvalidOperationException($"Unexpected byte pointer Size = {sizeof(GuestVoidPtr)}");
+                    throw new InvalidOperationException($"Unexpected byte pointer Size = {sizeof(GuestPtr<byte>)}");
                 }
 
                 if (sizeof(BigEndianGuestPtr<byte>) != sizeof(uint))
                 {
-                    throw new InvalidOperationException($"Unexpected big endian byte pointer Size = {sizeof(GuestVoidPtr)}");
+                    throw new InvalidOperationException($"Unexpected big endian byte pointer Size = {sizeof(BigEndianGuestPtr<byte>)}");
                 }
             }
         }
