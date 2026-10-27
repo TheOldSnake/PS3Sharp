@@ -6,6 +6,7 @@ namespace PS3Sharp
     {
         internal static void Main()
         {
+            SanityChecks.DoSanityChecks();
             using Emulator emulator = new();
             emulator.RunEmulator();
         }
