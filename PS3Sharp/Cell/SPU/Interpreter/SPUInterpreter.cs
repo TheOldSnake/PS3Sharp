@@ -580,12 +580,12 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             {
                 SPUState* state = spu.State;
                 Span<uint> raLanes = state->GPR[ra].UInts;
-                Span<int> rtLanes = state->GPR[rt].Ints;
-
-                rtLanes[0] = BitOperations.LeadingZeroCount(raLanes[0]);
-                rtLanes[1] = BitOperations.LeadingZeroCount(raLanes[1]);
-                rtLanes[2] = BitOperations.LeadingZeroCount(raLanes[2]);
-                rtLanes[3] = BitOperations.LeadingZeroCount(raLanes[3]);
+                Span<uint> rtLanes = state->GPR[rt].UInts;
+                
+                rtLanes[0] = uint.LeadingZeroCount(raLanes[0]);
+                rtLanes[1] = uint.LeadingZeroCount(raLanes[1]);
+                rtLanes[2] = uint.LeadingZeroCount(raLanes[2]);
+                rtLanes[3] = uint.LeadingZeroCount(raLanes[3]);
             }
         }
 
