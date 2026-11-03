@@ -11,7 +11,7 @@ namespace PS3Sharp.OS.LV2
         private readonly MemoryManager _memoryManager;
         private bool _started = false;
         private readonly ManualResetEventSlim _groupFinished = new(false);
-        private readonly List<SPUThread> _spuThreads = [];
+        private readonly List<SpuThread> _spuThreads = [];
         private readonly Lock _groupLock = new();
 
         private LV2EventQueue? _runEvents;
@@ -33,7 +33,7 @@ namespace PS3Sharp.OS.LV2
             Handle = _memoryManager.GetHandle();
         }
 
-        internal SPUThread CreateSpuThread(SysSPUImage img, SysSPUThreadAttribute attribute, SysSPUThreadArgument arg)
+        internal SpuThread CreateSpuThread(SysSPUImage img, SysSPUThreadAttribute attribute, SysSPUThreadArgument arg)
         {
             using (_groupLock.EnterScope())
             {
@@ -43,7 +43,7 @@ namespace PS3Sharp.OS.LV2
                 GuestVoidPtr name_ptr = attribute.NamePtr;
                 string thread_name = name_ptr.IsNullPtr ? "Unnamed-SPU" : _memoryManager.ReadString(name_ptr);
 
-                SPUThread spu = _threadManager.CreateSPUThread(thread_name, id, Handle, img, arg);
+                SpuThread spu = _threadManager.CreateSPUThread(thread_name, id, Handle, img, arg);
                 _spuThreads.Add(spu);
 
                 return spu;
@@ -104,7 +104,7 @@ namespace PS3Sharp.OS.LV2
             using(_groupLock.EnterScope())
             {
                 // Find a port that is free on all SPU threads 
-                List<SPUThread> threads = _spuThreads;
+                List<SpuThread> threads = _spuThreads;
                 byte port = 0;
                 bool foundFreePort = false;
 
@@ -121,7 +121,7 @@ namespace PS3Sharp.OS.LV2
                     // Check all threads      
                     foundFreePort = true;
 
-                    foreach (SPUThread spu in threads)
+                    foreach (SpuThread spu in threads)
                     {
                         if (!spu.PortIsFree(port))
                         {

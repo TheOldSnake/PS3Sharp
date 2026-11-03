@@ -8,7 +8,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace PS3Sharp.Cell.SPU
 {
-    internal unsafe sealed class SPUThread : IDisposable
+    internal unsafe sealed class SpuThread : IDisposable
     {
         // Atomic stat bits for Put/Get lock-line commands
         internal const uint PutllcSucceeded = 0;
@@ -84,7 +84,7 @@ namespace PS3Sharp.Cell.SPU
         internal ThreadStatus Status { get; private set; } = ThreadStatus.Stopped;
         internal MemoryManager MemoryManager { get; }
 
-        internal SPUThread(string name, uint id, uint groupID, SysSpu.SysSPUImage img, SysSpu.SysSPUThreadArgument arg, MemoryManager memoryManager)
+        internal SpuThread(string name, uint id, uint groupID, SysSpu.SysSPUImage img, SysSpu.SysSPUThreadArgument arg, MemoryManager memoryManager)
         {
             NativeThread = new Thread(RunSPU)
             {
@@ -213,7 +213,7 @@ namespace PS3Sharp.Cell.SPU
             {
                 while (true)
                 {
-                    SPUInterpreter.Step(this);
+                    SpuInterpreter.Step(this);
                 }
             }
             catch (Exception ex)
@@ -233,11 +233,11 @@ namespace PS3Sharp.Cell.SPU
             Unsafe.WriteUnaligned(LsPtr + offset, value);
         }
 
-        internal SPUInstruction ReadInstruction()
+        internal SpuInstruction ReadInstruction()
         {
             unsafe
             {
-                SPUInstruction instruction = new()
+                SpuInstruction instruction = new()
                 {
                     Raw = ReadStorage<BigEndian<int>>(State->PC),
                 };

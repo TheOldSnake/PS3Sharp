@@ -1,6 +1,6 @@
 ﻿namespace PS3Sharp.Cell.SPU
 {
-    internal readonly struct SPUInstruction
+    internal readonly struct SpuInstruction
     {
         internal const int Se10Shift = 32 - 10;
         internal const int Se7Shift = 32 - 7;

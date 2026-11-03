@@ -175,7 +175,7 @@ namespace PS3Sharp.OS.Syscall
             SysSPUImage img = _memoryManager.Read<SysSPUImage>(imgPtr);
             SysSPUThreadAttribute attrib = _memoryManager.Read<SysSPUThreadAttribute>(attribPtr);
             SysSPUThreadArgument arg = _memoryManager.Read<SysSPUThreadArgument>(argPtr);
-            SPUThread spu = threadGroup.CreateSpuThread(img, attrib, arg);
+            SpuThread spu = threadGroup.CreateSpuThread(img, attrib, arg);
 
             _memoryManager.Write<BigEndian<uint>>(idPtr, spu.ID);
 

@@ -1,26 +1,25 @@
 ﻿using PS3Sharp.Common;
-using System.Numerics;
 using System.Runtime.Intrinsics;
-using static PS3Sharp.Cell.SPU.SPUThread;
+using static PS3Sharp.Cell.SPU.SpuThread;
 
 namespace PS3Sharp.Cell.SPU.Interpreter
 {
-    internal class SPUInterpreter
+    internal class SpuInterpreter
     {
         internal const int PreferredSlot = 3;
 
-        internal static void Step(SPUThread spu)
+        internal static void Step(SpuThread spu)
         {
-            SPUInstruction instruction = spu.ReadInstruction();
+            SpuInstruction instruction = spu.ReadInstruction();
             HandleInstruction(spu, instruction);
         }
 
-        internal static void HandleInstruction(SPUThread spu, SPUInstruction instruction)
+        internal static void HandleInstruction(SpuThread spu, SpuInstruction instruction)
         {
             GroupRR17(spu, instruction);
         }
 
-        internal static void GroupRR17(SPUThread spu, SPUInstruction instruction)
+        internal static void GroupRR17(SpuThread spu, SpuInstruction instruction)
         {
             switch (instruction.RR17Op)
             {
@@ -162,7 +161,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        internal static void GroupRI16(SPUThread spu, SPUInstruction instruction)
+        internal static void GroupRI16(SpuThread spu, SpuInstruction instruction)
         {
             switch (instruction.RI16Op)
             {
@@ -212,7 +211,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        internal static void GroupRI10(SPUThread spu, SPUInstruction instruction)
+        internal static void GroupRI10(SpuThread spu, SpuInstruction instruction)
         {
             switch (instruction.RI10Op)
             {
@@ -270,7 +269,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        internal static void GroupRI18(SPUThread spu, SPUInstruction instruction)
+        internal static void GroupRI18(SpuThread spu, SpuInstruction instruction)
         {
             switch (instruction.RI18Op)
             {
@@ -288,7 +287,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        internal static void GroupRRROp(SPUThread spu, SPUInstruction instruction)
+        internal static void GroupRRROp(SpuThread spu, SpuInstruction instruction)
         {
             switch (instruction.RRROp)
             {
@@ -310,7 +309,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Ila(SPUThread spu, SPUInstruction instruction)
+        private static void Ila(SpuThread spu, SpuInstruction instruction)
         {
             // Immediate Load Address
             int rt = instruction.RtLo;
@@ -325,7 +324,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Lqa(SPUThread spu, SPUInstruction instruction)
+        private static void Lqa(SpuThread spu, SpuInstruction instruction)
         {
             // Load Quadword (a-form)
             int rt = instruction.RtLo;
@@ -340,7 +339,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Lqr(SPUThread spu, SPUInstruction instruction)
+        private static void Lqr(SpuThread spu, SpuInstruction instruction)
         {
             // Load Quadword Instruction Relative (a-form)
             int rt = instruction.RtLo;
@@ -355,7 +354,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Il(SPUThread spu, SPUInstruction instruction)
+        private static void Il(SpuThread spu, SpuInstruction instruction)
         {
             // Immediate Load Word
             int rt = instruction.RtLo;
@@ -370,7 +369,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Ilhu(SPUThread spu, SPUInstruction instruction)
+        private static void Ilhu(SpuThread spu, SpuInstruction instruction)
         {
             // Immediate Load Halfword Upper
             int rt = instruction.RtLo;
@@ -386,7 +385,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Ilh(SPUThread spu, SPUInstruction instruction)
+        private static void Ilh(SpuThread spu, SpuInstruction instruction)
         {
             // Immediate Load Halfword
             int rt = instruction.RtLo;
@@ -402,7 +401,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Stqa(SPUThread spu, SPUInstruction instruction)
+        private static void Stqa(SpuThread spu, SpuInstruction instruction)
         {
             // Store Quadword (a-form)
             int rt = instruction.RtLo;
@@ -419,7 +418,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Brnz(SPUThread spu, SPUInstruction instruction)
+        private static void Brnz(SpuThread spu, SpuInstruction instruction)
         {
             // Branch If Not Zero Word
             int rt = instruction.RtLo;
@@ -443,7 +442,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Stqr(SPUThread spu, SPUInstruction instruction)
+        private static void Stqr(SpuThread spu, SpuInstruction instruction)
         {
             // Store Quadword Instruction Relative (a-form)
             int rt = instruction.RtLo;
@@ -462,7 +461,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Cdd(SPUThread spu, SPUInstruction instruction)
+        private static void Cdd(SpuThread spu, SpuInstruction instruction)
         {
             // Generate Controls for Doubleword Insertion (d-form)
             int ra = instruction.Ra;
@@ -480,7 +479,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Rotqbyi(SPUThread spu, SPUInstruction instruction)
+        private static void Rotqbyi(SpuThread spu, SpuInstruction instruction)
         {
             // Rotate Quadword by Bytes Immediate
             int ra = instruction.Ra;
@@ -503,7 +502,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Rotqmbyi(SPUThread spu, SPUInstruction instruction)
+        private static void Rotqmbyi(SpuThread spu, SpuInstruction instruction)
         {
             // Rotate and Mask Quadword by Bytes Immediate
             int ra = instruction.Ra;
@@ -536,7 +535,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Shlqbyi(SPUThread spu, SPUInstruction instruction)
+        private static void Shlqbyi(SpuThread spu, SpuInstruction instruction)
         {
             // Shift Left Quadword by Bytes Immediate
             int ra = instruction.Ra;
@@ -570,7 +569,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Clz(SPUThread spu, SPUInstruction instruction)
+        private static void Clz(SpuThread spu, SpuInstruction instruction)
         {
             // Count Leading Zeros
             int ra = instruction.Ra;
@@ -589,7 +588,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Xsbh(SPUThread spu, SPUInstruction instruction)
+        private static void Xsbh(SpuThread spu, SpuInstruction instruction)
         {
             // Extend Sign Byte to Halfword
             int ra = instruction.Ra;
@@ -609,7 +608,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Andc(SPUThread spu, SPUInstruction instruction)
+        private static void Andc(SpuThread spu, SpuInstruction instruction)
         {
             // And with Complement
             int ra = instruction.Ra;
@@ -631,7 +630,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Clgtb(SPUThread spu, SPUInstruction instruction)
+        private static void Clgtb(SpuThread spu, SpuInstruction instruction)
         {
             // Compare Logical Greater Than Byte
             int ra = instruction.Ra;
@@ -653,7 +652,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Addx(SPUThread spu, SPUInstruction instruction)
+        private static void Addx(SpuThread spu, SpuInstruction instruction)
         {
             // Add Extended
             int ra = instruction.Ra;
@@ -677,7 +676,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Ceq(SPUThread spu, SPUInstruction instruction)
+        private static void Ceq(SpuThread spu, SpuInstruction instruction)
         {
             // Compare Equal Word
             int ra = instruction.Ra;
@@ -699,7 +698,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Ceqb(SPUThread spu, SPUInstruction instruction)
+        private static void Ceqb(SpuThread spu, SpuInstruction instruction)
         {
             // Compare Equal Byte
             int ra = instruction.Ra;
@@ -721,7 +720,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Cbx(SPUThread spu, SPUInstruction instruction)
+        private static void Cbx(SpuThread spu, SpuInstruction instruction)
         {
             // Generate Controls for Byte Insertion (x-form)
             int ra = instruction.Ra;
@@ -739,7 +738,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Cbd(SPUThread spu, SPUInstruction instruction)
+        private static void Cbd(SpuThread spu, SpuInstruction instruction)
         {
             // Generate Controls for Byte Insertion (d-form)
             int ra = instruction.Ra;
@@ -757,7 +756,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Cwd(SPUThread spu, SPUInstruction instruction)
+        private static void Cwd(SpuThread spu, SpuInstruction instruction)
         {
             // Generate Controls for Word Insertion (d-form)
             int ra = instruction.Ra;
@@ -775,7 +774,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Selb(SPUThread spu, SPUInstruction instruction)
+        private static void Selb(SpuThread spu, SpuInstruction instruction)
         {
             // Select Bits
             int ra = instruction.Ra;
@@ -804,7 +803,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void ShufB(SPUThread spu, SPUInstruction instruction)
+        private static void ShufB(SpuThread spu, SpuInstruction instruction)
         {
             // Shuffle Bytes
             int ra = instruction.Ra;
@@ -855,7 +854,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Fsmbi(SPUThread spu, SPUInstruction instruction)
+        private static void Fsmbi(SpuThread spu, SpuInstruction instruction)
         {
             // Form Select Mask for Bytes Immediate
             int rt = instruction.RtLo;
@@ -871,7 +870,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Brsl(SPUThread spu, SPUInstruction instruction)
+        private static void Brsl(SpuThread spu, SpuInstruction instruction)
         {
             // Branch Relative and Set Link
             int rt = instruction.RtLo;
@@ -893,7 +892,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Ori(SPUThread spu, SPUInstruction instruction)
+        private static void Ori(SpuThread spu, SpuInstruction instruction)
         {
             // Or Word Immediate
             int ra = instruction.Ra;
@@ -914,7 +913,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Sfi(SPUThread spu, SPUInstruction instruction)
+        private static void Sfi(SpuThread spu, SpuInstruction instruction)
         {
             // Subtract from Word Immediate
             int ra = instruction.Ra;
@@ -935,7 +934,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Andi(SPUThread spu, SPUInstruction instruction)
+        private static void Andi(SpuThread spu, SpuInstruction instruction)
         {
             // And Word Immediate
             int ra = instruction.Ra;
@@ -956,7 +955,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Andhi(SPUThread spu, SPUInstruction instruction)
+        private static void Andhi(SpuThread spu, SpuInstruction instruction)
         {
             // And Halfword Immediate
             int ra = instruction.Ra;
@@ -977,7 +976,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Andbi(SPUThread spu, SPUInstruction instruction)
+        private static void Andbi(SpuThread spu, SpuInstruction instruction)
         {
             // And Byte Immediate
             int ra = instruction.Ra;
@@ -998,7 +997,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Ai(SPUThread spu, SPUInstruction instruction)
+        private static void Ai(SpuThread spu, SpuInstruction instruction)
         {
             // Add Word Immediate
             int ra = instruction.Ra;
@@ -1019,7 +1018,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Stqd(SPUThread spu, SPUInstruction instruction)
+        private static void Stqd(SpuThread spu, SpuInstruction instruction)
         {
             // Store Quadword (d-form)
             int ra = instruction.Ra;
@@ -1040,7 +1039,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Cgti(SPUThread spu, SPUInstruction instruction)
+        private static void Cgti(SpuThread spu, SpuInstruction instruction)
         {
             // Compare Greater Than Word Immediate
             int ra = instruction.Ra;
@@ -1062,7 +1061,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Clgti(SPUThread spu, SPUInstruction instruction)
+        private static void Clgti(SpuThread spu, SpuInstruction instruction)
         {
             // Compare Logical Greater Than Word Immediate
             int ra = instruction.Ra;
@@ -1084,7 +1083,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Clgtbi(SPUThread spu, SPUInstruction instruction)
+        private static void Clgtbi(SpuThread spu, SpuInstruction instruction)
         {
             // Compare Logical Greater Than Byte Immediate
             int ra = instruction.Ra;
@@ -1105,7 +1104,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Ceqi(SPUThread spu, SPUInstruction instruction)
+        private static void Ceqi(SpuThread spu, SpuInstruction instruction)
         {
             // Compare Equal Word Immediate
             int ra = instruction.Ra;
@@ -1126,7 +1125,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Ceqbi(SPUThread spu, SPUInstruction instruction)
+        private static void Ceqbi(SpuThread spu, SpuInstruction instruction)
         {
             // Compare Equal Byte Immediate
             int ra = instruction.Ra;
@@ -1147,7 +1146,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Rdch(SPUThread spu, SPUInstruction instruction)
+        private static void Rdch(SpuThread spu, SpuInstruction instruction)
         {
             // Read Channel
             int rt = instruction.RtLo;
@@ -1163,7 +1162,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Sf(SPUThread spu, SPUInstruction instruction)
+        private static void Sf(SpuThread spu, SpuInstruction instruction)
         {
             // Subtract from Word
             int ra = instruction.Ra;
@@ -1185,7 +1184,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Or(SPUThread spu, SPUInstruction instruction)
+        private static void Or(SpuThread spu, SpuInstruction instruction)
         {
             // Or
             int ra = instruction.Ra;
@@ -1207,7 +1206,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Rotm(SPUThread spu, SPUInstruction instruction)
+        private static void Rotm(SpuThread spu, SpuInstruction instruction)
         {
             // Rotate and Mask Word
             int ra = instruction.Ra;
@@ -1233,7 +1232,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Shl(SPUThread spu, SPUInstruction instruction)
+        private static void Shl(SpuThread spu, SpuInstruction instruction)
         {
             int ra = instruction.Ra;
             int rb = instruction.Rb;
@@ -1258,7 +1257,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Roti(SPUThread spu, SPUInstruction instruction)
+        private static void Roti(SpuThread spu, SpuInstruction instruction)
         {
             // Rotate Word Immediate
             int ra = instruction.Ra;
@@ -1287,7 +1286,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Rotmi(SPUThread spu, SPUInstruction instruction)
+        private static void Rotmi(SpuThread spu, SpuInstruction instruction)
         {
             // Rotate and Mask Word Immediate
             int ra = instruction.Ra;
@@ -1316,7 +1315,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Shli(SPUThread spu, SPUInstruction instruction)
+        private static void Shli(SpuThread spu, SpuInstruction instruction)
         {
             // Shift Left Word Immediate
             int ra = instruction.Ra;
@@ -1349,7 +1348,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void A(SPUThread spu, SPUInstruction instruction)
+        private static void A(SpuThread spu, SpuInstruction instruction)
         {
             // Add Word
             int ra = instruction.Ra;
@@ -1371,7 +1370,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void And(SPUThread spu, SPUInstruction instruction)
+        private static void And(SpuThread spu, SpuInstruction instruction)
         {
             // And
             int ra = instruction.Ra;
@@ -1393,7 +1392,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Cg(SPUThread spu, SPUInstruction instruction)
+        private static void Cg(SpuThread spu, SpuInstruction instruction)
         {
             // Carry Generate
             int ra = instruction.Ra;
@@ -1423,7 +1422,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Wrch(SPUThread spu, SPUInstruction instruction)
+        private static void Wrch(SpuThread spu, SpuInstruction instruction)
         {
             // Write Channel
             int rt = instruction.RtLo;
@@ -1437,7 +1436,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Bisl(SPUThread spu, SPUInstruction instruction)
+        private static void Bisl(SpuThread spu, SpuInstruction instruction)
         {
             // Branch Indirect and Set Link
             int ra = instruction.Ra;
@@ -1458,7 +1457,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             // TODO: Enable/Disable interrupts
         }
 
-        private static void Gb(SPUThread spu, SPUInstruction instruction)
+        private static void Gb(SpuThread spu, SpuInstruction instruction)
         {
             // Gather Bits from Words
             int ra = instruction.Ra;
@@ -1479,7 +1478,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Gbb(SPUThread spu, SPUInstruction instruction)
+        private static void Gbb(SpuThread spu, SpuInstruction instruction)
         {
             // Gather Bits from Bytes
             int ra = instruction.Ra;
@@ -1512,7 +1511,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Fsm(SPUThread spu, SPUInstruction instruction)
+        private static void Fsm(SpuThread spu, SpuInstruction instruction)
         {
             // Form Select Mask for Words
             int ra = instruction.Ra;
@@ -1529,7 +1528,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static void Fsmb(SPUThread spu, SPUInstruction instruction)
+        private static void Fsmb(SpuThread spu, SpuInstruction instruction)
         {
             // Form Select Mask for Bytes
             int ra = instruction.Ra;
@@ -1546,7 +1545,7 @@ namespace PS3Sharp.Cell.SPU.Interpreter
             }
         }
 
-        private static string GetInstructionOpcodes(SPUInstruction instruction)
+        private static string GetInstructionOpcodes(SpuInstruction instruction)
         {
             int raw = instruction.Raw;
             int rr17 = (int)instruction.RR17Op;

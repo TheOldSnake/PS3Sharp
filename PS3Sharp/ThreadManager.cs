@@ -16,7 +16,7 @@ namespace PS3Sharp
         private readonly MemoryManager _memoryManager;
         private readonly PPURecompiler _ppuRecompiler;
         private readonly List<PPUThread> _ppuThreads = [];
-        private readonly List<SPUThread> _spuThreads = [];
+        private readonly List<SpuThread> _spuThreads = [];
         private readonly object _threadManagerLock = new();
         private bool _hasCreatedMainThread;
         private bool _hasCreatedRSXThread;
@@ -106,9 +106,9 @@ namespace PS3Sharp
             return RSXThread;
         }
 
-        internal SPUThread CreateSPUThread(string name, uint id, uint groupID, SysSpu.SysSPUImage img, SysSpu.SysSPUThreadArgument arg)
+        internal SpuThread CreateSPUThread(string name, uint id, uint groupID, SysSpu.SysSPUImage img, SysSpu.SysSPUThreadArgument arg)
         {
-            SPUThread spu = new(name, id, groupID, img, arg, _memoryManager);
+            SpuThread spu = new(name, id, groupID, img, arg, _memoryManager);
             _spuThreads.Add(spu);
             return spu;
         }
