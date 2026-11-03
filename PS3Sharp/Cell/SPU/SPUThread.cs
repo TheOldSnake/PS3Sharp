@@ -67,8 +67,8 @@ namespace PS3Sharp.Cell.Spu
         internal string ThreadName { get; } = string.Empty;
         internal uint ID { get; } = 0xFFFFFFFF;
         internal uint GroupID { get; } = 0xFFFFFFFF;
-        internal SysSpu.SysSPUImage Image { get; }
-        internal SysSpu.SysSPUThreadArgument Argument { get; }
+        internal SysSpu.SysSpuImage Image { get; }
+        internal SysSpu.SysSpuThreadArgument Argument { get; }
         internal Lock Lock { get; } = new();
 
         // Allocate State
@@ -84,11 +84,11 @@ namespace PS3Sharp.Cell.Spu
         internal ThreadStatus Status { get; private set; } = ThreadStatus.Stopped;
         internal MemoryManager MemoryManager { get; }
 
-        internal SpuThread(string name, uint id, uint groupID, SysSpu.SysSPUImage img, SysSpu.SysSPUThreadArgument arg, MemoryManager memoryManager)
+        internal SpuThread(string name, uint id, uint groupID, SysSpu.SysSpuImage img, SysSpu.SysSpuThreadArgument arg, MemoryManager memoryManager)
         {
-            NativeThread = new Thread(RunSPU)
+            NativeThread = new Thread(RunSpu)
             {
-                Name = $"Native SPU Thread: {ThreadName}"
+                Name = $"Native Spu Thread: {ThreadName}"
             };
 
             MemoryManager = memoryManager;
@@ -114,7 +114,7 @@ namespace PS3Sharp.Cell.Spu
             }
             else
             {
-                throw new Exception($"[SPU] Port is not free");
+                throw new Exception($"[Spu] Port is not free");
             }
         }
 
@@ -154,13 +154,13 @@ namespace PS3Sharp.Cell.Spu
         {
             if (Image.Entry == 0)
             {
-                throw new Exception($"[SPU] Image null pointer");
+                throw new Exception($"[Spu] Image null pointer");
             }
 
-            BigEndianGuestPtr<SysSpu.SysSPUSegment> segmentsPtr = Image.SegmentsPtr;
+            BigEndianGuestPtr<SysSpu.SysSpuSegment> segmentsPtr = Image.SegmentsPtr;
             uint count = (uint)Image.SegmentsCount;
 
-            ReadOnlySpan<SysSpu.SysSPUSegment> segments = MemoryManager.ReadArray<SysSpu.SysSPUSegment>(segmentsPtr, (int)count);
+            ReadOnlySpan<SysSpu.SysSpuSegment> segments = MemoryManager.ReadArray<SysSpu.SysSpuSegment>(segmentsPtr, (int)count);
 
             for (int i = 0; i < segments.Length; i++)
             {
@@ -168,13 +168,13 @@ namespace PS3Sharp.Cell.Spu
             }
         }
 
-        private void LoadSegment(SysSpu.SysSPUSegment segment)
+        private void LoadSegment(SysSpu.SysSpuSegment segment)
         {
             int size = segment.Size;
             uint src = segment.Src;
             uint ls = segment.LSAddress;
 
-            Console.WriteLine($"[SPU] Loading SPU segment at 0x{src:X8} to local address 0x{ls:X8} type = {segment.Type}");
+            Console.WriteLine($"[Spu] Loading Spu segment at 0x{src:X8} to local address 0x{ls:X8} type = {segment.Type}");
 
             unsafe
             {
@@ -205,7 +205,7 @@ namespace PS3Sharp.Cell.Spu
             }
         }
 
-        internal void RunSPU()
+        internal void RunSpu()
         {
             // TODO: Add shutdown path / cancellation source through thread manager
 

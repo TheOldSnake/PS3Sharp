@@ -6,9 +6,9 @@ using static PS3Sharp.Elf.ElfDefinitions;
 
 namespace PS3Sharp.Elf
 {
-    internal class SPUElfLoader : ElfLoader
+    internal class SpuElfLoader : ElfLoader
     {
-        internal (ElfHeader32 header, List<SysSpu.SysSPUSegment> segments) LoadSPUElf(GuestVoidPtr elfPtr, MemoryManager memoryManager)
+        internal (ElfHeader32 header, List<SysSpu.SysSpuSegment> segments) LoadSPUElf(GuestVoidPtr elfPtr, MemoryManager memoryManager)
         {
             // Note: SPU elf is 32-bit BE
 
@@ -20,15 +20,15 @@ namespace PS3Sharp.Elf
                 throw new Exception("Invalid SPU ELF");
             }
 
-            List<SysSpu.SysSPUSegment> segments = LoadSegments(elfPtr, memoryManager, ref mainHeader);
+            List<SysSpu.SysSpuSegment> segments = LoadSegments(elfPtr, memoryManager, ref mainHeader);
 
             return (mainHeader, segments);
         }
 
-        private static List<SysSpu.SysSPUSegment> LoadSegments(GuestVoidPtr elfPtr, MemoryManager memoryManager, ref ElfHeader32 mainHeader)
+        private static List<SysSpu.SysSpuSegment> LoadSegments(GuestVoidPtr elfPtr, MemoryManager memoryManager, ref ElfHeader32 mainHeader)
         {
             // Load the loadable segments
-            List<SysSpu.SysSPUSegment> segments = [];
+            List<SysSpu.SysSpuSegment> segments = [];
             ReadOnlySpan<ProgramHeader32> programHeaders = GetProgramHeadersArray(memoryManager, elfPtr, ref mainHeader);
 
             for (int i = 0; i < programHeaders.Length; i++)
@@ -44,7 +44,7 @@ namespace PS3Sharp.Elf
             return segments;
         }
 
-        private static void LoadSegment(uint elfPtr, List<SysSpu.SysSPUSegment> segments, ref ProgramHeader32 programHeader, MemoryManager memoryManager)
+        private static void LoadSegment(uint elfPtr, List<SysSpu.SysSpuSegment> segments, ref ProgramHeader32 programHeader, MemoryManager memoryManager)
         {
             uint offset = programHeader.p_offset;   // offset with respect to elf image
             uint fileSize = programHeader.p_filesz;
@@ -61,7 +61,7 @@ namespace PS3Sharp.Elf
             memoryManager.CopyVirtualMemory(srcAddress, dest, (int)fileSize);
 
             // Create SysSPUSegment
-            SysSpu.SysSPUSegment segment = CreateSPUSegment(elfPtr, ref programHeader, isFill: false);
+            SysSpu.SysSpuSegment segment = CreateSPUSegment(elfPtr, ref programHeader, isFill: false);
             segments.Add(segment);
 
             if (memSize > fileSize)
@@ -71,12 +71,12 @@ namespace PS3Sharp.Elf
                 memoryManager.ClearMemory(clearDest, (int)clearBytes);
 
                 // Create SysSPUSegment for the filler
-                SysSpu.SysSPUSegment fillSegment = CreateSPUSegment(elfPtr, ref programHeader, isFill: true);
+                SysSpu.SysSpuSegment fillSegment = CreateSPUSegment(elfPtr, ref programHeader, isFill: true);
                 segments.Add(fillSegment);
             }
         }
 
-        private static SysSpu.SysSPUSegment CreateSPUSegment(uint elfPtr, ref ProgramHeader32 programHeader, bool isFill)
+        private static SysSpu.SysSpuSegment CreateSPUSegment(uint elfPtr, ref ProgramHeader32 programHeader, bool isFill)
         {
             uint offset = programHeader.p_offset;   // With respect to elf image
             uint dataAddress = elfPtr + offset;
@@ -105,7 +105,7 @@ namespace PS3Sharp.Elf
                 size = (int)memSize;
             }
 
-            SysSpu.SysSPUSegment segment = new()
+            SysSpu.SysSpuSegment segment = new()
             {
                 Type = type,
                 LSAddress = ls,

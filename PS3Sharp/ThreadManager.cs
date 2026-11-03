@@ -106,7 +106,7 @@ namespace PS3Sharp
             return RSXThread;
         }
 
-        internal SpuThread CreateSPUThread(string name, uint id, uint groupID, SysSpu.SysSPUImage img, SysSpu.SysSPUThreadArgument arg)
+        internal SpuThread CreateSPUThread(string name, uint id, uint groupID, SysSpu.SysSpuImage img, SysSpu.SysSpuThreadArgument arg)
         {
             SpuThread spu = new(name, id, groupID, img, arg, _memoryManager);
             _spuThreads.Add(spu);

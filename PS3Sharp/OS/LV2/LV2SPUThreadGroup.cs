@@ -19,11 +19,11 @@ namespace PS3Sharp.OS.LV2
         private LV2EventQueue? _sysModuleEvents;
 
         internal uint Handle { get; }
-        internal GuestPtr<SysSPUThreadGroupAttribute> AttributePtr { get; }
+        internal GuestPtr<SysSpuThreadGroupAttribute> AttributePtr { get; }
         internal uint Number { get; }
         internal int Priority { get; }
 
-        internal LV2SpuThreadGroup(ThreadManager threadManager, MemoryManager memoryManager, GuestPtr<SysSPUThreadGroupAttribute> attribPtr, uint number, int prio)
+        internal LV2SpuThreadGroup(ThreadManager threadManager, MemoryManager memoryManager, GuestPtr<SysSpuThreadGroupAttribute> attribPtr, uint number, int prio)
         {
             _threadManager = threadManager;
             _memoryManager = memoryManager;
@@ -33,7 +33,7 @@ namespace PS3Sharp.OS.LV2
             Handle = _memoryManager.GetHandle();
         }
 
-        internal SpuThread CreateSpuThread(SysSPUImage img, SysSPUThreadAttribute attribute, SysSPUThreadArgument arg)
+        internal SpuThread CreateSpuThread(SysSpuImage img, SysSpuThreadAttribute attribute, SysSpuThreadArgument arg)
         {
             using (_groupLock.EnterScope())
             {

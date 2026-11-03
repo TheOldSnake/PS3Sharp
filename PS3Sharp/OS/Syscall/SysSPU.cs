@@ -18,7 +18,7 @@ namespace PS3Sharp.OS.Syscall
     {
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct SysSPUSegment : IPS3Struct
+        internal struct SysSpuSegment : IPS3Struct
         {
             internal BigEndian<int> Type;            // Segment type (COPY / FILL / INFO)
             internal BigEndian<uint> LSAddress;      // Addr in LS that this segment will be loaded to
@@ -31,7 +31,7 @@ namespace PS3Sharp.OS.Syscall
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct SysSPUImage : IPS3Struct
+        internal struct SysSpuImage : IPS3Struct
         {
             internal BigEndian<uint> Type;
             internal BigEndian<uint> Entry;
@@ -40,7 +40,7 @@ namespace PS3Sharp.OS.Syscall
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct SysSPUThreadGroupAttribute : IPS3Struct
+        internal struct SysSpuThreadGroupAttribute : IPS3Struct
         {
             internal BigEndian<uint> NameLength;
             internal BigEndian<uint> NamePtr;
@@ -49,7 +49,7 @@ namespace PS3Sharp.OS.Syscall
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct SysSPUThreadAttribute : IPS3Struct
+        internal struct SysSpuThreadAttribute : IPS3Struct
         {
             internal BigEndian<uint> NamePtr;
             internal BigEndian<uint> NameLength;
@@ -57,7 +57,7 @@ namespace PS3Sharp.OS.Syscall
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct SysSPUThreadArgument : IPS3Struct
+        internal struct SysSpuThreadArgument : IPS3Struct
         {
             internal BigEndian<ulong> Arg1;
             internal BigEndian<ulong> Arg2;
@@ -84,7 +84,7 @@ namespace PS3Sharp.OS.Syscall
         private readonly MemoryManager _memoryManager;
         private readonly SysEvent _sysEvent;
 
-        private readonly SPUElfLoader _elfLoader = new();
+        private readonly SpuElfLoader _elfLoader = new();
         private readonly ConcurrentDictionary<uint, LV2SpuThreadGroup> _spuThreadGroupes = new();
 
         internal SysSpu(ThreadManager threadManager, MemoryManager memoryManager, SysEvent sysEvent)
@@ -101,7 +101,7 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysSpuImageImport(PPUThread ppu)
         {
-            GuestPtr<SysSPUImage> imagePtr = ppu.ReadArg<GuestPtr<SysSPUImage>>(Arg0);
+            GuestPtr<SysSpuImage> imagePtr = ppu.ReadArg<GuestPtr<SysSpuImage>>(Arg0);
             uint src = ppu.ReadArg<uint>(Arg1); // Ptr to elf32 image
             uint type = ppu.ReadArg<uint>(Arg2);
 
@@ -111,21 +111,21 @@ namespace PS3Sharp.OS.Syscall
             }
 
             // Load elf32
-            (ElfDefinitions.ElfHeader32 header, List<SysSPUSegment> segments) = _elfLoader.LoadSPUElf(src, _memoryManager);
+            (ElfDefinitions.ElfHeader32 header, List<SysSpuSegment> segments) = _elfLoader.LoadSPUElf(src, _memoryManager);
 
             // Allocate SysSPUSegment array
-            int segmentArraySize = Unsafe.SizeOf<SysSpu.SysSPUSegment>() * 32;
-            GuestPtr<SysSpu.SysSPUSegment> segmentArrayPtr = _memoryManager.AllocateVirtualMemory((uint)segmentArraySize).VirtualAddress;
+            int segmentArraySize = Unsafe.SizeOf<SysSpu.SysSpuSegment>() * 32;
+            GuestPtr<SysSpu.SysSpuSegment> segmentArrayPtr = _memoryManager.AllocateVirtualMemory((uint)segmentArraySize).VirtualAddress;
 
             if (segments.Count > 0)
             {
                 // Copy segment array
-                Span<SysSPUSegment> segmentsSpan = CollectionsMarshal.AsSpan(segments);
+                Span<SysSpuSegment> segmentsSpan = CollectionsMarshal.AsSpan(segments);
                 _memoryManager.WriteArray(segmentArrayPtr, segmentsSpan);
             }
 
             // Write SysSPUImage data
-            SysSPUImage image = new()
+            SysSpuImage image = new()
             {
                 Type = type,
                 Entry = header.e_entry,
@@ -145,14 +145,14 @@ namespace PS3Sharp.OS.Syscall
             GuestPtr<BigEndian<uint>> idPtr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             uint num = ppu.ReadArg<uint>(Arg1);
             int prio = ppu.ReadArg<int>(Arg2);
-            GuestPtr<SysSPUThreadGroupAttribute> attribPtr = ppu.ReadArg<GuestPtr<SysSPUThreadGroupAttribute>>(Arg3);
+            GuestPtr<SysSpuThreadGroupAttribute> attribPtr = ppu.ReadArg<GuestPtr<SysSpuThreadGroupAttribute>>(Arg3);
 
             // Create the thread group
             LV2SpuThreadGroup group = new(_threadManager, _memoryManager, attribPtr, num, prio);
             AddSpuThreadGroup(group);
             _memoryManager.Write<BigEndian<uint>>(idPtr, group.Handle);
 
-            Console.WriteLine($"[SysSPUThreadInitialize] Created SPU group: 0x{group.Handle:X8}");
+            Console.WriteLine($"[SysSPUThreadInitialize] Created Spu group: 0x{group.Handle:X8}");
             return CellOk;
         }
 
@@ -162,9 +162,9 @@ namespace PS3Sharp.OS.Syscall
             uint groupId = ppu.ReadArg<uint>(Arg1);
             uint spuNum = ppu.ReadArg<uint>(Arg2);     // ?
 
-            GuestPtr<SysSPUImage> imgPtr = ppu.ReadArg<GuestPtr<SysSPUImage>>(Arg3);
-            GuestPtr<SysSPUThreadAttribute> attribPtr = ppu.ReadArg<GuestPtr<SysSPUThreadAttribute>>(Arg4);
-            GuestPtr<SysSPUThreadArgument> argPtr = ppu.ReadArg<GuestPtr<SysSPUThreadArgument>>(Arg5);
+            GuestPtr<SysSpuImage> imgPtr = ppu.ReadArg<GuestPtr<SysSpuImage>>(Arg3);
+            GuestPtr<SysSpuThreadAttribute> attribPtr = ppu.ReadArg<GuestPtr<SysSpuThreadAttribute>>(Arg4);
+            GuestPtr<SysSpuThreadArgument> argPtr = ppu.ReadArg<GuestPtr<SysSpuThreadArgument>>(Arg5);
 
             // there is a lot more checks and errors to be added
             if (!TryGetSpuThreadGroup(groupId, out LV2SpuThreadGroup? threadGroup))
@@ -172,14 +172,14 @@ namespace PS3Sharp.OS.Syscall
                 return CellESrch;
             }
 
-            SysSPUImage img = _memoryManager.Read<SysSPUImage>(imgPtr);
-            SysSPUThreadAttribute attrib = _memoryManager.Read<SysSPUThreadAttribute>(attribPtr);
-            SysSPUThreadArgument arg = _memoryManager.Read<SysSPUThreadArgument>(argPtr);
+            SysSpuImage img = _memoryManager.Read<SysSpuImage>(imgPtr);
+            SysSpuThreadAttribute attrib = _memoryManager.Read<SysSpuThreadAttribute>(attribPtr);
+            SysSpuThreadArgument arg = _memoryManager.Read<SysSpuThreadArgument>(argPtr);
             SpuThread spu = threadGroup.CreateSpuThread(img, attrib, arg);
 
             _memoryManager.Write<BigEndian<uint>>(idPtr, spu.ID);
 
-            Console.WriteLine($"[SysSPUThreadInitialize] Created SPU thread: {spu.ThreadName} - Group: 0x{groupId:X8} entry = 0x{img.Entry:X8}");
+            Console.WriteLine($"[SysSPUThreadInitialize] Created Spu thread: {spu.ThreadName} - Group: 0x{groupId:X8} entry = 0x{img.Entry:X8}");
             return CellOk;
         }
 
@@ -194,7 +194,7 @@ namespace PS3Sharp.OS.Syscall
 
             threadGroup.StartGroup();
 
-            Console.WriteLine($"[SysSPUThreadGroupStart] Started SPU group: 0x{groupId:X8}");
+            Console.WriteLine($"[SysSPUThreadGroupStart] Started Spu group: 0x{groupId:X8}");
             //throw new Exception("todo");
 
             return CellOk;
@@ -238,7 +238,7 @@ namespace PS3Sharp.OS.Syscall
             // Write selected port
             _memoryManager.Write(spup_ptr, portNumber);
 
-            Console.WriteLine($"[SysSPUThreadGroupConnectEventAllThreads] Connected SPU group: 0x{groupId:X8} port = {portNumber} equeue: 0x{equeue_id:X8}");
+            Console.WriteLine($"[SysSPUThreadGroupConnectEventAllThreads] Connected Spu group: 0x{groupId:X8} port = {portNumber} equeue: 0x{equeue_id:X8}");
             return CellOk;
         }
 
@@ -282,7 +282,7 @@ namespace PS3Sharp.OS.Syscall
         {
             if (!_spuThreadGroupes.TryAdd(group.Handle, group))
             {
-                throw new Exception($"[SysSPU] Failed to add SPU group");
+                throw new Exception($"[SysSPU] Failed to add Spu group");
             }
         }
 
@@ -290,7 +290,7 @@ namespace PS3Sharp.OS.Syscall
         {
             if (!_spuThreadGroupes.TryRemove(handle, out _))
             {
-                throw new Exception($"[SysSPU] Failed to remove SPU group");
+                throw new Exception($"[SysSPU] Failed to remove Spu group");
             }
         }
     }
