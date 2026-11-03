@@ -10,6 +10,9 @@ namespace PS3Sharp.Cell.Spu
 {
     internal unsafe sealed class SpuThread : IDisposable
     {
+        // Empty port value
+        internal const uint FreePort = 0xFFFFFFFF;
+
         // Atomic stat bits for Put/Get lock-line commands
         internal const uint PutllcSucceeded = 0;
         internal const uint PutllcFailed = 1;          
@@ -97,25 +100,19 @@ namespace PS3Sharp.Cell.Spu
             GroupID = groupID;
             Image = img;
             Argument = arg;
-
-            for (int i = 0; i < _ports.Length; i++)
-            {
-                _ports[i] = 0xFFFFFFFF;
-            }
+            Array.Fill(_ports, FreePort);
         }
 
-        internal bool PortIsFree(int port) => _ports[port] == 0xFFFFFFFF;
+        internal bool PortIsFree(int port) => _ports[port] == FreePort;
 
         internal void SetPort(int port, uint id)
-        {
-            if (_ports[port] == 0xFFFFFFFF)
-            {
-                _ports[port] = id;
-            }
-            else
+        {            
+            if (!PortIsFree(port))
             {
                 throw new Exception($"[Spu] Port is not free");
             }
+
+            _ports[port] = id;
         }
 
         internal uint GetPort(int port)
