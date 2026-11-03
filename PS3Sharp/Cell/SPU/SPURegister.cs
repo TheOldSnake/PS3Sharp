@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace PS3Sharp.Cell.SPU
+namespace PS3Sharp.Cell.Spu
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct SPURegister

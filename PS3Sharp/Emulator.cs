@@ -1,7 +1,7 @@
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Cell.PPU.Recompiler;
 using PS3Sharp.Cell.RSX;
-using PS3Sharp.Cell.SPU;
+using PS3Sharp.Cell.Spu;
 using PS3Sharp.Elf;
 using PS3Sharp.FileSystem;
 using PS3Sharp.Memory;

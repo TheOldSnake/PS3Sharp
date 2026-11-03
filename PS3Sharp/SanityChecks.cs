@@ -1,4 +1,4 @@
-﻿using PS3Sharp.Cell.SPU;
+﻿using PS3Sharp.Cell.Spu;
 using PS3Sharp.Common;
 using System;
 using System.Collections.Generic;

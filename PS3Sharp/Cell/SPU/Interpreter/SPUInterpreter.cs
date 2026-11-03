@@ -1,8 +1,8 @@
 ﻿using PS3Sharp.Common;
 using System.Runtime.Intrinsics;
-using static PS3Sharp.Cell.SPU.SpuThread;
+using static PS3Sharp.Cell.Spu.SpuThread;
 
-namespace PS3Sharp.Cell.SPU.Interpreter
+namespace PS3Sharp.Cell.Spu.Interpreter
 {
     internal class SpuInterpreter
     {

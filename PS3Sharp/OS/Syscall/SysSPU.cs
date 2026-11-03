@@ -1,6 +1,6 @@
 using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
-using PS3Sharp.Cell.SPU;
+using PS3Sharp.Cell.Spu;
 using PS3Sharp.Common;
 using PS3Sharp.Elf;
 using PS3Sharp.Memory;

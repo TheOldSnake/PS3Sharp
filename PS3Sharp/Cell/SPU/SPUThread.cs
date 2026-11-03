@@ -1,4 +1,4 @@
-using PS3Sharp.Cell.SPU.Interpreter;
+using PS3Sharp.Cell.Spu.Interpreter;
 using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.Syscall;
@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
-namespace PS3Sharp.Cell.SPU
+namespace PS3Sharp.Cell.Spu
 {
     internal unsafe sealed class SpuThread : IDisposable
     {

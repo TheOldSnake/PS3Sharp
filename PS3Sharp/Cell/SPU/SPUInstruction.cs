@@ -1,4 +1,4 @@
-﻿namespace PS3Sharp.Cell.SPU
+﻿namespace PS3Sharp.Cell.Spu
 {
     internal readonly struct SpuInstruction
     {
