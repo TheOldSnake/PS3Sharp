@@ -47,9 +47,9 @@ namespace PS3Sharp
 
             unsafe
             {
-                if (sizeof(SPURegister) != sizeof(UInt128))
+                if (sizeof(SpuRegister) != sizeof(UInt128))
                 {
-                    throw new InvalidOperationException($"Unexpected SPU GPR Size = {sizeof(SPURegister)}");
+                    throw new InvalidOperationException($"Unexpected SPU GPR Size = {sizeof(SpuRegister)}");
                 }
             }
         }
