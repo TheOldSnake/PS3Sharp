@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace PS3Sharp.Cell.Spu
 {
-    internal static class SPUTables
+    internal static class SpuTables
     {
         [InlineArray(ShiftCount)]
         internal struct ShiftInlineArray

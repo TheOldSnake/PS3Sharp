@@ -73,7 +73,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             int i16 = instruction.I16;
 
             // Look up the value in the table
-            ReadOnlySpan<UInt128> lut = SPUTables.FsmbTable;
+            ReadOnlySpan<UInt128> lut = SpuTables.FsmbTable;
 
             unsafe
             {

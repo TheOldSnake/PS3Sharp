@@ -377,7 +377,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             int rt = instruction.RtLo;
 
             // Look up the value in the table
-            ReadOnlySpan<UInt128> lut = SPUTables.FsmTable;
+            ReadOnlySpan<UInt128> lut = SpuTables.FsmTable;
 
             unsafe
             {
@@ -394,7 +394,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             int rt = instruction.RtLo;
 
             // Look up the value in the table
-            ReadOnlySpan<UInt128> lut = SPUTables.FsmbTable;
+            ReadOnlySpan<UInt128> lut = SpuTables.FsmbTable;
 
             unsafe
             {
@@ -491,7 +491,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 // Rotate to the right to do the big endian left rotation
                 Vector128<byte> va = Vector128.Create(raLanes);
-                Vector128<byte> shuffle = Vector128.LoadUnsafe(ref SPUTables.RightRotationTableRef, (nuint)position);  // Note: In .NET 11 we can replace LoadUnsafe() with Create() from Span.Slice() without bounds check
+                Vector128<byte> shuffle = Vector128.LoadUnsafe(ref SpuTables.RightRotationTableRef, (nuint)position);  // Note: In .NET 11 we can replace LoadUnsafe() with Create() from Span.Slice() without bounds check
                 Vector128<byte> result = Vector128.ShuffleNative(va, shuffle);
 
                 result.CopyTo(rtLanes);
@@ -519,7 +519,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     // Note: the shift table depends on x86 PSHUFB semanticss
 
                     Vector128<byte> va = Vector128.Create(raLanes);
-                    Vector128<byte> shuffle = Vector128.LoadUnsafe(ref SPUTables.LeftShiftTableRef, (nuint)position); // Note: In .NET 11 we can replace LoadUnsafe() with Create() from Span.Slice() without bounds check
+                    Vector128<byte> shuffle = Vector128.LoadUnsafe(ref SpuTables.LeftShiftTableRef, (nuint)position); // Note: In .NET 11 we can replace LoadUnsafe() with Create() from Span.Slice() without bounds check
                     Vector128<byte> result = Vector128.ShuffleNative(va, shuffle);
 
                     result.CopyTo(rtLanes);
@@ -553,7 +553,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     // Note: the shift table depends on x86 PSHUFB semanticss
 
                     Vector128<byte> va = Vector128.Create(raLanes);
-                    Vector128<byte> shuffle = Vector128.LoadUnsafe(ref SPUTables.RightShiftTableRef, (nuint)position); // Note: In .NET 11 we can replace LoadUnsafe() with Create() from Span.Slice() without bounds check
+                    Vector128<byte> shuffle = Vector128.LoadUnsafe(ref SpuTables.RightShiftTableRef, (nuint)position); // Note: In .NET 11 we can replace LoadUnsafe() with Create() from Span.Slice() without bounds check
                     Vector128<byte> result = Vector128.ShuffleNative(va, shuffle);
 
                     result.CopyTo(rtLanes);

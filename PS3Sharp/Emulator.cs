@@ -29,7 +29,7 @@ namespace PS3Sharp
 
         internal Emulator()
         {
-            SPUTables.InitializeStaticTables();
+            SpuTables.InitializeStaticTables();
 
             _elfLoader            = new();
             _modulePatcher        = new();
