@@ -15,7 +15,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 Span<byte> raLanes = state->GPR[ra].Bytes;
                 Span<byte> rbLanes = state->GPR[rb].Bytes;
                 Span<byte> rcLanes = state->GPR[rc].Bytes;
@@ -44,7 +44,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
 
                 // Concatenate RA and RB
                 Span<byte> ab = stackalloc byte[32];

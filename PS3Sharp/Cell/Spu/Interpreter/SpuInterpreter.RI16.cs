@@ -16,7 +16,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 uint address = (uint)(i16 & 0x3FFF0);
                 BigEndian<UInt128> value = state->GPR[rt].Value128;
                 spu.WriteStorage(address, value);
@@ -30,7 +30,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
 
                 if (state->GPR[rt].UInts[PreferredSlot] != 0)
                 {
@@ -59,7 +59,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 uint address = (state->PC + (uint)seI16) & 0x3FFF0;
                 BigEndian<UInt128> value = state->GPR[rt].Value128;
                 spu.WriteStorage(address, value);
@@ -77,7 +77,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 state->GPR[rt].Value128 = lut[i16];
             }
         }
@@ -94,7 +94,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 uint currentPC = state->PC - 4;
                 uint target = (currentPC + (uint)seI16) & 0x3FFFC;
 
@@ -113,7 +113,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 BigEndian<UInt128> value = spu.ReadStorage<BigEndian<UInt128>>(address);
                 state->GPR[rt].Value128 = value;
             }
@@ -127,7 +127,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 uint address = (uint)(state->PC + (i16 << 2)) & 0x3FFF0;
                 BigEndian<UInt128> value = spu.ReadStorage<BigEndian<UInt128>>(address);
                 state->GPR[rt].Value128 = value;
@@ -142,7 +142,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 Span<int> rtLanes = state->GPR[rt].Ints;
                 Vector128<int> vi16 = Vector128.Create(seI16);
                 vi16.CopyTo(rtLanes);
@@ -157,7 +157,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 Span<int> rtLanes = state->GPR[rt].Ints;
 
                 Vector128<int> vi = Vector128.Create(i16);
@@ -173,7 +173,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 Span<short> rtLanes = state->GPR[rt].Shorts;
 
                 Vector128<short> vi = Vector128.Create((short)i16);

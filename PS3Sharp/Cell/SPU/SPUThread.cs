@@ -46,10 +46,10 @@ namespace PS3Sharp.Cell.Spu
 
         // Unmanaged state
         [StructLayout(LayoutKind.Sequential)]
-        internal struct SPUState
+        internal struct SpuState
         {
             internal uint PC;
-            internal SPURegisterArray GPR;
+            internal SpuRegisterArray GPR;
         }
 
         private readonly uint[] _ports = new uint[64];
@@ -72,9 +72,9 @@ namespace PS3Sharp.Cell.Spu
         internal Lock Lock { get; } = new();
 
         // Allocate State
-        internal static readonly int StateSize = sizeof(SPUState);
+        internal static readonly int StateSize = sizeof(SpuState);
         internal NativeMemoryHandle? StateHandle { get; private set; } = new NativeMemoryHandle((nuint)StateSize);
-        internal SPUState* State => (SPUState*)StateHandle!.DangerousGetHandle();
+        internal SpuState* State => (SpuState*)StateHandle!.DangerousGetHandle();
 
         // Allocate local storage
         internal static readonly int LocalStorageSize = 256 * 1024;
@@ -261,7 +261,7 @@ namespace PS3Sharp.Cell.Spu
 
                 default:
                     uint pc = State->PC - 4;
-                    throw new Exception($"[SPU] Unhandled read from channel: {channelNumber} at: 0x{pc:X}");
+                    throw new Exception($"[Spu] Unhandled read from channel: {channelNumber} at: 0x{pc:X}");
             }
         }
 
@@ -299,12 +299,12 @@ namespace PS3Sharp.Cell.Spu
                     break;
 
                 case MfcChannel.MfcWrTagUpdate:
-                    Console.WriteLine($"[SPU] TODO WrTagUpdate");
+                    Console.WriteLine($"[Spu] TODO WrTagUpdate");
                     break;
 
                 default:
                     uint pc = State->PC - 4;
-                    throw new Exception($"[SPU] Unhandled write to channel: {channelNumber} at: 0x{pc:X}");
+                    throw new Exception($"[Spu] Unhandled write to channel: {channelNumber} at: 0x{pc:X}");
             }
         }
 
@@ -323,7 +323,7 @@ namespace PS3Sharp.Cell.Spu
 
                 default:
                     uint pc = State->PC - 4;
-                    throw new Exception($"[SPU] Unhandled MFC Command: 0x{commandNumber:X} at: 0x{pc:X}");
+                    throw new Exception($"[Spu] Unhandled MFC Command: 0x{commandNumber:X} at: 0x{pc:X}");
             }
         }
 
@@ -336,7 +336,7 @@ namespace PS3Sharp.Cell.Spu
                 {
                     unsafe
                     {
-                        Console.WriteLine($"[SPU] MFC Get ls[0x{_lsa:X}], memory[0x{_eal:X}], size = 0x{_transferSize}");
+                        Console.WriteLine($"[Spu] MFC Get ls[0x{_lsa:X}], memory[0x{_eal:X}], size = 0x{_transferSize}");
                         int size = (int)_transferSize;
                         Span<byte> src = MemoryManager.CreateByteSpan(_eal, size);
                         Span<byte> dst = new(LsPtr + _lsa, size);
@@ -347,7 +347,7 @@ namespace PS3Sharp.Cell.Spu
                 {
                     // Why does this happen?
                     uint pc = State->PC - 4;
-                    Console.WriteLine($"[SPU] Warning: MFC Get from nullptr - lsa: 0x{_lsa:X8} size = 0x{_transferSize:X8} pc: 0x{pc:X}");
+                    Console.WriteLine($"[Spu] Warning: MFC Get from nullptr - lsa: 0x{_lsa:X8} size = 0x{_transferSize:X8} pc: 0x{pc:X}");
                 }
             }
         }
@@ -361,7 +361,7 @@ namespace PS3Sharp.Cell.Spu
                 {
                     unsafe
                     {
-                        Console.WriteLine($"[SPU] MFC Getllar ls[0x{_lsa:X}], memory[0x{_eal:X}], size = 0x{_transferSize}");
+                        Console.WriteLine($"[Spu] MFC Getllar ls[0x{_lsa:X}], memory[0x{_eal:X}], size = 0x{_transferSize}");
                         throw new Exception("Todo");
                     }
                 }
@@ -369,7 +369,7 @@ namespace PS3Sharp.Cell.Spu
                 {
                     // Why does this happen?
                     uint pc = State->PC - 4;
-                    Console.WriteLine($"[SPU] Warning: MFC Getllar from nullptr - lsa: 0x{_lsa:X8} size = 0x{_transferSize:X8} pc: 0x{pc:X}");
+                    Console.WriteLine($"[Spu] Warning: MFC Getllar from nullptr - lsa: 0x{_lsa:X8} size = 0x{_transferSize:X8} pc: 0x{pc:X}");
                 }
 
                 _atomicStat = GetllarCompleted;

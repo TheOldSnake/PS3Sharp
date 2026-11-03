@@ -15,7 +15,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 Span<int> raLanes = state->GPR[ra].Ints;
                 Span<int> rtLanes = state->GPR[rt].Ints;
 
@@ -36,7 +36,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 Span<int> raLanes = state->GPR[ra].Ints;
                 Span<int> rtLanes = state->GPR[rt].Ints;
 
@@ -57,7 +57,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 Span<int> raLanes = state->GPR[ra].Ints;
                 Span<int> rtLanes = state->GPR[rt].Ints;
 
@@ -78,7 +78,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 Span<short> raLanes = state->GPR[ra].Shorts;
                 Span<short> rtLanes = state->GPR[rt].Shorts;
 
@@ -99,7 +99,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 Span<byte> raLanes = state->GPR[ra].Bytes;
                 Span<byte> rtLanes = state->GPR[rt].Bytes;
 
@@ -120,7 +120,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 Span<int> raLanes = state->GPR[ra].Ints;
                 Span<int> rtLanes = state->GPR[rt].Ints;
 
@@ -145,7 +145,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 uint baseRa = state->GPR[ra].UInts[PreferredSlot];
                 uint address = (baseRa + (uint)seI10) & 0x3FFF0;
                 BigEndian<UInt128> value = state->GPR[rt].Value128;
@@ -162,7 +162,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 Span<int> raLanes = state->GPR[ra].Ints;
                 Span<int> rtLanes = state->GPR[rt].Ints;
 
@@ -184,7 +184,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 Span<uint> raLanes = state->GPR[ra].UInts;
                 Span<uint> rtLanes = state->GPR[rt].UInts;
 
@@ -206,7 +206,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 Span<byte> raLanes = state->GPR[ra].Bytes;
                 Span<byte> rtLanes = state->GPR[rt].Bytes;
 
@@ -227,7 +227,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 Span<uint> raLanes = state->GPR[ra].UInts;
                 Span<uint> rtLanes = state->GPR[rt].UInts;
 
@@ -248,7 +248,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 Span<byte> raLanes = state->GPR[ra].Bytes;
                 Span<byte> rtLanes = state->GPR[rt].Bytes;
 

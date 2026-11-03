@@ -13,7 +13,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
             unsafe
             {
-                SPUState* state = spu.State;
+                SpuState* state = spu.State;
                 Span<int> rtLanes = state->GPR[rt].Ints;
                 Vector128<int> vi18 = Vector128.Create(i18);
                 vi18.CopyTo(rtLanes);

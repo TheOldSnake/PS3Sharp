@@ -24,7 +24,7 @@ namespace PS3Sharp.Cell.Spu
     }
 
     [InlineArray(128)]
-    internal struct SPURegisterArray
+    internal struct SpuRegisterArray
     {
         private SpuRegister _element;
     }
