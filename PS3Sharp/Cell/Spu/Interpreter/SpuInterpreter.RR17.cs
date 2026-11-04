@@ -481,9 +481,8 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 int rotation = state->GPR[rb].Ints[PreferredSlot] & 0xF;
                 int position = rotation * Vector128<byte>.Count; // rotation already masked
 
-                // Rotate to the right to do the big endian left rotation
                 Vector128<byte> va = Vector128.Create(raLanes);
-                Vector128<byte> shuffle = Vector128.LoadUnsafe(ref SpuTables.RightRotationTableRef, (nuint)position);  // Note: In .NET 11 we can replace LoadUnsafe() with Create() from Span.Slice() without bounds check
+                Vector128<byte> shuffle = Vector128.LoadUnsafe(ref SpuTables.LeftRotationTableRef, (nuint)position);  // Note: In .NET 11 we can replace LoadUnsafe() with Create() from Span.Slice() without bounds check
                 Vector128<byte> result = Vector128.ShuffleNative(va, shuffle);
 
                 result.CopyTo(rtLanes);
@@ -576,9 +575,8 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Span<byte> raLanes = state->GPR[ra].Bytes;
                 Span<byte> rtLanes = state->GPR[rt].Bytes;
 
-                // Rotate to the right to do the big endian left rotation
                 Vector128<byte> va = Vector128.Create(raLanes);
-                Vector128<byte> shuffle = Vector128.LoadUnsafe(ref SpuTables.RightRotationTableRef, (nuint)position);  // Note: In .NET 11 we can replace LoadUnsafe() with Create() from Span.Slice() without bounds check
+                Vector128<byte> shuffle = Vector128.LoadUnsafe(ref SpuTables.LeftRotationTableRef, (nuint)position);  // Note: In .NET 11 we can replace LoadUnsafe() with Create() from Span.Slice() without bounds check
                 Vector128<byte> result = Vector128.ShuffleNative(va, shuffle);
 
                 result.CopyTo(rtLanes);
@@ -602,11 +600,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     Span<byte> raLanes = state->GPR[ra].Bytes;
                     Span<byte> rtLanes = state->GPR[rt].Bytes;
 
-                    // Shift to the left to do the big endian right shift
                     // Note: the shift table depends on x86 PSHUFB semanticss
 
                     Vector128<byte> va = Vector128.Create(raLanes);
-                    Vector128<byte> shuffle = Vector128.LoadUnsafe(ref SpuTables.LeftShiftTableRef, (nuint)position); // Note: In .NET 11 we can replace LoadUnsafe() with Create() from Span.Slice() without bounds check
+                    Vector128<byte> shuffle = Vector128.LoadUnsafe(ref SpuTables.RightShiftTableRef, (nuint)position); // Note: In .NET 11 we can replace LoadUnsafe() with Create() from Span.Slice() without bounds check
                     Vector128<byte> result = Vector128.ShuffleNative(va, shuffle);
 
                     result.CopyTo(rtLanes);
@@ -636,11 +633,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     Span<byte> raLanes = state->GPR[ra].Bytes;
                     Span<byte> rtLanes = state->GPR[rt].Bytes;
 
-                    // Shift to the right to do the big endian left shift
                     // Note: the shift table depends on x86 PSHUFB semanticss
 
                     Vector128<byte> va = Vector128.Create(raLanes);
-                    Vector128<byte> shuffle = Vector128.LoadUnsafe(ref SpuTables.RightShiftTableRef, (nuint)position); // Note: In .NET 11 we can replace LoadUnsafe() with Create() from Span.Slice() without bounds check
+                    Vector128<byte> shuffle = Vector128.LoadUnsafe(ref SpuTables.LeftShiftTableRef, (nuint)position); // Note: In .NET 11 we can replace LoadUnsafe() with Create() from Span.Slice() without bounds check
                     Vector128<byte> result = Vector128.ShuffleNative(va, shuffle);
 
                     result.CopyTo(rtLanes);

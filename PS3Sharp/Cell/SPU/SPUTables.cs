@@ -36,6 +36,7 @@ namespace PS3Sharp.Cell.Spu
 
         private static ShiftInlineArray _leftShiftTable;
         private static ShiftInlineArray _rightShiftTable;
+        private static RotationiInlineArray _leftRotationTable;
         private static RotationiInlineArray _rightRotationTable;
         private static FsmInlineArray _fsmTable;
         private static FsmbInlineArray _fsmbTable;
@@ -43,11 +44,13 @@ namespace PS3Sharp.Cell.Spu
         // Exposed ROS
         internal static ReadOnlySpan<byte> LeftShiftTable => _leftShiftTable;
         internal static ReadOnlySpan<byte> RightShiftTable => _rightShiftTable;
+        internal static ReadOnlySpan<byte> LeftRotationTable => _leftRotationTable;
         internal static ReadOnlySpan<byte> RightRotationTable => _rightRotationTable;
 
         // Exposed ref byte (it is faster to pass the span in MemoryMarshal.GetReference())
         internal static ref byte LeftShiftTableRef => ref MemoryMarshal.GetReference(LeftShiftTable);
         internal static ref byte RightShiftTableRef => ref MemoryMarshal.GetReference(RightShiftTable);
+        internal static ref byte LeftRotationTableRef => ref MemoryMarshal.GetReference(LeftRotationTable);
         internal static ref byte RightRotationTableRef => ref MemoryMarshal.GetReference(RightRotationTable);
 
         internal static ReadOnlySpan<UInt128> FsmbTable => _fsmbTable;
@@ -59,6 +62,7 @@ namespace PS3Sharp.Cell.Spu
             InitializeFsmTable();
             InitializeLeftShiftTable();
             InitializeRightShiftTable();
+            InitializeLeftRotationTable();
             InitializeRightRotationTable();
         }
 
@@ -146,6 +150,23 @@ namespace PS3Sharp.Cell.Spu
                     }
 
                     table[currentLocation++] = (byte)newIndex;
+                }
+            }
+        }
+
+        private static void InitializeLeftRotationTable()
+        {
+            // For each rotation, generate a shuffle vector describing the new indices
+            int rotationsCount = 16;
+            int indexCount = 16;
+            int currentLocation = 0;
+
+            for (int rotation = 0; rotation < rotationsCount; rotation++)
+            {
+                for (int index = 0; index < indexCount; index++)
+                {
+                    byte value = (byte)((index + rotation) & 0xF);
+                    _leftRotationTable[currentLocation++] = value;
                 }
             }
         }

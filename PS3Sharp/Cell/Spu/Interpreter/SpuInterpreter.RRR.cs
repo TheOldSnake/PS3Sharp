@@ -76,7 +76,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     else
                     {
                         // Select from AB
-                        int idx = 31 - (rcLanes[i] & 0x1F); // Big endian indexing
+                        int idx = 31 - (selector & 0x1F); // Big endian indexing
                         result = ab[idx];
                     }
 
