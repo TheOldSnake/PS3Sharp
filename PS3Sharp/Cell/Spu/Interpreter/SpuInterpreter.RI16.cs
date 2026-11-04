@@ -47,6 +47,30 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Brhnz(SpuThread spu, SpuInstruction instruction)
+        {
+            // Branch If Not Zero Halfword
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+
+                if ((state->GPR[rt].UInts[PreferredSlot] & 0xFFFF) != 0)
+                {
+                    // Offset is signed 18-bits
+                    int i16 = instruction.I16 << 2;
+                    int shift = 32 - 18;
+                    int seI16 = (i16 << shift) >> shift;
+
+                    uint currentPC = state->PC - 4;
+                    uint target = (currentPC + (uint)seI16) & 0x3FFFC;
+
+                    state->PC = target;
+                }
+            }
+        }
+
         private static void Stqr(SpuThread spu, SpuInstruction instruction)
         {
             // Store Quadword Instruction Relative (a-form)
@@ -63,6 +87,25 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 uint address = (state->PC + (uint)seI16) & 0x3FFF0;
                 BigEndian<UInt128> value = state->GPR[rt].Value128;
                 spu.WriteStorage(address, value);
+            }
+        }
+
+        private static void Br(SpuThread spu, SpuInstruction instruction)
+        {
+            // Branch Relative
+            unsafe
+            {
+                SpuState* state = spu.State;
+
+                // Offset is signed 18-bits
+                int i16 = instruction.I16 << 2;
+                int shift = 32 - 18;
+                int seI16 = (i16 << shift) >> shift;
+
+                uint currentPC = state->PC - 4;
+                uint target = (currentPC + (uint)seI16) & 0x3FFFC;
+
+                state->PC = target;
             }
         }
 
@@ -100,6 +143,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 state->GPR[rt].Value128 = UInt128.Zero;
                 state->GPR[rt].UInts[PreferredSlot] = currentPC;
+
                 state->PC = target;
             }
         }

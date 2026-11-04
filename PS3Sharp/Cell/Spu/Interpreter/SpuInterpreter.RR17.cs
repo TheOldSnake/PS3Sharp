@@ -65,6 +65,28 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Nor(SpuThread spu, SpuInstruction instruction)
+        {
+            // Nor
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rbLanes = state->GPR[rb].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                Vector128<int> va = Vector128.Create(raLanes);
+                Vector128<int> vb = Vector128.Create(rbLanes);
+                Vector128<int> result = ~(va | vb);
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
         private static void Rotm(SpuThread spu, SpuInstruction instruction)
         {
             // Rotate and Mask Word
@@ -295,6 +317,25 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Bi(SpuThread spu, SpuInstruction instruction)
+        {
+            // Branch Indirect
+            int ra = instruction.Ra;
+            int e = instruction.E;
+            int d = instruction.D;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                uint currentPC = state->PC;
+                uint target = state->GPR[ra].UInts[PreferredSlot] & 0x3FFFC;
+
+                state->PC = target;
+            }
+
+            // TODO: Enable/Disable interrupts
+        }
+
         private static void Bisl(SpuThread spu, SpuInstruction instruction)
         {
             // Branch Indirect and Set Link
@@ -311,6 +352,8 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 state->GPR[rt].Value128 = UInt128.Zero;
                 state->GPR[rt].UInts[PreferredSlot] = currentPC;
+
+                state->PC = target;
             }
 
             // TODO: Enable/Disable interrupts
@@ -403,6 +446,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 state->GPR[rt].Value128 = lut[index];
             }
         }
+
         private static void Cbx(SpuThread spu, SpuInstruction instruction)
         {
             // Generate Controls for Byte Insertion (x-form)
@@ -421,6 +465,31 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Rotqby(SpuThread spu, SpuInstruction instruction)
+        {
+            // Rotate Quadword by Bytes
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<byte> raLanes = state->GPR[ra].Bytes;
+                Span<byte> rtLanes = state->GPR[rt].Bytes;
+
+                int rotation = state->GPR[rb].Ints[PreferredSlot] & 0xF;
+                int position = rotation * Vector128<byte>.Count; // rotation already masked
+
+                // Rotate to the right to do the big endian left rotation
+                Vector128<byte> va = Vector128.Create(raLanes);
+                Vector128<byte> shuffle = Vector128.LoadUnsafe(ref SpuTables.RightRotationTableRef, (nuint)position);  // Note: In .NET 11 we can replace LoadUnsafe() with Create() from Span.Slice() without bounds check
+                Vector128<byte> result = Vector128.ShuffleNative(va, shuffle);
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
         private static void Cbd(SpuThread spu, SpuInstruction instruction)
         {
             // Generate Controls for Byte Insertion (d-form)
@@ -436,6 +505,24 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 state->GPR[rt].Value128 = new(0x1011121314151617, 0x18191A1B1C1D1E1F);
                 state->GPR[rt].Bytes[bytePosition] = 0x03;
+            }
+        }
+
+        private static void Chd(SpuThread spu, SpuInstruction instruction)
+        {
+            // Generate Controls for Halfword Insertion (d-form)
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int seI7 = instruction.SeI7;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                int t = (state->GPR[ra].Ints[PreferredSlot] + seI7) & 0xE;
+                int hwPosition = 7 - (t >> 1); // Big endian indexing
+
+                state->GPR[rt].Value128 = new(0x1011121314151617, 0x18191A1B1C1D1E1F);
+                state->GPR[rt].UShorts[hwPosition] = 0x0203;
             }
         }
 

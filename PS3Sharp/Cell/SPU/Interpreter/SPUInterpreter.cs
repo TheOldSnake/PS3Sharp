@@ -23,6 +23,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
         {
             switch (instruction.RR17Op)
             {
+                case RR17.Lnop:
+                    // Lnop: No Operation (Load)
+                    break;
+
                 case RR17.Sync:
                     // Sync: Synchronize
                     break;
@@ -41,6 +45,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 case RR17.Or:
                     Or(spu, instruction);
+                    break;
+
+                case RR17.Nor:
+                    Nor(spu, instruction);
                     break;
 
                 case RR17.Rotm:
@@ -79,6 +87,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     Wrch(spu, instruction);
                     break;
 
+                case RR17.Bi:
+                    Bi(spu, instruction);
+                    break;
+
                 case RR17.Bisl:
                     Bisl(spu, instruction);
                     break;
@@ -103,8 +115,16 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     Cbx(spu, instruction);
                     break;
 
+                case RR17.Rotqby:
+                    Rotqby(spu, instruction);
+                    break;
+
                 case RR17.Cbd:
                     Cbd(spu, instruction);
+                    break;
+
+                case RR17.Chd:
+                    Chd(spu, instruction);
                     break;
 
                 case RR17.Cwd:
@@ -173,8 +193,16 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     Brnz(spu, instruction);
                     break;
 
+                case RI16.Brhnz:
+                    Brhnz(spu, instruction);
+                    break;
+
                 case RI16.Stqr:
                     Stqr(spu, instruction);
+                    break;
+
+                case RI16.Br:
+                    Br(spu, instruction);
                     break;
 
                 case RI16.Fsmbi:
