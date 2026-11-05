@@ -168,7 +168,7 @@ namespace PS3Sharp.Memory
             }
         }
 
-        internal T LoadAndReserve<T>(uint virtualAddress, uint threadId, PPUThread ppu) where T : unmanaged
+        internal T LoadAndReserve<T>(uint virtualAddress, uint threadId) where T : unmanaged
         {
             lock (_managerLock)
             {
@@ -178,7 +178,16 @@ namespace PS3Sharp.Memory
             }
         }
 
-        internal bool StoreConditional<T>(uint virtualAddress, uint threadId, T value, PPUThread ppu) where T : unmanaged
+        internal void LoadAndReserve(uint virtualAddress, uint threadId, Span<byte> destination)
+        {
+            lock (_managerLock)
+            {
+                ReserveAddress(virtualAddress, destination.Length, threadId);
+                ReadBufferFromVirtualMemory(virtualAddress, destination);
+            }
+        }
+
+        internal bool StoreConditional<T>(uint virtualAddress, uint threadId, T value) where T : unmanaged
         {
             lock (_managerLock)
             {
@@ -188,6 +197,22 @@ namespace PS3Sharp.Memory
                 if (ok)
                 {
                     Write(virtualAddress, value);
+                }
+
+                return ok;
+            }
+        }
+
+        internal bool StoreConditional(uint virtualAddress, uint threadId, Span<byte> src)
+        {
+            lock (_managerLock)
+            {
+                // Acquire reservation and only write if successful 
+                bool ok = TryAccess(virtualAddress, src.Length, threadId);
+
+                if (ok)
+                {
+                    CopyBufferToVirtualMemory(src, virtualAddress);
                 }
 
                 return ok;

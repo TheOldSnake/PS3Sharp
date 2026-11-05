@@ -153,7 +153,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
 
             uint value = ppu.GPR[instruction.Rs].Value32;
-            bool ok = ppu.MemoryManager.StoreConditional<BigEndian<uint>>(ea, ppu.ThreadID, value, ppu);
+            bool ok = ppu.MemoryManager.StoreConditional<BigEndian<uint>>(ea, ppu.ThreadID, value);
             ppu.State->CR.WriteCRField(CRNumber.CR0, ok ? PPUThread.ConditionRegister.Eq : 0);
         }
 
@@ -208,7 +208,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
 
             ulong value = ppu.GPR[instruction.Rs].Value64;
-            bool ok = ppu.MemoryManager.StoreConditional<BigEndian<ulong>>(ea, ppu.ThreadID, value, ppu);
+            bool ok = ppu.MemoryManager.StoreConditional<BigEndian<ulong>>(ea, ppu.ThreadID, value);
             ppu.State->CR.WriteCRField(CRNumber.CR0, ok ? PPUThread.ConditionRegister.Eq : 0);
         }
 
@@ -342,7 +342,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
         private static void LWARX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
-            uint value = ppu.MemoryManager.LoadAndReserve<BigEndian<uint>>(ea, ppu.ThreadID, ppu);
+            uint value = ppu.MemoryManager.LoadAndReserve<BigEndian<uint>>(ea, ppu.ThreadID);
             ppu.GPR[instruction.Rt].Value64 = value;                         //zeroes the top 32-bits                
         }
 
@@ -427,7 +427,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
         private static void LDARX(PPUInstruction instruction, PPUThread ppu)
         {
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
-            ulong value = ppu.MemoryManager.LoadAndReserve<BigEndian<ulong>>(ea, ppu.ThreadID, ppu);
+            ulong value = ppu.MemoryManager.LoadAndReserve<BigEndian<ulong>>(ea, ppu.ThreadID);
             ppu.GPR[instruction.Rt].Value64 = value;
         }
 
