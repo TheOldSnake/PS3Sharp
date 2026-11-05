@@ -2,22 +2,21 @@ using PS3Sharp.Cell.Spu.Interpreter;
 using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.Syscall;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace PS3Sharp.Cell.Spu
 {
     internal unsafe sealed class SpuThread : IDisposable
     {
-        // Empty port value
-        internal const uint FreePort = 0xFFFFFFFF;
-
-        // Atomic stat bits for Put/Get lock-line commands
-        internal const uint PutllcSucceeded = 0;
-        internal const uint PutllcFailed = 1;          
-        internal const uint PutllucCompleted = 1 << 1;
-        internal const uint GetllarCompleted = 1 << 2;
+        // Unmanaged state
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct SpuState
+        {
+            internal uint PC;
+            internal SpuRegisterArray GPR;
+        }
 
         internal enum ThreadStatus
         {
@@ -28,43 +27,52 @@ namespace PS3Sharp.Cell.Spu
         // MFC channels
         internal enum MfcChannel
         {
-            MfcLsa = 16,
-            MfcEah = 17,
-            MfcEal = 18,
-            MfcSize = 19,
-            MfcTagId = 20,
-            MfcCmd = 21,
-            MfcWrTagMask = 22,
-            MfcWrTagUpdate = 23,
-            MfcRdTagStat = 24,
-
-            MfcRdAtomicStat = 27,
+            Lsa = 0x10,
+            Eah = 0x11,
+            Eal = 0x12,
+            Size = 0x13,
+            TagId = 0x14,
+            Cmd = 0x15,
+            WrTagMask = 0x16,
+            WrTagUpdate = 0x17,
+            RdTagStat = 0x18,
+            RdAtomicStat = 0x1B,
         }
 
         internal enum MfcCommand
         {
+            Put = 0x20,
             Get = 0x40,
+            Putllc = 0xB4,
             Getllar = 0xD0,
         }
 
-        // Unmanaged state
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct SpuState
+        // Atomic stat bits for Put/Get lock-line commands
+        internal enum AtomicStat : uint
         {
-            internal uint PC;
-            internal SpuRegisterArray GPR;
+            PutllcSucceeded = 0,
+            PutllcFailed = 1,
+            PutllucCompleted = 1 << 1,
+            GetllarCompleted = 1 << 2,
         }
 
-        private readonly uint[] _ports = new uint[64];
+        // Total ports
+        internal const int PortCount = 64;
+
+        // Empty port value
+        internal const uint FreePort = 0xFFFFFFFF;
+
+        // Port mappings
+        private readonly uint[] _ports = new uint[PortCount];
 
         // MFC
-        private uint _lsa;          // Local storage transfer address
-        private uint _eah;          // Effective transfer address high
-        private uint _eal;          // Effective transfer address low
-        private uint _transferSize; // Transfer size
-        private uint _tagId;        // Tag id
-        private uint _tagMask;      // Tag mask
-        private uint _atomicStat;   // Atomic Command Status Channel
+        private uint _lsa;                // Local storage transfer address
+        private uint _eah;                // Effective transfer address high
+        private uint _eal;                // Effective transfer address low
+        private uint _transferSize;       // Transfer size
+        private uint _tagId;              // Tag id
+        private uint _tagMask;            // Tag mask
+        private AtomicStat _atomicStat;   // Atomic Command Status Channel
 
         internal Thread NativeThread { get; }
         internal string ThreadName { get; } = string.Empty;
@@ -105,6 +113,8 @@ namespace PS3Sharp.Cell.Spu
 
         internal bool PortIsFree(int port) => _ports[port] == FreePort;
 
+        internal uint GetPort(int port) => _ports[port];
+
         internal void SetPort(int port, uint id)
         {            
             if (!PortIsFree(port))
@@ -115,26 +125,10 @@ namespace PS3Sharp.Cell.Spu
             _ports[port] = id;
         }
 
-        internal uint GetPort(int port)
-        {
-            return _ports[port];
-        }
-
-        internal void Reset()
-        {
-            unsafe
-            {
-                NativeMemory.Clear(State, (nuint)StateSize);
-                NativeMemory.Clear(LsPtr, (nuint)LocalStorageSize);
-                State->GPR[1].UInts[3] = 0x3FFF0;   // Default stack pointer
-            }
-
-            Status = ThreadStatus.Stopped;
-        }
-
         internal void Start()
         {
-            Status = ThreadStatus.Running;
+            // Default stack pointer
+            State->GPR[1].UInts[3] = 0x3FFF0;  
 
             LoadImage();
             SetArgs();
@@ -144,6 +138,7 @@ namespace PS3Sharp.Cell.Spu
                 State->PC = Image.Entry;
             }
 
+            Status = ThreadStatus.Running;
             NativeThread.Start();
         }
 
@@ -250,11 +245,11 @@ namespace PS3Sharp.Cell.Spu
             switch (channel)
             {
                 // Stub
-                case MfcChannel.MfcRdTagStat:
+                case MfcChannel.RdTagStat:
                     return 1;
 
-                case MfcChannel.MfcRdAtomicStat:
-                    return _atomicStat;
+                case MfcChannel.RdAtomicStat:
+                    return (uint)_atomicStat;
 
                 default:
                     uint pc = State->PC - 4;
@@ -267,35 +262,35 @@ namespace PS3Sharp.Cell.Spu
             MfcChannel channel = (MfcChannel)channelNumber;
             switch (channel)
             {
-                case MfcChannel.MfcLsa:
+                case MfcChannel.Lsa:
                     _lsa = value;
                     break;
 
-                case MfcChannel.MfcEah:
+                case MfcChannel.Eah:
                     _eah = value;
                     break;
 
-                case MfcChannel.MfcEal:
+                case MfcChannel.Eal:
                     _eal = value;
                     break;
 
-                case MfcChannel.MfcSize:
+                case MfcChannel.Size:
                     _transferSize = value;
                     break;
 
-                case MfcChannel.MfcTagId:
+                case MfcChannel.TagId:
                     _tagId = value;
                     break;
 
-                case MfcChannel.MfcCmd:
+                case MfcChannel.Cmd:
                     ExecuteCommand(value);
                     break;
 
-                case MfcChannel.MfcWrTagMask:
+                case MfcChannel.WrTagMask:
                     _tagMask = value;
                     break;
 
-                case MfcChannel.MfcWrTagUpdate:
+                case MfcChannel.WrTagUpdate:
                     Console.WriteLine($"[Spu] TODO WrTagUpdate");
                     break;
 
@@ -310,12 +305,20 @@ namespace PS3Sharp.Cell.Spu
             MfcCommand command = (MfcCommand)commandNumber;
             switch (command)
             {
+                case MfcCommand.Put:
+                    Put();
+                    break;
+
                 case MfcCommand.Get:
-                    MfcGet();
+                    Get();
+                    break;
+
+                case MfcCommand.Putllc:
+                    Putllc();
                     break;
 
                 case MfcCommand.Getllar:
-                    MfcGetllar();
+                    Getllar();
                     break;
 
                 default:
@@ -324,53 +327,51 @@ namespace PS3Sharp.Cell.Spu
             }
         }
 
-        private void MfcGet()
+        private void Put()
         {
-            //  Moves data from an effective address within the main storage domain to local storage.
-            if (_transferSize != 0)
+            // transfers the number of bytes specified by the transfer size parameter from the 
+            // local storage address of the SPU to the effective address.
+            Console.WriteLine($"[Spu] MFC Put:  eal = 0x{_eal:X}, ls = 0x{_lsa:X}, size = 0x{_transferSize:X}");
+
+            unsafe
             {
-                if (_eal != 0)
-                {
-                    unsafe
-                    {
-                        Console.WriteLine($"[Spu] MFC Get ls[0x{_lsa:X}], memory[0x{_eal:X}], size = 0x{_transferSize}");
-                        int size = (int)_transferSize;
-                        Span<byte> src = MemoryManager.CreateByteSpan(_eal, size);
-                        Span<byte> dst = new(LsPtr + _lsa, size);
-                        src.CopyTo(dst);
-                    }
-                }
-                else
-                {
-                    // Why does this happen?
-                    uint pc = State->PC - 4;
-                    Console.WriteLine($"[Spu] Warning: MFC Get from nullptr - lsa: 0x{_lsa:X8} size = 0x{_transferSize:X8} pc: 0x{pc:X}");
-                }
+                int size = (int)_transferSize;
+                Span<byte> src = new(LsPtr + _lsa, size);
+                Span<byte> dst = MemoryManager.CreateByteSpan(_eal, size);
+                src.CopyTo(dst);
             }
         }
 
-        private void MfcGetllar()
+        private void Get()
+        {
+            // Transfers the number of bytes specified by the transfer size parameter from the
+            // effective address to the local storage address of the SPU
+            Console.WriteLine($"[Spu] MFC Get: ls = 0x{_lsa:X}, eal = 0x{_eal:X}, size = 0x{_transferSize:X}");
+
+            unsafe
+            {
+                int size = (int)_transferSize;
+                Span<byte> src = MemoryManager.CreateByteSpan(_eal, size);
+                Span<byte> dst = new(LsPtr + _lsa, size);
+                src.CopyTo(dst);
+            }
+        }
+
+        private void Putllc()
+        {
+            // Puts lock line conditional on a reservation
+            // TODO
+            Console.WriteLine($"[Spu] MFC Putllc: ls = 0x{_lsa:X}, eal = 0x{_eal:X}");
+            throw new Exception("Todo: Putllc");
+            _atomicStat = AtomicStat.PutllcSucceeded;
+        }
+
+        private void Getllar()
         {
             // Gets a lock line and creates a reservation
-            if (_transferSize > 0)
-            {
-                if (_eal != 0)
-                {
-                    unsafe
-                    {
-                        Console.WriteLine($"[Spu] MFC Getllar ls[0x{_lsa:X}], memory[0x{_eal:X}], size = 0x{_transferSize}");
-                        throw new Exception("Todo");
-                    }
-                }
-                else
-                {
-                    // Why does this happen?
-                    uint pc = State->PC - 4;
-                    Console.WriteLine($"[Spu] Warning: MFC Getllar from nullptr - lsa: 0x{_lsa:X8} size = 0x{_transferSize:X8} pc: 0x{pc:X}");
-                }
-
-                _atomicStat = GetllarCompleted;
-            }
+            Console.WriteLine($"[Spu] MFC Getllar: ls = 0x{_lsa:X}, eal = 0x{_eal:X}");
+            throw new Exception("Todo: Getllar");
+            _atomicStat = AtomicStat.GetllarCompleted;
         }
 
         public void Dispose()
