@@ -60,6 +60,7 @@
         And = 0x0C1,
         Cg = 0x0C2,
         Wrch = 0x10D,
+        Biz = 0x128,
         Binz = 0x129,
         Stqx = 0x144,
         Bi = 0x1A8,

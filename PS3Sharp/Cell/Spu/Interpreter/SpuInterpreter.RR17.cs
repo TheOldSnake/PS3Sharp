@@ -344,6 +344,28 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Biz(SpuThread spu, SpuInstruction instruction)
+        {
+            // Branch Indirect If Zero
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int e = instruction.E;
+            int d = instruction.D;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+
+                if (state->GPR[rt].UInts[PreferredSlot] == 0)
+                {
+                    uint target = state->GPR[ra].UInts[PreferredSlot] & 0x3FFFC;
+                    state->PC = target;
+                }
+            }
+
+            // TODO: Enable/Disable interrupts
+        }
+
         private static void Binz(SpuThread spu, SpuInstruction instruction)
         {
             // Branch Indirect If Not Zero

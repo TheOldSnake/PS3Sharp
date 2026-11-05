@@ -87,6 +87,10 @@
                     Wrch(spu, instruction);
                     break;
 
+                case RR17.Biz:
+                    Biz(spu, instruction);
+                    break;
+
                 case RR17.Binz:
                     Binz(spu, instruction);
                     break;
