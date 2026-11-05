@@ -86,8 +86,10 @@
     // 9-bit Opcodes
     internal enum RI16 : int
     {
+        Brz = 0x040,
         Stqa = 0x041,
         Brnz = 0x042,
+        Brhz = 0x044,
         Brhnz = 0x046,
         Stqr = 0x047,
         Br = 0x064,
@@ -110,11 +112,14 @@
         Andbi = 0x16,
         Ai = 0x1C,
         Stqd = 0x24,
+        Lqd = 0x34,
         Cgti = 0x4C,
         Clgti = 0x5C,
         Clgtbi = 0x5E,
+        Hlgti = 0x5F,
         Ceqi = 0x7C,
         Ceqbi = 0x7E,
+        Heqi = 0x7F,
     }
 
     // 7-bit Opcodes

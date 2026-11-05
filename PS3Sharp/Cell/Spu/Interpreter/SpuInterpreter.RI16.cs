@@ -7,20 +7,41 @@ namespace PS3Sharp.Cell.Spu.Interpreter
     internal static partial class SpuInterpreter
     {
         // RI16: 9-bit opcode group
-        private static void Stqa(SpuThread spu, SpuInstruction instruction)
+        private static void Brz(SpuThread spu, SpuInstruction instruction)
         {
-            // Store Quadword (a-form)
+            // Branch If Zero Word
             int rt = instruction.RtLo;
-
-            // Offset is 18-bits
-            int i16 = instruction.I16 << 2;
 
             unsafe
             {
                 SpuState* state = spu.State;
-                uint address = (uint)(i16 & 0x3FFF0);
+
+                if (state->GPR[rt].UInts[PreferredSlot] == 0)
+                {
+                    // Offset is signed 18-bits
+                    int offset = instruction.I16 << 2;
+                    int shift = 32 - 18;
+                    int seOffset = (offset << shift) >> shift;
+
+                    uint currentPC = state->PC - 4;
+                    uint target = (currentPC + (uint)seOffset) & 0x3FFFC;
+
+                    state->PC = target;
+                }
+            }
+        }
+
+        private static void Stqa(SpuThread spu, SpuInstruction instruction)
+        {
+            // Store Quadword (a-form)
+            int rt = instruction.RtLo;
+            uint target = (uint)((instruction.I16 << 2) & 0x3FFF0);
+
+            unsafe
+            {
+                SpuState* state = spu.State;
                 BigEndian<UInt128> value = state->GPR[rt].Value128;
-                spu.WriteStorage(address, value);
+                spu.WriteStorage(target, value);
             }
         }
 
@@ -36,12 +57,36 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 if (state->GPR[rt].UInts[PreferredSlot] != 0)
                 {
                     // Offset is signed 18-bits
-                    int i16 = instruction.I16 << 2;
+                    int offset = instruction.I16 << 2;
                     int shift = 32 - 18;
-                    int seI16 = (i16 << shift) >> shift;
+                    int seOffset = (offset << shift) >> shift;
 
                     uint currentPC = state->PC - 4;
-                    uint target = (currentPC + (uint)seI16) & 0x3FFFC;
+                    uint target = (currentPC + (uint)seOffset) & 0x3FFFC;
+
+                    state->PC = target;
+                }
+            }
+        }
+
+        private static void Brhz(SpuThread spu, SpuInstruction instruction)
+        {
+            // Branch If Zero Halfword
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+
+                if ((state->GPR[rt].UInts[PreferredSlot] & 0xFFFF) == 0)
+                {
+                    // Offset is signed 18-bits
+                    int offset = instruction.I16 << 2;
+                    int shift = 32 - 18;
+                    int seOffset = (offset << shift) >> shift;
+
+                    uint currentPC = state->PC - 4;
+                    uint target = (currentPC + (uint)seOffset) & 0x3FFFC;
 
                     state->PC = target;
                 }
@@ -60,12 +105,12 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 if ((state->GPR[rt].UInts[PreferredSlot] & 0xFFFF) != 0)
                 {
                     // Offset is signed 18-bits
-                    int i16 = instruction.I16 << 2;
+                    int offset = instruction.I16 << 2;
                     int shift = 32 - 18;
-                    int seI16 = (i16 << shift) >> shift;
+                    int seOffset = (offset << shift) >> shift;
 
                     uint currentPC = state->PC - 4;
-                    uint target = (currentPC + (uint)seI16) & 0x3FFFC;
+                    uint target = (currentPC + (uint)seOffset) & 0x3FFFC;
 
                     state->PC = target;
                 }
@@ -76,18 +121,18 @@ namespace PS3Sharp.Cell.Spu.Interpreter
         {
             // Store Quadword Instruction Relative (a-form)
             int rt = instruction.RtLo;
-            int i16 = instruction.I16 << 2;
+            int offset = instruction.I16 << 2;
 
             // Signed 18-bits (?)
             int shift = 32 - 18;
-            int seI16 = (i16 << shift) >> shift;
+            int seOffset = (offset << shift) >> shift;
 
             unsafe
             {
                 SpuState* state = spu.State;
-                uint address = (state->PC + (uint)seI16) & 0x3FFF0;
+                uint target = (state->PC + (uint)seOffset) & 0x3FFF0;
                 BigEndian<UInt128> value = state->GPR[rt].Value128;
-                spu.WriteStorage(address, value);
+                spu.WriteStorage(target, value);
             }
         }
 
@@ -99,12 +144,12 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 SpuState* state = spu.State;
 
                 // Offset is signed 18-bits
-                int i16 = instruction.I16 << 2;
+                int offset = instruction.I16 << 2;
                 int shift = 32 - 18;
-                int seI16 = (i16 << shift) >> shift;
+                int seOffset = (offset << shift) >> shift;
 
                 uint currentPC = state->PC - 4;
-                uint target = (currentPC + (uint)seI16) & 0x3FFFC;
+                uint target = (currentPC + (uint)seOffset) & 0x3FFFC;
 
                 state->PC = target;
             }
@@ -132,15 +177,15 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             int rt = instruction.RtLo;
 
             // Offset is signed 18-bits
-            int i16 = instruction.I16 << 2;
+            int offset = instruction.I16 << 2;
             int shift = 32 - 18;
-            int seI16 = (i16 << shift) >> shift;
+            int seOffset = (offset << shift) >> shift;
 
             unsafe
             {
                 SpuState* state = spu.State;
                 uint currentPC = state->PC - 4;
-                uint target = (currentPC + (uint)seI16) & 0x3FFFC;
+                uint target = (currentPC + (uint)seOffset) & 0x3FFFC;
 
                 state->GPR[rt].Value128 = UInt128.Zero;
                 state->GPR[rt].UInts[PreferredSlot] = currentPC;
@@ -153,13 +198,12 @@ namespace PS3Sharp.Cell.Spu.Interpreter
         {
             // Load Quadword (a-form)
             int rt = instruction.RtLo;
-            int i16 = instruction.I16;
-            uint address = (uint)((i16 << 2) & 0x3FFF0);
+            uint target = (uint)((instruction.I16 << 2) & 0x3FFF0);
 
             unsafe
             {
                 SpuState* state = spu.State;
-                BigEndian<UInt128> value = spu.ReadStorage<BigEndian<UInt128>>(address);
+                BigEndian<UInt128> value = spu.ReadStorage<BigEndian<UInt128>>(target);
                 state->GPR[rt].Value128 = value;
             }
         }
@@ -173,8 +217,8 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                uint address = (uint)(state->PC + (i16 << 2)) & 0x3FFF0;
-                BigEndian<UInt128> value = spu.ReadStorage<BigEndian<UInt128>>(address);
+                uint target = (uint)(state->PC + (i16 << 2)) & 0x3FFF0;
+                BigEndian<UInt128> value = spu.ReadStorage<BigEndian<UInt128>>(target);
                 state->GPR[rt].Value128 = value;
             }
         }
@@ -198,14 +242,14 @@ namespace PS3Sharp.Cell.Spu.Interpreter
         {
             // Immediate Load Halfword Upper
             int rt = instruction.RtLo;
-            int i16 = instruction.I16 << 16;
+            int imm = instruction.I16 << 16;
 
             unsafe
             {
                 SpuState* state = spu.State;
                 Span<int> rtLanes = state->GPR[rt].Ints;
 
-                Vector128<int> vi = Vector128.Create(i16);
+                Vector128<int> vi = Vector128.Create(imm);
                 vi.CopyTo(rtLanes);
             }
         }

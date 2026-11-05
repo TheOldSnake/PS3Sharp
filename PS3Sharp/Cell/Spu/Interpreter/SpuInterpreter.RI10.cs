@@ -139,18 +139,40 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             int ra = instruction.Ra;
             int rt = instruction.RtLo;
 
-            // Signed 14-bits
-            int i10 = instruction.I10 << 4;
+            // Offset is signed 14-bits
+            int offset = instruction.I10 << 4;
             int shift = 32 - 14;
-            int seI10 = (i10 << shift) >> shift;
+            int seOffset = (offset << shift) >> shift;
 
             unsafe
             {
                 SpuState* state = spu.State;
-                uint baseRa = state->GPR[ra].UInts[PreferredSlot];
-                uint address = (baseRa + (uint)seI10) & 0x3FFF0;
+                uint baseAddress = state->GPR[ra].UInts[PreferredSlot];
+                uint target = (baseAddress + (uint)seOffset) & 0x3FFF0;
                 BigEndian<UInt128> value = state->GPR[rt].Value128;
-                spu.WriteStorage(address, value);
+                spu.WriteStorage(target, value);
+            }
+        }
+
+        private static void Lqd(SpuThread spu, SpuInstruction instruction)
+        {
+            // Load Quadword (d-form)
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+
+            // Offset is signed 14-bits
+            int offset = instruction.I10 << 4;
+            int shift = 32 - 14;
+            int seOffset = (offset << shift) >> shift;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                uint baseAddress = state->GPR[ra].UInts[PreferredSlot];
+                uint target = (baseAddress + (uint)seOffset) & 0x3FFF0;
+
+                BigEndian<UInt128> value = spu.ReadStorage<BigEndian<UInt128>>(target);
+                state->GPR[rt].Value128 = value;
             }
         }
 
@@ -203,7 +225,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             // Compare Logical Greater Than Byte Immediate
             int ra = instruction.Ra;
             int rt = instruction.RtLo;
-            int i10 = instruction.I10 & 0xFF;
+            int imm = instruction.I10 & 0xFF;
 
             unsafe
             {
@@ -212,10 +234,28 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Span<byte> rtLanes = state->GPR[rt].Bytes;
 
                 Vector128<byte> va = Vector128.Create(raLanes);
-                Vector128<byte> vi = Vector128.Create((byte)i10);
+                Vector128<byte> vi = Vector128.Create((byte)imm);
                 Vector128<byte> result = Vector128.GreaterThan(va, vi);
 
                 result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Hlgti(SpuThread spu, SpuInstruction instruction)
+        {
+            // Halt If Logically Greater Than Immediate
+            int ra = instruction.Ra;
+            int seI10 = instruction.SeI10;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+
+                if (state->GPR[ra].UInts[PreferredSlot] > (uint)seI10)
+                {
+                    // TODO
+                    throw new Exception($"SPU thread halted on Hlgti");
+                }
             }
         }
 
@@ -258,6 +298,24 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Vector128<byte> result = Vector128.Equals(va, vi);
 
                 result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Heqi(SpuThread spu, SpuInstruction instruction)
+        {
+            // Halt If Equal Immediate
+            int ra = instruction.Ra;
+            int seI10 = instruction.SeI10;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+
+                if (state->GPR[ra].UInts[PreferredSlot] == (uint)seI10)
+                {
+                    // TODO
+                    throw new Exception($"SPU thread halted on Heqi");
+                }
             }
         }
     }

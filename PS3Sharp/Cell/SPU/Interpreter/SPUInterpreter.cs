@@ -185,12 +185,20 @@ namespace PS3Sharp.Cell.Spu.Interpreter
         {
             switch (instruction.RI16Op)
             {
+                case RI16.Brz:
+                    Brz(spu, instruction);
+                    break;
+
                 case RI16.Stqa:
                     Stqa(spu, instruction);
                     break;
 
                 case RI16.Brnz:
                     Brnz(spu, instruction);
+                    break;
+
+                case RI16.Brhz:
+                    Brhz(spu, instruction);
                     break;
 
                 case RI16.Brhnz:
@@ -271,6 +279,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     Stqd(spu, instruction);
                     break;
 
+                case RI10.Lqd:
+                    Lqd(spu, instruction);
+                    break;
+
                 case RI10.Cgti:
                     Cgti(spu, instruction);
                     break;
@@ -283,12 +295,20 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     Clgtbi(spu, instruction);
                     break;
 
+                case RI10.Hlgti:
+                    Hlgti(spu, instruction);
+                    break;
+
                 case RI10.Ceqi:
                     Ceqi(spu, instruction);
                     break;
 
                 case RI10.Ceqbi:
                     Ceqbi(spu, instruction);
+                    break;
+
+                case RI10.Heqi:
+                    Heqi(spu, instruction);
                     break;
 
                 default:
