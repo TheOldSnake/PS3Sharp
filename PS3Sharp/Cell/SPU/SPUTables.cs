@@ -47,11 +47,11 @@ namespace PS3Sharp.Cell.Spu
         internal static ReadOnlySpan<byte> LeftRotationTable => _leftRotationTable;
         internal static ReadOnlySpan<byte> RightRotationTable => _rightRotationTable;
 
-        // Exposed ref byte (it is faster to pass the span in MemoryMarshal.GetReference())
-        internal static ref byte LeftShiftTableRef => ref MemoryMarshal.GetReference(LeftShiftTable);
-        internal static ref byte RightShiftTableRef => ref MemoryMarshal.GetReference(RightShiftTable);
-        internal static ref byte LeftRotationTableRef => ref MemoryMarshal.GetReference(LeftRotationTable);
-        internal static ref byte RightRotationTableRef => ref MemoryMarshal.GetReference(RightRotationTable);
+        // Exposed ref readonly byte (it is faster to pass the span in MemoryMarshal.GetReference())
+        internal static ref readonly byte LeftShiftTableRef => ref MemoryMarshal.GetReference(LeftShiftTable);
+        internal static ref readonly byte RightShiftTableRef => ref MemoryMarshal.GetReference(RightShiftTable);
+        internal static ref readonly byte LeftRotationTableRef => ref MemoryMarshal.GetReference(LeftRotationTable);
+        internal static ref readonly byte RightRotationTableRef => ref MemoryMarshal.GetReference(RightRotationTable);
 
         internal static ReadOnlySpan<UInt128> FsmbTable => _fsmbTable;
         internal static ReadOnlySpan<UInt128> FsmTable => _fsmTable;
