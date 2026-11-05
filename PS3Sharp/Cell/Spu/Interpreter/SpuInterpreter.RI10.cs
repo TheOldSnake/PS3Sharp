@@ -28,6 +28,27 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Orhi(SpuThread spu, SpuInstruction instruction)
+        {
+            // Or Halfword Immediate
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int imm = instruction.SeI10;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<short> raLanes = state->GPR[ra].Shorts;
+                Span<short> rtLanes = state->GPR[rt].Shorts;
+
+                Vector128<short> va = Vector128.Create(raLanes);
+                Vector128<short> vi = Vector128.Create((short)imm);
+                Vector128<short> result = va | vi;
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
         private static void Sfi(SpuThread spu, SpuInstruction instruction)
         {
             // Subtract from Word Immediate
@@ -75,7 +96,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             // And Halfword Immediate
             int ra = instruction.Ra;
             int rt = instruction.RtLo;
-            short imm = (short)instruction.SeI10;
+            int imm = instruction.SeI10;
 
             unsafe
             {
@@ -84,7 +105,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Span<short> rtLanes = state->GPR[rt].Shorts;
 
                 Vector128<short> va = Vector128.Create(raLanes);
-                Vector128<short> vi = Vector128.Create(imm);
+                Vector128<short> vi = Vector128.Create((short)imm);
                 Vector128<short> result = va & vi;
 
                 result.CopyTo(rtLanes);
@@ -173,6 +194,27 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 BigEndian<UInt128> value = spu.ReadStorage<BigEndian<UInt128>>(target);
                 state->GPR[rt].Value128 = value;
+            }
+        }
+
+        private static void Xori(SpuThread spu, SpuInstruction instruction)
+        {
+            // Exclusive Or Word Immediate
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int imm = instruction.SeI10;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                Vector128<int> va = Vector128.Create(raLanes);
+                Vector128<int> vi = Vector128.Create(imm);
+                Vector128<int> result = va ^ vi;
+
+                result.CopyTo(rtLanes);
             }
         }
 

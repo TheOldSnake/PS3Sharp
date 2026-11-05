@@ -159,6 +159,10 @@
                     Cdd(spu, instruction);
                     break;
 
+                case RR17.Rotqbii:
+                    Rotqbii(spu, instruction);
+                    break;
+
                 case RR17.Rotqbyi:
                     Rotqbyi(spu, instruction);
                     break;
@@ -185,6 +189,10 @@
 
                 case RR17.Andc:
                     Andc(spu, instruction);
+                    break;
+
+                case RR17.Clgth:
+                    Clgth(spu, instruction);
                     break;
 
                 case RR17.Clgtb:
@@ -287,6 +295,10 @@
                     Ori(spu, instruction);
                     break;
 
+                case RI10.Orhi:
+                    Orhi(spu, instruction);
+                    break;
+
                 case RI10.Sfi:
                     Sfi(spu, instruction);
                     break;
@@ -313,6 +325,10 @@
 
                 case RI10.Lqd:
                     Lqd(spu, instruction);
+                    break;
+
+                case RI10.Xori:
+                    Xori(spu, instruction);
                     break;
 
                 case RI10.Cgti:

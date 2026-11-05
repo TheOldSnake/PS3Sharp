@@ -78,6 +78,7 @@
         Chd = 0x1F5,
         Cwd = 0x1F6,
         Cdd = 0x1F7,
+        Rotqbii = 0x1F8,
         Rotqbyi = 0x1FC,
         Rotqmbyi = 0x1FD,
         Shlqbyi = 0x1FF,
@@ -85,6 +86,7 @@
         Xshw = 0x2AE,
         Xsbh = 0x2B6,
         Andc = 0x2C1,
+        Clgth = 0x2C8,
         Clgtb = 0x2D0,
         Addx = 0x340,
         Sfx = 0x341,
@@ -115,6 +117,7 @@
     internal enum RI10 : int
     {
         Ori = 0x04,
+        Orhi = 0x05,
         Sfi = 0x0C,
         Andi = 0x14,
         Andhi = 0x15,
@@ -122,6 +125,7 @@
         Ai = 0x1C,
         Stqd = 0x24,
         Lqd = 0x34,
+        Xori = 0x44,
         Cgti = 0x4C,
         Clgti = 0x5C,
         Clgtbi = 0x5E,

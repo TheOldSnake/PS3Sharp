@@ -1,5 +1,6 @@
 ﻿using PS3Sharp.Common;
 using System.Runtime.Intrinsics;
+using static PS3Sharp.Cell.PPU.Recompiler.IR.IRGenerator;
 using static PS3Sharp.Cell.Spu.SpuThread;
 using static System.Windows.Forms.AxHost;
 
@@ -681,6 +682,20 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Rotqbii(SpuThread spu, SpuInstruction instruction)
+        {
+            // Rotate Quadword by Bits Immediate
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int rotation = instruction.I7 & 0x7;
+            
+            unsafe
+            {
+                SpuState* state = spu.State;
+                state->GPR[rt].Value128 = UInt128.RotateLeft(state->GPR[ra].Value128, rotation);
+            }
+        }
+
         private static void Rotqbyi(SpuThread spu, SpuInstruction instruction)
         {
             // Rotate Quadword by Bytes Immediate
@@ -844,6 +859,28 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Vector128<int> va = Vector128.Create(raLanes);
                 Vector128<int> vb = Vector128.Create(rbLanes);
                 Vector128<int> result = va & (~vb);
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Clgth(SpuThread spu, SpuInstruction instruction)
+        {
+            // Compare Logical Greater Than Halfword
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<ushort> raLanes = state->GPR[ra].UShorts;
+                Span<ushort> rbLanes = state->GPR[rb].UShorts;
+                Span<ushort> rtLanes = state->GPR[rt].UShorts;
+
+                Vector128<ushort> va = Vector128.Create(raLanes);
+                Vector128<ushort> vb = Vector128.Create(rbLanes);
+                Vector128<ushort> result = Vector128.GreaterThan(va, vb);
 
                 result.CopyTo(rtLanes);
             }
