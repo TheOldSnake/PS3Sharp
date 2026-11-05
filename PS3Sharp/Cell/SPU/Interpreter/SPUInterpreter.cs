@@ -1,8 +1,4 @@
-﻿using PS3Sharp.Common;
-using System.Runtime.Intrinsics;
-using static PS3Sharp.Cell.Spu.SpuThread;
-
-namespace PS3Sharp.Cell.Spu.Interpreter
+﻿namespace PS3Sharp.Cell.Spu.Interpreter
 {
     internal partial class SpuInterpreter
     {
@@ -47,6 +43,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     Or(spu, instruction);
                     break;
 
+                case RR17.Bg:
+                    Bg(spu, instruction);
+                    break;
+
                 case RR17.Nor:
                     Nor(spu, instruction);
                     break;
@@ -87,12 +87,24 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     Wrch(spu, instruction);
                     break;
 
+                case RR17.Binz:
+                    Binz(spu, instruction);
+                    break;
+
+                case RR17.Stqx:
+                    Stqx(spu, instruction);
+                    break;
+
                 case RR17.Bi:
                     Bi(spu, instruction);
                     break;
 
                 case RR17.Bisl:
                     Bisl(spu, instruction);
+                    break;
+
+                case RR17.Hbr:
+                    // Hbr: Hint for Branch (r-form)
                     break;
 
                 case RR17.Gb:
@@ -111,8 +123,16 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     Fsmb(spu, instruction);
                     break;
 
+                case RR17.Lqx:
+                    Lqx(spu, instruction);
+                    break;
+
                 case RR17.Cbx:
                     Cbx(spu, instruction);
+                    break;
+
+                case RR17.Cwx:
+                    Cwx(spu, instruction);
                     break;
 
                 case RR17.Rotqby:
@@ -151,6 +171,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     Clz(spu, instruction);
                     break;
 
+                case RR17.Xshw:
+                    Xshw(spu, instruction);
+                    break;
+
                 case RR17.Xsbh:
                     Xsbh(spu, instruction);
                     break;
@@ -165,6 +189,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 case RR17.Addx:
                     Addx(spu, instruction);
+                    break;
+
+                case RR17.Sfx:
+                    Sfx(spu, instruction);
                     break;
 
                 case RR17.Ceq:
@@ -301,6 +329,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 case RI10.Ceqi:
                     Ceqi(spu, instruction);
+                    break;
+
+                case RI10.Ceqhi:
+                    Ceqhi(spu, instruction);
                     break;
 
                 case RI10.Ceqbi:

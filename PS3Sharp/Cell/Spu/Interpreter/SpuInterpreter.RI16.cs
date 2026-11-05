@@ -184,11 +184,14 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
+
+                // Relative to this instruction address
                 uint currentPC = state->PC - 4;
                 uint target = (currentPC + (uint)seOffset) & 0x3FFFC;
 
+                // Link pc
                 state->GPR[rt].Value128 = UInt128.Zero;
-                state->GPR[rt].UInts[PreferredSlot] = currentPC;
+                state->GPR[rt].UInts[PreferredSlot] = state->PC;
 
                 state->PC = target;
             }

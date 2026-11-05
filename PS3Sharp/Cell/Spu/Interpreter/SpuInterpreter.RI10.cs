@@ -280,6 +280,27 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Ceqhi(SpuThread spu, SpuInstruction instruction)
+        {
+            // Compare Equal Halfword Immediate
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int i10 = instruction.SeI10;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<ushort> raLanes = state->GPR[ra].UShorts;
+                Span<ushort> rtLanes = state->GPR[rt].UShorts;
+
+                Vector128<ushort> va = Vector128.Create(raLanes);
+                Vector128<ushort> vi = Vector128.Create((ushort)i10);
+                Vector128<ushort> result = Vector128.Equals(va, vi);
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
         private static void Ceqbi(SpuThread spu, SpuInstruction instruction)
         {
             // Compare Equal Byte Immediate

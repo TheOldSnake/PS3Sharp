@@ -1,5 +1,7 @@
-﻿using System.Runtime.Intrinsics;
+﻿using PS3Sharp.Common;
+using System.Runtime.Intrinsics;
 using static PS3Sharp.Cell.Spu.SpuThread;
+using static System.Windows.Forms.AxHost;
 
 namespace PS3Sharp.Cell.Spu.Interpreter
 {
@@ -61,6 +63,30 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Vector128<int> va = Vector128.Create(raLanes);
                 Vector128<int> vb = Vector128.Create(rbLanes);
                 Vector128<int> result = va | vb;
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Bg(SpuThread spu, SpuInstruction instruction)
+        {
+            // Borrow Generate
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<uint> raLanes = state->GPR[ra].UInts;
+                Span<uint> rbLanes = state->GPR[rb].UInts;
+                Span<uint> rtLanes = state->GPR[rt].UInts;
+
+                Vector128<uint> va = Vector128.Create(raLanes);
+                Vector128<uint> vb = Vector128.Create(rbLanes);
+
+                Vector128<uint> mask = Vector128.Create(1u);
+                Vector128<uint> result = Vector128.GreaterThanOrEqual(vb, va) & mask;
 
                 result.CopyTo(rtLanes);
             }
@@ -318,6 +344,44 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Binz(SpuThread spu, SpuInstruction instruction)
+        {
+            // Branch Indirect If Not Zero
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int e = instruction.E;
+            int d = instruction.D;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+
+                if (state->GPR[rt].UInts[PreferredSlot] != 0)
+                {
+                    uint target = state->GPR[ra].UInts[PreferredSlot] & 0x3FFFC;
+                    state->PC = target;
+                }
+            }
+
+            // TODO: Enable/Disable interrupts
+        }
+
+        private static void Stqx(SpuThread spu, SpuInstruction instruction)
+        {
+            // Store Quadword (x-form)
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                uint target = (state->GPR[ra].UInts[PreferredSlot] + state->GPR[rb].UInts[PreferredSlot]) & 0x3FFF0;
+                BigEndian<UInt128> value = state->GPR[rt].Value128;
+                spu.WriteStorage(target, value);
+            }
+        }
+
         private static void Bi(SpuThread spu, SpuInstruction instruction)
         {
             // Branch Indirect
@@ -328,9 +392,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                uint currentPC = state->PC;
                 uint target = state->GPR[ra].UInts[PreferredSlot] & 0x3FFFC;
-
                 state->PC = target;
             }
 
@@ -351,6 +413,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 uint currentPC = state->PC;
                 uint target = state->GPR[ra].UInts[PreferredSlot] & 0x3FFFC;
 
+                // Link
                 state->GPR[rt].Value128 = UInt128.Zero;
                 state->GPR[rt].UInts[PreferredSlot] = currentPC;
 
@@ -448,6 +511,22 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Lqx(SpuThread spu, SpuInstruction instruction)
+        {
+            // Load Quadword (x-form)
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                uint target = (state->GPR[ra].UInts[PreferredSlot] + state->GPR[rb].UInts[PreferredSlot]) & 0x3FFF0;
+                BigEndian<UInt128> value = spu.ReadStorage<BigEndian<UInt128>>(target);
+                state->GPR[rt].Value128 = value;
+            }
+        }
+
         private static void Cbx(SpuThread spu, SpuInstruction instruction)
         {
             // Generate Controls for Byte Insertion (x-form)
@@ -463,6 +542,24 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 state->GPR[rt].Value128 = new(0x1011121314151617, 0x18191A1B1C1D1E1F);
                 state->GPR[rt].Bytes[bytePosition] = 0x03;
+            }
+        }
+
+        private static void Cwx(SpuThread spu, SpuInstruction instruction)
+        {
+            // Generate Controls for Word Insertion (x-form)
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                int t = (state->GPR[ra].Ints[PreferredSlot] + state->GPR[rb].Ints[PreferredSlot]) & 0xC;
+                int wPosition = 3 - (t >> 2); // Big endian indexing
+
+                state->GPR[rt].Value128 = new(0x1011121314151617, 0x18191A1B1C1D1E1F);
+                state->GPR[rt].UInts[wPosition] = 0x00010203;
             }
         }
 
@@ -668,6 +765,26 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Xshw(SpuThread spu, SpuInstruction instruction)
+        {
+            // Extend Sign Halfword to Word
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                int shift = 32 - 16;
+                Vector128<int> va = Vector128.Create(raLanes);
+                Vector128<int> result = Vector128.ShiftRightArithmetic(Vector128.ShiftLeft(va, shift), shift);
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
         private static void Xsbh(SpuThread spu, SpuInstruction instruction)
         {
             // Extend Sign Byte to Halfword
@@ -751,6 +868,30 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Vector128<int> vb = Vector128.Create(rbLanes);
                 Vector128<int> vt = Vector128.Create(rtLanes) & mask;
                 Vector128<int> result = va + vb + vt;
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Sfx(SpuThread spu, SpuInstruction instruction)
+        {
+            // Subtract from Extended
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rbLanes = state->GPR[rb].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                Vector128<int> mask = Vector128.Create(1);
+                Vector128<int> va = Vector128.Create(raLanes);
+                Vector128<int> vb = Vector128.Create(rbLanes);
+                Vector128<int> vt = Vector128.Create(rtLanes) & mask;
+                Vector128<int> result = vb + (~va) + vt;
 
                 result.CopyTo(rtLanes);
             }
