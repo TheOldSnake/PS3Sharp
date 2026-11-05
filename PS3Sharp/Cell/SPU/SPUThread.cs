@@ -2,7 +2,6 @@ using PS3Sharp.Cell.Spu.Interpreter;
 using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.Syscall;
-using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -56,6 +55,25 @@ namespace PS3Sharp.Cell.Spu
             GetllarCompleted = 1 << 2,
         }
 
+        internal enum EventStat : uint
+        {
+            Tg = 1 << 0,    // MFC tag-group status update event
+            Sn = 1 << 1,    // MFC list command stall-and-notify event 
+            Qv = 1 << 3,    // MFC SPU command queue available event
+            Mb = 1 << 4,    // SPU inbound mailbox available event
+            Tm = 1 << 5,    // SPU decrementer event
+            Me = 1 << 6,    // SPU outbound interrupt mailbox available event
+            Le = 1 << 7,    // SPU outbound mailbox available event 
+            S2 = 1 << 8,    // SPU signal notification 2 available event 
+            S1 = 1 << 9,    // SPU signal notification 1 available event 
+            Lr = 1 << 10,   // Lock line reservation lost event
+            A = 1 << 11,    // Privileged attention event
+            Ms = 1 << 12,   // Multisource synchronization event 
+        }
+
+        // Size of SPU cache line in bytes
+        internal const int CacheLineSize = 128;
+
         // Total ports
         internal const int PortCount = 64;
 
@@ -73,6 +91,9 @@ namespace PS3Sharp.Cell.Spu
         private uint _tagId;              // Tag id
         private uint _tagMask;            // Tag mask
         private AtomicStat _atomicStat;   // Atomic Command Status Channel
+
+        private uint _eventStat;
+        private uint _lastReservedAddress;
 
         internal Thread NativeThread { get; }
         internal string ThreadName { get; } = string.Empty;
@@ -360,18 +381,33 @@ namespace PS3Sharp.Cell.Spu
         private void Putllc()
         {
             // Puts lock line conditional on a reservation
-            // TODO
-            Console.WriteLine($"[Spu] MFC Putllc: ls = 0x{_lsa:X}, eal = 0x{_eal:X}");
-            throw new Exception("Todo: Putllc");
-            _atomicStat = AtomicStat.PutllcSucceeded;
+            Span<byte> src = new(LsPtr + _lsa, CacheLineSize);
+            bool success = MemoryManager.StoreConditional(_eal, ID, src);
+
+            _atomicStat = success ? AtomicStat.PutllcSucceeded : AtomicStat.PutllcFailed;
+            _lastReservedAddress = 0;
+
+            Console.WriteLine($"[Spu] MFC Putllc: ls = 0x{_lsa:X}, eal = 0x{_eal:X} success: {success}");
         }
 
         private void Getllar()
         {
             // Gets a lock line and creates a reservation
-            Console.WriteLine($"[Spu] MFC Getllar: ls = 0x{_lsa:X}, eal = 0x{_eal:X}");
-            throw new Exception("Todo: Getllar");
+
+            // Issuing another Getllar while an address is already reserved
+            // causes the existing reservation to be lost
+            if (_lastReservedAddress != 0 && _eal != _lastReservedAddress)
+            {
+                _eventStat |= (uint)EventStat.Lr;
+            }
+
+            Span<byte> dst = new(LsPtr + _lsa, CacheLineSize);
+            MemoryManager.LoadAndReserve(_eal, ID, dst);
+
+            _lastReservedAddress = _eal;
             _atomicStat = AtomicStat.GetllarCompleted;
+
+            Console.WriteLine($"[Spu] MFC Getllar: ls = 0x{_lsa:X}, eal = 0x{_eal:X} tid : 0x{ID:X}");
         }
 
         public void Dispose()
