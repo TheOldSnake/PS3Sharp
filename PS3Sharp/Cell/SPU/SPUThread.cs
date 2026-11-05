@@ -381,6 +381,9 @@ namespace PS3Sharp.Cell.Spu
         private void Putllc()
         {
             // Puts lock line conditional on a reservation
+            _eal &= 0xFFFFFF80;
+            _lsa &= 0x3FF80;
+
             Span<byte> src = new(LsPtr + _lsa, CacheLineSize);
             bool success = MemoryManager.StoreConditional(_eal, ID, src);
 
@@ -393,6 +396,8 @@ namespace PS3Sharp.Cell.Spu
         private void Getllar()
         {
             // Gets a lock line and creates a reservation
+            _eal &= 0xFFFFFF80;
+            _lsa &= 0x3FF80;
 
             // Issuing another Getllar while an address is already reserved
             // causes the existing reservation to be lost
