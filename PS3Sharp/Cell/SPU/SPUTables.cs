@@ -60,10 +60,8 @@ namespace PS3Sharp.Cell.Spu
         {
             InitializeFsmbTable();
             InitializeFsmTable();
-            InitializeLeftShiftTable();
-            InitializeRightShiftTable();
-            InitializeLeftRotationTable();
-            InitializeRightRotationTable();
+            InitializeShiftTables();
+            InitializeRotationTables();
         }
 
         private static void InitializeFsmbTable()
@@ -102,7 +100,7 @@ namespace PS3Sharp.Cell.Spu
             }
         }
 
-        private static void InitializeLeftShiftTable()
+        private static void InitializeShiftTables()
         {
             // For each shift, generate a shuffle vector describing the new indices
             int shiftCount = 16;
@@ -110,84 +108,53 @@ namespace PS3Sharp.Cell.Spu
             int currentLocation = 0;
 
             // Notably, this table depends on x86 PSHUFB semantics
-            Span<byte> table = _leftShiftTable;
+            Span<byte> leftShiftTable = _leftShiftTable;
+            Span<byte> rightShiftTable = _rightShiftTable;
 
             for (int shift = 0; shift < shiftCount; shift++)
             {
                 for (int index = 0; index < indexCount; index++)
                 {
-                    int newIndex = index - shift;
+                    int leftShiftedIndex = index - shift;
+                    int rightShiftedIndex = index + shift;
 
-                    if (newIndex < 0)
+                    if (leftShiftedIndex < 0)
                     {
-                        newIndex = 0xFF;
+                        leftShiftedIndex = 0xFF;
                     }
 
-                    table[currentLocation++] = (byte)newIndex;
+                    if (rightShiftedIndex >= 16)
+                    {
+                        rightShiftedIndex = 0xFF;
+                    }
+
+                    leftShiftTable[currentLocation] = (byte)leftShiftedIndex;
+                    rightShiftTable[currentLocation] = (byte)rightShiftedIndex;
+                    currentLocation++;
                 }
             }
         }
 
-        private static void InitializeRightShiftTable()
-        {
-            // For each shift, generate a shuffle vector describing the new indices
-            int shiftCount = 16;
-            int indexCount = 16;
-            int currentLocation = 0;
-
-            // Notably, this table depends on x86 PSHUFB semantics
-            Span<byte> table = _rightShiftTable;
-
-            for (int shift = 0; shift < shiftCount; shift++)
-            {
-                for (int index = 0; index < indexCount; index++)
-                {
-                    int newIndex = index + shift;
-
-                    if (newIndex >= 16)
-                    {
-                        newIndex = 0xFF;
-                    }
-
-                    table[currentLocation++] = (byte)newIndex;
-                }
-            }
-        }
-
-        private static void InitializeLeftRotationTable()
+        private static void InitializeRotationTables()
         {
             // For each rotation, generate a shuffle vector describing the new indices
             int rotationsCount = 16;
             int indexCount = 16;
             int currentLocation = 0;
 
-            Span<byte> table = _leftRotationTable;
+            Span<byte> leftRotationTable = _leftRotationTable;
+            Span<byte> rightRotationTable = _rightRotationTable;
 
             for (int rotation = 0; rotation < rotationsCount; rotation++)
             {
                 for (int index = 0; index < indexCount; index++)
                 {
-                    byte value = (byte)((index + rotation) & 0xF);
-                    table[currentLocation++] = value;
-            }
-                }
-        }
+                    byte leftRotatedIndex = (byte)((index - rotation) & 0xF);
+                    byte rightRotatedIndex = (byte)((index + rotation) & 0xF);
 
-        private static void InitializeRightRotationTable()
-        {
-            // For each rotation, generate a shuffle vector describing the new indices
-            int rotationsCount = 16;
-            int indexCount = 16;
-            int currentLocation = 0;
-
-            Span<byte> table = _rightRotationTable;
-
-            for (int rotation = 0; rotation < rotationsCount; rotation++)
-            {
-                for (int index = 0; index < indexCount; index++)
-                {
-                    byte value = (byte)((index - rotation) & 0xF);
-                    table[currentLocation++] = value;
+                    leftRotationTable[currentLocation] = leftRotatedIndex;
+                    rightRotationTable[currentLocation] = rightRotatedIndex;
+                    currentLocation++;
                 }
             }
         }
