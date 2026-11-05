@@ -23,27 +23,28 @@ namespace PS3Sharp.Cell.Spu
             Running = 1,
         }
 
-        // MFC channels
+        // MFC channels map
         internal enum MfcChannel
         {
-            Lsa = 0x10,
-            Eah = 0x11,
-            Eal = 0x12,
-            Size = 0x13,
-            TagId = 0x14,
-            Cmd = 0x15,
-            WrTagMask = 0x16,
-            WrTagUpdate = 0x17,
-            RdTagStat = 0x18,
-            RdAtomicStat = 0x1B,
+            WrEventMask = 0x1,   // Write Event Mask
+            Lsa = 0x10,          // Local Storage Address
+            Eah = 0x11,          // Effective Address High
+            Eal = 0x12,          // Effective Address Low or List Address
+            Size = 0x13,         // Transfer Size
+            TagId = 0x14,        // Tag Identification
+            Cmd = 0x15,          // Opcode
+            WrTagMask = 0x16,    // Write Tag-Group Query Mask
+            WrTagUpdate = 0x17,  // Write Tag Status Update Request
+            RdTagStat = 0x18,    // Read Tag-Group Status
+            RdAtomicStat = 0x1B, // Read Atomic Command Status
         }
 
         internal enum MfcCommand
         {
-            Put = 0x20,
-            Get = 0x40,
-            Putllc = 0xB4,
-            Getllar = 0xD0,
+            Put = 0x20,          
+            Get = 0x40,         
+            Putllc = 0xB4,       
+            Getllar = 0xD0,      
         }
 
         // Atomic stat bits for Put/Get lock-line commands
@@ -83,14 +84,15 @@ namespace PS3Sharp.Cell.Spu
         // Port mappings
         private readonly uint[] _ports = new uint[PortCount];
 
-        // MFC
-        private uint _lsa;                // Local storage transfer address
-        private uint _eah;                // Effective transfer address high
-        private uint _eal;                // Effective transfer address low
-        private uint _transferSize;       // Transfer size
-        private uint _tagId;              // Tag id
-        private uint _tagMask;            // Tag mask
-        private AtomicStat _atomicStat;   // Atomic Command Status Channel
+        // internal MFC channels
+        private uint _eventMask;
+        private uint _lsa;                
+        private uint _eah;               
+        private uint _eal;                
+        private uint _transferSize;       
+        private uint _tagId;              
+        private uint _tagMask;           
+        private AtomicStat _atomicStat;   
 
         private uint _eventStat;
         private uint _lastReservedAddress;
@@ -283,6 +285,10 @@ namespace PS3Sharp.Cell.Spu
             MfcChannel channel = (MfcChannel)channelNumber;
             switch (channel)
             {
+                case MfcChannel.WrEventMask:
+                    _eventMask = value;
+                    break;
+
                 case MfcChannel.Lsa:
                     _lsa = value;
                     break;
