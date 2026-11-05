@@ -6,6 +6,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 {
     internal static partial class SpuInterpreter
     {
+        // RI16: 8-bit opcode group
         private static void Ori(SpuThread spu, SpuInstruction instruction)
         {
             // Or Word Immediate

@@ -5,6 +5,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 {
     internal static partial class SpuInterpreter
     {
+        // RR17: 11-bit opcode group
         private static void Rdch(SpuThread spu, SpuInstruction instruction)
         {
             // Read Channel

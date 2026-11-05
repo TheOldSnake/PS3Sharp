@@ -7,19 +7,19 @@
 
         internal readonly int Raw { get; init; }
 
-        // RR and R17 - 11 bits Opcode
+        // RR and R17: 11-bit Opcode
         internal readonly RR17 RR17Op => (RR17)((Raw >> 21) & 0x7FF);
 
-        // RI16 - 9 bits Opcode
+        // RI16: 9-bit Opcode
         internal readonly RI16 RI16Op => (RI16)((Raw >> 23) & 0x1FF);
 
-        // RI10 - 8 bits Opcode
+        // RI10: 8-bit Opcode
         internal readonly RI10 RI10Op => (RI10)((Raw >> 24) & 0xFF);
 
-        // RI18 - 7 bits Opcode
+        // RI18: 7-bit Opcode
         internal readonly RI18 RI18Op => (RI18)((Raw >> 25) & 0x7F);
 
-        // RRR - 4 bits Opcode
+        // RRR: 4-bit Opcode
         internal readonly RRR RRROp => (RRR)((Raw >> 28) & 0xF);
 
         internal readonly int RtLo => Raw & 0x7F;
@@ -40,7 +40,7 @@
         internal readonly int SeI7 => (I7 << Se7Shift) >> Se7Shift;
     }
 
-    // 11 bits Opcodes
+    // 11-bit Opcodes
     internal enum RR17 : int
     {
         Lnop = 0x001,
@@ -83,7 +83,7 @@
         Ceqb = 0x3D0,
     }
 
-    // 9 bits Opcodes
+    // 9-bit Opcodes
     internal enum RI16 : int
     {
         Stqa = 0x041,
@@ -100,7 +100,7 @@
         Ilh = 0x083,
     }
 
-    // 8 bits Opcodes
+    // 8-bit Opcodes
     internal enum RI10 : int
     {
         Ori = 0x04,
@@ -117,14 +117,14 @@
         Ceqbi = 0x7E,
     }
 
-    // 7 bits Opcodes
+    // 7-bit Opcodes
     internal enum RI18 : int
     {
         Hbrr = 0x09,
         Ila = 0x21,
     }
 
-    // 4 bits Opcodes
+    // 4-bit Opcodes
     internal enum RRR : int
     {
         Selb = 0x8,

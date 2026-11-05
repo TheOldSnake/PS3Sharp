@@ -5,6 +5,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 {
     internal static partial class SpuInterpreter
     {
+        // RI18: 7-bit opcode group
         private static void Ila(SpuThread spu, SpuInstruction instruction)
         {
             // Immediate Load Address

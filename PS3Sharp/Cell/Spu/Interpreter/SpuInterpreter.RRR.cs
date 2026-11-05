@@ -5,6 +5,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 {
     internal static partial class SpuInterpreter
     {
+        // RRR: 4-bit opcode group
         private static void Selb(SpuThread spu, SpuInstruction instruction)
         {
             // Select Bits

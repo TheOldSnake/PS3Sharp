@@ -6,6 +6,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 {
     internal static partial class SpuInterpreter
     {
+        // RI16: 9-bit opcode group
         private static void Stqa(SpuThread spu, SpuInstruction instruction)
         {
             // Store Quadword (a-form)
