@@ -98,6 +98,7 @@ namespace PS3Sharp.Cell.Spu
 
         private uint _eventStat;
         private uint _lastReservedAddress;
+        private readonly ManualResetEventSlim _lostReservationEvent = new(false);
 
         internal Thread NativeThread { get; }
         internal string ThreadName { get; } = string.Empty;
@@ -422,7 +423,7 @@ namespace PS3Sharp.Cell.Spu
             }
 
             Span<byte> dst = new(LsPtr + _lsa, CacheLineSize);
-            MemoryManager.LoadAndReserve(_eal, ID, dst);
+            MemoryManager.LoadAndReserve(_eal, ID, dst, _lostReservationEvent);
 
             _lastReservedAddress = _eal;
             _atomicStat = AtomicStat.GetllarCompleted;
@@ -437,9 +438,21 @@ namespace PS3Sharp.Cell.Spu
 
             if ((_eventStat & _eventMask) == 0)
             {
-                // Wait
-                Console.WriteLine($"[Spu] waiting on RdEventStat");
-                SpuEvent.Wait(); // Who sets the event ?
+                Console.WriteLine($"[Spu] waiting on RdEventStat mask = 0x{_eventMask:X}");
+
+                // Wait on reservation lost event
+                if (_eventMask == 0x400)
+                {
+                    _lostReservationEvent.Wait();
+                    _lostReservationEvent.Reset();
+
+                    _eventStat |= (uint)EventStat.Lr;
+                    _lastReservedAddress = 0;
+                }
+                else
+                {
+                    throw new Exception($"TODO: wait on mask = 0x{_eventMask:X}");
+                }
             }
 
             // TODO: Handle channel count stuff
