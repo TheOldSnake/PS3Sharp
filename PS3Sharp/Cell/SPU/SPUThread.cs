@@ -26,6 +26,7 @@ namespace PS3Sharp.Cell.Spu
         // MFC channels map
         internal enum MfcChannel
         {
+            RdEventStat = 0x0,   // Read Event Stat
             WrEventMask = 0x1,   // Write Event Mask
             Lsa = 0x10,          // Local Storage Address
             Eah = 0x11,          // Effective Address High
@@ -115,6 +116,7 @@ namespace PS3Sharp.Cell.Spu
         internal NativeMemoryHandle? LsHandle { get; private set; } = new NativeMemoryHandle((nuint)LocalStorageSize);
         internal byte* LsPtr => (byte*)LsHandle!.DangerousGetHandle();
 
+        internal readonly ManualResetEventSlim SpuEvent = new(false);
         internal ThreadStatus Status { get; private set; } = ThreadStatus.Stopped;
         internal MemoryManager MemoryManager { get; }
 
@@ -267,6 +269,9 @@ namespace PS3Sharp.Cell.Spu
             MfcChannel channel = (MfcChannel)channelNumber;
             switch (channel)
             {
+                case MfcChannel.RdEventStat:
+                    return ReadEventStat();
+
                 // Stub
                 case MfcChannel.RdTagStat:
                     return 1;
@@ -419,6 +424,22 @@ namespace PS3Sharp.Cell.Spu
             _atomicStat = AtomicStat.GetllarCompleted;
 
             Console.WriteLine($"[Spu] MFC Getllar: ls = 0x{_lsa:X}, eal = 0x{_eal:X} tid : 0x{ID:X}");
+        }
+
+        private uint ReadEventStat()
+        {
+            // A read from the SPU Read Event Status Channel when it has a channel count of 0 results in an SPU stall; 
+            // thereby providing a “wait on event” function.
+
+            if ((_eventStat & _eventMask) == 0)
+            {
+                // Wait
+                Console.WriteLine($"[Spu] waiting on RdEventStat");
+                SpuEvent.Wait(); // Who sets the event ?
+            }
+
+            // TODO: Handle channel count stuff
+            return _eventStat & _eventMask;
         }
 
         public void Dispose()
