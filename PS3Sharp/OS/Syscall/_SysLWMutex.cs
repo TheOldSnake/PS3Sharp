@@ -6,23 +6,23 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
-using static PS3Sharp.OS.LV2.LV2LWMutex;
+using static PS3Sharp.OS.LV2.LV2LwMutex;
 
 namespace PS3Sharp.OS.Syscall
 {
     // This is for _sys_lwmutex syscalls, not sys_lwmutex (the module)
     // These syscalls gets called when we LLE the module, from liblv2
-    internal class _SysLWMutex
+    internal class _SysLwMutex
     {
         private readonly MemoryManager _memoryManager;
-        private readonly ConcurrentDictionary<uint, LV2LWMutex> _lwMutexes = new();
+        private readonly ConcurrentDictionary<uint, LV2LwMutex> _lwMutexes = new();
 
-        private _SysLWMutex(MemoryManager memoryManager)
+        private _SysLwMutex(MemoryManager memoryManager)
         {
             _memoryManager = memoryManager;
         }
 
-        internal ulong _SysLWmutexCreate(PPUThread ppu)
+        internal ulong _SysLwmutexCreate(PPUThread ppu)
         {
             // TODO
 
@@ -42,8 +42,8 @@ namespace PS3Sharp.OS.Syscall
             }
 
             // Create the lwmutex, attribute not needed for these syscalls i guess
-            LV2LWMutex mutex = new(control, attribute: default, _memoryManager);
-            AddLWMutex(handle, mutex);
+            LV2LwMutex mutex = new(control, attribute: default, _memoryManager);
+            AddLwMutex(handle, mutex);
 
             // Write the handle
             _memoryManager.Write<BigEndian<uint>>(id_ptr, handle);
@@ -51,18 +51,18 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong _SysLWmutexDestroy(PPUThread ppu)
+        internal ulong _SysLwmutexDestroy(PPUThread ppu)
         {
             // TODO
             uint id = ppu.ReadArg<uint>(Arg0);
 
             Console.WriteLine($"[_SysLWMutex] _sys_lwmutex_destroy id: 0x{id:X8}");
-            RemoveLWMutex(id);
+            RemoveLwMutex(id);
 
             return CellOk;
         }
 
-        internal ulong _SysLWmutexLock(PPUThread ppu)
+        internal ulong _SysLwmutexLock(PPUThread ppu)
         {
             // TODO
             uint id = ppu.ReadArg<uint>(Arg0);
@@ -70,7 +70,7 @@ namespace PS3Sharp.OS.Syscall
 
             Console.WriteLine($"[_SysLWMutex] _sys_lwmutex_lock id: 0x{id:X8}");
 
-            if (TryGetLWMutex(id, out LV2LWMutex? lwmutex))
+            if (TryGetLwMutex(id, out LV2LwMutex? lwmutex))
             {
                 return lwmutex._Sys_Lock(us_timeout);
 
@@ -81,14 +81,14 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal ulong _SysLWmutexTryLock(PPUThread ppu)
+        internal ulong _SysLwmutexTryLock(PPUThread ppu)
         {
             // TODO
             uint id = ppu.ReadArg<uint>(Arg0);
 
             Console.WriteLine($"[_SysLWMutex] _sys_lwmutex_trylock id: 0x{id:X8}");
 
-            if (TryGetLWMutex(id, out LV2LWMutex? lwmutex))
+            if (TryGetLwMutex(id, out LV2LwMutex? lwmutex))
             {
                 return lwmutex._Sys_TryLock();
 
@@ -99,14 +99,14 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal ulong _SysLWmutexUnlock(PPUThread ppu)
+        internal ulong _SysLwmutexUnlock(PPUThread ppu)
         {
             // TODO
             uint id = ppu.ReadArg<uint>(Arg0);
 
             Console.WriteLine($"[_SysLWMutex] _sys_lwmutex_unlock id: 0x{id:X8}");
 
-            if (TryGetLWMutex(id, out LV2LWMutex? lwmutex))
+            if (TryGetLwMutex(id, out LV2LwMutex? lwmutex))
             {
                 return lwmutex._Sys_Unlock();
 
@@ -117,9 +117,9 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal bool TryGetLWMutex(uint id, [NotNullWhen(true)] out LV2LWMutex? lwmutex) => _lwMutexes.TryGetValue(id, out lwmutex);
+        internal bool TryGetLwMutex(uint id, [NotNullWhen(true)] out LV2LwMutex? lwmutex) => _lwMutexes.TryGetValue(id, out lwmutex);
 
-        private void AddLWMutex(uint id, LV2LWMutex mutex)
+        private void AddLwMutex(uint id, LV2LwMutex mutex)
         {
             bool success = _lwMutexes.TryAdd(id, mutex);
 
@@ -129,7 +129,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        private void RemoveLWMutex(uint id)
+        private void RemoveLwMutex(uint id)
         {
             bool success = _lwMutexes.TryRemove(id, out _);
 

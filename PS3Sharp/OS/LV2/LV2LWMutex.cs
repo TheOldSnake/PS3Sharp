@@ -9,7 +9,7 @@ using static PS3Sharp.Cell.ErrorCode;
 namespace PS3Sharp.OS.LV2
 {
 
-    internal sealed class LV2LWMutex
+    internal sealed class LV2LwMutex
     {
 
         [StructLayout(LayoutKind.Sequential)]
@@ -23,7 +23,7 @@ namespace PS3Sharp.OS.LV2
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct LWMutexAttrib : IPS3Struct
+        internal struct LwMutexAttrib : IPS3Struct
         {
             internal BigEndian<uint> Protocol;
             internal BigEndian<uint> Recursive;
@@ -40,11 +40,11 @@ namespace PS3Sharp.OS.LV2
 
         private readonly MemoryManager _memoryManager;
         private readonly object _mutex = new();
-        private readonly LWMutexAttrib _attributes;
+        private readonly LwMutexAttrib _attributes;
         private readonly bool _isRecursive;
         private readonly GuestPtr<LwMutex> _instancePtr;
 
-        internal LV2LWMutex(GuestPtr<LwMutex> ptr, LWMutexAttrib attribute, MemoryManager memoryManager)
+        internal LV2LwMutex(GuestPtr<LwMutex> ptr, LwMutexAttrib attribute, MemoryManager memoryManager)
         {
             _instancePtr = ptr;
             _attributes = attribute;

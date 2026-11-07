@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
-using static PS3Sharp.OS.LV2.LV2LWMutex;
+using static PS3Sharp.OS.LV2.LV2LwMutex;
 
 namespace PS3Sharp.OS.Modules
 {
@@ -15,7 +15,7 @@ namespace PS3Sharp.OS.Modules
     internal class SysLwMutex
     {
         private readonly MemoryManager _memoryManager;
-        private readonly ConcurrentDictionary<uint, LV2LWMutex> _lwMutexes = [];
+        private readonly ConcurrentDictionary<uint, LV2LwMutex> _lwMutexes = [];
 
         internal SysLwMutex(MemoryManager memoryManager)
         {
@@ -25,7 +25,7 @@ namespace PS3Sharp.OS.Modules
         internal ulong SysLWmutexCreate(PPUThread ppu)
         {
             GuestPtr<LwMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LwMutex>>(Arg0);
-            GuestPtr<LWMutexAttrib> attribute_ptr = ppu.ReadArg<GuestPtr<LWMutexAttrib>>(Arg1);
+            GuestPtr<LwMutexAttrib> attribute_ptr = ppu.ReadArg<GuestPtr<LwMutexAttrib>>(Arg1);
 
             if (lwmutex_ptr.IsNullPtr || attribute_ptr.IsNullPtr)
             {
@@ -35,7 +35,7 @@ namespace PS3Sharp.OS.Modules
 
             uint id = _memoryManager.GetHandle();
 
-            LWMutexAttrib attribute = _memoryManager.Read<LWMutexAttrib>(attribute_ptr);
+            LwMutexAttrib attribute = _memoryManager.Read<LwMutexAttrib>(attribute_ptr);
             LwMutex lwmutex = _memoryManager.Read<LwMutex>(lwmutex_ptr);
 
             lwmutex.Owner = 0xFFFFFFFF; //-1 = free
@@ -48,7 +48,7 @@ namespace PS3Sharp.OS.Modules
 
             //Console.WriteLine($"[SysLwMutex] sys_lwmutex_create id: 0x{id:X8}");
 
-            LV2LWMutex mutex = new(lwmutex_ptr, attribute, _memoryManager);
+            LV2LwMutex mutex = new(lwmutex_ptr, attribute, _memoryManager);
             AddLWMutex(id, mutex);
 
             return CellOk;
@@ -64,7 +64,7 @@ namespace PS3Sharp.OS.Modules
 
             //Console.WriteLine($"[SysLwMutex] sys_lwmutex_lock id: 0x{id:X8}");
 
-            if (GetLWMutex(id, out LV2LWMutex? lwmutex))
+            if (GetLWMutex(id, out LV2LwMutex? lwmutex))
             {
                 return lwmutex.Lock(ppu, us_timeout);
             }
@@ -83,7 +83,7 @@ namespace PS3Sharp.OS.Modules
 
             //Console.WriteLine($"[SysLwMutex] sys_lwmutex_trylock id: 0x{id:X8}");
 
-            if (GetLWMutex(id, out LV2LWMutex? lwmutex))
+            if (GetLWMutex(id, out LV2LwMutex? lwmutex))
             {
                 return lwmutex.TryLock(ppu);
 
@@ -103,7 +103,7 @@ namespace PS3Sharp.OS.Modules
 
             //Console.WriteLine($"[SysLwMutex] sys_lwmutex_unlock id: 0x{id:X8}");
 
-            if (GetLWMutex(id, out LV2LWMutex? lwmutex))
+            if (GetLWMutex(id, out LV2LwMutex? lwmutex))
             {
                 return lwmutex.Unlock();
 
@@ -127,9 +127,9 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal bool GetLWMutex(uint id, out LV2LWMutex? mutex) => _lwMutexes.TryGetValue(id, out mutex);
+        internal bool GetLWMutex(uint id, out LV2LwMutex? mutex) => _lwMutexes.TryGetValue(id, out mutex);
 
-        private void AddLWMutex(uint id, LV2LWMutex mutex)
+        private void AddLWMutex(uint id, LV2LwMutex mutex)
         {
             bool success = _lwMutexes.TryAdd(id, mutex);
 

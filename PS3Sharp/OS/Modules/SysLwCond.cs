@@ -27,7 +27,7 @@ namespace PS3Sharp.OS.Modules
         internal ulong SysLwCondCreate(PPUThread ppu)
         {
             GuestPtr<LV2LwCond.LwCond> lwcondPtr = ppu.ReadArg<GuestPtr<LV2LwCond.LwCond>>(Arg0);
-            GuestPtr<LV2LWMutex.LwMutex> lwmutexPtr = ppu.ReadArg<GuestPtr<LV2LWMutex.LwMutex>>(Arg1);
+            GuestPtr<LV2LwMutex.LwMutex> lwmutexPtr = ppu.ReadArg<GuestPtr<LV2LwMutex.LwMutex>>(Arg1);
             GuestPtr<LV2LwCond.LWCondAttribute> attributePtr = ppu.ReadArg<GuestPtr<LV2LwCond.LWCondAttribute>>(Arg2);
 
             LV2LwCond.LWCondAttribute attribute = _memoryManager.Read<LV2LwCond.LWCondAttribute>(attributePtr);
@@ -36,7 +36,7 @@ namespace PS3Sharp.OS.Modules
             // Lv2 struct for the lwcond
             LV2LwCond.LwCond lwcond = new()
             {
-                LWMutex = lwmutexPtr,
+                LwMutex = lwmutexPtr,
                 Id = lv2lwcond.Handle
             };
 

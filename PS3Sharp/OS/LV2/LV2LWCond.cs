@@ -23,7 +23,7 @@ namespace PS3Sharp.OS.LV2
         [StructLayout(LayoutKind.Sequential)]
         internal struct LwCond : IPS3Struct
         {
-            internal BigEndianGuestPtr<LV2LWMutex.LwMutex> LWMutex;
+            internal BigEndianGuestPtr<LV2LwMutex.LwMutex> LwMutex;
             internal BigEndian<uint> Id;
         }
 
@@ -32,12 +32,12 @@ namespace PS3Sharp.OS.LV2
         private readonly ConcurrentDictionary<uint, LV2CondWaiter> _threadCondWaiters = [];
         private readonly List<LV2CondWaiter> _waiters = [];
         private readonly GuestPtr<LwCond> _instancePtr;
-        private readonly GuestPtr<LV2LWMutex.LwMutex> _mutexPtr;
+        private readonly GuestPtr<LV2LwMutex.LwMutex> _mutexPtr;
         private readonly LWCondAttribute _attribute;
 
         internal uint Handle { get; }
 
-        internal LV2LwCond(GuestPtr<LwCond> condPtr, GuestPtr<LV2LWMutex.LwMutex> mutexPtr, LWCondAttribute attribute, SysLwMutex sysLwMutexHandler, MemoryManager memoryManager)
+        internal LV2LwCond(GuestPtr<LwCond> condPtr, GuestPtr<LV2LwMutex.LwMutex> mutexPtr, LWCondAttribute attribute, SysLwMutex sysLwMutexHandler, MemoryManager memoryManager)
         {
             _instancePtr = condPtr;
             _mutexPtr = mutexPtr;
@@ -48,11 +48,11 @@ namespace PS3Sharp.OS.LV2
             Handle = _memoryManager.GetHandle();
         }
 
-        internal bool TryGetLWMutex([NotNullWhen(true)] out LV2LWMutex? lv2lwmutex)
+        internal bool TryGetLWMutex([NotNullWhen(true)] out LV2LwMutex? lv2lwmutex)
         {
             LwCond cond = _memoryManager.Read<LwCond>(_instancePtr);
-            GuestPtr<LV2LWMutex.LwMutex> lwmutexPtr = cond.LWMutex;
-            LV2LWMutex.LwMutex lwmutex = _memoryManager.Read<LV2LWMutex.LwMutex>(lwmutexPtr);
+            GuestPtr<LV2LwMutex.LwMutex> lwmutexPtr = cond.LwMutex;
+            LV2LwMutex.LwMutex lwmutex = _memoryManager.Read<LV2LwMutex.LwMutex>(lwmutexPtr);
             uint id = lwmutex.SleepQueue;
 
             return _sysLwMutex.GetLWMutex(id, out lv2lwmutex);
@@ -60,7 +60,7 @@ namespace PS3Sharp.OS.LV2
 
         internal ulong Wait(PPUThread ppu, ulong us_timeout = 0)
         {
-            if (!TryGetLWMutex(out LV2LWMutex? lv2lwmutex))
+            if (!TryGetLWMutex(out LV2LwMutex? lv2lwmutex))
             {
                 return CellESrch;
             }
