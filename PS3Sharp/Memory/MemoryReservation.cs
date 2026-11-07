@@ -7,6 +7,9 @@
             internal ulong VirtualAddress { get; set; }
             internal ulong Size { get; set; }
             internal uint ThreadID { get; set; }
+
+            // Registered wake up event for SPU threads
+            internal ManualResetEventSlim? LostReservationEvent { get; set; }
         }
     }
 }
