@@ -4,71 +4,68 @@ using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.Modules;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.LV2
 {
-
     // This implementation is under the assumption that this is very similar to LV2Cond,
     // But it uses LWMutex instead of Mutex
-
-    // This is incomplete 
-    internal sealed class LV2LWCond
+    internal sealed class LV2LwCond
     {
         [StructLayout(LayoutKind.Sequential)]
-        internal struct SysLWCondAttribute : IPS3Struct
+        internal struct LWCondAttribute : IPS3Struct
         {
             internal InlineData.InlineArray8<byte> Name;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct SysLWCond : IPS3Struct
+        internal struct LwCond : IPS3Struct
         {
-            internal BigEndianGuestPtr<LV2LWMutex.LWMutex> LWMutex;   // why is this needed ?
-            internal BigEndian<uint> LWCondQueue;
+            internal BigEndianGuestPtr<LV2LWMutex.LwMutex> LWMutex;
+            internal BigEndian<uint> Id;
         }
 
         private readonly MemoryManager _memoryManager;
         private readonly SysLwMutex _sysLwMutex;
         private readonly ConcurrentDictionary<uint, LV2CondWaiter> _threadCondWaiters = [];
-        private readonly List<LV2CondWaiter> _waiters = new();
-        private readonly GuestPtr<SysLWCond> _instancePtr;
-        private readonly SysLWCondAttribute _attribute;
+        private readonly List<LV2CondWaiter> _waiters = [];
+        private readonly GuestPtr<LwCond> _instancePtr;
+        private readonly GuestPtr<LV2LWMutex.LwMutex> _mutexPtr;
+        private readonly LWCondAttribute _attribute;
 
-        internal LV2LWCond(GuestPtr<SysLWCond> ptr, SysLWCondAttribute attribute, MemoryManager memoryManager, SysLwMutex sysLwMutex)
+        internal uint Handle { get; }
+
+        internal LV2LwCond(GuestPtr<LwCond> condPtr, GuestPtr<LV2LWMutex.LwMutex> mutexPtr, LWCondAttribute attribute, SysLwMutex sysLwMutexHandler, MemoryManager memoryManager)
         {
-            _memoryManager = memoryManager;
-            _sysLwMutex = sysLwMutex;
-            _instancePtr = ptr;
+            _instancePtr = condPtr;
+            _mutexPtr = mutexPtr;
+            _sysLwMutex = sysLwMutexHandler;
             _attribute = attribute;
+            _memoryManager = memoryManager;
+
+            Handle = _memoryManager.GetHandle();
         }
 
-        internal LV2LWMutex GetLWMutex()
+        internal bool TryGetLWMutex([NotNullWhen(true)] out LV2LWMutex? lv2lwmutex)
         {
-            // this is assuming that the mutex is stored here
-            // but we already get a mutex ID in like every syscall of this sealed class.. ?
-
-            SysLWCond cond = _memoryManager.Read<SysLWCond>(_instancePtr);
-            GuestPtr<LV2LWMutex.LWMutex> lwmutexPtr = cond.LWMutex;
-            LV2LWMutex.LWMutex lwmutex = _memoryManager.Read<LV2LWMutex.LWMutex>(lwmutexPtr);
+            LwCond cond = _memoryManager.Read<LwCond>(_instancePtr);
+            GuestPtr<LV2LWMutex.LwMutex> lwmutexPtr = cond.LWMutex;
+            LV2LWMutex.LwMutex lwmutex = _memoryManager.Read<LV2LWMutex.LwMutex>(lwmutexPtr);
             uint id = lwmutex.SleepQueue;
 
-            if (_sysLwMutex.GetLWMutex(id, out LV2LWMutex? mutex))
-            {
-                return mutex;
-            }
-            else
-            {
-                throw new Exception($"[SysLWCond] Can't fine LWMutex");
-            }
+            return _sysLwMutex.GetLWMutex(id, out lv2lwmutex);
         }
 
         internal ulong Wait(PPUThread ppu, ulong us_timeout = 0)
         {
-            LV2LWMutex lwmutex = GetLWMutex();
+            if (!TryGetLWMutex(out LV2LWMutex? lv2lwmutex))
+            {
+                return CellESrch;
+            }
 
-            if (!lwmutex.IsEntered())
+            if (!lv2lwmutex.IsEntered())
             {
                 return 0xFFFFFFFFFFFFFFFF; // -1
             }
@@ -82,7 +79,7 @@ namespace PS3Sharp.OS.LV2
             }
 
             // Unlock the mutex
-            lwmutex.Unlock();
+            lv2lwmutex.Unlock();
 
             bool ok;
             try
@@ -104,7 +101,7 @@ namespace PS3Sharp.OS.LV2
                 waiter.Event.Reset();
 
                 // Re aquire the lock
-                lwmutex.Lock(ppu, 0);
+                lv2lwmutex.Lock(ppu, 0);
 
                 // Remove the waiter from the list
                 lock (_waiters)
@@ -114,8 +111,6 @@ namespace PS3Sharp.OS.LV2
             }
 
             return ok ? CellOk : CellETimedout;
-
-
         }
 
         internal ulong Signal()
@@ -142,7 +137,7 @@ namespace PS3Sharp.OS.LV2
             return CellOk;
         }
 
-        private bool InterruptableWait(PPUThread ppu, LV2CondWaiter waiter)
+        private static bool InterruptableWait(PPUThread ppu, LV2CondWaiter waiter)
         {
             // Return true if the event is set, false if the thread was interrupted
             while (true)
@@ -166,7 +161,7 @@ namespace PS3Sharp.OS.LV2
         private LV2CondWaiter GetThreadCondWaiter(uint threadID)
         {
             // Look up the condWaiter instance in the dictionary
-            if (_threadCondWaiters.TryGetValue(threadID, out LV2CondWaiter waiter))
+            if (_threadCondWaiters.TryGetValue(threadID, out LV2CondWaiter? waiter))
             {
                 return waiter;
             }
@@ -177,7 +172,7 @@ namespace PS3Sharp.OS.LV2
 
             if (!success)
             {
-                throw new Exception($"[LV2Cond] Could not add a CondWaiter instance to the dictionary");
+                throw new Exception($"[LV2LwCond] Could not add a CondWaiter instance to the dictionary");
             }
 
             return condWaiter;

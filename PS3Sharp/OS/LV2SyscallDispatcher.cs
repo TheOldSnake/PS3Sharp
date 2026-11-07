@@ -47,6 +47,7 @@ namespace PS3Sharp.OS
         // Module handlers
         internal SysPrxForUser SysPrxForUserHandler { get; }
         internal SysLwMutex SysLwMutexHandler { get; }
+        internal SysLwCond SysLwCondHandler { get; }
         internal CellGcmSys CellGcmSysHandler { get; }
         internal CellAudio CellAudioHandler { get; }
         internal CellVideoOut CellVideoOutHandler { get; }
@@ -105,6 +106,7 @@ namespace PS3Sharp.OS
             CellGameHandler = cellGame;
             SysPrxForUserHandler = new(_threadManager, _memoryManager);
             SysLwMutexHandler = new(_memoryManager);
+            SysLwCondHandler = new(_memoryManager, SysLwMutexHandler);
             CellAudioHandler = new(_memoryManager, SysEventHandler);
             CellVideoOutHandler = new(_memoryManager);
             CellSysModuleHandler = new(_memoryManager);

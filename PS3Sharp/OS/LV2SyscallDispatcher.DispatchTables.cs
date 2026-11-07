@@ -144,6 +144,13 @@ namespace PS3Sharp.OS
                 [NIDManager.GetNID("sys_lwmutex_unlock")] = SysLwMutexHandler.SysLWmutexUnlock,
                 [NIDManager.GetNID("sys_lwmutex_destroy")] = SysLwMutexHandler.SysLWmutexDestroy,
 
+                // SysLwCond
+                [NIDManager.GetNID("sys_lwcond_create")] = SysLwCondHandler.SysLwCondCreate,
+                [NIDManager.GetNID("sys_lwcond_wait")] = SysLwCondHandler.SysLwCondWait,
+                [NIDManager.GetNID("sys_lwcond_signal")] = SysLwCondHandler.SysLwCondSignal,
+                [NIDManager.GetNID("sys_lwcond_signal_all")] = SysLwCondHandler.SysLwCondSignalAll,
+                [NIDManager.GetNID("sys_lwcond_destroy")] = SysLwCondHandler.SysLwCondDestroy,
+
                 // SysPPUThread
                 [NIDManager.GetNID("sys_ppu_thread_get_id")] = SysPPUThreadHandler.SysPPUThreadGetID,
                 [NIDManager.GetNID("sys_ppu_thread_create")] = SysPPUThreadHandler.SysPPUThreadCreate,

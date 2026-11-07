@@ -28,7 +28,7 @@ namespace PS3Sharp.OS.Syscall
 
             GuestPtr<BigEndian<uint>> id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             uint protocol = ppu.ReadArg<uint>(Arg1);
-            GuestPtr<LWMutex> control = ppu.ReadArg<GuestPtr<LWMutex>>(Arg2);
+            GuestPtr<LwMutex> control = ppu.ReadArg<GuestPtr<LwMutex>>(Arg2);
             int hasName = ppu.ReadArg<int>(Arg3);
             ulong name = ppu.ReadArg<ulong>(Arg4);
 

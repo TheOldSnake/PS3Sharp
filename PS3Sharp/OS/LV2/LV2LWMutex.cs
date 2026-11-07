@@ -13,7 +13,7 @@ namespace PS3Sharp.OS.LV2
     {
 
         [StructLayout(LayoutKind.Sequential)]
-        internal struct LWMutex : IPS3Struct
+        internal struct LwMutex : IPS3Struct
         {
             internal BigEndian<uint> Owner;
             internal BigEndian<uint> Waiter;
@@ -42,9 +42,9 @@ namespace PS3Sharp.OS.LV2
         private readonly object _mutex = new();
         private readonly LWMutexAttrib _attributes;
         private readonly bool _isRecursive;
-        private readonly GuestPtr<LWMutex> _instancePtr;
+        private readonly GuestPtr<LwMutex> _instancePtr;
 
-        internal LV2LWMutex(GuestPtr<LWMutex> ptr, LWMutexAttrib attribute, MemoryManager memoryManager)
+        internal LV2LWMutex(GuestPtr<LwMutex> ptr, LWMutexAttrib attribute, MemoryManager memoryManager)
         {
             _instancePtr = ptr;
             _attributes = attribute;
@@ -167,7 +167,7 @@ namespace PS3Sharp.OS.LV2
 
             using (_memoryManager.AcquireTemporaryLock())
             {
-                LWMutex mutex = _memoryManager.Read<LWMutex>(_instancePtr);
+                LwMutex mutex = _memoryManager.Read<LwMutex>(_instancePtr);
                 uint currentCount = mutex.RecursiveCount;
                 mutex.RecursiveCount = currentCount + 1;
                 _memoryManager.Write(_instancePtr, mutex);
@@ -182,7 +182,7 @@ namespace PS3Sharp.OS.LV2
 
             using (_memoryManager.AcquireTemporaryLock())
             {
-                LWMutex mutex = _memoryManager.Read<LWMutex>(_instancePtr);
+                LwMutex mutex = _memoryManager.Read<LwMutex>(_instancePtr);
                 mutex.Owner = threadID;
                 mutex.RecursiveCount = _isRecursive ? 1u : 0u;
                 _memoryManager.Write(_instancePtr, mutex);
@@ -201,7 +201,7 @@ namespace PS3Sharp.OS.LV2
             bool becameFree;
             using (_memoryManager.AcquireTemporaryLock())
             {
-                LWMutex mutex = _memoryManager.Read<LWMutex>(_instancePtr);
+                LwMutex mutex = _memoryManager.Read<LwMutex>(_instancePtr);
 
                 if (_isRecursive && mutex.RecursiveCount > 0)
                 {
