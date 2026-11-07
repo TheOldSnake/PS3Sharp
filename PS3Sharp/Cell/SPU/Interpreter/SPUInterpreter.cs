@@ -35,6 +35,10 @@
                     Rdch(spu, instruction);
                     break;
 
+                case RR17.Rdchcnt:
+                    Rdchcnt(spu, instruction);
+                    break;
+
                 case RR17.Sf:
                     Sf(spu, instruction);
                     break;

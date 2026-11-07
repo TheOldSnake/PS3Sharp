@@ -47,6 +47,7 @@
         Sync = 0x002,
         DSync = 0x003,
         Rdch = 0x00D,
+        Rdchcnt = 0x00F,
         Sf = 0x040,
         Or = 0x041,
         Bg = 0x042,

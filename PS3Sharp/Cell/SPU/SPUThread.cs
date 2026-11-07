@@ -26,19 +26,20 @@ namespace PS3Sharp.Cell.Spu
         // MFC channels map
         internal enum MfcChannel
         {
-            RdEventStat = 0x0,   // Read Event Stat
-            WrEventMask = 0x1,   // Write Event Mask
-            WrEventAck  = 0x2,   // Write Event Acknowledgment
-            Lsa = 0x10,          // Local Storage Address
-            Eah = 0x11,          // Effective Address High
-            Eal = 0x12,          // Effective Address Low or List Address
-            Size = 0x13,         // Transfer Size
-            TagId = 0x14,        // Tag Identification
-            Cmd = 0x15,          // Opcode
-            WrTagMask = 0x16,    // Write Tag-Group Query Mask
-            WrTagUpdate = 0x17,  // Write Tag Status Update Request
-            RdTagStat = 0x18,    // Read Tag-Group Status
-            RdAtomicStat = 0x1B, // Read Atomic Command Status
+            RdEventStat = 0x0,      // Read Event Stat
+            WrEventMask = 0x1,      // Write Event Mask
+            WrEventAck  = 0x2,      // Write Event Acknowledgment
+            Lsa = 0x10,             // Local Storage Address
+            Eah = 0x11,             // Effective Address High
+            Eal = 0x12,             // Effective Address Low or List Address
+            Size = 0x13,            // Transfer Size
+            TagId = 0x14,           // Tag Identification
+            Cmd = 0x15,             // Opcode
+            WrTagMask = 0x16,       // Write Tag-Group Query Mask
+            WrTagUpdate = 0x17,     // Write Tag Status Update Request
+            RdTagStat = 0x18,       // Read Tag-Group Status
+            RdAtomicStat = 0x1B,    // Read Atomic Command Status
+            WrOutIntrMbox = 0x1E,   // Write Outbound Interrupt Mailbox
         }
 
         internal enum MfcCommand
@@ -282,7 +283,26 @@ namespace PS3Sharp.Cell.Spu
 
                 default:
                     uint pc = State->PC - 4;
-                    throw new Exception($"[Spu] Unhandled read from channel: {channelNumber} at: 0x{pc:X}");
+                    throw new Exception($"[Spu] Unhandled read from channel: 0x{channelNumber:X} at: 0x{pc:X}");
+            }
+        }
+
+        internal uint ReadChannelCount(int channelNumber)
+        {
+            MfcChannel channel = (MfcChannel)channelNumber;
+            switch (channel)
+            {
+                // Not sure how this works but the manual says "It returns 1 if the status is available"
+                case MfcChannel.RdTagStat:
+                    return 1;
+
+                // Stub: Always report that there is an available slot in the mailbox
+                case MfcChannel.WrOutIntrMbox:
+                    return 1;
+
+                default:
+                    uint pc = State->PC - 4;
+                    throw new Exception($"[Spu] Unhandled read channel count from channel: 0x{channelNumber:X} at: 0x{pc:X}");
             }
         }
 
@@ -333,7 +353,7 @@ namespace PS3Sharp.Cell.Spu
 
                 default:
                     uint pc = State->PC - 4;
-                    throw new Exception($"[Spu] Unhandled write to channel: {channelNumber} at: 0x{pc:X}");
+                    throw new Exception($"[Spu] Unhandled write to channel: 0x{channelNumber:X} at: 0x{pc:X}");
             }
         }
 
@@ -406,7 +426,7 @@ namespace PS3Sharp.Cell.Spu
             _atomicStat = success ? AtomicStat.PutllcSucceeded : AtomicStat.PutllcFailed;
             _lastReservedAddress = 0;
 
-            Console.WriteLine($"[Spu] MFC Putllc: ls = 0x{_lsa:X}, eal = 0x{_eal:X} success: {success}");
+            //Console.WriteLine($"[Spu] MFC Putllc: ls = 0x{_lsa:X}, eal = 0x{_eal:X} success: {success}");
         }
 
         private void Getllar()
@@ -428,7 +448,7 @@ namespace PS3Sharp.Cell.Spu
             _lastReservedAddress = _eal;
             _atomicStat = AtomicStat.GetllarCompleted;
 
-            Console.WriteLine($"[Spu] MFC Getllar: ls = 0x{_lsa:X}, eal = 0x{_eal:X} tid : 0x{ID:X}");
+            //Console.WriteLine($"[Spu] MFC Getllar: ls = 0x{_lsa:X}, eal = 0x{_eal:X} tid : 0x{ID:X}");
         }
 
         private uint ReadEventStat()

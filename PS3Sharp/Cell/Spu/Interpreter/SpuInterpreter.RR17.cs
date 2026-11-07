@@ -25,6 +25,22 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Rdchcnt(SpuThread spu, SpuInstruction instruction)
+        {
+            // Read Channel Count
+            int rt = instruction.RtLo;
+            int ca = instruction.Ca;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                uint value = spu.ReadChannelCount(ca);
+
+                state->GPR[rt].Value128 = UInt128.Zero;
+                state->GPR[rt].UInts[PreferredSlot] = value;
+            }
+        }
+
         private static void Sf(SpuThread spu, SpuInstruction instruction)
         {
             // Subtract from Word
