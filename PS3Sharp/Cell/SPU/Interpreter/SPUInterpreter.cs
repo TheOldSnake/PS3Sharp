@@ -179,6 +179,10 @@
                     Shlqbyi(spu, instruction);
                     break;
 
+                case RR17.Nop:
+                    // Nop: No Operation (Execute)
+                    break;
+
                 case RR17.Clz:
                     Clz(spu, instruction);
                     break;
