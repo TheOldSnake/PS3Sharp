@@ -183,6 +183,10 @@
                     Xshw(spu, instruction);
                     break;
 
+                case RR17.Cntb:
+                    Cntb(spu, instruction);
+                    break;
+
                 case RR17.Xsbh:
                     Xsbh(spu, instruction);
                     break;
@@ -209,6 +213,10 @@
 
                 case RR17.Ceq:
                     Ceq(spu, instruction);
+                    break;
+
+                case RR17.Ceqh:
+                    Ceqh(spu, instruction);
                     break;
 
                 case RR17.Ceqb:
@@ -281,6 +289,10 @@
                     Ilh(spu, instruction);
                     break;
 
+                case RI16.Iohl:
+                    Iohl(spu, instruction);
+                    break;
+
                 default:
                     GroupRI10(spu, instruction);
                     break;
@@ -333,6 +345,10 @@
 
                 case RI10.Cgti:
                     Cgti(spu, instruction);
+                    break;
+
+                case RI10.Cgtbi:
+                    Cgtbi(spu, instruction);
                     break;
 
                 case RI10.Clgti:

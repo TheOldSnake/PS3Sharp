@@ -272,5 +272,24 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 vi.CopyTo(rtLanes);
             }
         }
+
+        private static void Iohl(SpuThread spu, SpuInstruction instruction)
+        {
+            // Immediate Or Halfword Lower
+            int rt = instruction.RtLo;
+            int i16 = instruction.I16;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                Vector128<int> vt = Vector128.Create(rtLanes);
+                Vector128<int> vi = Vector128.Create(i16);
+                Vector128<int> result = vt | vi;
+
+                result.CopyTo(rtLanes);
+            }
+        }
     }
 }

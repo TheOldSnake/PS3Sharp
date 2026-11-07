@@ -84,6 +84,7 @@
         Shlqbyi = 0x1FF,
         Clz = 0x2A5,
         Xshw = 0x2AE,
+        Cntb = 0x2B4,
         Xsbh = 0x2B6,
         Andc = 0x2C1,
         Clgth = 0x2C8,
@@ -91,6 +92,7 @@
         Addx = 0x340,
         Sfx = 0x341,
         Ceq = 0x3C0,
+        Ceqh = 0x3C8,
         Ceqb = 0x3D0,
     }
 
@@ -111,6 +113,7 @@
         Il = 0x081,
         Ilhu = 0x082,
         Ilh = 0x083,
+        Iohl = 0x0C1,
     }
 
     // 8-bit Opcodes
@@ -127,6 +130,7 @@
         Lqd = 0x34,
         Xori = 0x44,
         Cgti = 0x4C,
+        Cgtbi = 0x4E,
         Clgti = 0x5C,
         Clgtbi = 0x5E,
         Hlgti = 0x5F,

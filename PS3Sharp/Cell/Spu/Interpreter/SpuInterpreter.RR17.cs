@@ -822,6 +822,37 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Cntb(SpuThread spu, SpuInstruction instruction)
+        {
+            // Count Ones in Bytes
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<byte> raLanes = state->GPR[ra].Bytes;
+                Span<byte> rtLanes = state->GPR[rt].Bytes;
+
+                rtLanes[0] = byte.PopCount(raLanes[0]);
+                rtLanes[1] = byte.PopCount(raLanes[1]);
+                rtLanes[2] = byte.PopCount(raLanes[2]);
+                rtLanes[3] = byte.PopCount(raLanes[3]);
+                rtLanes[4] = byte.PopCount(raLanes[4]);
+                rtLanes[5] = byte.PopCount(raLanes[5]);
+                rtLanes[6] = byte.PopCount(raLanes[6]);
+                rtLanes[7] = byte.PopCount(raLanes[7]);
+                rtLanes[8] = byte.PopCount(raLanes[8]);
+                rtLanes[9] = byte.PopCount(raLanes[9]);
+                rtLanes[10] = byte.PopCount(raLanes[10]);
+                rtLanes[11] = byte.PopCount(raLanes[11]);
+                rtLanes[12] = byte.PopCount(raLanes[12]);
+                rtLanes[13] = byte.PopCount(raLanes[13]);
+                rtLanes[14] = byte.PopCount(raLanes[14]);
+                rtLanes[15] = byte.PopCount(raLanes[15]);
+            }
+        }
+
         private static void Xsbh(SpuThread spu, SpuInstruction instruction)
         {
             // Extend Sign Byte to Halfword
@@ -973,6 +1004,28 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Vector128<int> va = Vector128.Create(raLanes);
                 Vector128<int> vb = Vector128.Create(rbLanes);
                 Vector128<int> result = Vector128.Equals(va, vb);
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Ceqh(SpuThread spu, SpuInstruction instruction)
+        {
+            // Compare Equal Halfword
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<ushort> raLanes = state->GPR[ra].UShorts;
+                Span<ushort> rbLanes = state->GPR[rb].UShorts;
+                Span<ushort> rtLanes = state->GPR[rt].UShorts;
+
+                Vector128<ushort> va = Vector128.Create(raLanes);
+                Vector128<ushort> vb = Vector128.Create(rbLanes);
+                Vector128<ushort> result = Vector128.Equals(va, vb);
 
                 result.CopyTo(rtLanes);
             }
