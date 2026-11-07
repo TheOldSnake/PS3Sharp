@@ -28,6 +28,7 @@ namespace PS3Sharp.Cell.Spu
         {
             RdEventStat = 0x0,   // Read Event Stat
             WrEventMask = 0x1,   // Write Event Mask
+            WrEventAck  = 0x2,   // Write Event Acknowledgment
             Lsa = 0x10,          // Local Storage Address
             Eah = 0x11,          // Effective Address High
             Eal = 0x12,          // Effective Address Low or List Address
@@ -116,7 +117,6 @@ namespace PS3Sharp.Cell.Spu
         internal NativeMemoryHandle? LsHandle { get; private set; } = new NativeMemoryHandle((nuint)LocalStorageSize);
         internal byte* LsPtr => (byte*)LsHandle!.DangerousGetHandle();
 
-        internal readonly ManualResetEventSlim SpuEvent = new(false);
         internal ThreadStatus Status { get; private set; } = ThreadStatus.Stopped;
         internal MemoryManager MemoryManager { get; }
 
@@ -292,6 +292,10 @@ namespace PS3Sharp.Cell.Spu
             {
                 case MfcChannel.WrEventMask:
                     _eventMask = value;
+                    break;
+
+                case MfcChannel.WrEventAck:
+                    _eventStat &= ~value;
                     break;
 
                 case MfcChannel.Lsa:
