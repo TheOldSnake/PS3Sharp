@@ -242,9 +242,54 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysSPUThreadReadLS(PPUThread thread)
+        internal ulong SysSpuThreadReadLS(PPUThread ppu)
         {
-            throw new NotImplementedException("todo: SysSPUThreadReadLS");
+            uint id = ppu.ReadArg<uint>(Arg0);
+            uint srcPtr = ppu.ReadArg<uint>(Arg1);
+            uint destPtr = ppu.ReadArg<uint>(Arg2);
+            uint type = ppu.ReadArg<uint>(Arg3);
+
+            if (!_threadManager.TryGetSpuThreadByID(id, out SpuThread? spu))
+            {
+                return CellESrch;
+            }
+
+            // Clear 64-bit
+            _memoryManager.Write<ulong>(destPtr, 0);
+
+            switch (type)
+            {
+                case 1:
+                    // 8-bit read
+                    ReadLs<byte>();
+                    break;
+
+                case 2:
+                    // 16-bit read
+                    ReadLs<ushort>();
+                    break;
+
+                case 4:
+                    // 32-bit read
+                    ReadLs<uint>();
+                    break;
+
+                case 8:
+                    // 64-bit read
+                    ReadLs<ulong>();
+                    break;
+
+                default:
+                    throw new Exception($"[SysSpuThreadReadLS] Unhandled read type = {type}");
+            }
+
+            void ReadLs<T>() where T : unmanaged
+            {
+                T value = spu.ReadStorage<T>(srcPtr);
+                _memoryManager.Write<T>(destPtr, value);
+            }
+
+            return CellOk;
         }
 
         internal ulong SysSpuThreadGroupConnectEvent(PPUThread ppu)

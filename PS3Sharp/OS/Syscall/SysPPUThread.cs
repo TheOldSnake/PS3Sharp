@@ -41,7 +41,7 @@ namespace PS3Sharp.OS.Syscall
             GuestPtr<BigEndian<int>> prio_ptr = ppu.ReadArg<GuestPtr<BigEndian<int>>>(Arg1);
 
             //Console.WriteLine($"[sys_ppu_thread] sys_ppu_thread_get_priority ID = 0x{id:X8}");
-            PPUThread? thread = ppu.ThreadManager.GetThreadByID(id);
+            PPUThread? thread = ppu.ThreadManager.GetPPUThreadByID(id);
             _memoryManager.Write<BigEndian<int>>(prio_ptr, thread.ThreadPriority);
             return CellOk;
         }
@@ -52,7 +52,7 @@ namespace PS3Sharp.OS.Syscall
             int priority = ppu.ReadArg<int>(Arg1);
 
             //Console.WriteLine($"[sys_ppu_thread] sys_ppu_thread_set_priority ID = 0x{id:X8}");
-            PPUThread? thread = ppu.ThreadManager.GetThreadByID(id);
+            PPUThread? thread = ppu.ThreadManager.GetPPUThreadByID(id);
             thread?.SetThreadPriority(priority);
 
             return CellOk;

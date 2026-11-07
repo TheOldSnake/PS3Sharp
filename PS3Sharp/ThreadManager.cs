@@ -7,6 +7,7 @@ using PS3Sharp.Memory;
 using PS3Sharp.OS;
 using PS3Sharp.OS.Modules;
 using PS3Sharp.OS.Syscall;
+using System.Diagnostics.CodeAnalysis;
 
 namespace PS3Sharp
 {
@@ -179,7 +180,7 @@ namespace PS3Sharp
             }
         }
 
-        internal PPUThread? GetThreadByID(ulong id)
+        internal PPUThread? GetPPUThreadByID(ulong id)
         {
             lock (_threadManagerLock)
             {
@@ -195,9 +196,27 @@ namespace PS3Sharp
             return null;
         }
 
+        internal bool TryGetSpuThreadByID(ulong id, [NotNullWhen(true)] out SpuThread? spu)
+        {
+            lock (_threadManagerLock)
+            {
+                for (int i = 0; i < _spuThreads.Count; i++)
+                {
+                    if (_spuThreads[i].ID == id)
+                    {
+                        spu = _spuThreads[i];
+                        return true;
+                    }
+                }
+            }
+
+            spu = null;
+            return false;
+        }
+
         internal int JoinThreadByID(ulong id)
         {
-            PPUThread? thread = GetThreadByID(id);
+            PPUThread? thread = GetPPUThreadByID(id);
 
             if (thread != null)
             {
