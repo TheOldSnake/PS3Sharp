@@ -2,7 +2,6 @@ using PS3Sharp.Cell.Spu;
 using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using static PS3Sharp.OS.Syscall.SysSpu;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace PS3Sharp.OS.LV2
 {
