@@ -19,6 +19,10 @@
         {
             switch (instruction.RR17Op)
             {
+                case RR17.Stop:
+                    Stop(spu, instruction);
+                    break;
+
                 case RR17.Lnop:
                     // Lnop: No Operation (Load)
                     break;

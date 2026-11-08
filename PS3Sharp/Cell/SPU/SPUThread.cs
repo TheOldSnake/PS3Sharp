@@ -1,9 +1,14 @@
+using Iced.Intel;
+using OpenTK.Graphics.ES11;
 using PS3Sharp.Cell.Spu.Interpreter;
 using PS3Sharp.Common;
 using PS3Sharp.Memory;
+using PS3Sharp.OS.LV2;
 using PS3Sharp.OS.Syscall;
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using static System.Windows.Forms.AxHost;
 
 namespace PS3Sharp.Cell.Spu
 {
@@ -39,6 +44,7 @@ namespace PS3Sharp.Cell.Spu
             WrTagUpdate = 0x17,     // Write Tag Status Update Request
             RdTagStat = 0x18,       // Read Tag-Group Status
             RdAtomicStat = 0x1B,    // Read Atomic Command Status
+            WrOutMbox = 0x1C,       // Write Outbound Mailbox
             WrOutIntrMbox = 0x1E,   // Write Outbound Interrupt Mailbox
         }
 
@@ -101,13 +107,20 @@ namespace PS3Sharp.Cell.Spu
         private uint _lastReservedAddress;
         private readonly ManualResetEventSlim _lostReservationEvent = new(false);
 
-        internal Thread NativeThread { get; }
+        private readonly BlockingCollection<uint> _outMBox = new(boundedCapacity: 1);
+        private readonly BlockingCollection<uint> _inMBox = new(boundedCapacity: 1);
+
+        private readonly LV2SpuThreadGroup? _ownerGroup;
+
+        internal Task? CurrentTask { get; private set; }
         internal string ThreadName { get; } = string.Empty;
         internal uint ID { get; } = 0xFFFFFFFF;
         internal uint GroupID { get; } = 0xFFFFFFFF;
         internal SysSpu.SysSpuImage Image { get; }
         internal SysSpu.SysSpuThreadArgument Argument { get; }
         internal Lock Lock { get; } = new();
+        internal CancellationTokenSource LocalCts { get; } = new();
+        internal bool ShouldExit => LocalCts.IsCancellationRequested || (_ownerGroup != null && _ownerGroup.GroupCts.IsCancellationRequested);
 
         // Allocate State
         internal static readonly int StateSize = sizeof(SpuState);
@@ -122,19 +135,15 @@ namespace PS3Sharp.Cell.Spu
         internal ThreadStatus Status { get; private set; } = ThreadStatus.Stopped;
         internal MemoryManager MemoryManager { get; }
 
-        internal SpuThread(string name, uint id, uint groupID, SysSpu.SysSpuImage img, SysSpu.SysSpuThreadArgument arg, MemoryManager memoryManager)
+        internal SpuThread(string name, uint id, uint groupID, SysSpu.SysSpuImage img, SysSpu.SysSpuThreadArgument arg, MemoryManager memoryManager, LV2SpuThreadGroup? ownerGroup)
         {
-            NativeThread = new Thread(RunSpu)
-            {
-                Name = $"Native Spu Thread: {ThreadName}"
-            };
-
             MemoryManager = memoryManager;
             ThreadName = name;
             ID = id;
             GroupID = groupID;
             Image = img;
             Argument = arg;
+            _ownerGroup = ownerGroup;
             Array.Fill(_ports, FreePort);
         }
 
@@ -154,6 +163,8 @@ namespace PS3Sharp.Cell.Spu
 
         internal void Start()
         {
+            *State = default;
+
             // Default stack pointer
             State->GPR[1].UInts[3] = 0x3FFF0;  
 
@@ -166,7 +177,7 @@ namespace PS3Sharp.Cell.Spu
             }
 
             Status = ThreadStatus.Running;
-            NativeThread.Start();
+            CurrentTask = Task.Run(RunSpu);
         }
 
         internal void LoadImage()
@@ -193,7 +204,7 @@ namespace PS3Sharp.Cell.Spu
             uint src = segment.Src;
             uint ls = segment.LSAddress;
 
-            Console.WriteLine($"[Spu] Loading Spu segment at 0x{src:X8} to local address 0x{ls:X8} type = {segment.Type}");
+            //Console.WriteLine($"[Spu] Loading Spu segment at 0x{src:X8} to local address 0x{ls:X8} type = {segment.Type}");
 
             unsafe
             {
@@ -230,7 +241,7 @@ namespace PS3Sharp.Cell.Spu
 
             try
             {
-                while (true)
+                while (!ShouldExit)
                 {
                     SpuInterpreter.Step(this);
                 }
@@ -348,7 +359,11 @@ namespace PS3Sharp.Cell.Spu
                     break;
 
                 case MfcChannel.WrTagUpdate:
-                    Console.WriteLine($"[Spu] TODO WrTagUpdate");
+                    //Console.WriteLine($"[Spu] TODO WrTagUpdate");
+                    break;
+
+                case MfcChannel.WrOutMbox:
+                    _outMBox.Add(value);
                     break;
 
                 default:
@@ -388,7 +403,7 @@ namespace PS3Sharp.Cell.Spu
         {
             // transfers the number of bytes specified by the transfer size parameter from the 
             // local storage address of the SPU to the effective address.
-            Console.WriteLine($"[Spu] MFC Put:  eal = 0x{_eal:X}, ls = 0x{_lsa:X}, size = 0x{_transferSize:X}");
+            // Console.WriteLine($"[Spu] MFC Put:  eal = 0x{_eal:X}, ls = 0x{_lsa:X}, size = 0x{_transferSize:X}");
 
             unsafe
             {
@@ -403,7 +418,7 @@ namespace PS3Sharp.Cell.Spu
         {
             // Transfers the number of bytes specified by the transfer size parameter from the
             // effective address to the local storage address of the SPU
-            Console.WriteLine($"[Spu] MFC Get: ls = 0x{_lsa:X}, eal = 0x{_eal:X}, size = 0x{_transferSize:X}");
+            // Console.WriteLine($"[Spu] MFC Get: ls = 0x{_lsa:X}, eal = 0x{_eal:X}, size = 0x{_transferSize:X}");
 
             unsafe
             {
@@ -477,6 +492,36 @@ namespace PS3Sharp.Cell.Spu
 
             // TODO: Handle channel count stuff
             return _eventStat & _eventMask;
+        }
+
+        private void GroupExit(uint status)
+        {
+            // Make sure this SPU thread is a member of a group
+            if (_ownerGroup == null)
+            {
+                throw new InvalidOperationException($"[SPU-{ThreadName}] Invalid group exit -- owner group is null");
+            }
+
+            _ownerGroup.GroupExit((int)status);
+        }
+
+        internal void Stop(int code)
+        {
+            uint exitStatus;
+
+            switch (code)
+            {
+                // Group Exit
+                case 0x101:
+                    if (!_outMBox.TryTake(out exitStatus))
+                    {
+                        Console.WriteLine($"[SPU-{ThreadName}] Couldn't get exit status from _outMBox");
+                    }
+
+                    Console.WriteLine($"[SPU-{ThreadName}] Stop: 0x{code:X} Exit Status: 0x{exitStatus:X}");
+                    GroupExit(exitStatus);
+                    break;
+            }
         }
 
         public void Dispose()

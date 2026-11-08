@@ -80,6 +80,8 @@ namespace PS3Sharp.OS.Syscall
         internal const int SysSpuSegmentTypeFill = 0x0002;
         internal const int SysSpuSegmentTypeInfo = 0x0004;
 
+        internal const int SysSpuThreadGroupJoinGroupExit = 1;
+
         private readonly ThreadManager _threadManager;
         private readonly MemoryManager _memoryManager;
         private readonly SysEvent _sysEvent;
@@ -195,7 +197,6 @@ namespace PS3Sharp.OS.Syscall
             threadGroup.StartGroup();
 
             Console.WriteLine($"[SysSPUThreadGroupStart] Started Spu group: 0x{groupId:X8}");
-            //throw new Exception("todo");
 
             return CellOk;
         }
@@ -209,12 +210,12 @@ namespace PS3Sharp.OS.Syscall
             if (TryGetSpuThreadGroup(groupId, out LV2SpuThreadGroup? group))
             {
                 group.JoinGroup();
+                _memoryManager.Write<BigEndian<int>>(causePtr, SysSpuThreadGroupJoinGroupExit);
+                _memoryManager.Write<BigEndian<int>>(statusPtr, group.ExitStatus);
+
+                Console.WriteLine($"[SysSpuThreadGroupJoin] Joined group: 0x{groupId:X8} exit status = 0x{group.ExitStatus:X8}");
             }
 
-            // TODO
-
-            _memoryManager.Write<BigEndian<int>>(causePtr, 0);
-            _memoryManager.Write<BigEndian<int>>(statusPtr, 0);
             return CellOk;
         }
 

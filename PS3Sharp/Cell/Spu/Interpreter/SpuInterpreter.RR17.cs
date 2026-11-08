@@ -9,6 +9,13 @@ namespace PS3Sharp.Cell.Spu.Interpreter
     internal static partial class SpuInterpreter
     {
         // RR17: 11-bit opcode group
+        private static void Stop(SpuThread spu, SpuInstruction instruction)
+        {
+            // Stop and Signal
+            int type = instruction.Raw & 0x3FFF;
+            spu.Stop(type);
+        }
+
         private static void Rdch(SpuThread spu, SpuInstruction instruction)
         {
             // Read Channel

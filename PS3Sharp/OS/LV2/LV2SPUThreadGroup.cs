@@ -2,6 +2,7 @@ using PS3Sharp.Cell.Spu;
 using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using static PS3Sharp.OS.Syscall.SysSpu;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace PS3Sharp.OS.LV2
 {
@@ -9,10 +10,12 @@ namespace PS3Sharp.OS.LV2
     {
         private readonly ThreadManager _threadManager;
         private readonly MemoryManager _memoryManager;
-        private bool _started = false;
-        private readonly ManualResetEventSlim _groupFinished = new(false);
-        private readonly List<SpuThread> _spuThreads = [];
+
         private readonly Lock _groupLock = new();
+        private bool _started = false;
+        private readonly ManualResetEventSlim _groupFinishedEvent = new(false);
+        private int _groupExitStatus;
+        private readonly List<SpuThread> _spuThreads = [];
 
         private LV2EventQueue? _runEvents;
         private LV2EventQueue? _exceptionEvents;
@@ -22,6 +25,9 @@ namespace PS3Sharp.OS.LV2
         internal GuestPtr<SysSpuThreadGroupAttribute> AttributePtr { get; }
         internal uint Number { get; }
         internal int Priority { get; }
+
+        internal CancellationTokenSource GroupCts { get; private set; } = new();
+        internal int ExitStatus => _groupExitStatus;
 
         internal LV2SpuThreadGroup(ThreadManager threadManager, MemoryManager memoryManager, GuestPtr<SysSpuThreadGroupAttribute> attribPtr, uint number, int prio)
         {
@@ -43,7 +49,7 @@ namespace PS3Sharp.OS.LV2
                 GuestVoidPtr name_ptr = attribute.NamePtr;
                 string thread_name = name_ptr.IsNullPtr ? "Unnamed-SPU" : _memoryManager.ReadString(name_ptr);
 
-                SpuThread spu = _threadManager.CreateSPUThread(thread_name, id, Handle, img, arg);
+                SpuThread spu = _threadManager.CreateSPUThread(thread_name, id, Handle, img, arg, this);
                 _spuThreads.Add(spu);
 
                 return spu;
@@ -52,12 +58,21 @@ namespace PS3Sharp.OS.LV2
 
         internal void StartGroup()
         {
-            using ( _groupLock.EnterScope())
+            using (_groupLock.EnterScope())
             {
                 if (_started)
                 {
                     return;
                 }
+
+                if (!GroupCts.TryReset())
+                {
+                    GroupCts.Dispose();
+                    GroupCts = new();
+                }
+
+                _groupFinishedEvent.Reset();
+                _groupExitStatus = 0;
 
                 for (int i = 0; i < _spuThreads.Count; i++)
                 {
@@ -68,9 +83,33 @@ namespace PS3Sharp.OS.LV2
             }
         }
 
-        internal void JoinGroup()
+        internal void GroupExit(int status)
         {
-            _groupFinished.Wait();
+            lock (_groupLock)
+            {
+                // If already cancelled do nothing
+                if (GroupCts.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                // Signal cancellation token
+                GroupCts.Cancel();
+
+                // Set exit status
+                _groupExitStatus = status;
+
+                // Signal finished event -- wake up any waiting PPU thread
+                _groupFinishedEvent.Set();
+
+                _started = false;
+            }
+        }
+
+        internal int JoinGroup()
+        {
+            _groupFinishedEvent.Wait();
+            return _groupExitStatus;
         }
 
         internal bool SetEventQueue(uint type, LV2EventQueue eventQueue)

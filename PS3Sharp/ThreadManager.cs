@@ -5,6 +5,7 @@ using PS3Sharp.Cell.Spu;
 using PS3Sharp.Common;
 using PS3Sharp.Memory;
 using PS3Sharp.OS;
+using PS3Sharp.OS.LV2;
 using PS3Sharp.OS.Modules;
 using PS3Sharp.OS.Syscall;
 using System.Diagnostics.CodeAnalysis;
@@ -107,9 +108,9 @@ namespace PS3Sharp
             return RSXThread;
         }
 
-        internal SpuThread CreateSPUThread(string name, uint id, uint groupID, SysSpu.SysSpuImage img, SysSpu.SysSpuThreadArgument arg)
+        internal SpuThread CreateSPUThread(string name, uint id, uint groupID, SysSpu.SysSpuImage img, SysSpu.SysSpuThreadArgument arg, LV2SpuThreadGroup ownerGroup)
         {
-            SpuThread spu = new(name, id, groupID, img, arg, _memoryManager);
+            SpuThread spu = new(name, id, groupID, img, arg, _memoryManager, ownerGroup);
             _spuThreads.Add(spu);
             return spu;
         }

@@ -43,6 +43,7 @@
     // 11-bit Opcodes
     internal enum RR17 : int
     {
+        Stop = 0x000,
         Lnop = 0x001,
         Sync = 0x002,
         DSync = 0x003,
