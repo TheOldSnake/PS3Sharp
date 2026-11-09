@@ -113,9 +113,9 @@ namespace PS3Sharp.OS.Syscall
             }
 
             // Load elf32
-            (ElfDefinitions.ElfHeader32 header, List<SysSpuSegment> segments) = _elfLoader.LoadSPUElf(src, _memoryManager);
+            (ElfDefinitions.ElfHeader32 header, List<SysSpuSegment> segments) = _elfLoader.LoadSpuElf(src, _memoryManager);
 
-            // Allocate SysSPUSegment array
+            // Allocate SysSpuSegment array
             int segmentArraySize = Unsafe.SizeOf<SysSpu.SysSpuSegment>() * 32;
             GuestPtr<SysSpu.SysSpuSegment> segmentArrayPtr = _memoryManager.AllocateVirtualMemory((uint)segmentArraySize).VirtualAddress;
 
@@ -126,7 +126,7 @@ namespace PS3Sharp.OS.Syscall
                 _memoryManager.WriteArray(segmentArrayPtr, segmentsSpan);
             }
 
-            // Write SysSPUImage data
+            // Write SysSpuImage data
             SysSpuImage image = new()
             {
                 Type = type,
@@ -137,7 +137,7 @@ namespace PS3Sharp.OS.Syscall
 
             _memoryManager.Write(imagePtr, image);
 
-            Console.WriteLine($"[SysSPU] sys_spu_image_import: Type = 0x{type:X} entry = 0x{header.e_entry:X8} segment count = {segments.Count}");
+            Console.WriteLine($"[SysSpu] sys_spu_image_import: Type = 0x{type:X} entry = 0x{header.e_entry:X8} segment count = {segments.Count}");
 
             return CellOk;
         }
@@ -154,7 +154,7 @@ namespace PS3Sharp.OS.Syscall
             AddSpuThreadGroup(group);
             _memoryManager.Write<BigEndian<uint>>(idPtr, group.Handle);
 
-            Console.WriteLine($"[SysSPUThreadInitialize] Created Spu group: 0x{group.Handle:X8}");
+            Console.WriteLine($"[SysSpuThreadInitialize] Created Spu group: 0x{group.Handle:X8}");
             return CellOk;
         }
 
@@ -181,7 +181,7 @@ namespace PS3Sharp.OS.Syscall
 
             _memoryManager.Write<BigEndian<uint>>(idPtr, spu.ID);
 
-            Console.WriteLine($"[SysSPUThreadInitialize] Created Spu thread: {spu.ThreadName} - Group: 0x{groupId:X8} entry = 0x{img.Entry:X8}");
+            Console.WriteLine($"[SysSpuThreadInitialize] Created Spu thread: {spu.ThreadName} - Group: 0x{groupId:X8} entry = 0x{img.Entry:X8}");
             return CellOk;
         }
 
@@ -196,7 +196,7 @@ namespace PS3Sharp.OS.Syscall
 
             threadGroup.StartGroup();
 
-            Console.WriteLine($"[SysSPUThreadGroupStart] Started Spu group: 0x{groupId:X8}");
+            Console.WriteLine($"[SysSpuThreadGroupStart] Started Spu group: 0x{groupId:X8}");
 
             return CellOk;
         }
@@ -244,7 +244,7 @@ namespace PS3Sharp.OS.Syscall
             // Write selected port
             _memoryManager.Write(spup_ptr, portNumber);
 
-            Console.WriteLine($"[SysSPUThreadGroupConnectEventAllThreads] Connected Spu group: 0x{groupId:X8} port = {portNumber} equeue: 0x{equeueId:X8}");
+            Console.WriteLine($"[SysSpuThreadGroupConnectEventAllThreads] Connected Spu group: 0x{groupId:X8} port = {portNumber} equeue: 0x{equeueId:X8}");
             return CellOk;
         }
 
@@ -333,7 +333,7 @@ namespace PS3Sharp.OS.Syscall
                 return CellESrch;
             }
 
-            // Write value to SPU Inbound Mailbox 
+            // Write value to Spu Inbound Mailbox 
             spu.WriteInMbox(value);
 
             return CellOk;
@@ -368,7 +368,7 @@ namespace PS3Sharp.OS.Syscall
         {
             if (!_spuThreadGroupes.TryAdd(group.Handle, group))
             {
-                throw new Exception($"[SysSPU] Failed to add Spu group");
+                throw new Exception($"[SysSpu] Failed to add Spu group");
             }
         }
 
@@ -376,7 +376,7 @@ namespace PS3Sharp.OS.Syscall
         {
             if (!_spuThreadGroupes.TryRemove(handle, out _))
             {
-                throw new Exception($"[SysSPU] Failed to remove Spu group");
+                throw new Exception($"[SysSpu] Failed to remove Spu group");
             }
         }
     }
