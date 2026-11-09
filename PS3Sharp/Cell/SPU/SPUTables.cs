@@ -12,7 +12,7 @@ namespace PS3Sharp.Cell.Spu
         }
 
         [InlineArray(RotationTableSize)]
-        internal struct RotationiInlineArray
+        internal struct RotationInlineArray
         {
             private byte _element;
         }
@@ -36,8 +36,8 @@ namespace PS3Sharp.Cell.Spu
 
         private static ShiftInlineArray _leftShiftTable;
         private static ShiftInlineArray _rightShiftTable;
-        private static RotationiInlineArray _leftRotationTable;
-        private static RotationiInlineArray _rightRotationTable;
+        private static RotationInlineArray _leftRotationTable;
+        private static RotationInlineArray _rightRotationTable;
         private static FsmInlineArray _fsmTable;
         private static FsmbInlineArray _fsmbTable;
 
