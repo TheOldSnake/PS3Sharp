@@ -92,7 +92,7 @@ namespace PS3Sharp.Cell.Spu
         internal const uint FreePort = 0xFFFFFFFF;
 
         // Port mappings
-        private readonly uint[] _ports = new uint[PortCount];
+        private readonly LV2EventQueue?[] _ports = new LV2EventQueue?[PortCount];
 
         // internal MFC channels
         private uint _eventMask;
@@ -145,23 +145,21 @@ namespace PS3Sharp.Cell.Spu
             Image = img;
             Argument = arg;
             _ownerGroup = ownerGroup;
-            Array.Fill(_ports, FreePort);
+            Array.Fill(_ports, null);
         }
 
         internal void WriteInMbox(uint value) => _inMBox.Add(value);
 
-        internal bool PortIsFree(int port) => _ports[port] == FreePort;
+        internal bool PortIsFree(int port) => _ports[port] == null;
 
-        internal uint GetPort(int port) => _ports[port];
-
-        internal void SetPort(int port, uint id)
+        internal void SetPort(int port, LV2EventQueue equeue)
         {            
             if (!PortIsFree(port))
             {
                 throw new Exception($"[Spu] Port is not free");
             }
 
-            _ports[port] = id;
+            _ports[port] = equeue;
         }
 
 

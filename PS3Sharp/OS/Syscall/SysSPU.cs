@@ -222,7 +222,7 @@ namespace PS3Sharp.OS.Syscall
         internal ulong SysSpuThreadGroupConnectEventAllThreads(PPUThread ppu)
         {
             uint groupId = ppu.ReadArg<uint>(Arg0);
-            uint equeue_id = ppu.ReadArg<uint>(Arg1);
+            uint equeueId = ppu.ReadArg<uint>(Arg1);
             ulong req = ppu.ReadArg<ulong>(Arg2);                        // port bits
             GuestPtr<byte> spup_ptr = ppu.ReadArg<GuestPtr<byte>>(Arg3); // chosen port 
 
@@ -231,7 +231,12 @@ namespace PS3Sharp.OS.Syscall
                 return CellESrch;
             }
 
-            if (!threadGroup.TryConnectEventAllThreads(req, equeue_id, out byte portNumber))
+            if (!_sysEvent.TryGetEventQueueByID(equeueId, out LV2EventQueue? equeue))
+            {
+                return CellESrch;
+            }
+
+            if (!threadGroup.TryConnectEventAllThreads(req, equeue, out byte portNumber))
             {
                 return CellEIsConn;
             }
@@ -239,7 +244,7 @@ namespace PS3Sharp.OS.Syscall
             // Write selected port
             _memoryManager.Write(spup_ptr, portNumber);
 
-            Console.WriteLine($"[SysSPUThreadGroupConnectEventAllThreads] Connected Spu group: 0x{groupId:X8} port = {portNumber} equeue: 0x{equeue_id:X8}");
+            Console.WriteLine($"[SysSPUThreadGroupConnectEventAllThreads] Connected Spu group: 0x{groupId:X8} port = {portNumber} equeue: 0x{equeueId:X8}");
             return CellOk;
         }
 
@@ -346,7 +351,12 @@ namespace PS3Sharp.OS.Syscall
                 return CellESrch;
             }
 
-            spu.SetPort(spup, equeueId);
+            if (!_sysEvent.TryGetEventQueueByID(equeueId, out LV2EventQueue? equeue))
+            {
+                return CellESrch;
+            }
+
+            spu.SetPort(spup, equeue);
 
             Console.WriteLine($"[SysSpuThreadConnectEvent] Connected Spu: 0x{id:X8} equeue: 0x{equeueId:X8}");
             return CellOk;

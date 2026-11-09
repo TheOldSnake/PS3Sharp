@@ -137,7 +137,7 @@ namespace PS3Sharp.OS.LV2
             }
         }
 
-        internal bool TryConnectEventAllThreads(ulong req, uint equeueId, out byte portNumber)
+        internal bool TryConnectEventAllThreads(ulong req, LV2EventQueue equeue, out byte portNumber)
         {
             using(_groupLock.EnterScope())
             {
@@ -179,7 +179,7 @@ namespace PS3Sharp.OS.LV2
                     // Connect the port to all spu threads
                     for (int i = 0; i < threads.Count; i++)
                     {
-                        threads[i].SetPort(port, equeueId);
+                        threads[i].SetPort(port, equeue);
                     }
 
                     portNumber = port;
