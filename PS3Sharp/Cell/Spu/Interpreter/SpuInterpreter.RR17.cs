@@ -806,6 +806,28 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Cgt(SpuThread spu, SpuInstruction instruction)
+        {
+            // Compare Greater Than Word
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rbLanes = state->GPR[rb].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                Vector128<int> va = Vector128.Create(raLanes);
+                Vector128<int> vb = Vector128.Create(rbLanes);
+                Vector128<int> result = Vector128.GreaterThan(va, vb);
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
         private static void Clz(SpuThread spu, SpuInstruction instruction)
         {
             // Count Leading Zeros

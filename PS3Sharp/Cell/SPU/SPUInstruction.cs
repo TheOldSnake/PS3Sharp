@@ -85,6 +85,7 @@
         Rotqmbyi = 0x1FD,
         Shlqbyi = 0x1FF,
         Nop = 0x201,
+        Cgt = 0x240,
         Clz = 0x2A5,
         Xshw = 0x2AE,
         Cntb = 0x2B4,

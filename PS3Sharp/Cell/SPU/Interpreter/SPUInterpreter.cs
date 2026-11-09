@@ -187,6 +187,10 @@
                     // Nop: No Operation (Execute)
                     break;
 
+                case RR17.Cgt:
+                    Cgt(spu, instruction);
+                    break;
+
                 case RR17.Clz:
                     Clz(spu, instruction);
                     break;
