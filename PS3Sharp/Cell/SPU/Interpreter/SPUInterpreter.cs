@@ -203,6 +203,10 @@
                     Xsbh(spu, instruction);
                     break;
 
+                case RR17.Clgt:
+                    Clgt(spu, instruction);
+                    break;
+
                 case RR17.Andc:
                     Andc(spu, instruction);
                     break;

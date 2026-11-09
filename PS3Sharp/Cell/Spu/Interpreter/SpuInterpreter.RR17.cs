@@ -896,6 +896,28 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Clgt(SpuThread spu, SpuInstruction instruction)
+        {
+            // Compare Logical Greater Than Word
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<uint> raLanes = state->GPR[ra].UInts;
+                Span<uint> rbLanes = state->GPR[rb].UInts;
+                Span<uint> rtLanes = state->GPR[rt].UInts;
+
+                Vector128<uint> va = Vector128.Create(raLanes);
+                Vector128<uint> vb = Vector128.Create(rbLanes);
+                Vector128<uint> result = Vector128.GreaterThan(va, vb);
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
         private static void Andc(SpuThread spu, SpuInstruction instruction)
         {
             // And with Complement

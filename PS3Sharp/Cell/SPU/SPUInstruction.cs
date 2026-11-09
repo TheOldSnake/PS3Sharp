@@ -89,6 +89,7 @@
         Xshw = 0x2AE,
         Cntb = 0x2B4,
         Xsbh = 0x2B6,
+        Clgt = 0x2C0,
         Andc = 0x2C1,
         Clgth = 0x2C8,
         Clgtb = 0x2D0,
