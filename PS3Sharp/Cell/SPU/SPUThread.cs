@@ -1,5 +1,3 @@
-using Iced.Intel;
-using OpenTK.Graphics.ES11;
 using PS3Sharp.Cell.Spu.Interpreter;
 using PS3Sharp.Common;
 using PS3Sharp.Memory;
@@ -8,7 +6,7 @@ using PS3Sharp.OS.Syscall;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using static System.Windows.Forms.AxHost;
+using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.Cell.Spu
 {
@@ -374,6 +372,10 @@ namespace PS3Sharp.Cell.Spu
                     _outMBox.Add(value);
                     break;
 
+                case MfcChannel.WrOutIntrMbox:
+                    WriteOutIntrMbox(value);
+                    break;
+
                 default:
                     uint pc = State->PC - 4;
                     throw new Exception($"[Spu] Unhandled write to channel: 0x{channelNumber:X} at: 0x{pc:X}");
@@ -502,6 +504,43 @@ namespace PS3Sharp.Cell.Spu
 
             // TODO: Handle channel count stuff
             return _eventStat & _eventMask;
+        }
+
+        private void WriteOutIntrMbox(uint info)
+        {
+            ulong port = info >> 24;
+            LV2EventQueue? equeue = _ports[port];
+
+            ulong data0 = (info & 0xFFFFFF) | (port << 32);
+
+            if (port >= 64)
+            {
+                throw new NotImplementedException($"[Spu] todo: WriteOutIntrMbox on port {port}");
+            }
+
+            if (!_outMBox.TryTake(out uint data1))
+            {
+                throw new Exception($"[Spu] unexpected WrOutIntrMbox on empty OutMbox");
+            }
+
+            if (equeue == null)
+            {
+                throw new Exception($"[Spu] unexpected WrOutIntrMbox on non assigned port");
+            }
+
+
+            LV2EventPort.SysEventData eventData = new()
+            {
+                Source = SysSpu.SysSpuThreadEventUserKey,
+                Data1 = ID,
+                Data2 = data0,
+                Data3 = data1,
+            };
+
+            equeue.Send(eventData);
+            _inMBox.Add(CellOk);
+            
+            Console.WriteLine($"[Spu] WriteOutIntrMbox -> equeue: 0x{equeue.Handle:X8}");
         }
 
         private void GroupExit(uint status)
