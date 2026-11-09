@@ -104,7 +104,7 @@ namespace PS3Sharp.OS
             SysSpuThreadGroupJoin = 0x0B2,
             SysSpuThreadReadLS = 0x0B6,
             SysSpuThreadGroupConnectEvent = 0x0B9,
-            SysSpuThreadWriteSPUMB = 0x0BE,
+            SysSpuThreadWriteSpuMb = 0x0BE,
             SysSpuThreadConnectEvent = 0x0BF,
             SysSpuThreadGroupConnectEventAllThreads = 0x0FB,
 

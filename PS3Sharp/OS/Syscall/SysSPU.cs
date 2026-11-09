@@ -323,7 +323,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysSPUThreadWriteSPUMB(PPUThread ppu)
+        internal ulong SysSpuThreadWriteSpuMb(PPUThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
             uint value = ppu.ReadArg<uint>(Arg1);

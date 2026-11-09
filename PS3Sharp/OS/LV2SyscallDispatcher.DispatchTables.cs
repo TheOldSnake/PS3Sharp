@@ -108,7 +108,7 @@ namespace PS3Sharp.OS
                 [SyscallID.SysSpuThreadGroupJoin] = SysSPUHandler.SysSpuThreadGroupJoin,
                 [SyscallID.SysSpuThreadReadLS] = SysSPUHandler.SysSpuThreadReadLS,
                 [SyscallID.SysSpuThreadGroupConnectEvent] = SysSPUHandler.SysSpuThreadGroupConnectEvent,
-                [SyscallID.SysSpuThreadWriteSPUMB] = SysSPUHandler.SysSPUThreadWriteSPUMB,
+                [SyscallID.SysSpuThreadWriteSpuMb] = SysSPUHandler.SysSpuThreadWriteSpuMb,
                 [SyscallID.SysSpuThreadConnectEvent] = SysSPUHandler.SysSpuThreadConnectEvent,
                 [SyscallID.SysSpuThreadGroupConnectEventAllThreads] = SysSPUHandler.SysSpuThreadGroupConnectEventAllThreads,
 
