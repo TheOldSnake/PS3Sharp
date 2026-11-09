@@ -80,6 +80,17 @@ namespace PS3Sharp.OS.LV2
 
                 _started = true;
             }
+
+            // Send a run event if an equeue exists
+            LV2EventPort.SysEventData eventData = new()
+            {
+                Source = SysSpuThreadGroupEventRunKey,
+                Data1 = Handle,
+                Data2 = 0,
+                Data3 = 0
+            };
+
+            _runEvents?.Send(eventData);
         }
 
         internal void GroupExit(int status)
