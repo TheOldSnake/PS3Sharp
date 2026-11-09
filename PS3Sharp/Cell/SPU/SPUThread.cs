@@ -306,6 +306,10 @@ namespace PS3Sharp.Cell.Spu
             MfcChannel channel = (MfcChannel)channelNumber;
             switch (channel)
             {
+                // Stub
+                case MfcChannel.WrTagUpdate:
+                    return 1;
+
                 // Not sure how this works but the manual says "It returns 1 if the status is available"
                 case MfcChannel.RdTagStat:
                     return 1;
