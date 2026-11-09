@@ -485,26 +485,33 @@ namespace PS3Sharp.Cell.Spu
             // A read from the SPU Read Event Status Channel when it has a channel count of 0 results in an SPU stall; 
             // thereby providing a “wait on event” function.
 
-            if ((_eventStat & _eventMask) == 0)
+            if ((_eventStat & _eventMask) != 0)
             {
-                //Console.WriteLine($"[Spu] waiting on RdEventStat mask = 0x{_eventMask:X}");
-
-                // Wait on reservation lost event
-                if (_eventMask == 0x400)
-                {
-                    _lostReservationEvent.Wait();
-                    _lostReservationEvent.Reset();
-
-                    _eventStat |= (uint)EventStat.Lr;
-                    _lastReservedAddress = 0;
-                }
-                else
-                {
-                    throw new Exception($"TODO: wait on mask = 0x{_eventMask:X}");
-                }
-
-                //Console.WriteLine($"[Spu] Got lr event");
+                return _eventStat & _eventMask;
             }
+
+            // Wait on reservation lost event
+            if (_eventMask == 0x400)
+            {
+                if (_lastReservedAddress == 0)
+                {
+                    throw new Exception($"TODO: wait on lr event with no reserved address");
+                }
+
+                // Console.WriteLine($"[Spu] waiting on RdEventStat mask = 0x{_eventMask:X} addr = 0x{_lastReservedAddress:X}");
+
+                _lostReservationEvent.Wait();
+                _lostReservationEvent.Reset();
+
+                _eventStat |= (uint)EventStat.Lr;
+                _lastReservedAddress = 0;
+            }
+            else
+            {
+                throw new Exception($"TODO: wait on mask = 0x{_eventMask:X}");
+            }
+
+            // Console.WriteLine($"[Spu] Got lr event");
 
             // TODO: Handle channel count stuff
             return _eventStat & _eventMask;
