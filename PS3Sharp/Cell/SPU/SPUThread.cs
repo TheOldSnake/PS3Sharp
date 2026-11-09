@@ -148,6 +148,8 @@ namespace PS3Sharp.Cell.Spu
             Array.Fill(_ports, FreePort);
         }
 
+        internal void WriteInMbox(uint value) => _inMBox.Add(value);
+
         internal bool PortIsFree(int port) => _ports[port] == FreePort;
 
         internal uint GetPort(int port) => _ports[port];
@@ -161,6 +163,7 @@ namespace PS3Sharp.Cell.Spu
 
             _ports[port] = id;
         }
+
 
         internal void Start()
         {

@@ -318,9 +318,20 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysSPUThreadWriteSPUMB(PPUThread thread)
+        internal ulong SysSPUThreadWriteSPUMB(PPUThread ppu)
         {
-            throw new NotImplementedException("todo: SysSPUThreadWriteSPUMB");
+            uint id = ppu.ReadArg<uint>(Arg0);
+            uint value = ppu.ReadArg<uint>(Arg1);
+
+            if (!_threadManager.TryGetSpuThreadByID(id, out SpuThread? spu))
+            {
+                return CellESrch;
+            }
+
+            // Write value to SPU Inbound Mailbox 
+            spu.WriteInMbox(value);
+
+            return CellOk;
         }
 
         internal ulong SysSpuThreadConnectEvent(PPUThread ppu)
