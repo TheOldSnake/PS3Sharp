@@ -45,6 +45,7 @@ namespace PS3Sharp.Cell.Spu
             RdTagStat = 0x18,       // Read Tag-Group Status
             RdAtomicStat = 0x1B,    // Read Atomic Command Status
             WrOutMbox = 0x1C,       // Write Outbound Mailbox
+            RdInMbox = 0x1D,        // Read Inbound Mailbox
             WrOutIntrMbox = 0x1E,   // Write Outbound Interrupt Mailbox
         }
 
@@ -292,6 +293,9 @@ namespace PS3Sharp.Cell.Spu
                 case MfcChannel.RdAtomicStat:
                     return (uint)_atomicStat;
 
+                case MfcChannel.RdInMbox: // Blocking
+                    return _inMBox.Take();
+
                 default:
                     uint pc = State->PC - 4;
                     throw new Exception($"[Spu] Unhandled read from channel: 0x{channelNumber:X} at: 0x{pc:X}");
@@ -306,6 +310,9 @@ namespace PS3Sharp.Cell.Spu
                 // Not sure how this works but the manual says "It returns 1 if the status is available"
                 case MfcChannel.RdTagStat:
                     return 1;
+
+                case MfcChannel.RdInMbox:
+                    return (uint)_inMBox.Count;
 
                 // Stub: Always report that there is an available slot in the mailbox
                 case MfcChannel.WrOutIntrMbox:
@@ -362,7 +369,7 @@ namespace PS3Sharp.Cell.Spu
                     //Console.WriteLine($"[Spu] TODO WrTagUpdate");
                     break;
 
-                case MfcChannel.WrOutMbox:
+                case MfcChannel.WrOutMbox: // Blocking
                     _outMBox.Add(value);
                     break;
 
