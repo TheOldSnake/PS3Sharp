@@ -8,7 +8,7 @@ namespace PS3Sharp.Elf
 {
     internal class SpuElfLoader : ElfLoader
     {
-        internal (ElfHeader32 header, List<SysSpu.SysSpuSegment> segments) LoadSpuElf(GuestVoidPtr elfPtr, MemoryManager memoryManager)
+        internal (ElfHeader32 header, List<SysSpu.SysSpuSegment> segments) LoadSPUElf(GuestVoidPtr elfPtr, MemoryManager memoryManager)
         {
             // Note: SPU elf is 32-bit BE
 
