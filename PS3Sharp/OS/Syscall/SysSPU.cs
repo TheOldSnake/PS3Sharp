@@ -314,12 +314,31 @@ namespace PS3Sharp.OS.Syscall
                 return CellEInval;
             }
 
+            Console.WriteLine($"[SysSpuThreadGroupConnectEvent] Connected Spu group: 0x{groupId:X8} equeue: 0x{equeueId:X8}");
             return CellOk;
         }
 
         internal ulong SysSPUThreadWriteSPUMB(PPUThread thread)
         {
             throw new NotImplementedException("todo: SysSPUThreadWriteSPUMB");
+        }
+
+        internal ulong SysSpuThreadConnectEvent(PPUThread ppu)
+        {
+            uint id = ppu.ReadArg<uint>(Arg0);
+            uint equeueId = ppu.ReadArg<uint>(Arg1);
+            uint eventType = ppu.ReadArg<uint>(Arg2);   // todo
+            int spup = ppu.ReadArg<int>(Arg3);
+
+            if (!_threadManager.TryGetSpuThreadByID(id, out SpuThread? spu))
+            {
+                return CellESrch;
+            }
+
+            spu.SetPort(spup, equeueId);
+
+            Console.WriteLine($"[SysSpuThreadConnectEvent] Connected Spu: 0x{id:X8} equeue: 0x{equeueId:X8}");
+            return CellOk;
         }
 
         internal bool TryGetSpuThreadGroup(uint handle, [NotNullWhen(true)] out LV2SpuThreadGroup? group) => _spuThreadGroupes.TryGetValue(handle, out group);

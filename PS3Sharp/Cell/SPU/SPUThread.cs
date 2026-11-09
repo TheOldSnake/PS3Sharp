@@ -287,7 +287,7 @@ namespace PS3Sharp.Cell.Spu
 
                 // Stub
                 case MfcChannel.RdTagStat:
-                    return 1;
+                    return _tagMask;
 
                 case MfcChannel.RdAtomicStat:
                     return (uint)_atomicStat;
@@ -473,7 +473,7 @@ namespace PS3Sharp.Cell.Spu
 
             if ((_eventStat & _eventMask) == 0)
             {
-                Console.WriteLine($"[Spu] waiting on RdEventStat mask = 0x{_eventMask:X}");
+                //Console.WriteLine($"[Spu] waiting on RdEventStat mask = 0x{_eventMask:X}");
 
                 // Wait on reservation lost event
                 if (_eventMask == 0x400)
@@ -488,6 +488,8 @@ namespace PS3Sharp.Cell.Spu
                 {
                     throw new Exception($"TODO: wait on mask = 0x{_eventMask:X}");
                 }
+
+                //Console.WriteLine($"[Spu] Got lr event");
             }
 
             // TODO: Handle channel count stuff
