@@ -422,9 +422,9 @@ namespace PS3Sharp.Cell.Spu
             unsafe
             {
                 int size = (int)_transferSize;
-                Span<byte> src = new(LsPtr + _lsa, size);
-                Span<byte> dst = MemoryManager.CreateByteSpan(_eal, size);
-                src.CopyTo(dst);
+                byte* address = LsPtr + _lsa;
+                Span<byte> src = new(address, size);
+                MemoryManager.CopyBufferToVirtualMemory(src, _eal);
             }
         }
 
@@ -437,22 +437,26 @@ namespace PS3Sharp.Cell.Spu
             unsafe
             {
                 int size = (int)_transferSize;
-                Span<byte> src = MemoryManager.CreateByteSpan(_eal, size);
-                Span<byte> dst = new(LsPtr + _lsa, size);
-                src.CopyTo(dst);
+                byte* address = LsPtr + _lsa;
+                Span<byte> dst = new(address, size);
+                MemoryManager.ReadBufferFromVirtualMemory(_eal, dst);
             }
         }
 
         private void Putllc()
         {
             // Puts lock line conditional on a reservation
-            _eal &= 0xFFFFFF80;
-            _lsa &= 0x3FF80;
+            uint destAddress = _eal & 0xFFFFFF80;
+            uint srcOffset = _lsa & 0x3FF80;
+            byte* srcAddress = LsPtr + srcOffset;
 
-            Span<byte> src = new(LsPtr + _lsa, CacheLineSize);
-            bool success = MemoryManager.StoreConditional(_eal, ID, src);
+            unsafe
+            {
+                Span<byte> src = new(srcAddress, CacheLineSize);
+                bool success = MemoryManager.StoreConditional(_eal, ID, src);
+                _atomicStat = success ? AtomicStat.PutllcSucceeded : AtomicStat.PutllcFailed;
+            }
 
-            _atomicStat = success ? AtomicStat.PutllcSucceeded : AtomicStat.PutllcFailed;
             _lastReservedAddress = 0;
 
             //Console.WriteLine($"[Spu] MFC Putllc: ls = 0x{_lsa:X}, eal = 0x{_eal:X} success: {success}");
@@ -461,20 +465,24 @@ namespace PS3Sharp.Cell.Spu
         private void Getllar()
         {
             // Gets a lock line and creates a reservation
-            _eal &= 0xFFFFFF80;
-            _lsa &= 0x3FF80;
+            uint srcAddress = _eal & 0xFFFFFF80;
+            uint destOffset =_lsa & 0x3FF80;
+            byte* destAddress = LsPtr + destOffset;
 
             // Issuing another Getllar while an address is already reserved
             // causes the existing reservation to be lost
-            if (_lastReservedAddress != 0 && _eal != _lastReservedAddress)
+            if (_lastReservedAddress != 0 && srcAddress != _lastReservedAddress)
             {
                 _eventStat |= (uint)EventStat.Lr;
             }
 
-            Span<byte> dst = new(LsPtr + _lsa, CacheLineSize);
-            MemoryManager.LoadAndReserve(_eal, ID, dst, _lostReservationEvent);
+            unsafe
+            {
+                Span<byte> dest = new(destAddress, CacheLineSize);
+                MemoryManager.LoadAndReserve(_eal, ID, dest, _lostReservationEvent);
+            }
 
-            _lastReservedAddress = _eal;
+            _lastReservedAddress = srcAddress;
             _atomicStat = AtomicStat.GetllarCompleted;
 
             //Console.WriteLine($"[Spu] MFC Getllar: ls = 0x{_lsa:X}, eal = 0x{_eal:X} tid : 0x{ID:X}");
