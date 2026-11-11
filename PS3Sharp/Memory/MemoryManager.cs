@@ -272,17 +272,20 @@ namespace PS3Sharp.Memory
             ulong accessStart = virtualAddress;
             ulong accessEnd = (ulong)(virtualAddress + size);
 
-            foreach (KeyValuePair<uint, MemoryReservation> reservation_thread_pair in _reservations.ToList())
+            lock(_managerLock)
             {
-                MemoryReservation reservation = reservation_thread_pair.Value;
-
-                ulong reservationStart = reservation.VirtualAddress;
-                ulong reservationEnd = reservation.VirtualAddress + reservation.Size;
-                bool overlap = accessStart < reservationEnd && accessEnd > reservationStart; // on any overlap?
-
-                if (overlap)
+                foreach (KeyValuePair<uint, MemoryReservation> reservation_thread_pair in _reservations.ToList())
                 {
-                    _reservations.Remove(reservation_thread_pair.Key);
+                    MemoryReservation reservation = reservation_thread_pair.Value;
+
+                    ulong reservationStart = reservation.VirtualAddress;
+                    ulong reservationEnd = reservation.VirtualAddress + reservation.Size;
+                    bool overlap = accessStart < reservationEnd && accessEnd > reservationStart; // on any overlap?
+
+                    if (overlap)
+                    {
+                        _reservations.Remove(reservation_thread_pair.Key);
+                    }
                 }
             }
         }
