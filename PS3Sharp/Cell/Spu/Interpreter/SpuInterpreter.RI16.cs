@@ -216,13 +216,17 @@ namespace PS3Sharp.Cell.Spu.Interpreter
         {
             // Load Quadword Instruction Relative (a-form)
             int rt = instruction.RtLo;
-            int i16 = instruction.I16;
+            int offset = instruction.I16 << 2;
+
+            // Signed 18-bits (?)
+            int shift = 32 - 18;
+            int seOffset = (offset << shift) >> shift;
 
             unsafe
             {
                 SpuState* state = spu.State;
                 uint currentPC = state->PC - 4;
-                uint target = (uint)(currentPC + (i16 << 2)) & 0x3FFF0;
+                uint target = (currentPC + (uint)seOffset) & 0x3FFF0;
                 BigEndian<UInt128> value = spu.ReadStorage<BigEndian<UInt128>>(target);
                 state->GPR[rt].Value128 = value;
             }
