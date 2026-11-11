@@ -130,7 +130,8 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                uint target = (state->PC + (uint)seOffset) & 0x3FFF0;
+                uint currentPC = state->PC - 4;
+                uint target = (currentPC + (uint)seOffset) & 0x3FFF0;
                 BigEndian<UInt128> value = state->GPR[rt].Value128;
                 spu.WriteStorage(target, value);
             }
@@ -220,7 +221,8 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                uint target = (uint)(state->PC + (i16 << 2)) & 0x3FFF0;
+                uint currentPC = state->PC - 4;
+                uint target = (uint)(currentPC + (i16 << 2)) & 0x3FFF0;
                 BigEndian<UInt128> value = spu.ReadStorage<BigEndian<UInt128>>(target);
                 state->GPR[rt].Value128 = value;
             }
