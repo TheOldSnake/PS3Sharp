@@ -192,18 +192,21 @@ namespace PS3Sharp.Memory
             lock (_managerLock)
             {
                 // Acquire reservation and only write if successful 
-                bool ok = TryAccess(virtualAddress, sizeof(T), threadId, out _);
+                bool ok = TryAccess(virtualAddress, sizeof(T), threadId, out ManualResetEventSlim? lostReservationEvent);
 
                 if (ok)
                 {
                     Write(virtualAddress, value);
+
+                    // Notify owner thread of LR event
+                    lostReservationEvent?.Set();
                 }
 
                 return ok;
             }
         }
 
-        internal bool StoreConditional(uint virtualAddress, uint threadId, Span<byte> src)
+        internal bool StoreConditional(uint virtualAddress, uint threadId, ReadOnlySpan<byte> src)
         {
             lock (_managerLock)
             {
@@ -213,10 +216,11 @@ namespace PS3Sharp.Memory
                 if (ok)
                 {
                     CopyBufferToVirtualMemory(src, virtualAddress);
+
+                    // Notify owner thread of LR event
+                    lostReservationEvent?.Set();
                 }
-                
-                // Wake up thread 
-                lostReservationEvent?.Set();
+
                 return ok;
             }
         }
