@@ -250,6 +250,7 @@ namespace PS3Sharp.Cell.Spu
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                Console.WriteLine($"Full trace:\n {ex.StackTrace}");
                 Environment.Exit(1);
             }
         }
