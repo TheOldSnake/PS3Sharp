@@ -474,6 +474,7 @@ namespace PS3Sharp.Cell.Spu
             if (_lastReservedAddress != 0 && srcAddress != _lastReservedAddress)
             {
                 _eventStat |= (uint)EventStat.Lr;
+                MemoryManager.InvalidateReservations(_lastReservedAddress, CacheLineSize);
             }
 
             unsafe
