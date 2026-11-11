@@ -453,7 +453,7 @@ namespace PS3Sharp.Cell.Spu
             unsafe
             {
                 Span<byte> src = new(srcAddress, CacheLineSize);
-                bool success = MemoryManager.StoreConditional(_eal, ID, src);
+                bool success = MemoryManager.StoreConditional(destAddress, ID, src);
                 _atomicStat = success ? AtomicStat.PutllcSucceeded : AtomicStat.PutllcFailed;
             }
 
@@ -479,7 +479,7 @@ namespace PS3Sharp.Cell.Spu
             unsafe
             {
                 Span<byte> dest = new(destAddress, CacheLineSize);
-                MemoryManager.LoadAndReserve(_eal, ID, dest, _lostReservationEvent);
+                MemoryManager.LoadAndReserve(srcAddress, ID, dest, _lostReservationEvent);
             }
 
             _lastReservedAddress = srcAddress;
