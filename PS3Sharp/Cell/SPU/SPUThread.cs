@@ -164,6 +164,7 @@ namespace PS3Sharp.Cell.Spu
         internal void Start()
         {
             *State = default;
+            _lostReservationEvent.Reset();
 
             // Default stack pointer
             State->GPR[1].UInts[3] = 0x3FFF0;  
@@ -449,17 +450,19 @@ namespace PS3Sharp.Cell.Spu
             uint destAddress = _eal & 0xFFFFFF80;
             uint srcOffset = _lsa & 0x3FF80;
             byte* srcAddress = LsPtr + srcOffset;
+            bool success;
 
             unsafe
             {
                 Span<byte> src = new(srcAddress, CacheLineSize);
-                bool success = MemoryManager.StoreConditional(destAddress, ID, src);
+                success = MemoryManager.StoreConditional(destAddress, ID, src);
                 _atomicStat = success ? AtomicStat.PutllcSucceeded : AtomicStat.PutllcFailed;
             }
 
+            _lostReservationEvent.Reset();
             _lastReservedAddress = 0;
 
-            //Console.WriteLine($"[Spu] MFC Putllc: ls = 0x{_lsa:X}, eal = 0x{_eal:X} success: {success}");
+            //Console.WriteLine($"[Spu: {ID:X8}] MFC Putllc: ls = 0x{_lsa:X}, eal = 0x{_eal:X} success: {success}");
         }
 
         private void Getllar()
@@ -479,6 +482,7 @@ namespace PS3Sharp.Cell.Spu
 
             unsafe
             {
+                _lostReservationEvent.Reset();
                 Span<byte> dest = new(destAddress, CacheLineSize);
                 MemoryManager.LoadAndReserve(srcAddress, ID, dest, _lostReservationEvent);
             }
@@ -486,7 +490,7 @@ namespace PS3Sharp.Cell.Spu
             _lastReservedAddress = srcAddress;
             _atomicStat = AtomicStat.GetllarCompleted;
 
-            //Console.WriteLine($"[Spu] MFC Getllar: ls = 0x{_lsa:X}, eal = 0x{_eal:X} tid : 0x{ID:X}");
+            //Console.WriteLine($"[Spu: {ID:X8}] MFC Getllar: ls = 0x{_lsa:X}, eal = 0x{_eal:X}");
         }
 
         private uint ReadEventStat()
@@ -507,7 +511,7 @@ namespace PS3Sharp.Cell.Spu
                     throw new Exception($"TODO: wait on lr event with no reserved address");
                 }
 
-                // Console.WriteLine($"[Spu] waiting on RdEventStat mask = 0x{_eventMask:X} addr = 0x{_lastReservedAddress:X}");
+                Console.WriteLine($"[Spu] waiting on RdEventStat mask = 0x{_eventMask:X} addr = 0x{_lastReservedAddress:X}");
 
                 _lostReservationEvent.Wait();
                 _lostReservationEvent.Reset();
