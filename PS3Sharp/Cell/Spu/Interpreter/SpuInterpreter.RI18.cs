@@ -16,8 +16,9 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             {
                 SpuState* state = spu.State;
                 Span<int> rtLanes = state->GPR[rt].Ints;
-                Vector128<int> vi18 = Vector128.Create(i18);
-                vi18.CopyTo(rtLanes);
+                Vector128<int> vi = Vector128.Create(i18);
+
+                vi.CopyTo(rtLanes);
             }
         }
     }
