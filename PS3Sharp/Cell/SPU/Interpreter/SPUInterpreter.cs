@@ -139,6 +139,14 @@
                     Lqx(spu, instruction);
                     break;
 
+                case RR17.Rotqbybi:
+                    Rotqbybi(spu, instruction);
+                    break;
+
+                case RR17.Rotqmbybi:
+                    Rotqmbybi(spu, instruction);
+                    break;
+
                 case RR17.Cbx:
                     Cbx(spu, instruction);
                     break;
@@ -147,8 +155,20 @@
                     Cwx(spu, instruction);
                     break;
 
+                case RR17.Rotqbi:
+                    Rotqbi(spu, instruction);
+                    break;
+
+                case RR17.Rotqmbi:
+                    Rotqmbi(spu, instruction);
+                    break;
+
                 case RR17.Rotqby:
                     Rotqby(spu, instruction);
+                    break;
+
+                case RR17.Orx:
+                    Orx(spu, instruction);
                     break;
 
                 case RR17.Cbd:
@@ -189,6 +209,10 @@
 
                 case RR17.Cgt:
                     Cgt(spu, instruction);
+                    break;
+
+                case RR17.Sumb:
+                    Sumb(spu, instruction);
                     break;
 
                 case RR17.Clz:
@@ -237,6 +261,10 @@
 
                 case RR17.Ceqh:
                     Ceqh(spu, instruction);
+                    break;
+
+                case RR17.Mpyu:
+                    Mpyu(spu, instruction);
                     break;
 
                 case RR17.Ceqb:
