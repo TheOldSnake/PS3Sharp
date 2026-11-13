@@ -1,5 +1,6 @@
 ﻿using PS3Sharp.Common;
 using System.Runtime.Intrinsics;
+using System.Text.RegularExpressions;
 using static PS3Sharp.Cell.PPU.Recompiler.IR.IRGenerator;
 using static PS3Sharp.Cell.Spu.SpuThread;
 using static System.Windows.Forms.AxHost;
@@ -276,6 +277,33 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     Vector128<int> result = Vector128.ShiftLeft(va, shift);
 
                     result.CopyTo(rtLanes);
+                }
+            }
+        }
+
+        private static void Rothmi(SpuThread spu, SpuInstruction instruction)
+        {
+            // Rotate and Mask Halfword Immediate
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int shiftCount = (0 - instruction.SeI7) & 0x1F;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<ushort> raLanes = state->GPR[ra].UShorts;
+                Span<ushort> rtLanes = state->GPR[rt].UShorts;
+
+                if (shiftCount < 16)
+                {
+                    Vector128<ushort> va = Vector128.Create(raLanes);
+                    Vector128<ushort> result = Vector128.ShiftRightLogical(va, shiftCount);
+
+                    result.CopyTo(rtLanes);
+                }
+                else
+                {
+                    state->GPR[rt].Value128 = UInt128.Zero;
                 }
             }
         }

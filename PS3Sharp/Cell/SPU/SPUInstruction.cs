@@ -58,6 +58,7 @@
         Roti = 0x078,
         Rotmi = 0x079,
         Shli = 0x07B,
+        Rothmi = 0x07D,
         A = 0x0C0,
         And = 0x0C1,
         Cg = 0x0C2,

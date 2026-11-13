@@ -79,6 +79,10 @@
                     Shli(spu, instruction);
                     break;
 
+                case RR17.Rothmi:
+                    Rothmi(spu, instruction);
+                    break;
+
                 case RR17.A:
                     A(spu, instruction);
                     break;
