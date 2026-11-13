@@ -288,6 +288,9 @@ namespace PS3Sharp.Cell.Spu
                 case MfcChannel.RdEventStat:
                     return ReadEventStat();
 
+                case MfcChannel.RdEventMask:
+                    return _eventMask;
+
                 // Stub
                 case MfcChannel.RdTagStat:
                     return _tagMask;
@@ -309,9 +312,6 @@ namespace PS3Sharp.Cell.Spu
             MfcChannel channel = (MfcChannel)channelNumber;
             switch (channel)
             {
-                case MfcChannel.RdEventMask:
-                    return _eventMask;
-
                 // Stub
                 case MfcChannel.WrTagUpdate:
                     return 1;
