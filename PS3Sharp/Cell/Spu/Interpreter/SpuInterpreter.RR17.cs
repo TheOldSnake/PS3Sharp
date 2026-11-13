@@ -486,7 +486,8 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     ((raLanes[2] & 1) << 2) |
                     ((raLanes[3] & 1) << 3);
 
-                state->GPR[rt].Value128 = value;
+                state->GPR[rt].Value128 = UInt128.Zero;
+                state->GPR[rt].UInts[PreferredSlot] = value;
             }
         }
 
@@ -519,7 +520,8 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     ((raLanes[14] & 1) << 14) |
                     ((raLanes[15] & 1) << 15));
 
-                state->GPR[rt].Value128 = value;
+                state->GPR[rt].Value128 = UInt128.Zero;
+                state->GPR[rt].UInts[PreferredSlot] = value;
             }
         }
 
