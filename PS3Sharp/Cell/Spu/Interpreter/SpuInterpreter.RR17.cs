@@ -153,6 +153,8 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Span<int> rbLanes = state->GPR[rb].Ints;
                 Span<uint> rtLanes = state->GPR[rt].UInts;
 
+                // Logical right shift
+
                 int shift0 = (0 - rbLanes[0]) & 0x3F;
                 int shift1 = (0 - rbLanes[1]) & 0x3F;
                 int shift2 = (0 - rbLanes[2]) & 0x3F;
@@ -162,6 +164,34 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 rtLanes[1] = shift1 > 31 ? 0 : raLanes[1] >> shift1;
                 rtLanes[2] = shift2 > 31 ? 0 : raLanes[2] >> shift2;
                 rtLanes[3] = shift3 > 31 ? 0 : raLanes[3] >> shift3;
+            }
+        }
+
+        private static void Rotma(SpuThread spu, SpuInstruction instruction)
+        {
+            // Rotate and Mask Algebraic Word
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rbLanes = state->GPR[rb].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                // Arithmetic right shift
+
+                int shift0 = int.Min((0 - rbLanes[0]) & 0x3F, 31);
+                int shift1 = int.Min((0 - rbLanes[1]) & 0x3F, 31);
+                int shift2 = int.Min((0 - rbLanes[2]) & 0x3F, 31);
+                int shift3 = int.Min((0 - rbLanes[3]) & 0x3F, 31);
+
+                rtLanes[0] = raLanes[0] >> shift0;
+                rtLanes[1] = raLanes[1] >> shift1;
+                rtLanes[2] = raLanes[2] >> shift2;
+                rtLanes[3] = raLanes[3] >> shift3;
             }
         }
 
@@ -248,6 +278,28 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Rotmai(SpuThread spu, SpuInstruction instruction)
+        {
+            // Rotate and Mask Algebraic Word Immediate
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int shiftCount = int.Min((0 - instruction.SeI7) & 0x3F, 31);
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                // Arithmetic right shift
+
+                Vector128<int> va = Vector128.Create(raLanes);
+                Vector128<int> result = Vector128.ShiftRightArithmetic(va, shiftCount);
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
         private static void Shli(SpuThread spu, SpuInstruction instruction)
         {
             // Shift Left Word Immediate
@@ -298,6 +350,33 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 {
                     Vector128<ushort> va = Vector128.Create(raLanes);
                     Vector128<ushort> result = Vector128.ShiftRightLogical(va, shiftCount);
+
+                    result.CopyTo(rtLanes);
+                }
+                else
+                {
+                    state->GPR[rt].Value128 = UInt128.Zero;
+                }
+            }
+        }
+
+        private static void Shlhi(SpuThread spu, SpuInstruction instruction)
+        {
+            // Shift Left Halfword Immediate
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int shiftCount = instruction.SeI7 & 0x1F;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<ushort> raLanes = state->GPR[ra].UShorts;
+                Span<ushort> rtLanes = state->GPR[rt].UShorts;
+
+                if (shiftCount < 16)
+                {
+                    Vector128<ushort> va = Vector128.Create(raLanes);
+                    Vector128<ushort> result = Vector128.ShiftLeft(va, shiftCount);
 
                     result.CopyTo(rtLanes);
                 }
@@ -519,6 +598,32 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Gbh(SpuThread spu, SpuInstruction instruction)
+        {
+            // Gather Bits from Halfwords
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<ushort> raLanes = state->GPR[ra].UShorts;
+
+                uint value = (uint)
+                   ((raLanes[0] & 1) |
+                   ((raLanes[1] & 1) << 1) |
+                   ((raLanes[2] & 1) << 2) |
+                   ((raLanes[3] & 1) << 3) |
+                   ((raLanes[4] & 1) << 4) |
+                   ((raLanes[5] & 1) << 5) |
+                   ((raLanes[6] & 1) << 6) |
+                   ((raLanes[7] & 1) << 7));
+
+                state->GPR[rt].Value128 = UInt128.Zero;
+                state->GPR[rt].UInts[PreferredSlot] = value;
+            }
+        }
+
         private static void Gbb(SpuThread spu, SpuInstruction instruction)
         {
             // Gather Bits from Bytes
@@ -693,6 +798,24 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 state->GPR[rt].Value128 = new(0x1011121314151617, 0x18191A1B1C1D1E1F);
                 state->GPR[rt].Bytes[bytePosition] = 0x03;
+            }
+        }
+
+        private static void Chx(SpuThread spu, SpuInstruction instruction)
+        {
+            // Generate Controls for Halfword Insertion (x-form)
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                int t = (state->GPR[ra].Ints[PreferredSlot] + state->GPR[rb].Ints[PreferredSlot]) & 0xE;
+                int hwPosition = 7 - (t >> 1); // Big endian indexing
+
+                state->GPR[rt].Value128 = new(0x1011121314151617, 0x18191A1B1C1D1E1F);
+                state->GPR[rt].UShorts[hwPosition] = 0x0203;
             }
         }
 
@@ -1234,6 +1357,20 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Vector128<int> result = vb + (~va) + vt;
 
                 result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Fscrrd(SpuThread spu, SpuInstruction instruction)
+        {
+            // Floating-Point Status and Control Register Read
+            int rt = instruction.RtLo;
+
+            // TODO
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                state->GPR[rt].Value128 = UInt128.Zero;
             }
         }
 

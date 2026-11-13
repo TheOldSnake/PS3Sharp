@@ -63,6 +63,10 @@
                     Rotm(spu, instruction);
                     break;
 
+                case RR17.Rotma:
+                    Rotma(spu, instruction);
+                    break;
+
                 case RR17.Shl:
                     Shl(spu, instruction);
                     break;
@@ -75,12 +79,20 @@
                     Rotmi(spu, instruction);
                     break;
 
+                case RR17.Rotmai:
+                    Rotmai(spu, instruction);
+                    break;
+
                 case RR17.Shli:
                     Shli(spu, instruction);
                     break;
 
                 case RR17.Rothmi:
                     Rothmi(spu, instruction);
+                    break;
+
+                case RR17.Shlhi:
+                    Shlhi(spu, instruction);
                     break;
 
                 case RR17.A:
@@ -127,6 +139,10 @@
                     Gb(spu, instruction);
                     break;
 
+                case RR17.Gbh:
+                    Gbh(spu, instruction);
+                    break;
+
                 case RR17.Gbb:
                     Gbb(spu, instruction);
                     break;
@@ -157,6 +173,10 @@
 
                 case RR17.Cbx:
                     Cbx(spu, instruction);
+                    break;
+
+                case RR17.Chx:
+                    Chx(spu, instruction);
                     break;
 
                 case RR17.Cwx:
@@ -261,6 +281,10 @@
 
                 case RR17.Sfx:
                     Sfx(spu, instruction);
+                    break;
+
+                case RR17.Fscrrd:
+                    Fscrrd(spu, instruction);
                     break;
 
                 case RR17.Ceq:
@@ -409,6 +433,10 @@
 
                 case RI10.Clgti:
                     Clgti(spu, instruction);
+                    break;
+
+                case RI10.Clgthi:
+                    Clgthi(spu, instruction);
                     break;
 
                 case RI10.Clgtbi:
