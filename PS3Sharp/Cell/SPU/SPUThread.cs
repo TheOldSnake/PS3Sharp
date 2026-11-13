@@ -53,6 +53,7 @@ namespace PS3Sharp.Cell.Spu
         {
             Put = 0x20,          
             Get = 0x40,         
+            Getb = 0x41,         
             Putllc = 0xB4,       
             Getllar = 0xD0,      
         }
@@ -406,6 +407,7 @@ namespace PS3Sharp.Cell.Spu
                     break;
 
                 case MfcCommand.Get:
+                case MfcCommand.Getb:
                     Get();
                     break;
 
