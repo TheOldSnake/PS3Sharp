@@ -1215,6 +1215,26 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Xswd(SpuThread spu, SpuInstruction instruction)
+        {
+            // Extend Sign Word to Doubleword
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<long> raLanes = state->GPR[ra].Longs;
+                Span<long> rtLanes = state->GPR[rt].Longs;
+
+                int shift = 64 - 32;
+                Vector128<long> va = Vector128.Create(raLanes);
+                Vector128<long> result = Vector128.ShiftRightArithmetic(Vector128.ShiftLeft(va, shift), shift);
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
         private static void Xshw(SpuThread spu, SpuInstruction instruction)
         {
             // Extend Sign Halfword to Word

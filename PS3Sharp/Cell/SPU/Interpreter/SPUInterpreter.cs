@@ -259,6 +259,10 @@
                     Clz(spu, instruction);
                     break;
 
+                case RR17.Xswd:
+                    Xswd(spu, instruction);
+                    break;
+
                 case RR17.Xshw:
                     Xshw(spu, instruction);
                     break;
@@ -421,6 +425,10 @@
 
                 case RI10.Ai:
                     Ai(spu, instruction);
+                    break;
+
+                case RI10.Ahi:
+                    Ahi(spu, instruction);
                     break;
 
                 case RI10.Stqd:

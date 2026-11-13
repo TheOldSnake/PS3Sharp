@@ -154,6 +154,27 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Ahi(SpuThread spu, SpuInstruction instruction)
+        {
+            // Add Halfword Word Immediate
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int seI10 = instruction.SeI10;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<short> raLanes = state->GPR[ra].Shorts;
+                Span<short> rtLanes = state->GPR[rt].Shorts;
+
+                Vector128<short> va = Vector128.Create(raLanes);
+                Vector128<short> vi = Vector128.Create((short)seI10);
+                Vector128<short> result = va + vi;
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
         private static void Stqd(SpuThread spu, SpuInstruction instruction)
         {
             // Store Quadword (d-form)
