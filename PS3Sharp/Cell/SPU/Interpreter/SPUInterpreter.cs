@@ -135,6 +135,10 @@
                     Fsm(spu, instruction);
                     break;
 
+                case RR17.Fsmh:
+                    Fsmh(spu, instruction);
+                    break;
+
                 case RR17.Fsmb:
                     Fsmb(spu, instruction);
                     break;

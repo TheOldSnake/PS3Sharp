@@ -23,6 +23,12 @@ namespace PS3Sharp.Cell.Spu
             private UInt128 _element;
         }
 
+        [InlineArray(FsmhSelectorSize)]
+        internal struct FsmhInlineArray
+        {
+            private UInt128 _element;
+        }
+
         [InlineArray(FsmSelectorSize)]
         internal struct FsmInlineArray
         {
@@ -31,15 +37,18 @@ namespace PS3Sharp.Cell.Spu
 
         private const int ShiftTableSize = 16 * 16;       // 16 shifts of 16-bytes
         private const int RotationTableSize = 16 * 16;    // 16 rotations of 16-bytes
+
         private const int FsmbSelectorSize = 0x10000;     // 16-bit selector
+        private const int FsmhSelectorSize = 256;         // 8-bit selector
         private const int FsmSelectorSize = 16;           // 4-bit selector
 
         private static ShiftInlineArray _leftShiftTable;
         private static ShiftInlineArray _rightShiftTable;
         private static RotationInlineArray _leftRotationTable;
         private static RotationInlineArray _rightRotationTable;
-        private static FsmInlineArray _fsmTable;
         private static FsmbInlineArray _fsmbTable;
+        private static FsmhInlineArray _fsmhTable;
+        private static FsmInlineArray _fsmTable;
 
         // Exposed ROS
         internal static ReadOnlySpan<byte> LeftShiftTable => _leftShiftTable;
@@ -54,11 +63,13 @@ namespace PS3Sharp.Cell.Spu
         internal static ref readonly byte RightRotationTableRef => ref MemoryMarshal.GetReference(RightRotationTable);
 
         internal static ReadOnlySpan<UInt128> FsmbTable => _fsmbTable;
+        internal static ReadOnlySpan<UInt128> FsmhTable => _fsmhTable;
         internal static ReadOnlySpan<UInt128> FsmTable => _fsmTable;
 
         internal static void InitializeStaticTables()
         {
             InitializeFsmbTable();
+            InitializeFsmhTable();
             InitializeFsmTable();
             InitializeShiftTables();
             InitializeRotationTables();
@@ -78,6 +89,24 @@ namespace PS3Sharp.Cell.Spu
                     bool isSet = ((selector >> bit) & 1) != 0;
                     byte value = (byte)(isSet ? 0xFF : 0x00);
                     fsmbBytes[currentLocation++] = value;
+                }
+            }
+        }
+
+        private static void InitializeFsmhTable()
+        {
+            Span<UInt128> fsmhTable = _fsmhTable;
+            Span<ushort> fsmhShorts = MemoryMarshal.Cast<UInt128, ushort>(fsmhTable);
+            int currentLocation = 0;
+
+            // Generate a 128-bit value for each selector
+            for (int selector = 0; selector < FsmhSelectorSize; selector++)
+            {
+                for (int bit = 0; bit < 8; bit++)
+                {
+                    bool isSet = ((selector >> bit) & 1) != 0;
+                    ushort value = (ushort)(isSet ? 0xFFFF : 0x0000);
+                    fsmhShorts[currentLocation++] = value;
                 }
             }
         }

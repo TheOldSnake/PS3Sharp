@@ -72,6 +72,7 @@
         Gb = 0x1B0,
         Gbb = 0x1B2,
         Fsm = 0x1B4,
+        Fsmh = 0x1B5,
         Fsmb = 0x1B6,
         Lqx = 0x1C4,
         Rotqbybi = 0x1CC,

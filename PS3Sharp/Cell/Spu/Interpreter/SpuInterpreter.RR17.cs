@@ -570,6 +570,23 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Fsmh(SpuThread spu, SpuInstruction instruction)
+        {
+            // Form Select Mask for Halfwords
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+
+            // Look up the value in the table
+            ReadOnlySpan<UInt128> lut = SpuTables.FsmhTable;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                int index = state->GPR[ra].Ints[PreferredSlot] & 0xFF;
+                state->GPR[rt].Value128 = lut[index];
+            }
+        }
+
         private static void Fsmb(SpuThread spu, SpuInstruction instruction)
         {
             // Form Select Mask for Bytes
