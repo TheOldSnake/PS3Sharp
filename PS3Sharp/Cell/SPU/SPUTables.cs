@@ -38,9 +38,9 @@ namespace PS3Sharp.Cell.Spu
         private const int ShiftTableSize = 16 * 16;       // 16 shifts of 16-bytes
         private const int RotationTableSize = 16 * 16;    // 16 rotations of 16-bytes
 
-        private const int FsmbSelectorSize = 0x10000;     // 16-bit selector
-        private const int FsmhSelectorSize = 256;         // 8-bit selector
-        private const int FsmSelectorSize = 16;           // 4-bit selector
+        private const int FsmbSelectorSize = 1 << 16;     // 16-bit selector
+        private const int FsmhSelectorSize = 1 << 8;      // 8-bit selector
+        private const int FsmSelectorSize = 1 << 4;       // 4-bit selector
 
         private static ShiftInlineArray _leftShiftTable;
         private static ShiftInlineArray _rightShiftTable;
