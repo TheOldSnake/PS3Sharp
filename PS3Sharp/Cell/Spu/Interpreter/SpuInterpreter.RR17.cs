@@ -1456,6 +1456,12 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Fscrwr(SpuThread spu, SpuInstruction instruction)
+        {
+            // Floating-Point Status and Control Register Write
+            // TODO
+        }
+
         private static void Ceq(SpuThread spu, SpuInstruction instruction)
         {
             // Compare Equal Word
@@ -1473,6 +1479,29 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Vector128<int> va = Vector128.Create(raLanes);
                 Vector128<int> vb = Vector128.Create(rbLanes);
                 Vector128<int> result = Vector128.Equals(va, vb);
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Mpyh(SpuThread spu, SpuInstruction instruction)
+        {
+            // Multiply High
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rbLanes = state->GPR[rb].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                Vector128<int> mask = Vector128.Create(0xFFFF);
+                Vector128<int> va = Vector128.ShiftRightArithmetic(Vector128.Create(raLanes), 16);
+                Vector128<int> vb = Vector128.Create(rbLanes) & mask;
+                Vector128<int> result = Vector128.ShiftLeft(va * vb, 16);
 
                 result.CopyTo(rtLanes);
             }

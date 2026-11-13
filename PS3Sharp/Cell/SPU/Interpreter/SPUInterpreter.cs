@@ -303,8 +303,16 @@
                     Fscrrd(spu, instruction);
                     break;
 
+                case RR17.Fscrwr:
+                    Fscrwr(spu, instruction);
+                    break;
+
                 case RR17.Ceq:
                     Ceq(spu, instruction);
+                    break;
+
+                case RR17.Mpyh:
+                    Mpyh(spu, instruction);
                     break;
 
                 case RR17.Ceqh:
