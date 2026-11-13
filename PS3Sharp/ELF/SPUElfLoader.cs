@@ -46,19 +46,8 @@ namespace PS3Sharp.Elf
 
         private static void LoadSegment(uint elfPtr, List<SysSpu.SysSpuSegment> segments, ref ProgramHeader32 programHeader, MemoryManager memoryManager)
         {
-            uint offset = programHeader.p_offset;   // offset with respect to elf image
             uint fileSize = programHeader.p_filesz;
             uint memSize = programHeader.p_memsz;
-            uint dest = programHeader.p_vaddr;
-            uint srcAddress = elfPtr + offset;
-
-            if (!memoryManager.IsVirtualAddressAllocated(dest))
-            {
-                memoryManager.AllocateVirtualAddress(dest, memSize);
-            }
-
-            // Copy segment to destination
-            memoryManager.CopyVirtualMemory(srcAddress, dest, (int)fileSize);
 
             // Create SysSPUSegment
             SysSpu.SysSpuSegment segment = CreateSPUSegment(elfPtr, ref programHeader, isFill: false);
@@ -66,10 +55,6 @@ namespace PS3Sharp.Elf
 
             if (memSize > fileSize)
             {
-                uint clearDest = dest + fileSize;
-                uint clearBytes = memSize - fileSize;
-                memoryManager.ClearMemory(clearDest, (int)clearBytes);
-
                 // Create SysSPUSegment for the filler
                 SysSpu.SysSpuSegment fillSegment = CreateSPUSegment(elfPtr, ref programHeader, isFill: true);
                 segments.Add(fillSegment);
