@@ -32,6 +32,7 @@ namespace PS3Sharp.Cell.Spu
             RdEventStat = 0x0,      // Read Event Stat
             WrEventMask = 0x1,      // Write Event Mask
             WrEventAck  = 0x2,      // Write Event Acknowledgment
+            RdEventMask  = 0xB,     // Read Event Mask
             Lsa = 0x10,             // Local Storage Address
             Eah = 0x11,             // Effective Address High
             Eal = 0x12,             // Effective Address Low or List Address
@@ -308,6 +309,9 @@ namespace PS3Sharp.Cell.Spu
             MfcChannel channel = (MfcChannel)channelNumber;
             switch (channel)
             {
+                case MfcChannel.RdEventMask:
+                    return _eventMask;
+
                 // Stub
                 case MfcChannel.WrTagUpdate:
                     return 1;
