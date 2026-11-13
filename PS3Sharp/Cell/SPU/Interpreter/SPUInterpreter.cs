@@ -167,6 +167,10 @@
                     Rotqbybi(spu, instruction);
                     break;
 
+                case RR17.Shlqbybi:
+                    Shlqbybi(spu, instruction);
+                    break;
+
                 case RR17.Rotqmbybi:
                     Rotqmbybi(spu, instruction);
                     break;
@@ -189,6 +193,10 @@
 
                 case RR17.Rotqmbi:
                     Rotqmbi(spu, instruction);
+                    break;
+
+                case RR17.Shlqbi:
+                    Shlqbi(spu, instruction);
                     break;
 
                 case RR17.Rotqby:
@@ -217,6 +225,10 @@
 
                 case RR17.Rotqbii:
                     Rotqbii(spu, instruction);
+                    break;
+
+                case RR17.Shlqbii:
+                    Shlqbii(spu, instruction);
                     break;
 
                 case RR17.Rotqbyi:

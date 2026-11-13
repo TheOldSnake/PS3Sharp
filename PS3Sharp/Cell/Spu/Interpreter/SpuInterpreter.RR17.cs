@@ -750,6 +750,39 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Shlqbybi(SpuThread spu, SpuInstruction instruction)
+        {
+            // Shift Left Quadword by Bytes from Bit Shift Count
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<byte> raLanes = state->GPR[ra].Bytes;
+                Span<byte> rtLanes = state->GPR[rt].Bytes;
+
+                int shiftCount = (state->GPR[rb].Ints[PreferredSlot] >> 3) & 0x1F;
+                int position = (shiftCount & 0xF) * Vector128<byte>.Count;
+
+                if (shiftCount < 16)
+                {
+                    // Note: the shift table depends on x86 PSHUFB semanticss
+
+                    Vector128<byte> va = Vector128.Create(raLanes);
+                    Vector128<byte> shuffle = Vector128.LoadUnsafe(in SpuTables.LeftShiftTableRef, (nuint)position);  // Note: In .NET 11 we can replace LoadUnsafe() with Create() from Span.Slice() without bounds check
+                    Vector128<byte> result = Vector128.ShuffleNative(va, shuffle);
+
+                    result.CopyTo(rtLanes);
+                }
+                else
+                {
+                    state->GPR[rt].Value128 = UInt128.Zero;
+                }
+            }
+        }
+
         private static void Rotqmbybi(SpuThread spu, SpuInstruction instruction)
         {
             // Rotate and Mask Quadword Bytes from Bit Shift Count
@@ -864,6 +897,21 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 SpuState* state = spu.State;
                 int shiftCount = (0 - state->GPR[rb].Ints[PreferredSlot]) & 0x7;
                 state->GPR[rt].Value128 = state->GPR[ra].Value128 >> shiftCount;
+            }
+        }
+
+        private static void Shlqbi(SpuThread spu, SpuInstruction instruction)
+        {
+            // Shift Left Quadword by Bits
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                int shiftCount = state->GPR[rb].Ints[PreferredSlot] & 0x7;
+                state->GPR[rt].Value128 = state->GPR[ra].Value128 << shiftCount;
             }
         }
 
@@ -990,6 +1038,20 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             {
                 SpuState* state = spu.State;
                 state->GPR[rt].Value128 = UInt128.RotateLeft(state->GPR[ra].Value128, rotation);
+            }
+        }
+
+        private static void Shlqbii(SpuThread spu, SpuInstruction instruction)
+        {
+            // Shift Left Quadword by Bits Immediate
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int shiftCount = instruction.I7 & 0x7;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                state->GPR[rt].Value128 = state->GPR[ra].Value128 << shiftCount;
             }
         }
 
