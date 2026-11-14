@@ -388,9 +388,7 @@ namespace PS3Sharp.OS.Syscall
             //});
 
             // Callback  - toc needed ?
-            PPUInterpreter.PrintCallstack(ppu);
-
-            PPUInterpreter.ExecuteFunction(ppu, callback_ptr, toc: false, [1, user_data, 0, 0, 0]); //First arg = 1 for "Pressed OK"
+            PPUInterpreter.ExecuteFunction(ppu, callback_ptr, toc: true, [1, user_data, 0, 0, 0]); // First arg = 1 for "Pressed OK"
             return CellOk;
         }
 
