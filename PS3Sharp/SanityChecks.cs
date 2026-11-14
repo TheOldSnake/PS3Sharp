@@ -1,9 +1,13 @@
-﻿using PS3Sharp.Cell.Spu;
+﻿using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.RSX;
+using PS3Sharp.Cell.Spu;
 using PS3Sharp.Common;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using static PS3Sharp.Cell.PPU.PPUThread;
+using static PS3Sharp.Cell.RSX.FragmentShaderGenerator;
+using static PS3Sharp.Cell.RSX.VertexShaderGenerator;
 
 namespace PS3Sharp
 {
@@ -15,6 +19,7 @@ namespace PS3Sharp
             CheckSPURegisterSize();
             CheckPointerSize();
             CheckBigEndianSize();
+            CheckInstructionSize();
         }
 
         private static void CheckPPURegisterSizes()
@@ -137,6 +142,37 @@ namespace PS3Sharp
                 if (sizeof(BigEndian<UInt128>) != sizeof(UInt128))
                 {
                     throw new InvalidOperationException($"Unexpected BigEndian<UInt128> Size = {sizeof(BigEndian<UInt128>)}");
+                }
+            }
+        }
+
+        private static void CheckInstructionSize()
+        {
+            unsafe
+            {
+                if (sizeof(PPUInstruction) != sizeof(uint))
+                {
+                    throw new InvalidOperationException($"Unexpected PPUInstruction Size = {sizeof(PPUInstruction)}");
+                }
+
+                if (sizeof(SpuInstruction) != sizeof(uint))
+                {
+                    throw new InvalidOperationException($"Unexpected SpuInstruction Size = {sizeof(SpuInstruction)}");
+                }
+
+                if (sizeof(RSXCommand) != sizeof(uint))
+                {
+                    throw new InvalidOperationException($"Unexpected RSXCommand Size = {sizeof(RSXCommand)}");
+                }
+
+                if (sizeof(VertexShaderGenerator.VertexInstruction) != (sizeof(uint) * 4))
+                {
+                    throw new InvalidOperationException($"Unexpected VertexInstruction Size = {sizeof(VertexInstruction)}");
+                }
+
+                if (sizeof(FragmentShaderGenerator.FragmentInstruction) != (sizeof(uint) * 4))
+                {
+                    throw new InvalidOperationException($"Unexpected FragmentInstruction Size = {sizeof(FragmentInstruction)}");
                 }
             }
         }
