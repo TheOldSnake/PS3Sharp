@@ -1,5 +1,8 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using static PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator.X64RegisterAllocator;
+using System.Numerics;
 
 namespace PS3Sharp.Cell.Spu
 {
@@ -68,84 +71,65 @@ namespace PS3Sharp.Cell.Spu
 
         internal static void InitializeStaticTables()
         {
-            InitializeFsmbTable();
-            InitializeFsmhTable();
-            InitializeFsmTable();
-            InitializeShiftTables();
-            InitializeRotationTables();
+            InitializeFsmTables();
+            InitializeByteShuffleTables();
         }
 
-        private static void InitializeFsmbTable()
+        private static void InitializeFsmTables()
         {
-            Span<UInt128> fsmbTable = _fsmbTable;
-            Span<byte> fsmbBytes = MemoryMarshal.Cast<UInt128, byte>(fsmbTable);
+            InitializeFsm<byte>(_fsmbTable);
+            InitializeFsm<ushort>(_fsmhTable);
+            InitializeFsm<uint>(_fsmTable);
+        }
+
+        private static void InitializeFsm<T>(Span<UInt128> fsmSpan) where T : unmanaged, IMinMaxValue<T>, IUnsignedNumber<T>
+        {
+            // Generate a 128-bit value for each selector
+            Span<T> fsmT = MemoryMarshal.Cast<UInt128, T>(fsmSpan);
+
+            int selectorBitCount = Unsafe.SizeOf<UInt128>() / Unsafe.SizeOf<T>();
+            int selectorCount = 1 << selectorBitCount;
             int currentLocation = 0;
 
-            // Generate a 128-bit value for each selector
-            for (int selector = 0; selector < FsmbSelectorSize; selector++)
+            if (fsmSpan.Length != selectorCount)
             {
-                for (int bit = 0; bit < 16; bit++)
+                throw new ArgumentException($"Unexpected fsm span size = {fsmSpan.Length} for T: {typeof(T)}");
+            }
+
+            for (int selector = 0; selector < selectorCount; selector++)
+            {
+                // Each bit of the selector generates a T value
+                for (int bit = 0; bit < selectorBitCount; bit++)
                 {
                     bool isSet = ((selector >> bit) & 1) != 0;
-                    byte value = (byte)(isSet ? 0xFF : 0x00);
-                    fsmbBytes[currentLocation++] = value;
+                    fsmT[currentLocation++] = isSet ? T.MaxValue : T.Zero;
                 }
             }
         }
 
-        private static void InitializeFsmhTable()
+        private static void InitializeByteShuffleTables()
         {
-            Span<UInt128> fsmhTable = _fsmhTable;
-            Span<ushort> fsmhShorts = MemoryMarshal.Cast<UInt128, ushort>(fsmhTable);
-            int currentLocation = 0;
-
-            // Generate a 128-bit value for each selector
-            for (int selector = 0; selector < FsmhSelectorSize; selector++)
-            {
-                for (int bit = 0; bit < 8; bit++)
-                {
-                    bool isSet = ((selector >> bit) & 1) != 0;
-                    ushort value = (ushort)(isSet ? 0xFFFF : 0x0000);
-                    fsmhShorts[currentLocation++] = value;
-                }
-            }
-        }
-
-        private static void InitializeFsmTable()
-        {
-            Span<UInt128> fsmTable = _fsmTable;
-            Span<uint> fsmWords = MemoryMarshal.Cast<UInt128, uint>(fsmTable);
-            int currentLocation = 0;
-
-            // Generate a 128-bit value for each selector
-            for (int selector = 0; selector < FsmSelectorSize; selector++)
-            {
-                for (int bit = 0; bit < 4; bit++)
-                {
-                    bool isSet = ((selector >> bit) & 1) != 0;
-                    uint value = isSet ? 0xFFFFFFFF : 0x00000000;
-                    fsmWords[currentLocation++] = value;
-                }
-            }
-        }
-
-        private static void InitializeShiftTables()
-        {
-            // For each shift, generate a shuffle vector describing the new indices
-            int shiftCount = 16;
+            // For each shift/rotation, generate a shuffle vector describing the new indices
+            int shuffleCount = 16;
             int indexCount = 16;
             int currentLocation = 0;
 
-            // Notably, this table depends on x86 PSHUFB semantics
+            // Notably, this depends on x86 PSHUFB semantics
             Span<byte> leftShiftTable = _leftShiftTable;
             Span<byte> rightShiftTable = _rightShiftTable;
 
-            for (int shift = 0; shift < shiftCount; shift++)
+            Span<byte> leftRotationTable = _leftRotationTable;
+            Span<byte> rightRotationTable = _rightRotationTable;
+
+            for (int shuffle = 0; shuffle < shuffleCount; shuffle++)
             {
                 for (int index = 0; index < indexCount; index++)
                 {
-                    int leftShiftedIndex = index - shift;
-                    int rightShiftedIndex = index + shift;
+                    int leftShiftedIndex = index - shuffle;
+                    int rightShiftedIndex = index + shuffle;
+
+                    int leftRotatedIndex = (index - shuffle) & 0xF;
+                    int rightRotatedIndex = (index + shuffle) & 0xF;
 
                     if (leftShiftedIndex < 0)
                     {
@@ -156,33 +140,13 @@ namespace PS3Sharp.Cell.Spu
                     {
                         rightShiftedIndex = 0xFF;
                     }
-
+                    
                     leftShiftTable[currentLocation] = (byte)leftShiftedIndex;
                     rightShiftTable[currentLocation] = (byte)rightShiftedIndex;
-                    currentLocation++;
-                }
-            }
-        }
 
-        private static void InitializeRotationTables()
-        {
-            // For each rotation, generate a shuffle vector describing the new indices
-            int rotationsCount = 16;
-            int indexCount = 16;
-            int currentLocation = 0;
+                    leftRotationTable[currentLocation] = (byte)leftRotatedIndex;
+                    rightRotationTable[currentLocation] = (byte)rightRotatedIndex;
 
-            Span<byte> leftRotationTable = _leftRotationTable;
-            Span<byte> rightRotationTable = _rightRotationTable;
-
-            for (int rotation = 0; rotation < rotationsCount; rotation++)
-            {
-                for (int index = 0; index < indexCount; index++)
-                {
-                    byte leftRotatedIndex = (byte)((index - rotation) & 0xF);
-                    byte rightRotatedIndex = (byte)((index + rotation) & 0xF);
-
-                    leftRotationTable[currentLocation] = leftRotatedIndex;
-                    rightRotationTable[currentLocation] = rightRotatedIndex;
                     currentLocation++;
                 }
             }
