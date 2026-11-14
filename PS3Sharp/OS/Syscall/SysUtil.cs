@@ -379,15 +379,9 @@ namespace PS3Sharp.OS.Syscall
             uint param = ppu.ReadArg<uint>(Arg3);
 
             string msg = _memoryManager.ReadString(msg_ptr);
-
             Console.WriteLine($"[CellSysutil] cellMsgDialogOpen2: {msg}");
 
-            //Task.Run(() =>
-            //{
-            //    MessageBox(IntPtr.Zero, msg, "CellMsgDialogOpen2", 0);
-            //});
-
-            // Callback  - toc needed ?
+            // Callback - toc needed ?
             PPUInterpreter.ExecuteFunction(ppu, callback_ptr, toc: true, [1, user_data, 0, 0, 0]); // First arg = 1 for "Pressed OK"
             return CellOk;
         }
