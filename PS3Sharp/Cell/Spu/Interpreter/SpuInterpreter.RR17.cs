@@ -311,16 +311,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             {
                 SpuState* state = spu.State;
 
-                // Special cases if shift == 0 or shift > 31
-                if (shift == 0)
-                {
-                    state->GPR[rt].Value128 = state->GPR[ra].Value128;
-                }
-                else if (shift > 31)
-                {
-                    state->GPR[rt].Value128 = UInt128.Zero;
-                }
-                else
+                if (shift < 32)
                 {
                     Span<int> raLanes = state->GPR[ra].Ints;
                     Span<int> rtLanes = state->GPR[rt].Ints;
@@ -329,6 +320,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     Vector128<int> result = Vector128.ShiftLeft(va, shift);
 
                     result.CopyTo(rtLanes);
+                }
+                else
+                {
+                    state->GPR[rt].Value128 = UInt128.Zero;
                 }
             }
         }
@@ -1180,18 +1175,19 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 int sumA0 = raLanes[0] + raLanes[1] + raLanes[2] + raLanes[3];
                 int sumB0 = rbLanes[0] + rbLanes[1] + rbLanes[2] + rbLanes[3];
-                rtLanes[0] = (sumA0 & 0xFFFF) | (sumB0 << 16);
 
                 int sumA1 = raLanes[4] + raLanes[5] + raLanes[6] + raLanes[7];
                 int sumB1 = rbLanes[4] + rbLanes[5] + rbLanes[6] + rbLanes[7];
-                rtLanes[1] = (sumA1 & 0xFFFF) | (sumB1 << 16);
 
                 int sumA2 = raLanes[8] + raLanes[9] + raLanes[10] + raLanes[11];
                 int sumB2 = rbLanes[8] + rbLanes[9] + rbLanes[10] + rbLanes[11];
-                rtLanes[2] = (sumA2 & 0xFFFF) | (sumB2 << 16);
 
                 int sumA3 = raLanes[12] + raLanes[13] + raLanes[14] + raLanes[15];
                 int sumB3 = rbLanes[12] + rbLanes[13] + rbLanes[14] + rbLanes[15];
+
+                rtLanes[0] = (sumA0 & 0xFFFF) | (sumB0 << 16);
+                rtLanes[1] = (sumA1 & 0xFFFF) | (sumB1 << 16);
+                rtLanes[2] = (sumA2 & 0xFFFF) | (sumB2 << 16);
                 rtLanes[3] = (sumA3 & 0xFFFF) | (sumB3 << 16);
             }
         }
