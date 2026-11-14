@@ -89,6 +89,12 @@ namespace PS3Sharp.PRX
             "sys_lwmutex_trylock",
             "sys_lwmutex_destroy",
 
+            "sys_lwcond_create",
+            "sys_lwcond_wait",
+            "sys_lwcond_signal",
+            "sys_lwcond_signal_all",
+            "sys_lwcond_destroy",
+
             "sys_ppu_thread_create",
             "sys_ppu_thread_get_id",
             "sys_ppu_thread_once",
