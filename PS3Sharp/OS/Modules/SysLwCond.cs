@@ -49,7 +49,7 @@ namespace PS3Sharp.OS.Modules
         internal ulong SysLwCondWait(PPUThread ppu)
         {
             GuestPtr<LV2LwCond.LwCond> lwcondPtr = ppu.ReadArg<GuestPtr<LV2LwCond.LwCond>>(Arg0);
-            ulong timeout = _memoryManager.Read<ulong>(Arg1);
+            ulong timeout = ppu.ReadArg<ulong>(Arg1);
 
             LV2LwCond.LwCond lwcond = _memoryManager.Read<LV2LwCond.LwCond>(lwcondPtr);
             uint id = lwcond.Id;
