@@ -429,7 +429,6 @@ namespace PS3Sharp.Cell.Spu
         {
             // transfers the number of bytes specified by the transfer size parameter from the 
             // local storage address of the SPU to the effective address.
-            // Console.WriteLine($"[Spu] MFC Put:  eal = 0x{_eal:X}, ls = 0x{_lsa:X}, size = 0x{_transferSize:X}");
 
             unsafe
             {
@@ -438,13 +437,14 @@ namespace PS3Sharp.Cell.Spu
                 Span<byte> src = new(address, size);
                 MemoryManager.CopyBufferToVirtualMemory(src, _eal);
             }
+
+            // Console.WriteLine($"[Spu: 0x{ID:X8}] MFC Put:  eal = 0x{_eal:X}, ls = 0x{_lsa:X}, size = 0x{_transferSize:X} pc = 0x{State->PC:X}");
         }
 
         private void Get()
         {
             // Transfers the number of bytes specified by the transfer size parameter from the
             // effective address to the local storage address of the SPU
-            // Console.WriteLine($"[Spu] MFC Get: ls = 0x{_lsa:X}, eal = 0x{_eal:X}, size = 0x{_transferSize:X}");
 
             unsafe
             {
@@ -453,6 +453,8 @@ namespace PS3Sharp.Cell.Spu
                 Span<byte> dst = new(address, size);
                 MemoryManager.ReadBufferFromVirtualMemory(_eal, dst);
             }
+
+            // Console.WriteLine($"[Spu: 0x{ID:X8}] MFC Get: ls = 0x{_lsa:X}, eal = 0x{_eal:X}, size = 0x{_transferSize:X} pc = 0x{State->PC:X}");
         }
 
         private void Putllc()
@@ -473,7 +475,7 @@ namespace PS3Sharp.Cell.Spu
             _lostReservationEvent.Reset();
             _lastReservedAddress = 0;
 
-            //Console.WriteLine($"[Spu: {ID:X8}] MFC Putllc: ls = 0x{_lsa:X}, eal = 0x{_eal:X} success: {success}");
+           // Console.WriteLine($"[Spu: 0x{ID:X8}] MFC Putllc: ls = 0x{_lsa:X}, eal = 0x{_eal:X} success: {success} pc = 0x{State->PC:X}");
         }
 
         private void Getllar()
@@ -501,7 +503,7 @@ namespace PS3Sharp.Cell.Spu
             _lastReservedAddress = srcAddress;
             _atomicStat = AtomicStat.GetllarCompleted;
 
-            //Console.WriteLine($"[Spu: {ID:X8}] MFC Getllar: ls = 0x{_lsa:X}, eal = 0x{_eal:X}");
+            // Console.WriteLine($"[Spu: 0x{ID:X8}] MFC Getllar: ls = 0x{_lsa:X}, eal = 0x{_eal:X} pc = 0x{State->PC:X}");
         }
 
         private uint ReadEventStat()
@@ -522,7 +524,7 @@ namespace PS3Sharp.Cell.Spu
                     throw new Exception($"TODO: wait on lr event with no reserved address");
                 }
 
-                Console.WriteLine($"[Spu] waiting on RdEventStat mask = 0x{_eventMask:X} addr = 0x{_lastReservedAddress:X}");
+                Console.WriteLine($"[Spu: 0x{ID:X8}] waiting on RdEventStat mask = 0x{_eventMask:X} addr = 0x{_lastReservedAddress:X}");
 
                 _lostReservationEvent.Wait();
                 _lostReservationEvent.Reset();
