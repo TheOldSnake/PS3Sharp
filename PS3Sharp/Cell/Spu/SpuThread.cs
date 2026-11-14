@@ -516,28 +516,27 @@ namespace PS3Sharp.Cell.Spu
                 return _eventStat & _eventMask;
             }
 
-            // Wait on reservation lost event
-            if (_eventMask == 0x400)
-            {
-                if (_lastReservedAddress == 0)
-                {
-                    throw new Exception($"TODO: wait on lr event with no reserved address");
-                }
+            // Currently we only support waiting on reservation lost event
+            uint lr = (uint)EventStat.Lr;
 
-                Console.WriteLine($"[Spu: 0x{ID:X8}] waiting on RdEventStat mask = 0x{_eventMask:X} addr = 0x{_lastReservedAddress:X}");
-
-                _lostReservationEvent.Wait();
-                _lostReservationEvent.Reset();
-
-                _eventStat |= (uint)EventStat.Lr;
-                _lastReservedAddress = 0;
-            }
-            else
+            if (_eventMask != lr)
             {
                 throw new Exception($"TODO: wait on mask = 0x{_eventMask:X}");
             }
 
-            // Console.WriteLine($"[Spu] Got lr event");
+            // We must have a reserved address to wait on
+            if (_lastReservedAddress == 0)
+            {
+                throw new Exception($"TODO: wait on lr event with no reserved address");
+            }
+
+            Console.WriteLine($"[Spu: 0x{ID:X8}] waiting on RdEventStat mask = 0x{_eventMask:X} addr = 0x{_lastReservedAddress:X}");
+
+            _lostReservationEvent.Wait();
+            _lostReservationEvent.Reset();
+
+            _eventStat |= lr;
+            _lastReservedAddress = 0;
 
             // TODO: Handle channel count stuff
             return _eventStat & _eventMask;
