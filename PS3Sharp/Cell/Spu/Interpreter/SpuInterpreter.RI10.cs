@@ -70,6 +70,27 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Sfhi(SpuThread spu, SpuInstruction instruction)
+        {
+            // Subtract from Halfword Immediate
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int seI10 = instruction.SeI10;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<short> raLanes = state->GPR[ra].Shorts;
+                Span<short> rtLanes = state->GPR[rt].Shorts;
+
+                Vector128<short> va = Vector128.Create(raLanes);
+                Vector128<short> vi = Vector128.Create((short)seI10);
+                Vector128<short> result = vi - va;
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
         private static void Andi(SpuThread spu, SpuInstruction instruction)
         {
             // And Word Immediate
@@ -361,6 +382,49 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     // TODO
                     throw new Exception($"SPU thread halted on Hlgti");
                 }
+            }
+        }
+
+        private static void Mpyi(SpuThread spu, SpuInstruction instruction)
+        {
+            // Multiply Immediate
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int seI10 = instruction.SeI10;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                Vector128<int> va = (Vector128.Create(raLanes) << 16) >> 16;
+                Vector128<int> vi = Vector128.Create(seI10);
+                Vector128<int> result = va * vi;
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Mpyui(SpuThread spu, SpuInstruction instruction)
+        {
+            // Multiply Unsigned Immediate
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int seI10 = instruction.SeI10 & 0xFFFF;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<uint> raLanes = state->GPR[ra].UInts;
+                Span<uint> rtLanes = state->GPR[rt].UInts;
+
+                Vector128<uint> mask = Vector128.Create(0xFFFFU);
+                Vector128<uint> va = Vector128.Create(raLanes) & mask;
+                Vector128<uint> vi = Vector128.Create((uint)seI10);
+                Vector128<uint> result = va * vi;
+
+                result.CopyTo(rtLanes);
             }
         }
 

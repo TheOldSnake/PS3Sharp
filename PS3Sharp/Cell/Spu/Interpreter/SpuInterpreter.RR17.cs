@@ -1479,6 +1479,53 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Mpyhha(SpuThread spu, SpuInstruction instruction)
+        {
+            // Multiply High High and Add
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rbLanes = state->GPR[rb].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                // Sign extend high 16-bit
+                Vector128<int> va = Vector128.Create(raLanes) >> 16;
+                Vector128<int> vb = Vector128.Create(rbLanes) >> 16;
+                Vector128<int> vt = Vector128.Create(rtLanes);
+                Vector128<int> result = (va * vb) + vt;
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Mpyhhau(SpuThread spu, SpuInstruction instruction)
+        {
+            // Multiply High High Unsigned and Add
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<uint> raLanes = state->GPR[ra].UInts;
+                Span<uint> rbLanes = state->GPR[rb].UInts;
+                Span<uint> rtLanes = state->GPR[rt].UInts;
+
+                Vector128<uint> va = Vector128.Create(raLanes) >> 16;
+                Vector128<uint> vb = Vector128.Create(rbLanes) >> 16;
+                Vector128<uint> vt = Vector128.Create(rtLanes);
+                Vector128<uint> result = (va * vb) + vt;
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
         private static void Fscrrd(SpuThread spu, SpuInstruction instruction)
         {
             // Floating-Point Status and Control Register Read
@@ -1567,6 +1614,52 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Mpyhh(SpuThread spu, SpuInstruction instruction)
+        {
+            // Multiply High High
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rbLanes = state->GPR[rb].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                // Sign extend high 16-bit
+                Vector128<int> va = Vector128.Create(raLanes) >> 16;
+                Vector128<int> vb = Vector128.Create(rbLanes) >> 16;
+                Vector128<int> result = va * vb;
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Mpys(SpuThread spu, SpuInstruction instruction)
+        {
+            // Multiply and Shift Right
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rbLanes = state->GPR[rb].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                // Sign extend low 16-bit
+                Vector128<int> va = (Vector128.Create(raLanes) << 16) >> 16;
+                Vector128<int> vb = (Vector128.Create(rbLanes) << 16) >> 16;
+                Vector128<int> result = (va * vb) >> 16;
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
         private static void Ceqh(SpuThread spu, SpuInstruction instruction)
         {
             // Compare Equal Halfword
@@ -1606,6 +1699,28 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Vector128<uint> mask = Vector128.Create(0xFFFFU);
                 Vector128<uint> va = Vector128.Create(raLanes) & mask;
                 Vector128<uint> vb = Vector128.Create(rbLanes) & mask;
+                Vector128<uint> result = va * vb;
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Mpyhhu(SpuThread spu, SpuInstruction instruction)
+        {
+            // Multiply High High Unsigned
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<uint> raLanes = state->GPR[ra].UInts;
+                Span<uint> rbLanes = state->GPR[rb].UInts;
+                Span<uint> rtLanes = state->GPR[rt].UInts;
+
+                Vector128<uint> va = Vector128.Create(raLanes) >> 16;
+                Vector128<uint> vb = Vector128.Create(rbLanes) >> 16;
                 Vector128<uint> result = va * vb;
 
                 result.CopyTo(rtLanes);

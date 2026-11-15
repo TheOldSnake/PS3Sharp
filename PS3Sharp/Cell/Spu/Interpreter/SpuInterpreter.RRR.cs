@@ -1,4 +1,5 @@
-﻿using System.Runtime.Intrinsics;
+﻿using Iced.Intel;
+using System.Runtime.Intrinsics;
 using static PS3Sharp.Cell.Spu.SpuThread;
 
 namespace PS3Sharp.Cell.Spu.Interpreter
@@ -83,6 +84,32 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                     rtLanes[i] = result;
                 }
+            }
+        }
+
+        private static void Mpya(SpuThread spu, SpuInstruction instruction)
+        {
+            // Multiply and Add
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rc = instruction.Rc;
+            int rt = instruction.RtHi;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rbLanes = state->GPR[rb].Ints;
+                Span<int> rcLanes = state->GPR[rc].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                Vector128<int> va = (Vector128.Create(raLanes) << 16) >> 16;
+                Vector128<int> vb = (Vector128.Create(rbLanes) << 16) >> 16;
+                Vector128<int> vc = Vector128.Create(rcLanes);
+                Vector128<int> result = (va * vb) + vc;
+                
+                result.CopyTo(rtLanes);
             }
         }
     }

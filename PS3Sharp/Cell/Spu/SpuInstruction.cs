@@ -115,13 +115,18 @@
         Clgtb = 0x2D0,
         Addx = 0x340,
         Sfx = 0x341,
+        Mpyhha = 0x346,
+        Mpyhhau = 0x34E,
         Fscrrd = 0x398,
         Fscrwr = 0x3BA,
         Ceq = 0x3C0,
         Mpy = 0x3C4,
         Mpyh = 0x3C5,
+        Mpyhh = 0x3C6,
+        Mpys = 0x3C7,
         Ceqh = 0x3C8,
         Mpyu = 0x3CC,
+        Mpyhhu = 0x3CE,
         Ceqb = 0x3D0,
     }
 
@@ -151,6 +156,7 @@
         Ori = 0x04,
         Orhi = 0x05,
         Sfi = 0x0C,
+        Sfhi = 0x0D,
         Andi = 0x14,
         Andhi = 0x15,
         Andbi = 0x16,
@@ -165,6 +171,8 @@
         Clgthi = 0x5D,
         Clgtbi = 0x5E,
         Hlgti = 0x5F,
+        Mpyi = 0x74,
+        Mpyui = 0x75,
         Ceqi = 0x7C,
         Ceqhi = 0x7D,
         Ceqbi = 0x7E,
@@ -183,5 +191,6 @@
     {
         Selb = 0x8,
         ShufB = 0xB,
+        Mpya = 0xC,
     }
 }

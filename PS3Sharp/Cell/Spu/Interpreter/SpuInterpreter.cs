@@ -307,6 +307,14 @@
                     Sfx(spu, instruction);
                     break;
 
+                case RR17.Mpyhha:
+                    Mpyhha(spu, instruction);
+                    break;
+
+                case RR17.Mpyhhau:
+                    Mpyhhau(spu, instruction);
+                    break;
+
                 case RR17.Fscrrd:
                     Fscrrd(spu, instruction);
                     break;
@@ -327,12 +335,24 @@
                     Mpyh(spu, instruction);
                     break;
 
+                case RR17.Mpyhh:
+                    Mpyhh(spu, instruction);
+                    break;
+
+                case RR17.Mpys:
+                    Mpys(spu, instruction);
+                    break;
+
                 case RR17.Ceqh:
                     Ceqh(spu, instruction);
                     break;
 
                 case RR17.Mpyu:
                     Mpyu(spu, instruction);
+                    break;
+
+                case RR17.Mpyhhu:
+                    Mpyhhu(spu, instruction);
                     break;
 
                 case RR17.Ceqb:
@@ -431,6 +451,10 @@
                     Sfi(spu, instruction);
                     break;
 
+                case RI10.Sfhi:
+                    Sfhi(spu, instruction);
+                    break;
+
                 case RI10.Andi:
                     Andi(spu, instruction);
                     break;
@@ -487,6 +511,14 @@
                     Hlgti(spu, instruction);
                     break;
 
+                case RI10.Mpyi:
+                    Mpyi(spu, instruction);
+                    break;
+
+                case RI10.Mpyui:
+                    Mpyui(spu, instruction);
+                    break;
+
                 case RI10.Ceqi:
                     Ceqi(spu, instruction);
                     break;
@@ -537,6 +569,10 @@
 
                 case RRR.ShufB:
                     ShufB(spu, instruction);
+                    break;
+
+                case RRR.Mpya:
+                    Mpya(spu, instruction);
                     break;
 
                 default:
