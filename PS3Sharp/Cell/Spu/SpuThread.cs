@@ -117,9 +117,9 @@ namespace PS3Sharp.Cell.Spu
         private readonly LV2SpuThreadGroup? _ownerGroup;
 
         internal Task? CurrentTask { get; private set; }
-        internal string ThreadName { get; } = string.Empty;
-        internal uint ID { get; } = 0xFFFFFFFF;
-        internal uint GroupID { get; } = 0xFFFFFFFF;
+        internal string ThreadName { get; }
+        internal uint ID { get; }
+        internal uint GroupID { get; }
         internal SysSpu.SysSpuImage Image { get; }
         internal SysSpu.SysSpuThreadArgument Argument { get; }
         internal Lock Lock { get; } = new();
