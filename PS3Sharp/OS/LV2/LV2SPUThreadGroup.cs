@@ -118,6 +118,7 @@ namespace PS3Sharp.OS.LV2
 
         internal int JoinGroup()
         {
+            // TODO: Interruptable wait
             _groupFinishedEvent.Wait();
             return _groupExitStatus;
         }
