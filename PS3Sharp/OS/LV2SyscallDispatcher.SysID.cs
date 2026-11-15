@@ -97,6 +97,7 @@ namespace PS3Sharp.OS
             SysTimeGetTimebaseFrequency = 0x093,
 
             // sys_spu
+            SysSpuImageOpen = 0x09C,
             SysSpuInitialize = 0x0A9,
             SysSpuThreadGroupCreate = 0x0AA,
             SysSpuThreadInitialize = 0x0AC,

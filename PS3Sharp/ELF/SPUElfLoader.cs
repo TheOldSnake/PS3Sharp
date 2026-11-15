@@ -1,4 +1,5 @@
 ﻿using PS3Sharp.Common;
+using PS3Sharp.FileSystem;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.Syscall;
 using static PS3Sharp.Elf.ElfDefinitions;
@@ -7,6 +8,20 @@ namespace PS3Sharp.Elf
 {
     internal class SpuElfLoader : ElfLoader
     {
+        internal (ElfHeader32 header, List<SysSpu.SysSpuSegment> segments) GetSpuElfInfo(string elfGuestPath, MemoryManager memoryManager)
+        {
+            // Read the elf image from the file
+            string elfHostPath = FileSystemManager.GetHostPath(elfGuestPath);
+            byte[] elf = File.ReadAllBytes(elfHostPath);
+
+            // Allocate and copy the image
+            MemoryManager.MemoryBlock memoryBlock = memoryManager.AllocateVirtualMemory((uint)elf.Length);
+            GuestVoidPtr elfPtr = memoryBlock.VirtualAddress;
+            memoryManager.CopyBufferToVirtualMemory(elf, elfPtr);
+
+            return GetSpuElfInfo(elfPtr, memoryManager);
+        }
+
         internal (ElfHeader32 header, List<SysSpu.SysSpuSegment> segments) GetSpuElfInfo(GuestVoidPtr elfPtr, MemoryManager memoryManager)
         {
             // Note: SPU elf is 32-bit BE

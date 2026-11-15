@@ -5,7 +5,6 @@ using PS3Sharp.Common;
 using PS3Sharp.Elf;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.LV2;
-using SkiaSharp;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -68,6 +67,9 @@ namespace PS3Sharp.OS.Syscall
         internal const uint SysSpuImageProtect = 0;
         internal const uint SysSpuImageDirect = 1;
 
+        internal const uint SysSpuImageTypeUser = 0;
+        internal const uint SysSpuImageTypeKernel = 1;
+
         internal const uint SysSpuThreadEventUser = 1;
         internal const ulong SysSpuThreadEventUserKey = 0xFFFFFFFF53505501;
         internal const uint SysSpuThreadGroupEventRun = 1;
@@ -76,6 +78,7 @@ namespace PS3Sharp.OS.Syscall
         internal const ulong SysSpuThreadGroupEventRunKey = 0xFFFFFFFF53505500;
         internal const ulong SysSpuThreadGroupEventExceptionKey = 0xFFFFFFFF53505503;
         internal const ulong SysSpuThreadGroupEventSystemModuleKey = 0xFFFFFFFF53505504;
+
         internal const int SysSpuSegmentTypeCopy = 0x0001;
         internal const int SysSpuSegmentTypeFill = 0x0002;
         internal const int SysSpuSegmentTypeInfo = 0x0004;
@@ -101,6 +104,20 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
+        internal ulong SysSpuImageOpen(PPUThread ppu)
+        {
+            GuestPtr<SysSpuImage> imagePtr = ppu.ReadArg<GuestPtr<SysSpuImage>>(Arg0);
+            GuestVoidPtr pathPtr = ppu.ReadArg<GuestVoidPtr>(Arg1);
+
+            string path = _memoryManager.ReadString(pathPtr);
+            (ElfDefinitions.ElfHeader32 header, List<SysSpuSegment> segments) = _elfLoader.GetSpuElfInfo(path, _memoryManager);
+            WriteSpuImageInfo(header, segments, imagePtr);
+
+            Console.WriteLine($"[SysSpuImageOpen] Path: {path} entry = 0x{header.e_entry:X8} segment count = {segments.Count}");
+
+            return CellOk;
+        }
+
         internal ulong SysSpuImageImport(PPUThread ppu)
         {
             GuestPtr<SysSpuImage> imagePtr = ppu.ReadArg<GuestPtr<SysSpuImage>>(Arg0);
@@ -114,30 +131,9 @@ namespace PS3Sharp.OS.Syscall
 
             // Load elf32
             (ElfDefinitions.ElfHeader32 header, List<SysSpuSegment> segments) = _elfLoader.GetSpuElfInfo(src, _memoryManager);
+            WriteSpuImageInfo(header, segments, imagePtr);
 
-            // Allocate SysSpuSegment array
-            int segmentArraySize = Unsafe.SizeOf<SysSpu.SysSpuSegment>() * 32;
-            GuestPtr<SysSpu.SysSpuSegment> segmentArrayPtr = _memoryManager.AllocateVirtualMemory((uint)segmentArraySize).VirtualAddress;
-
-            if (segments.Count > 0)
-            {
-                // Copy segment array
-                Span<SysSpuSegment> segmentsSpan = CollectionsMarshal.AsSpan(segments);
-                _memoryManager.WriteArray(segmentArrayPtr, segmentsSpan);
-            }
-
-            // Write SysSpuImage data
-            SysSpuImage image = new()
-            {
-                Type = type,
-                Entry = header.e_entry,
-                SegmentsPtr = (uint)segmentArrayPtr,
-                SegmentsCount = (uint)segments.Count
-            };
-
-            _memoryManager.Write(imagePtr, image);
-
-            Console.WriteLine($"[SysSpu] sys_spu_image_import: Type = 0x{type:X} entry = 0x{header.e_entry:X8} segment count = {segments.Count}");
+            Console.WriteLine($"[SysSpuImageImport] Type = 0x{type:X} entry = 0x{header.e_entry:X8} segment count = {segments.Count}");
 
             return CellOk;
         }
@@ -378,6 +374,31 @@ namespace PS3Sharp.OS.Syscall
             {
                 throw new Exception($"[SysSpu] Failed to remove Spu group");
             }
+        }
+
+        private void WriteSpuImageInfo(ElfDefinitions.ElfHeader32 header, List<SysSpuSegment> segments, GuestPtr<SysSpuImage> imagePtr)
+        {
+            // Allocate SysSpuSegment array
+            int segmentArraySize = Unsafe.SizeOf<SysSpuSegment>() * 32;
+            GuestPtr<SysSpuSegment> segmentArrayPtr = _memoryManager.AllocateVirtualMemory((uint)segmentArraySize).VirtualAddress;
+
+            if (segments.Count > 0)
+            {
+                // Copy segment array
+                Span<SysSpuSegment> segmentsSpan = CollectionsMarshal.AsSpan(segments);
+                _memoryManager.WriteArray(segmentArrayPtr, segmentsSpan);
+            }
+
+            // Write SysSpuImage data
+            SysSpuImage image = new()
+            {
+                Type = SysSpuImageTypeUser,
+                Entry = header.e_entry,
+                SegmentsPtr = (uint)segmentArrayPtr,
+                SegmentsCount = (uint)segments.Count
+            };
+
+            _memoryManager.Write(imagePtr, image);
         }
     }
 }

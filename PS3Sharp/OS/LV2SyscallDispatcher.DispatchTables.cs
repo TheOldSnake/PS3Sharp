@@ -101,6 +101,7 @@ namespace PS3Sharp.OS
                 [SyscallID.SysTimeGetTimeZone] = SysTimeHandler.SysTimeGetTimeZone,
                 [SyscallID.SysTimeGetTimebaseFrequency] = SysTimeHandler.SysTimeGetTimebaseFrequency,
 
+                [SyscallID.SysSpuImageOpen] = SysSPUHandler.SysSpuImageOpen,
                 [SyscallID.SysSpuInitialize] = SysSPUHandler.SysSpuInitialize,
                 [SyscallID.SysSpuThreadGroupCreate] = SysSPUHandler.SysSpuThreadGroupCreate,
                 [SyscallID.SysSpuThreadInitialize] = SysSPUHandler.SysSpuThreadInitialize,
