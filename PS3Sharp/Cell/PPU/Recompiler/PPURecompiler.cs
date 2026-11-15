@@ -26,7 +26,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler
         internal static bool IsRecompilerUsable => IsPlatformSupported() && IsRecompilerEnabled;
 
         private readonly List<VirtualMemoryHandle?> _executablePages = [];
-        private readonly NativeMemoryHandle?[] _memoryBlocksTable = new NativeMemoryHandle[PageSize];
+        private readonly NativeMemoryHandle<byte>?[] _memoryBlocksTable = new NativeMemoryHandle<byte>[PageSize];
 
         private readonly IRGenerator _irGenerator = new();
         private readonly X64Generator _x64Generator = new();
@@ -49,7 +49,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler
             uint blockIndex = index & PageMask;
 
             // Look up the page
-            NativeMemoryHandle? page = _memoryBlocksTable[pageIndex];
+            NativeMemoryHandle<byte>? page = _memoryBlocksTable[pageIndex];
 
             // If not already allocated, allocate the page
             if (page == null)
@@ -130,7 +130,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler
             // Create VirtualMemoryHandle
             // Uses MEM_RESERVE by default
             VirtualMemoryHandle memoryHandle = new((nuint)alignedSize, NativeMethods.WinApiPageExecuteReadwrite);
-            nint memory = memoryHandle.DangerousGetHandle();
+            nint memory = (nint)memoryHandle.NativePointer;
 
             // Commit
             NativeMethods.VirtualAlloc(memory, (nuint)alignedSize, NativeMethods.WinApiMemCommit, NativeMethods.WinApiPageExecuteReadwrite);
@@ -178,7 +178,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler
             // Free block structs
             for (int i = 0; i < _memoryBlocksTable.Length; i++)
             {
-                NativeMemoryHandle? block = _memoryBlocksTable[i];
+                NativeMemoryHandle<byte>? block = _memoryBlocksTable[i];
                 block?.Dispose();
                 _memoryBlocksTable[i] = null;
             }

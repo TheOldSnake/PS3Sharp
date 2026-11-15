@@ -5,8 +5,17 @@ using System.Runtime.InteropServices;
 
 namespace PS3Sharp.Memory
 {
-    internal sealed class VirtualMemoryHandle : SafeHandleZeroOrMinusOneIsInvalid
+    internal unsafe sealed class VirtualMemoryHandle : SafeHandleZeroOrMinusOneIsInvalid
     {
+        internal void* NativePointer
+        {
+            get
+            {
+                ObjectDisposedException.ThrowIf(IsClosed, this);
+                return (void*)handle;
+            }
+        }
+
         internal nuint Size { get; private set; }
 
         internal VirtualMemoryHandle(nuint size, uint type) : base(true)

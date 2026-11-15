@@ -42,8 +42,8 @@ namespace PS3Sharp.Cell.PPU
         internal bool IsMainThread => ThreadName == "main_thread";
         internal bool ShouldExit => ThreadManager.GlobalCancellationSource.IsCancellationRequested || LocalCancellationSource!.IsCancellationRequested;
 
-        internal NativeMemoryHandle? StateHandle { get; private set; } = new((nuint)sizeof(PPUState));
-        internal PPUState* State => (PPUState*)StateHandle!.DangerousGetHandle();
+        internal NativeMemoryHandle<PPUState> StateHandle { get; private set; } = new((nuint)sizeof(PPUState));
+        internal PPUState* State => StateHandle.NativePointer;
         internal PPUGPR* GPR => &State->GPR[0];
         internal PPUFPR* FPR => &State->FPR[0];
         internal PPUVR* VRF => &State->VRF[0];
@@ -363,8 +363,7 @@ namespace PS3Sharp.Cell.PPU
             GCHandle = null;
 
             // Dispose the state handle
-            StateHandle?.Dispose();
-            StateHandle = null;
+            StateHandle.Dispose();
         }
     }
 }

@@ -32,10 +32,10 @@ namespace PS3Sharp.Memory
         private readonly MemoryBlock[] _memoryBlockTable = new MemoryBlock[Fastmem.PageSize];
 
         // Virtual memory safe handle
-        private VirtualMemoryHandle? _guestMemoryHandle = new((nuint)VirtualMemorySize, NativeMethods.WinApiPageNoaccess);
+        private readonly VirtualMemoryHandle _guestMemoryHandle = new((nuint)VirtualMemorySize, NativeMethods.WinApiPageNoaccess);
 
         // Base address of virtual memory
-        private void* GuestMemoryBase => (void*)_guestMemoryHandle!.DangerousGetHandle();
+        private void* GuestMemoryBase => _guestMemoryHandle.NativePointer;
 
         // Some operations require a lock
         private readonly object _managerLock = new();
@@ -815,8 +815,7 @@ namespace PS3Sharp.Memory
         public void Dispose()
         {
             Console.WriteLine($"[MemoryManager] Freeing guest memory");
-            _guestMemoryHandle?.Dispose();
-            _guestMemoryHandle = null;
+            _guestMemoryHandle.Dispose();
         }
     }
 }

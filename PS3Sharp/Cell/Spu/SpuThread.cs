@@ -127,15 +127,14 @@ namespace PS3Sharp.Cell.Spu
         internal bool ShouldExit => LocalCts.IsCancellationRequested || (_ownerGroup != null && _ownerGroup.GroupCts.IsCancellationRequested);
 
         // Allocate State
-        internal static readonly int StateSize = sizeof(SpuState);
-        internal NativeMemoryHandle? StateHandle { get; private set; } = new NativeMemoryHandle((nuint)StateSize);
-        internal SpuState* State => (SpuState*)StateHandle!.DangerousGetHandle();
+        internal NativeMemoryHandle<SpuState> StateHandle { get; private set; } = new((nuint)sizeof(SpuState));
+        internal SpuState* State => StateHandle.NativePointer;
 
         // Allocate local storage
         internal const int LocalStorageSize = 256 * 1024;
         internal const int LocalStorageMask = LocalStorageSize - 1;
-        internal NativeMemoryHandle? LsHandle { get; private set; } = new NativeMemoryHandle((nuint)LocalStorageSize);
-        internal byte* LsPtr => (byte*)LsHandle!.DangerousGetHandle();
+        internal NativeMemoryHandle<byte> LsHandle { get; private set; } = new(LocalStorageSize);
+        internal byte* LsPtr => LsHandle.NativePointer;
 
         internal ThreadStatus Status { get; private set; } = ThreadStatus.Stopped;
         internal MemoryManager MemoryManager { get; }
@@ -616,11 +615,8 @@ namespace PS3Sharp.Cell.Spu
 
         public void Dispose()
         {
-            StateHandle?.Dispose();
-            StateHandle = null;
-
-            LsHandle?.Dispose();
-            LsHandle = null;
+            StateHandle.Dispose();
+            LsHandle.Dispose();
         }
     }
 }

@@ -3,10 +3,19 @@ using System.Runtime.InteropServices;
 
 namespace PS3Sharp.Memory
 {
-    internal sealed class NativeMemoryHandle : SafeHandleZeroOrMinusOneIsInvalid
+    internal unsafe sealed class NativeMemoryHandle<T> : SafeHandleZeroOrMinusOneIsInvalid where T : unmanaged
     {
-        internal nuint Size { get; private set; }
+        internal T* NativePointer
+        {
+            get
+            {
+                ObjectDisposedException.ThrowIf(IsClosed, this);
+                return (T*)handle;
+            }
+        }
 
+        internal nuint Size { get; private set; }
+        
         internal NativeMemoryHandle(nuint size) : base(true)
         {
             unsafe
