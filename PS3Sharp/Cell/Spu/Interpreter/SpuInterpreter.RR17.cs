@@ -313,7 +313,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 // Arithmetic right shift
 
                 Vector128<int> va = Vector128.Create(raLanes);
-                Vector128<int> result = Vector128.ShiftRightArithmetic(va, shiftCount);
+                Vector128<int> result = va >> shiftCount;
 
                 result.CopyTo(rtLanes);
             }
@@ -336,7 +336,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     Span<int> rtLanes = state->GPR[rt].Ints;
 
                     Vector128<int> va = Vector128.Create(raLanes);
-                    Vector128<int> result = Vector128.ShiftLeft(va, shift);
+                    Vector128<int> result = va << shift;
 
                     result.CopyTo(rtLanes);
                 }
@@ -363,7 +363,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 if (shiftCount < 16)
                 {
                     Vector128<ushort> va = Vector128.Create(raLanes);
-                    Vector128<ushort> result = Vector128.ShiftRightLogical(va, shiftCount);
+                    Vector128<ushort> result = va >> shiftCount;
 
                     result.CopyTo(rtLanes);
                 }
@@ -390,7 +390,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 if (shiftCount < 16)
                 {
                     Vector128<ushort> va = Vector128.Create(raLanes);
-                    Vector128<ushort> result = Vector128.ShiftLeft(va, shiftCount);
+                    Vector128<ushort> result = va << shiftCount;
 
                     result.CopyTo(rtLanes);
                 }
@@ -1266,7 +1266,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 int shift = 64 - 32;
                 Vector128<long> va = Vector128.Create(raLanes);
-                Vector128<long> result = Vector128.ShiftRightArithmetic(Vector128.ShiftLeft(va, shift), shift);
+                Vector128<long> result = (va << shift) >> shift;
 
                 result.CopyTo(rtLanes);
             }
@@ -1286,7 +1286,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 int shift = 32 - 16;
                 Vector128<int> va = Vector128.Create(raLanes);
-                Vector128<int> result = Vector128.ShiftRightArithmetic(Vector128.ShiftLeft(va, shift), shift);
+                Vector128<int> result = (va << shift) >> shift;
 
                 result.CopyTo(rtLanes);
             }
@@ -1337,7 +1337,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 int shift = 16 - 8;
                 Vector128<short> va = Vector128.Create(raLanes);
-                Vector128<short> result = Vector128.ShiftRightArithmetic(Vector128.ShiftLeft(va, shift), shift);
+                Vector128<short> result = (va << shift) >> shift;
 
                 result.CopyTo(rtLanes);
             }
