@@ -52,7 +52,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 state->GPR[rb].Bytes.CopyTo(ab);
                 state->GPR[ra].Bytes.CopyTo(ab.Slice(16));
 
-                // Shuffle RT based on rc
+                // Shuffle RT based on RC
                 Span<byte> rcLanes = state->GPR[rc].Bytes;
                 Span<byte> rtLanes = state->GPR[rt].Bytes;
 
