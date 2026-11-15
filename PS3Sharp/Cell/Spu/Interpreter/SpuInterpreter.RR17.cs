@@ -1535,10 +1535,9 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Span<int> rbLanes = state->GPR[rb].Ints;
                 Span<int> rtLanes = state->GPR[rt].Ints;
 
-                int shift = 32 - 16;
-
-                Vector128<int> va = (Vector128.Create(raLanes) << shift) >> shift;
-                Vector128<int> vb = (Vector128.Create(rbLanes) << shift) >> shift;
+                // Sign extend low 16-bit
+                Vector128<int> va = (Vector128.Create(raLanes) << 16) >> 16;
+                Vector128<int> vb = (Vector128.Create(rbLanes) << 16) >> 16;
                 Vector128<int> result = va * vb;
 
                 result.CopyTo(rtLanes);
@@ -1559,10 +1558,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Span<int> rbLanes = state->GPR[rb].Ints;
                 Span<int> rtLanes = state->GPR[rt].Ints;
 
-                Vector128<int> mask = Vector128.Create(0xFFFF);
-                Vector128<int> va = Vector128.ShiftRightArithmetic(Vector128.Create(raLanes), 16);
-                Vector128<int> vb = Vector128.Create(rbLanes) & mask;
-                Vector128<int> result = Vector128.ShiftLeft(va * vb, 16);
+                // Sign extend high 16-bit of va and low 16-bit of vb
+                Vector128<int> va = Vector128.Create(raLanes) >> 16;
+                Vector128<int> vb = (Vector128.Create(rbLanes) << 16) >> 16;
+                Vector128<int> result = (va * vb) << 16;
 
                 result.CopyTo(rtLanes);
             }
