@@ -165,7 +165,6 @@ namespace PS3Sharp.Cell.Spu
             _ports[port] = equeue;
         }
 
-
         internal void Start()
         {
             unsafe
