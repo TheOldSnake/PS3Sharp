@@ -115,9 +115,9 @@ namespace PS3Sharp.PRX
             "libfontFT",
             "libfreetype",
 
-            //"libsre",    // Needed for probably every game in existence other than arkedo and gta
-            //"libjpgdec", // Needed for Minecraft
-            //"libpngdec"  // Needed for Minecraft
+            "libsre",    // Needed for probably every game in existence other than arkedo and gta
+            "libjpgdec", // Needed for Minecraft
+            "libpngdec"  // Needed for Minecraft
 
            // "libgcm_sys"
         ];

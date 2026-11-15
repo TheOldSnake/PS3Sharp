@@ -1,9 +1,6 @@
 ﻿using PS3Sharp.Common;
 using System.Runtime.Intrinsics;
-using System.Text.RegularExpressions;
-using static PS3Sharp.Cell.PPU.Recompiler.IR.IRGenerator;
 using static PS3Sharp.Cell.Spu.SpuThread;
-using static System.Windows.Forms.AxHost;
 
 namespace PS3Sharp.Cell.Spu.Interpreter
 {
@@ -112,6 +109,28 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 Vector128<uint> mask = Vector128.Create(1u);
                 Vector128<uint> result = Vector128.GreaterThanOrEqual(vb, va) & mask;
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Sfh(SpuThread spu, SpuInstruction instruction)
+        {
+            // Subtract from Halfword
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<short> raLanes = state->GPR[ra].Shorts;
+                Span<short> rbLanes = state->GPR[rb].Shorts;
+                Span<short> rtLanes = state->GPR[rt].Shorts;
+
+                Vector128<short> va = Vector128.Create(raLanes);
+                Vector128<short> vb = Vector128.Create(rbLanes);
+                Vector128<short> result = vb - va;
 
                 result.CopyTo(rtLanes);
             }
@@ -451,6 +470,28 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 // Convert 0xFFFFFFFF / 0 into 1 / 0
                 Vector128<uint> result = cmp & mask;
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Ah(SpuThread spu, SpuInstruction instruction)
+        {
+            // Add Halfword
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<short> raLanes = state->GPR[ra].Shorts;
+                Span<short> rbLanes = state->GPR[rb].Shorts;
+                Span<short> rtLanes = state->GPR[rt].Shorts;
+
+                Vector128<short> va = Vector128.Create(raLanes);
+                Vector128<short> vb = Vector128.Create(rbLanes);
+                Vector128<short> result = va + vb;
 
                 result.CopyTo(rtLanes);
             }
@@ -1475,6 +1516,30 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Vector128<int> va = Vector128.Create(raLanes);
                 Vector128<int> vb = Vector128.Create(rbLanes);
                 Vector128<int> result = Vector128.Equals(va, vb);
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Mpy(SpuThread spu, SpuInstruction instruction)
+        {
+            // Multiply
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rbLanes = state->GPR[rb].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                int shift = 32 - 16;
+
+                Vector128<int> va = (Vector128.Create(raLanes) << shift) >> shift;
+                Vector128<int> vb = (Vector128.Create(rbLanes) << shift) >> shift;
+                Vector128<int> result = va * vb;
 
                 result.CopyTo(rtLanes);
             }

@@ -55,6 +55,10 @@
                     Bg(spu, instruction);
                     break;
 
+                case RR17.Sfh:
+                    Sfh(spu, instruction);
+                    break;
+
                 case RR17.Nor:
                     Nor(spu, instruction);
                     break;
@@ -105,6 +109,10 @@
 
                 case RR17.Cg:
                     Cg(spu, instruction);
+                    break;
+
+                case RR17.Ah:
+                    Ah(spu, instruction);
                     break;
 
                 case RR17.Wrch:
@@ -309,6 +317,10 @@
 
                 case RR17.Ceq:
                     Ceq(spu, instruction);
+                    break;
+
+                case RR17.Mpy:
+                    Mpy(spu, instruction);
                     break;
 
                 case RR17.Mpyh:
