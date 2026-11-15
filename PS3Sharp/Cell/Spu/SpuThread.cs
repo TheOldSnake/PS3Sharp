@@ -85,6 +85,8 @@ namespace PS3Sharp.Cell.Spu
 
         // Size of SPU cache line in bytes
         internal const int CacheLineSize = 128;
+        internal const uint GlobalCacheLineMask = 0xFFFFFF80;
+        internal const uint LocalCacheLineMask = GlobalCacheLineMask & LocalStorageMask;
 
         // Total ports
         internal const int PortCount = 64;
@@ -130,7 +132,8 @@ namespace PS3Sharp.Cell.Spu
         internal SpuState* State => (SpuState*)StateHandle!.DangerousGetHandle();
 
         // Allocate local storage
-        internal static readonly int LocalStorageSize = 256 * 1024;
+        internal const int LocalStorageSize = 256 * 1024;
+        internal const int LocalStorageMask = LocalStorageSize - 1;
         internal NativeMemoryHandle? LsHandle { get; private set; } = new NativeMemoryHandle((nuint)LocalStorageSize);
         internal byte* LsPtr => (byte*)LsHandle!.DangerousGetHandle();
 
@@ -425,49 +428,52 @@ namespace PS3Sharp.Cell.Spu
             }
         }
 
+        private unsafe Span<byte> GetStorageSpan(uint lsa, int size)
+        {
+            byte* nativeAddress = LsPtr + lsa;
+            return new(nativeAddress, size);
+        }
+
         private void Put()
         {
             // transfers the number of bytes specified by the transfer size parameter from the 
             // local storage address of the SPU to the effective address.
+            int size = (int)_transferSize;
 
             unsafe
             {
-                int size = (int)_transferSize;
-                byte* address = LsPtr + _lsa;
-                Span<byte> src = new(address, size);
+                Span<byte> src = GetStorageSpan(_lsa, size);
                 MemoryManager.CopyBufferToVirtualMemory(src, _eal);
             }
 
-            // Console.WriteLine($"[Spu: 0x{ID:X8}] MFC Put:  eal = 0x{_eal:X}, ls = 0x{_lsa:X}, size = 0x{_transferSize:X} pc = 0x{State->PC:X}");
+            // Console.WriteLine($"[Spu: 0x{ID:X8}] MFC Put: ls = 0x{_lsa:X}, eal = 0x{_eal:X}, size = 0x{_transferSize:X} pc = 0x{State->PC:X}");
         }
 
         private void Get()
         {
             // Transfers the number of bytes specified by the transfer size parameter from the
             // effective address to the local storage address of the SPU
+            int size = (int)_transferSize;
 
             unsafe
             {
-                int size = (int)_transferSize;
-                byte* address = LsPtr + _lsa;
-                Span<byte> dst = new(address, size);
+                Span<byte> dst = GetStorageSpan(_lsa, size);
                 MemoryManager.ReadBufferFromVirtualMemory(_eal, dst);
             }
 
-            // Console.WriteLine($"[Spu: 0x{ID:X8}] MFC Get: ls = 0x{_lsa:X}, eal = 0x{_eal:X}, size = 0x{_transferSize:X} pc = 0x{State->PC:X}");
+            //  Console.WriteLine($"[Spu: 0x{ID:X8}] MFC Get: ls = 0x{_lsa:X}, eal = 0x{_eal:X}, size = 0x{_transferSize:X} pc = 0x{State->PC:X}");
         }
 
         private void Putllc()
         {
             // Puts lock line conditional on a reservation
-            uint destAddress = _eal & 0xFFFFFF80;
-            uint srcOffset = _lsa & 0x3FF80;
-            byte* srcAddress = LsPtr + srcOffset;
+            uint srcAddress = _lsa & LocalCacheLineMask;
+            uint destAddress = _eal & GlobalCacheLineMask;
             bool success;
 
             unsafe
             {
-                Span<byte> src = new(srcAddress, CacheLineSize);
+                Span<byte> src = GetStorageSpan(srcAddress, CacheLineSize);
                 success = MemoryManager.StoreConditional(destAddress, ID, src);
                 _atomicStat = success ? AtomicStat.PutllcSucceeded : AtomicStat.PutllcFailed;
             }
@@ -475,15 +481,14 @@ namespace PS3Sharp.Cell.Spu
             _lostReservationEvent.Reset();
             _lastReservedAddress = 0;
 
-           // Console.WriteLine($"[Spu: 0x{ID:X8}] MFC Putllc: ls = 0x{_lsa:X}, eal = 0x{_eal:X} success: {success} pc = 0x{State->PC:X}");
+            // Console.WriteLine($"[Spu: 0x{ID:X8}] MFC Putllc: ls = 0x{_lsa:X}, eal = 0x{_eal:X} success: {success} pc = 0x{State->PC:X}");
         }
 
         private void Getllar()
         {
             // Gets a lock line and creates a reservation
-            uint srcAddress = _eal & 0xFFFFFF80;
-            uint destOffset =_lsa & 0x3FF80;
-            byte* destAddress = LsPtr + destOffset;
+            uint srcAddress = _eal & GlobalCacheLineMask;
+            uint destAddress = _lsa & LocalCacheLineMask;
 
             // Issuing another Getllar while an address is already reserved
             // causes the existing reservation to be lost
@@ -493,10 +498,11 @@ namespace PS3Sharp.Cell.Spu
                 MemoryManager.InvalidateReservations(_lastReservedAddress, CacheLineSize);
             }
 
+            _lostReservationEvent.Reset();
+
             unsafe
             {
-                _lostReservationEvent.Reset();
-                Span<byte> dest = new(destAddress, CacheLineSize);
+                Span<byte> dest = GetStorageSpan(destAddress, CacheLineSize);
                 MemoryManager.LoadAndReserve(srcAddress, ID, dest, _lostReservationEvent);
             }
 
@@ -563,7 +569,6 @@ namespace PS3Sharp.Cell.Spu
             {
                 throw new Exception($"[Spu] unexpected WrOutIntrMbox on non assigned port");
             }
-
 
             LV2EventPort.SysEventData eventData = new()
             {
