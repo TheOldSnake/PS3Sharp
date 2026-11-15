@@ -7,15 +7,7 @@ namespace PS3Sharp.Memory
 {
     internal unsafe sealed class VirtualMemoryHandle : SafeHandleZeroOrMinusOneIsInvalid
     {
-        internal void* NativePointer
-        {
-            get
-            {
-                ObjectDisposedException.ThrowIf(IsClosed, this);
-                return (void*)handle;
-            }
-        }
-
+        internal void* NativePointer => (void*)handle; // Should return nullptr if released
         internal nuint Size { get; private set; }
 
         internal VirtualMemoryHandle(nuint size, uint type) : base(true)
@@ -49,7 +41,7 @@ namespace PS3Sharp.Memory
 
                 if (ok)
                 {
-                    SetHandle(nint.Zero);
+                    SetHandle(nint.Zero);  // Set handle to nullptr
                     Size = 0;
                     return true;
                 }

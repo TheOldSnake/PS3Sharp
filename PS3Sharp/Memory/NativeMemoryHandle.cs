@@ -5,15 +5,7 @@ namespace PS3Sharp.Memory
 {
     internal unsafe sealed class NativeMemoryHandle<T> : SafeHandleZeroOrMinusOneIsInvalid where T : unmanaged
     {
-        internal T* NativePointer
-        {
-            get
-            {
-                ObjectDisposedException.ThrowIf(IsClosed, this);
-                return (T*)handle;
-            }
-        }
-
+        internal T* NativePointer => (T*)handle;  // Should return nullptr if released
         internal nuint Size { get; private set; }
         
         internal NativeMemoryHandle(nuint size) : base(true)
@@ -40,7 +32,7 @@ namespace PS3Sharp.Memory
             unsafe
             {
                 NativeMemory.Free((void*)handle);
-                SetHandle(nint.Zero);
+                SetHandle(nint.Zero); // Set handle to nullptr
                 Size = 0;
                 return true;
             }
