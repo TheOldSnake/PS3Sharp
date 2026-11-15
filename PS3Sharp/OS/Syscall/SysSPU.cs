@@ -113,7 +113,7 @@ namespace PS3Sharp.OS.Syscall
             }
 
             // Load elf32
-            (ElfDefinitions.ElfHeader32 header, List<SysSpuSegment> segments) = _elfLoader.LoadSPUElf(src, _memoryManager);
+            (ElfDefinitions.ElfHeader32 header, List<SysSpuSegment> segments) = _elfLoader.GetSpuElfInfo(src, _memoryManager);
 
             // Allocate SysSpuSegment array
             int segmentArraySize = Unsafe.SizeOf<SysSpu.SysSpuSegment>() * 32;
