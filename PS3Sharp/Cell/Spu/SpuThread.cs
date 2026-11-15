@@ -148,7 +148,6 @@ namespace PS3Sharp.Cell.Spu
             Image = img;
             Argument = arg;
             _ownerGroup = ownerGroup;
-            Array.Fill(_ports, null);
         }
 
         internal void WriteInMbox(uint value) => _inMBox.Add(value);
