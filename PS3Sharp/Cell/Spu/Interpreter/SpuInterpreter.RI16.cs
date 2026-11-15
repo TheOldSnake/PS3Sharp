@@ -15,7 +15,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             int seOffset = (offset << shift) >> shift;
 
             uint currentPC = pc - 4;
-            uint target = (currentPC + (uint)seOffset) & 0x3FFFC;
+            uint target = currentPC + (uint)seOffset;
 
             return target;
         }
