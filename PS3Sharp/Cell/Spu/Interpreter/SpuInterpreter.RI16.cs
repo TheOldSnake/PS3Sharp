@@ -7,6 +7,29 @@ namespace PS3Sharp.Cell.Spu.Interpreter
     internal static partial class SpuInterpreter
     {
         // RI16: 9-bit opcode group
+        private static uint GetRelativeOffsetTarget(uint pc, SpuInstruction instruction)
+        {
+            // Offset is signed 18-bits relative to the address of the current instruction
+            int offset = instruction.I16 << 2;
+            int shift = 32 - 18;
+            int seOffset = (offset << shift) >> shift;
+
+            uint currentPC = pc - 4;
+            uint target = (currentPC + (uint)seOffset) & 0x3FFFC;
+
+            return target;
+        }
+
+        private static uint GetRelativeBranchTarget(uint pc, SpuInstruction instruction)
+        {
+            return GetRelativeOffsetTarget(pc, instruction) & 0x3FFFC;
+        }
+
+        private static uint GetRelativeMemoryTarget(uint pc, SpuInstruction instruction)
+        {
+            return GetRelativeOffsetTarget(pc, instruction) & 0x3FFF0;
+        }
+
         private static void Brz(SpuThread spu, SpuInstruction instruction)
         {
             // Branch If Zero Word
@@ -18,15 +41,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 if (state->GPR[rt].UInts[PreferredSlot] == 0)
                 {
-                    // Offset is signed 18-bits
-                    int offset = instruction.I16 << 2;
-                    int shift = 32 - 18;
-                    int seOffset = (offset << shift) >> shift;
-
-                    uint currentPC = state->PC - 4;
-                    uint target = (currentPC + (uint)seOffset) & 0x3FFFC;
-
-                    state->PC = target;
+                    state->PC = GetRelativeBranchTarget(state->PC, instruction);
                 }
             }
         }
@@ -56,15 +71,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 if (state->GPR[rt].UInts[PreferredSlot] != 0)
                 {
-                    // Offset is signed 18-bits
-                    int offset = instruction.I16 << 2;
-                    int shift = 32 - 18;
-                    int seOffset = (offset << shift) >> shift;
-
-                    uint currentPC = state->PC - 4;
-                    uint target = (currentPC + (uint)seOffset) & 0x3FFFC;
-
-                    state->PC = target;
+                    state->PC = GetRelativeBranchTarget(state->PC, instruction);
                 }
             }
         }
@@ -80,15 +87,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 if ((state->GPR[rt].UInts[PreferredSlot] & 0xFFFF) == 0)
                 {
-                    // Offset is signed 18-bits
-                    int offset = instruction.I16 << 2;
-                    int shift = 32 - 18;
-                    int seOffset = (offset << shift) >> shift;
-
-                    uint currentPC = state->PC - 4;
-                    uint target = (currentPC + (uint)seOffset) & 0x3FFFC;
-
-                    state->PC = target;
+                    state->PC = GetRelativeBranchTarget(state->PC, instruction);
                 }
             }
         }
@@ -104,15 +103,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
                 if ((state->GPR[rt].UInts[PreferredSlot] & 0xFFFF) != 0)
                 {
-                    // Offset is signed 18-bits
-                    int offset = instruction.I16 << 2;
-                    int shift = 32 - 18;
-                    int seOffset = (offset << shift) >> shift;
-
-                    uint currentPC = state->PC - 4;
-                    uint target = (currentPC + (uint)seOffset) & 0x3FFFC;
-
-                    state->PC = target;
+                    state->PC = GetRelativeBranchTarget(state->PC, instruction);
                 }
             }
         }
@@ -121,17 +112,11 @@ namespace PS3Sharp.Cell.Spu.Interpreter
         {
             // Store Quadword Instruction Relative (a-form)
             int rt = instruction.RtLo;
-            int offset = instruction.I16 << 2;
-
-            // Signed 18-bits (?)
-            int shift = 32 - 18;
-            int seOffset = (offset << shift) >> shift;
 
             unsafe
             {
                 SpuState* state = spu.State;
-                uint currentPC = state->PC - 4;
-                uint target = (currentPC + (uint)seOffset) & 0x3FFF0;
+                uint target = GetRelativeMemoryTarget(state->PC, instruction);
                 BigEndian<UInt128> value = state->GPR[rt].Value128;
                 spu.WriteStorage(target, value);
             }
@@ -143,16 +128,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-
-                // Offset is signed 18-bits
-                int offset = instruction.I16 << 2;
-                int shift = 32 - 18;
-                int seOffset = (offset << shift) >> shift;
-
-                uint currentPC = state->PC - 4;
-                uint target = (currentPC + (uint)seOffset) & 0x3FFFC;
-
-                state->PC = target;
+                state->PC = GetRelativeBranchTarget(state->PC, instruction);
             }
         }
 
@@ -177,24 +153,16 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             // Branch Relative and Set Link
             int rt = instruction.RtLo;
 
-            // Offset is signed 18-bits
-            int offset = instruction.I16 << 2;
-            int shift = 32 - 18;
-            int seOffset = (offset << shift) >> shift;
-
             unsafe
             {
                 SpuState* state = spu.State;
-
-                // Relative to this instruction address
-                uint currentPC = state->PC - 4;
-                uint target = (currentPC + (uint)seOffset) & 0x3FFFC;
 
                 // Link pc
                 state->GPR[rt].Value128 = UInt128.Zero;
                 state->GPR[rt].UInts[PreferredSlot] = state->PC;
 
-                state->PC = target;
+                // Branch
+                state->PC = GetRelativeBranchTarget(state->PC, instruction);
             }
         }
 
@@ -216,17 +184,11 @@ namespace PS3Sharp.Cell.Spu.Interpreter
         {
             // Load Quadword Instruction Relative (a-form)
             int rt = instruction.RtLo;
-            int offset = instruction.I16 << 2;
-
-            // Signed 18-bits (?)
-            int shift = 32 - 18;
-            int seOffset = (offset << shift) >> shift;
 
             unsafe
             {
                 SpuState* state = spu.State;
-                uint currentPC = state->PC - 4;
-                uint target = (currentPC + (uint)seOffset) & 0x3FFF0;
+                uint target = GetRelativeMemoryTarget(state->PC, instruction);
                 BigEndian<UInt128> value = spu.ReadStorage<BigEndian<UInt128>>(target);
                 state->GPR[rt].Value128 = value;
             }
