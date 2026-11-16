@@ -15,7 +15,6 @@ namespace PS3Sharp.OS.Syscall
 {
     internal class SysSpu
     {
-
         [StructLayout(LayoutKind.Sequential)]
         internal struct SysSpuSegment : IPS3Struct
         {
