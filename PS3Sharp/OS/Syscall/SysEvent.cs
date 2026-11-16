@@ -57,7 +57,7 @@ namespace PS3Sharp.OS.Syscall
             GuestVoidPtr event_ptr = ppu.ReadArg<GuestVoidPtr>(Arg1); //?
             ulong us_timeout = ppu.ReadArg<ulong>(Arg2);
 
-            Console.WriteLine($"[{ppu.ThreadName}] sys_event_queue_receive - waiting for event queue id 0x{queue_id:X8} timeout = {us_timeout}us");
+            //Console.WriteLine($"[{ppu.ThreadName}] sys_event_queue_receive - waiting for event queue id 0x{queue_id:X8} timeout = {us_timeout}us pc = 0x{ppu.GetPC():X}");
 
             if (!TryGetEventQueueByID(queue_id, out LV2EventQueue? eventQueue))
             {

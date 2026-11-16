@@ -111,8 +111,8 @@ namespace PS3Sharp.Cell.Spu
         private uint _lastReservedAddress;
         private readonly ManualResetEventSlim _lostReservationEvent = new(false);
 
-        private readonly BlockingCollection<uint> _outMBox = new(boundedCapacity: 1);
-        private readonly BlockingCollection<uint> _inMBox = new(boundedCapacity: 1);
+        private readonly BlockingCollection<uint> _outMBox = new(boundedCapacity: 4);
+        private readonly BlockingCollection<uint> _inMBox = new(boundedCapacity: 4);
 
         private readonly LV2SpuThreadGroup? _ownerGroup;
 
@@ -285,6 +285,8 @@ namespace PS3Sharp.Cell.Spu
         internal uint ReadChannel(int channelNumber)
         {
             MfcChannel channel = (MfcChannel)channelNumber;
+           // Console.WriteLine($"ReadChannel {channel} pc = 0x{State->PC:X}");
+
             switch (channel)
             {
                 case MfcChannel.RdEventStat:
@@ -315,6 +317,8 @@ namespace PS3Sharp.Cell.Spu
         internal uint ReadChannelCount(int channelNumber)
         {
             MfcChannel channel = (MfcChannel)channelNumber;
+           // Console.WriteLine($"ReadChannelCount {channel} pc = 0x{State->PC:X}");
+
             switch (channel)
             {
                 // Stub
@@ -341,6 +345,8 @@ namespace PS3Sharp.Cell.Spu
         internal void WriteChannel(int channelNumber, uint value)
         {
             MfcChannel channel = (MfcChannel)channelNumber;
+           // Console.WriteLine($"WriteChannel {channel} pc = 0x{State->PC:X}");
+
             switch (channel)
             {
                 case MfcChannel.WrEventMask:
@@ -547,14 +553,15 @@ namespace PS3Sharp.Cell.Spu
 
         private void WriteOutIntrMbox(uint info)
         {
-            ulong port = info >> 24;
-            LV2EventQueue? equeue = _ports[port];
+            ulong code = info >> 24;
+            ulong port = code & 0x3F;
 
+            LV2EventQueue? equeue = _ports[port];
             ulong data0 = (info & 0xFFFFFF) | (port << 32);
 
-            if (port >= 64)
+            if (code >= 64)
             {
-                throw new NotImplementedException($"[Spu] todo: WriteOutIntrMbox on port {port}");
+                throw new NotImplementedException($"[Spu] todo: WriteOutIntrMbox code {port}");
             }
 
             if (!_outMBox.TryTake(out uint data1))
@@ -578,7 +585,7 @@ namespace PS3Sharp.Cell.Spu
             equeue.Send(eventData);
             _inMBox.Add(CellOk);
             
-            Console.WriteLine($"[Spu] WriteOutIntrMbox -> equeue: 0x{equeue.Handle:X8}");
+           // Console.WriteLine($"[Spu] WriteOutIntrMbox -> equeue: 0x{equeue.Handle:X8}");
         }
 
         private void GroupExit(uint status)
@@ -607,6 +614,17 @@ namespace PS3Sharp.Cell.Spu
 
                     Console.WriteLine($"[SPU-{ThreadName}] Stop: 0x{code:X} Exit Status: 0x{exitStatus:X}");
                     GroupExit(exitStatus);
+                    break;
+
+                // Thread Exit
+                case 0x102:
+                    if (!_outMBox.TryTake(out exitStatus))
+                    {
+                        Console.WriteLine($"[SPU-{ThreadName}] Couldn't get exit status from _outMBox");
+                    }
+
+                    Console.WriteLine($"[SPU-{ThreadName}] Stop: 0x{code:X} Exit Status: 0x{exitStatus:X}");
+                    LocalCts.Cancel();
                     break;
             }
         }
