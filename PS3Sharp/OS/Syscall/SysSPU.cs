@@ -9,6 +9,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Windows.UI.Notifications;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 namespace PS3Sharp.OS.Syscall
@@ -92,6 +93,9 @@ namespace PS3Sharp.OS.Syscall
         private readonly SpuElfLoader _elfLoader = new();
         private readonly ConcurrentDictionary<uint, LV2SpuThreadGroup> _spuThreadGroupes = new();
 
+        private int _maxUsableSpu = 6;
+        private int _maxRawSpu = 0;
+
         internal SysSpu(ThreadManager threadManager, MemoryManager memoryManager, SysEvent sysEvent)
         {
             _threadManager = threadManager;
@@ -101,6 +105,20 @@ namespace PS3Sharp.OS.Syscall
 
         internal ulong SysSpuInitialize(PPUThread ppu)
         {
+            int maxUsableSpu = ppu.ReadArg<int>(Arg0);
+            int maxRawSpu = ppu.ReadArg<int>(Arg1);
+
+            Console.WriteLine($"[SysSpuInitialize] maxUsableSpu = {maxUsableSpu} maxRawSpu = {maxRawSpu}");
+
+            if (maxRawSpu > 5)
+            {
+                return CellEInval;
+            }
+
+            // Limit maximum usable spu cores to 6
+            _maxUsableSpu = int.Min(maxUsableSpu, 6);
+            _maxRawSpu = _maxUsableSpu - maxRawSpu;
+
             return CellOk;
         }
 
