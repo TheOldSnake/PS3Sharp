@@ -9,10 +9,8 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Windows.UI.Notifications;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
-using static PS3Sharp.Cell.PPU.Recompiler.IR.IRGenerator;
 namespace PS3Sharp.OS.Syscall
 {
     internal class SysSpu
