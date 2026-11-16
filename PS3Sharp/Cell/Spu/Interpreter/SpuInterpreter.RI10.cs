@@ -260,6 +260,27 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Xorhi(SpuThread spu, SpuInstruction instruction)
+        {
+            // Exclusive Or Halfword Immediate
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int imm = instruction.SeI10;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<short> raLanes = state->GPR[ra].Shorts;
+                Span<short> rtLanes = state->GPR[rt].Shorts;
+
+                Vector128<short> va = Vector128.Create(raLanes);
+                Vector128<short> vi = Vector128.Create((short)imm);
+                Vector128<short> result = va ^ vi;
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
         private static void Cgti(SpuThread spu, SpuInstruction instruction)
         {
             // Compare Greater Than Word Immediate
@@ -277,6 +298,27 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Vector128<int> va = Vector128.Create(raLanes);
                 Vector128<int> vi = Vector128.Create(seI10);
                 Vector128<int> result = Vector128.GreaterThan(va, vi);
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Cgthi(SpuThread spu, SpuInstruction instruction)
+        {
+            // Compare Greater Than Halfword Immediate
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int imm = instruction.I10;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<short> raLanes = state->GPR[ra].Shorts;
+                Span<short> rtLanes = state->GPR[rt].Shorts;
+
+                Vector128<short> va = Vector128.Create(raLanes);
+                Vector128<short> vi = Vector128.Create((short)imm);
+                Vector128<short> result = Vector128.GreaterThan(va, vi);
 
                 result.CopyTo(rtLanes);
             }

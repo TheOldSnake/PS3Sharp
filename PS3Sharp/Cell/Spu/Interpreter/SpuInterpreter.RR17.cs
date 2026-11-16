@@ -158,6 +158,57 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Absdb(SpuThread spu, SpuInstruction instruction)
+        {
+            // Absolute Differences of Bytes
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<byte> raLanes = state->GPR[ra].Bytes;
+                Span<byte> rbLanes = state->GPR[rb].Bytes;
+                Span<byte> rtLanes = state->GPR[rt].Bytes;
+
+                Vector128<byte> va = Vector128.Create(raLanes);
+                Vector128<byte> vb = Vector128.Create(rbLanes);
+
+                Vector128<byte> max = Vector128.Max(va, vb);
+                Vector128<byte> min = Vector128.Min(va, vb);
+                Vector128<byte> result = max - min;
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Rot(SpuThread spu, SpuInstruction instruction)
+        {
+            // Rotate Word
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rbLanes = state->GPR[rb].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                int rotate0 = rbLanes[0] & 0x1F;
+                int rotate1 = rbLanes[1] & 0x1F;
+                int rotate2 = rbLanes[2] & 0x1F;
+                int rotate3 = rbLanes[3] & 0x1F;
+
+                rtLanes[0] = int.RotateLeft(raLanes[0], rotate0);
+                rtLanes[1] = int.RotateLeft(raLanes[1], rotate1);
+                rtLanes[2] = int.RotateLeft(raLanes[2], rotate2);
+                rtLanes[3] = int.RotateLeft(raLanes[3], rotate3);
+            }
+        }
+
         private static void Rotm(SpuThread spu, SpuInstruction instruction)
         {
             // Rotate and Mask Word
@@ -216,6 +267,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
 
         private static void Shl(SpuThread spu, SpuInstruction instruction)
         {
+            // Shift Left Word
             int ra = instruction.Ra;
             int rb = instruction.Rb;
             int rt = instruction.RtLo;
@@ -236,6 +288,146 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 rtLanes[1] = shift1 > 31 ? 0 : raLanes[1] << shift1;
                 rtLanes[2] = shift2 > 31 ? 0 : raLanes[2] << shift2;
                 rtLanes[3] = shift3 > 31 ? 0 : raLanes[3] << shift3;
+            }
+        }
+
+        private static void Roth(SpuThread spu, SpuInstruction instruction)
+        {
+            // Rotate Halfword
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<ushort> raLanes = state->GPR[ra].UShorts;
+                Span<ushort> rbLanes = state->GPR[rb].UShorts;
+                Span<ushort> rtLanes = state->GPR[rt].UShorts;
+
+                int rotate0 = rbLanes[0] & 0xF;
+                int rotate1 = rbLanes[1] & 0xF;
+                int rotate2 = rbLanes[2] & 0xF;
+                int rotate3 = rbLanes[3] & 0xF;
+                int rotate4 = rbLanes[4] & 0xF;
+                int rotate5 = rbLanes[5] & 0xF;
+                int rotate6 = rbLanes[6] & 0xF;
+                int rotate7 = rbLanes[7] & 0xF;
+
+                rtLanes[0] = ushort.RotateLeft(raLanes[0], rotate0);
+                rtLanes[1] = ushort.RotateLeft(raLanes[1], rotate1);
+                rtLanes[2] = ushort.RotateLeft(raLanes[2], rotate2);
+                rtLanes[3] = ushort.RotateLeft(raLanes[3], rotate3);
+                rtLanes[4] = ushort.RotateLeft(raLanes[4], rotate4);
+                rtLanes[5] = ushort.RotateLeft(raLanes[5], rotate5);
+                rtLanes[6] = ushort.RotateLeft(raLanes[6], rotate6);
+                rtLanes[7] = ushort.RotateLeft(raLanes[7], rotate7);
+            }
+        }
+
+        private static void Rothm(SpuThread spu, SpuInstruction instruction)
+        {
+            // Rotate and Mask Halfword
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<ushort> raLanes = state->GPR[ra].UShorts;
+                Span<ushort> rbLanes = state->GPR[rb].UShorts;
+                Span<ushort> rtLanes = state->GPR[rt].UShorts;
+
+                // Logical right shift
+
+                int shift0 = (0 - rbLanes[0]) & 0x1F;
+                int shift1 = (0 - rbLanes[1]) & 0x1F;
+                int shift2 = (0 - rbLanes[2]) & 0x1F;
+                int shift3 = (0 - rbLanes[3]) & 0x1F;
+                int shift4 = (0 - rbLanes[4]) & 0x1F;
+                int shift5 = (0 - rbLanes[5]) & 0x1F;
+                int shift6 = (0 - rbLanes[6]) & 0x1F;
+                int shift7 = (0 - rbLanes[7]) & 0x1F;
+
+                rtLanes[0] = (ushort)(shift0 > 15 ? 0 : raLanes[0] >> shift0);
+                rtLanes[1] = (ushort)(shift1 > 15 ? 0 : raLanes[1] >> shift1);
+                rtLanes[2] = (ushort)(shift2 > 15 ? 0 : raLanes[2] >> shift2);
+                rtLanes[3] = (ushort)(shift3 > 15 ? 0 : raLanes[3] >> shift3);
+                rtLanes[4] = (ushort)(shift4 > 15 ? 0 : raLanes[4] >> shift4);
+                rtLanes[5] = (ushort)(shift5 > 15 ? 0 : raLanes[5] >> shift5);
+                rtLanes[6] = (ushort)(shift6 > 15 ? 0 : raLanes[6] >> shift6);
+                rtLanes[7] = (ushort)(shift7 > 15 ? 0 : raLanes[7] >> shift7);
+            }
+        }
+
+        private static void Rotmah(SpuThread spu, SpuInstruction instruction)
+        {
+            // Rotate and Mask Algebraic Halfword
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<short> raLanes = state->GPR[ra].Shorts;
+                Span<short> rbLanes = state->GPR[rb].Shorts;
+                Span<short> rtLanes = state->GPR[rt].Shorts;
+
+                // Arithmetic right shift
+
+                int shift0 = int.Min((0 - rbLanes[0]) & 0x1F, 15);
+                int shift1 = int.Min((0 - rbLanes[1]) & 0x1F, 15);
+                int shift2 = int.Min((0 - rbLanes[2]) & 0x1F, 15);
+                int shift3 = int.Min((0 - rbLanes[3]) & 0x1F, 15);
+                int shift4 = int.Min((0 - rbLanes[4]) & 0x1F, 15);
+                int shift5 = int.Min((0 - rbLanes[5]) & 0x1F, 15);
+                int shift6 = int.Min((0 - rbLanes[6]) & 0x1F, 15);
+                int shift7 = int.Min((0 - rbLanes[7]) & 0x1F, 15);
+
+                rtLanes[0] = (short)(raLanes[0] >> shift0);
+                rtLanes[1] = (short)(raLanes[1] >> shift1);
+                rtLanes[2] = (short)(raLanes[2] >> shift2);
+                rtLanes[3] = (short)(raLanes[3] >> shift3);
+                rtLanes[4] = (short)(raLanes[4] >> shift4);
+                rtLanes[5] = (short)(raLanes[5] >> shift5);
+                rtLanes[6] = (short)(raLanes[6] >> shift6);
+                rtLanes[7] = (short)(raLanes[7] >> shift7);
+            }
+        }
+
+        private static void Shlh(SpuThread spu, SpuInstruction instruction)
+        {
+            // Shift Left Halfword
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<ushort> raLanes = state->GPR[ra].UShorts;
+                Span<ushort> rbLanes = state->GPR[rb].UShorts;
+                Span<ushort> rtLanes = state->GPR[rt].UShorts;
+
+                int shift0 = rbLanes[0] & 0x1F;
+                int shift1 = rbLanes[1] & 0x1F;
+                int shift2 = rbLanes[2] & 0x1F;
+                int shift3 = rbLanes[3] & 0x1F;
+                int shift4 = rbLanes[4] & 0x1F;
+                int shift5 = rbLanes[5] & 0x1F;
+                int shift6 = rbLanes[6] & 0x1F;
+                int shift7 = rbLanes[7] & 0x1F;
+
+                rtLanes[0] = (ushort)(shift0 > 15 ? 0 : raLanes[0] << shift0);
+                rtLanes[1] = (ushort)(shift1 > 15 ? 0 : raLanes[1] << shift1);
+                rtLanes[2] = (ushort)(shift2 > 15 ? 0 : raLanes[2] << shift2);
+                rtLanes[3] = (ushort)(shift3 > 15 ? 0 : raLanes[3] << shift3);
+                rtLanes[4] = (ushort)(shift4 > 15 ? 0 : raLanes[4] << shift4);
+                rtLanes[5] = (ushort)(shift5 > 15 ? 0 : raLanes[5] << shift5);
+                rtLanes[6] = (ushort)(shift6 > 15 ? 0 : raLanes[6] << shift6);
+                rtLanes[7] = (ushort)(shift7 > 15 ? 0 : raLanes[7] << shift7);
             }
         }
 
@@ -347,6 +539,35 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Rothi(SpuThread spu, SpuInstruction instruction)
+        {
+            // Rotate Halfword Immediate
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int rotation = instruction.SeI7 & 0xF;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+
+                if (rotation != 0)
+                {
+                    Span<ushort> raLanes = state->GPR[ra].UShorts;
+                    Span<ushort> rtLanes = state->GPR[rt].UShorts;
+
+                    // ROL(x,n) = (x << n) | (x >> (16−n))
+                    Vector128<ushort> va = Vector128.Create(raLanes);
+                    Vector128<ushort> result = (va << rotation) | (va >> (16 - rotation));
+
+                    result.CopyTo(rtLanes);
+                }
+                else
+                {
+                    state->GPR[rt].Value128 = state->GPR[ra].Value128;
+                }
+            }
+        }
+
         private static void Rothmi(SpuThread spu, SpuInstruction instruction)
         {
             // Rotate and Mask Halfword Immediate
@@ -371,6 +592,28 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 {
                     state->GPR[rt].Value128 = UInt128.Zero;
                 }
+            }
+        }
+
+        private static void Rotmahi(SpuThread spu, SpuInstruction instruction)
+        {
+            // Rotate and Mask Algebraic Halfword Immediate
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int shiftCount = int.Min((0 - instruction.SeI7) & 0x1F, 15);
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<short> raLanes = state->GPR[ra].Shorts;
+                Span<short> rtLanes = state->GPR[rt].Shorts;
+
+                // Arithmetic right shift
+
+                Vector128<short> va = Vector128.Create(raLanes);
+                Vector128<short> result = va >> shiftCount;
+
+                result.CopyTo(rtLanes);
             }
         }
 
@@ -459,10 +702,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Span<uint> rbLanes = state->GPR[rb].UInts;
                 Span<uint> rtLanes = state->GPR[rt].UInts;
 
-                // Add and detect (unsigned) 32-bit carry
+                // Add and detect (unsigned) 32-bit carry of va + vb
+                Vector128<uint> mask = Vector128.Create(1u);
                 Vector128<uint> va = Vector128.Create(raLanes);
                 Vector128<uint> vb = Vector128.Create(rbLanes);
-                Vector128<uint> mask = Vector128.Create(1u);
 
                 // Carry if (a + b) < a
                 Vector128<uint> added = va + vb;
@@ -492,6 +735,50 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Vector128<short> va = Vector128.Create(raLanes);
                 Vector128<short> vb = Vector128.Create(rbLanes);
                 Vector128<short> result = va + vb;
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Nand(SpuThread spu, SpuInstruction instruction)
+        {
+            // Nand
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rbLanes = state->GPR[rb].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                Vector128<int> va = Vector128.Create(raLanes);
+                Vector128<int> vb = Vector128.Create(rbLanes);
+                Vector128<int> result = ~(va & vb);
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Avgb(SpuThread spu, SpuInstruction instruction)
+        {
+            // Average Bytes
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<byte> raLanes = state->GPR[ra].Bytes;
+                Span<byte> rbLanes = state->GPR[rb].Bytes;
+                Span<byte> rtLanes = state->GPR[rt].Bytes;
+
+                Vector128<byte> va = Vector128.Create(raLanes);
+                Vector128<byte> vb = Vector128.Create(rbLanes);
+                Vector128<byte> result = (va + vb + Vector128<byte>.One) >> 1;
 
                 result.CopyTo(rtLanes);
             }
@@ -975,6 +1262,71 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Rotqmby(SpuThread spu, SpuInstruction instruction)
+        {
+            // Rotate and Mask Quadword by Bytes
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+
+                int shiftCount = (0 - state->GPR[rb].Ints[PreferredSlot]) & 0x1F;
+                int position = (shiftCount & 0xF) * Vector128<byte>.Count;
+
+                if (shiftCount < 16)
+                {
+                    Span<byte> raLanes = state->GPR[ra].Bytes;
+                    Span<byte> rtLanes = state->GPR[rt].Bytes;
+
+                    Vector128<byte> va = Vector128.Create(raLanes);
+                    Vector128<byte> shuffle = Vector128.LoadUnsafe(in SpuTables.RightShiftTableRef, (nuint)position);  // Note: In .NET 11 we can replace LoadUnsafe() with Create() from Span.Slice() without bounds check
+                    Vector128<byte> result = Vector128.ShuffleNative(va, shuffle);
+
+                    result.CopyTo(rtLanes);
+                }
+                else
+                {
+                    state->GPR[rt].Value128 = UInt128.Zero;
+                }
+            }
+        }
+
+        private static void Shlqby(SpuThread spu, SpuInstruction instruction)
+        {
+            // Shift Left Quadword by Bytes
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                int shiftCount = state->GPR[rb].Ints[PreferredSlot] & 0x1F;
+                int position = (shiftCount & 0xF) * Vector128<byte>.Count;
+
+                if (shiftCount < 16)
+                {
+                    Span<byte> raLanes = state->GPR[ra].Bytes;
+                    Span<byte> rtLanes = state->GPR[rt].Bytes;
+
+                    // Note: the shift table depends on x86 PSHUFB semanticss
+
+                    Vector128<byte> va = Vector128.Create(raLanes);
+                    Vector128<byte> shuffle = Vector128.LoadUnsafe(in SpuTables.LeftShiftTableRef, (nuint)position); // Note: In .NET 11 we can replace LoadUnsafe() with Create() from Span.Slice() without bounds check
+                    Vector128<byte> result = Vector128.ShuffleNative(va, shuffle);
+
+                    result.CopyTo(rtLanes);
+                }
+                else
+                {
+                    state->GPR[rt].Value128 = UInt128.Zero;
+                }
+            }
+        }
+
         private static void Orx(SpuThread spu, SpuInstruction instruction)
         {
             // Or Across
@@ -1074,6 +1426,20 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             {
                 SpuState* state = spu.State;
                 state->GPR[rt].Value128 = UInt128.RotateLeft(state->GPR[ra].Value128, rotation);
+            }
+        }
+
+        private static void Rotqmbii(SpuThread spu, SpuInstruction instruction)
+        {
+            // Rotate and Mask Quadword by Bits Immediate
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int shiftCount = (0 - instruction.I7) & 0x7;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                state->GPR[rt].Value128 = state->GPR[ra].Value128 >> shiftCount;
             }
         }
 
@@ -1195,6 +1561,94 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Vector128<int> va = Vector128.Create(raLanes);
                 Vector128<int> vb = Vector128.Create(rbLanes);
                 Vector128<int> result = Vector128.GreaterThan(va, vb);
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Xor(SpuThread spu, SpuInstruction instruction)
+        {
+            // Exclusive Or
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rbLanes = state->GPR[rb].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                Vector128<int> va = Vector128.Create(raLanes);
+                Vector128<int> vb = Vector128.Create(rbLanes);
+                Vector128<int> result = va ^ vb;
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Eqv(SpuThread spu, SpuInstruction instruction)
+        {
+            // Equivalent
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rbLanes = state->GPR[rb].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                Vector128<int> va = Vector128.Create(raLanes);
+                Vector128<int> vb = Vector128.Create(rbLanes);
+                Vector128<int> result = va ^ (~vb);
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Cgth(SpuThread spu, SpuInstruction instruction)
+        {
+            // Compare Greater Than Halfword
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<short> raLanes = state->GPR[ra].Shorts;
+                Span<short> rbLanes = state->GPR[rb].Shorts;
+                Span<short> rtLanes = state->GPR[rt].Shorts;
+
+                Vector128<short> va = Vector128.Create(raLanes);
+                Vector128<short> vb = Vector128.Create(rbLanes);
+                Vector128<short> result = Vector128.GreaterThan(va, vb);
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Cgtb(SpuThread spu, SpuInstruction instruction)
+        {
+            // Compare Greater Than Byte
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<sbyte> raLanes = state->GPR[ra].SBytes;
+                Span<sbyte> rbLanes = state->GPR[rb].SBytes;
+                Span<sbyte> rtLanes = state->GPR[rt].SBytes;
+
+                Vector128<sbyte> va = Vector128.Create(raLanes);
+                Vector128<sbyte> vb = Vector128.Create(rbLanes);
+                Vector128<sbyte> result = Vector128.GreaterThan(va, vb);
 
                 result.CopyTo(rtLanes);
             }
@@ -1409,6 +1863,28 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Orc(SpuThread spu, SpuInstruction instruction)
+        {
+            // Or with Complement
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rbLanes = state->GPR[rb].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                Vector128<int> va = Vector128.Create(raLanes);
+                Vector128<int> vb = Vector128.Create(rbLanes);
+                Vector128<int> result = va | (~vb);
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
         private static void Clgtb(SpuThread spu, SpuInstruction instruction)
         {
             // Compare Logical Greater Than Byte
@@ -1474,6 +1950,67 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Vector128<int> vb = Vector128.Create(rbLanes);
                 Vector128<int> vt = Vector128.Create(rtLanes) & mask;
                 Vector128<int> result = vb + (~va) + vt;
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Cgx(SpuThread spu, SpuInstruction instruction)
+        {
+            // Carry Generate Extended
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<uint> raLanes = state->GPR[ra].UInts;
+                Span<uint> rbLanes = state->GPR[rb].UInts;
+                Span<uint> rtLanes = state->GPR[rt].UInts;
+
+                // Add and detect (unsigned) 32-bit carry of va + vb + (vt & 1)
+                Vector128<uint> mask = Vector128.Create(1u);
+                Vector128<uint> va = Vector128.Create(raLanes);
+                Vector128<uint> vb = Vector128.Create(rbLanes);
+                Vector128<uint> vt = Vector128.Create(rtLanes) & mask;
+
+                // First addition and carry detection
+                Vector128<uint> sum1 = va + vb;
+                Vector128<uint> carry1 = Vector128.LessThan(sum1, va);
+
+                // Second addition and carry detection
+                Vector128<uint> sum2 = sum1 + vt;
+                Vector128<uint> carry2 = Vector128.LessThan(sum2, sum1);
+
+                // Combine carry conditions and convert 0xFFFFFFFF / 0 into 1 / 0
+                Vector128<uint> result = (carry1 | carry2) & mask;
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Bgx(SpuThread spu, SpuInstruction instruction)
+        {
+            // Borrow Generate Extended
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<int> rbLanes = state->GPR[rb].Ints;
+                Span<int> rtLanes = state->GPR[rt].Ints;
+
+                Vector128<int> mask = Vector128.Create(1);
+                Vector128<int> va = Vector128.Create(raLanes);
+                Vector128<int> vb = Vector128.Create(rbLanes);
+                Vector128<int> vt = Vector128.Create(rtLanes) & mask;
+
+                Vector128<int> subtracted = vb - (va + (~vt));
+                Vector128<int> result = Vector128.GreaterThanOrEqual(subtracted, Vector128<int>.Zero) & mask;
 
                 result.CopyTo(rtLanes);
             }

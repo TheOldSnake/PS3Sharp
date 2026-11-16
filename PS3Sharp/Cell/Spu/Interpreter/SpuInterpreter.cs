@@ -3,10 +3,20 @@
     internal partial class SpuInterpreter
     {
         internal const int PreferredSlot = 3;
+        internal static bool Log = false;
 
         internal static void Step(SpuThread spu)
         {
             SpuInstruction instruction = spu.ReadInstruction();
+
+            if (Log)
+            {
+                unsafe
+                {
+                    Console.WriteLine($"[0x{spu.State->PC:X}] 0x{instruction.Raw:X}");
+                }
+            }
+
             HandleInstruction(spu, instruction);
         }
 
@@ -63,6 +73,14 @@
                     Nor(spu, instruction);
                     break;
 
+                case RR17.Absdb:
+                    Absdb(spu, instruction);
+                    break;
+
+                case RR17.Rot:
+                    Rot(spu, instruction);
+                    break;
+
                 case RR17.Rotm:
                     Rotm(spu, instruction);
                     break;
@@ -73,6 +91,22 @@
 
                 case RR17.Shl:
                     Shl(spu, instruction);
+                    break;
+
+                case RR17.Roth:
+                    Roth(spu, instruction);
+                    break;
+
+                case RR17.Rothm:
+                    Rothm(spu, instruction);
+                    break;
+
+                case RR17.Rotmah:
+                    Rotmah(spu, instruction);
+                    break;
+
+                case RR17.Shlh:
+                    Shlh(spu, instruction);
                     break;
 
                 case RR17.Roti:
@@ -91,8 +125,16 @@
                     Shli(spu, instruction);
                     break;
 
+                case RR17.Rothi:
+                    Rothi(spu, instruction);
+                    break;
+
                 case RR17.Rothmi:
                     Rothmi(spu, instruction);
+                    break;
+
+                case RR17.Rotmahi:
+                    Rotmahi(spu, instruction);
                     break;
 
                 case RR17.Shlhi:
@@ -113,6 +155,14 @@
 
                 case RR17.Ah:
                     Ah(spu, instruction);
+                    break;
+
+                case RR17.Nand:
+                    Nand(spu, instruction);
+                    break;
+
+                case RR17.Avgb:
+                    Avgb(spu, instruction);
                     break;
 
                 case RR17.Wrch:
@@ -211,6 +261,14 @@
                     Rotqby(spu, instruction);
                     break;
 
+                case RR17.Rotqmby:
+                    Rotqmby(spu, instruction);
+                    break;
+
+                case RR17.Shlqby:
+                    Shlqby(spu, instruction);
+                    break;
+
                 case RR17.Orx:
                     Orx(spu, instruction);
                     break;
@@ -235,6 +293,10 @@
                     Rotqbii(spu, instruction);
                     break;
 
+                case RR17.Rotqmbii:
+                    Rotqmbii(spu, instruction);
+                    break;
+
                 case RR17.Shlqbii:
                     Shlqbii(spu, instruction);
                     break;
@@ -257,6 +319,22 @@
 
                 case RR17.Cgt:
                     Cgt(spu, instruction);
+                    break;
+
+                case RR17.Xor:
+                    Xor(spu, instruction);
+                    break;
+
+                case RR17.Eqv:
+                    Eqv(spu, instruction);
+                    break;
+
+                case RR17.Cgth:
+                    Cgth(spu, instruction);
+                    break;
+
+                case RR17.Cgtb:
+                    Cgtb(spu, instruction);
                     break;
 
                 case RR17.Sumb:
@@ -295,6 +373,10 @@
                     Clgth(spu, instruction);
                     break;
 
+                case RR17.Orc:
+                    Orc(spu, instruction);
+                    break;
+
                 case RR17.Clgtb:
                     Clgtb(spu, instruction);
                     break;
@@ -305,6 +387,14 @@
 
                 case RR17.Sfx:
                     Sfx(spu, instruction);
+                    break;
+
+                case RR17.Cgx:
+                    Cgx(spu, instruction);
+                    break;
+
+                case RR17.Bgx:
+                    Bgx(spu, instruction);
                     break;
 
                 case RR17.Mpyhha:
@@ -487,8 +577,16 @@
                     Xori(spu, instruction);
                     break;
 
+                case RI10.Xorhi:
+                    Xorhi(spu, instruction);
+                    break;
+
                 case RI10.Cgti:
                     Cgti(spu, instruction);
+                    break;
+
+                case RI10.Cgthi:
+                    Cgthi(spu, instruction);
                     break;
 
                 case RI10.Cgtbi:
