@@ -886,14 +886,13 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                uint currentPC = state->PC;
-                uint target = state->GPR[ra].UInts[PreferredSlot] & 0x3FFFC;
 
                 // Link
                 state->GPR[rt].Value128 = UInt128.Zero;
-                state->GPR[rt].UInts[PreferredSlot] = currentPC;
+                state->GPR[rt].UInts[PreferredSlot] = state->PC;
 
-                state->PC = target;
+                // Branch
+                state->PC = state->GPR[ra].UInts[PreferredSlot] & 0x3FFFC;
             }
 
             // TODO: Enable/Disable interrupts
