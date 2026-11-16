@@ -9,7 +9,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Windows.UI.Notifications;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 namespace PS3Sharp.OS.Syscall
@@ -274,39 +273,34 @@ namespace PS3Sharp.OS.Syscall
                 return CellESrch;
             }
 
-            // Clear 64-bit
-            _memoryManager.Write<ulong>(destPtr, 0);
-
             switch (type)
             {
                 case 1:
                     // 8-bit read
-                    ReadLs<byte>();
+                    byte data8 = spu.ReadStorage<byte>(srcPtr);
+                    _memoryManager.Write<BigEndian<ulong>>(destPtr, data8);
                     break;
 
                 case 2:
                     // 16-bit read
-                    ReadLs<ushort>();
+                    ushort data16 = spu.ReadStorage<BigEndian<ushort>>(srcPtr);
+                    _memoryManager.Write<BigEndian<ulong>>(destPtr, data16);
                     break;
 
                 case 4:
                     // 32-bit read
-                    ReadLs<uint>();
+                    uint data32 = spu.ReadStorage<BigEndian<uint>>(srcPtr);
+                    _memoryManager.Write<BigEndian<ulong>>(destPtr, data32);
                     break;
 
                 case 8:
-                    // 64-bit read
-                    ReadLs<ulong>();
+                    // 64-bit read (no need to swap)
+                    ulong data64 = spu.ReadStorage<ulong>(srcPtr);
+                    _memoryManager.Write(destPtr, data64);
                     break;
 
                 default:
                     throw new Exception($"[SysSpuThreadReadLS] Unhandled read type = {type}");
-            }
-
-            void ReadLs<T>() where T : unmanaged
-            {
-                T value = spu.ReadStorage<T>(srcPtr);
-                _memoryManager.Write<T>(destPtr, value);
             }
 
             return CellOk;
