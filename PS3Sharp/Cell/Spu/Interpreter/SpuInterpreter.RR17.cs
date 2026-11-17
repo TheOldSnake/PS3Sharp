@@ -776,11 +776,39 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Span<byte> rbLanes = state->GPR[rb].Bytes;
                 Span<byte> rtLanes = state->GPR[rt].Bytes;
 
-                Vector128<byte> va = Vector128.Create(raLanes);
-                Vector128<byte> vb = Vector128.Create(rbLanes);
-                Vector128<byte> result = (va + vb + Vector128<byte>.One) >> 1;
+                int result0 = (int)raLanes[0] + (int)rbLanes[0] + 1;
+                int result1 = (int)raLanes[1] + (int)rbLanes[1] + 1;
+                int result2 = (int)raLanes[2] + (int)rbLanes[2] + 1;
+                int result3 = (int)raLanes[3] + (int)rbLanes[3] + 1;
+                int result4 = (int)raLanes[4] + (int)rbLanes[4] + 1;
+                int result5 = (int)raLanes[5] + (int)rbLanes[5] + 1;
+                int result6 = (int)raLanes[6] + (int)rbLanes[6] + 1;
+                int result7 = (int)raLanes[7] + (int)rbLanes[7] + 1;
+                int result8 = (int)raLanes[8] + (int)rbLanes[8] + 1;
+                int result9 = (int)raLanes[9] + (int)rbLanes[9] + 1;
+                int result10 = (int)raLanes[10] + (int)rbLanes[10] + 1;
+                int result11 = (int)raLanes[11] + (int)rbLanes[11] + 1;
+                int result12 = (int)raLanes[12] + (int)rbLanes[12] + 1;
+                int result13 = (int)raLanes[13] + (int)rbLanes[13] + 1;
+                int result14 = (int)raLanes[14] + (int)rbLanes[14] + 1;
+                int result15 = (int)raLanes[15] + (int)rbLanes[15] + 1;
 
-                result.CopyTo(rtLanes);
+                rtLanes[0] = (byte)(result0 >> 1);
+                rtLanes[1] = (byte)(result1 >> 1);
+                rtLanes[2] = (byte)(result2 >> 1);
+                rtLanes[3] = (byte)(result3 >> 1);
+                rtLanes[4] = (byte)(result4 >> 1);
+                rtLanes[5] = (byte)(result5 >> 1);
+                rtLanes[6] = (byte)(result6 >> 1);
+                rtLanes[7] = (byte)(result7 >> 1);
+                rtLanes[8] = (byte)(result8 >> 1);
+                rtLanes[9] = (byte)(result9 >> 1);
+                rtLanes[10] = (byte)(result10 >> 1);
+                rtLanes[11] = (byte)(result11 >> 1);
+                rtLanes[12] = (byte)(result12 >> 1);
+                rtLanes[13] = (byte)(result13 >> 1);
+                rtLanes[14] = (byte)(result14 >> 1);
+                rtLanes[15] = (byte)(result15 >> 1);
             }
         }
 
@@ -887,12 +915,14 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             {
                 SpuState* state = spu.State;
 
+                uint target = state->GPR[ra].UInts[PreferredSlot] & 0x3FFFC;
+
                 // Link
                 state->GPR[rt].Value128 = UInt128.Zero;
                 state->GPR[rt].UInts[PreferredSlot] = state->PC;
 
                 // Branch
-                state->PC = state->GPR[ra].UInts[PreferredSlot] & 0x3FFFC;
+                state->PC = target;
             }
 
             // TODO: Enable/Disable interrupts
@@ -1337,8 +1367,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 SpuState* state = spu.State;
                 Span<int> raLanes = state->GPR[ra].Ints;
 
+                int value = raLanes[0] | raLanes[1] | raLanes[2] | raLanes[3];
+
                 state->GPR[rt].Value128 = UInt128.Zero;
-                state->GPR[rt].Ints[PreferredSlot] = raLanes[0] | raLanes[1] | raLanes[2] | raLanes[3];
+                state->GPR[rt].Ints[PreferredSlot] = value;
             }
         }
 
@@ -2003,15 +2035,15 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Span<int> rbLanes = state->GPR[rb].Ints;
                 Span<int> rtLanes = state->GPR[rt].Ints;
 
-                Vector128<int> mask = Vector128.Create(1);
-                Vector128<int> va = Vector128.Create(raLanes);
-                Vector128<int> vb = Vector128.Create(rbLanes);
-                Vector128<int> vt = Vector128.Create(rtLanes) & mask;
+                long result0 = (long)rbLanes[0] - raLanes[0] - (1 - (rtLanes[0] & 1));
+                long result1 = (long)rbLanes[1] - raLanes[1] - (1 - (rtLanes[1] & 1));
+                long result2 = (long)rbLanes[2] - raLanes[2] - (1 - (rtLanes[2] & 1));
+                long result3 = (long)rbLanes[3] - raLanes[3] - (1 - (rtLanes[3] & 1));
 
-                Vector128<int> subtracted = vb - (va + (~vt));
-                Vector128<int> result = Vector128.GreaterThanOrEqual(subtracted, Vector128<int>.Zero) & mask;
-
-                result.CopyTo(rtLanes);
+                rtLanes[0] = result0 >= 0 ? 1 : 0;
+                rtLanes[1] = result1 >= 0 ? 1 : 0;
+                rtLanes[2] = result2 >= 0 ? 1 : 0;
+                rtLanes[3] = result3 >= 0 ? 1 : 0;
             }
         }
 
