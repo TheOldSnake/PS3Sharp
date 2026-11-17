@@ -442,10 +442,7 @@ namespace PS3Sharp.Cell.Spu
 
             if (Interlocked.Increment(ref _inMboxCount) == 1)
             {
-                using (SpuLock.EnterScope())
-                {
-                    _eventStat |= (uint)EventStat.Mb;
-                }
+                SetEventStat(EventStat.Mb);
             }
         }
 
@@ -455,10 +452,7 @@ namespace PS3Sharp.Cell.Spu
 
             if (Interlocked.Decrement(ref _inMboxCount) == 0)
             {
-                using (SpuLock.EnterScope())
-                {
-                    _eventStat &= ~(uint)EventStat.Mb;
-                }
+               ClearEventStat(EventStat.Mb);
             }
 
             return value;
@@ -524,7 +518,7 @@ namespace PS3Sharp.Cell.Spu
             // causes the existing reservation to be lost
             if (_lastReservedAddress != 0 && srcAddress != _lastReservedAddress)
             {
-                _eventStat |= (uint)EventStat.Lr;
+                SetEventStat(EventStat.Lr);
                 MemoryManager.InvalidateReservations(_lastReservedAddress, CacheLineSize);
             }
 
@@ -574,21 +568,36 @@ namespace PS3Sharp.Cell.Spu
             _lostReservationEvent.Wait();
             _lostReservationEvent.Reset();
 
-            using (SpuLock.EnterScope())
-            {
-                _eventStat |= lr;
-                _lastReservedAddress = 0;
+            // TODO: Handle channel count stuff
 
-                // TODO: Handle channel count stuff
-                return _eventStat & _eventMask;
+            _lastReservedAddress = 0;
+            return SetEventStat(EventStat.Lr) & _eventMask;
+        }
+
+        private uint SetEventStat(EventStat value)
+        {
+            using(SpuLock.EnterScope())
+            {
+                _eventStat |= (uint)value;
+                return _eventStat;
             }
         }
 
-        private void AcknowledgeEventStat(uint value)
+        private uint ClearEventStat(EventStat value)
+        {
+            using(SpuLock.EnterScope())
+            {
+                _eventStat &= ~(uint)value;
+                return _eventStat;
+            }
+        }
+
+        private uint AcknowledgeEventStat(uint value)
         {
             using(SpuLock.EnterScope())
             {
                 _eventStat &= ~value;
+                return _eventStat;
             }
         }
 
