@@ -776,10 +776,11 @@ namespace PS3Sharp.Memory
             destSpan.Fill(value);
         }
 
-        internal string ReadString(uint virtualAddress)
+        internal string ReadString(uint virtualAddress, int length = -1)
         {
             byte* native = (byte*)GetNativeAddress(virtualAddress);
-            return Encoding.UTF8.GetString(MemoryMarshal.CreateReadOnlySpanFromNullTerminated(native));
+            ReadOnlySpan<byte> text = length > 0 ? new ReadOnlySpan<byte>(native, length) : MemoryMarshal.CreateReadOnlySpanFromNullTerminated(native);
+            return Encoding.UTF8.GetString(text);
         }
 
         // Must be in unsafe context

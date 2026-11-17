@@ -11,32 +11,34 @@ namespace PS3Sharp.OS.Syscall
         internal const uint Stdout = 1;
         internal const uint Stderr = 2;
         private readonly MemoryManager _memoryManager;
-
-        // private StreamWriter output = File.AppendText();
+        private readonly StreamWriter _ttyOutputFile = File.AppendText("tty.txt");
+        private static readonly bool LogTTY = false;    // TODO: Make it configurable
 
         internal SysTTY(MemoryManager memoryManager)
         {
             _memoryManager = memoryManager;
         }
 
-        private void Print(string s, ConsoleColor color)
-        {
-            Console.Write(s);
-            //output.Write(s);
-        }
-
         internal ulong SysTTYWrite(PPUThread ppu)
         {
 
-            uint ch = ppu.ReadArg<uint>(Arg0);                               //channel? probably file descriptor
-            GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(Arg1);              //void*
-            uint len = ppu.ReadArg<uint>(Arg2);                              //uint32_t
-            GuestPtr<BigEndian<uint>> pwritelen = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg3);    //uint32_t*
+            uint channel = ppu.ReadArg<uint>(Arg0); // TODO
+            GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(Arg1);
+            int len = ppu.ReadArg<int>(Arg2);    
+            GuestPtr<BigEndian<int>> pwritelen = ppu.ReadArg<GuestPtr<BigEndian<int>>>(Arg3);
 
-            string text = _memoryManager.ReadString(buf);
-            ConsoleColor color = ch == Stdout ? ConsoleColor.Green : ConsoleColor.Red;
-            Print(text, color);
+            string text = _memoryManager.ReadString(buf, len);
 
+            if (LogTTY)
+            {
+                _ttyOutputFile.Write(text);
+            }
+            else
+            {
+                Console.Write(text);
+            }
+
+            _memoryManager.Write<BigEndian<int>>(pwritelen, len);
             return CellOk;
         }
     }
