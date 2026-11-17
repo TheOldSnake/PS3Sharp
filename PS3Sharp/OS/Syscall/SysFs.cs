@@ -265,7 +265,7 @@ namespace PS3Sharp.OS.Syscall
             }
             else
             {
-                 Console.WriteLine($"[{ppu.ThreadName}] [SysFsOpen] cellFsOpen opened file {guestPath} fd = 0x{handle:X} flags = 0x{flags}");
+                 Console.WriteLine($"[{ppu.ThreadName}] [SysFsOpen] opened file {guestPath} fd = 0x{handle:X} flags = 0x{flags}");
                 // Write the file descriptor
                 _memoryManager.Write<BigEndian<int>>(fdPtr, handle);
             }
