@@ -2,6 +2,7 @@
 {
     internal partial class SpuInterpreter
     {
+        // Manual: The leftmost word of a register is called the preferred slot. 
         internal const int PreferredSlot = 3;
         internal static bool Log = false;
 
