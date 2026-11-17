@@ -113,6 +113,7 @@ namespace PS3Sharp.Cell.Spu
 
         private readonly BlockingCollection<uint> _outMBox = new(boundedCapacity: 4);
         private readonly BlockingCollection<uint> _inMBox = new(boundedCapacity: 4);
+        private uint _inMboxCount;
 
         private readonly LV2SpuThreadGroup? _ownerGroup;
 
@@ -122,7 +123,7 @@ namespace PS3Sharp.Cell.Spu
         internal uint GroupID { get; }
         internal SysSpu.SysSpuImage Image { get; }
         internal SysSpu.SysSpuThreadArgument Argument { get; }
-        internal Lock Lock { get; } = new();
+        internal Lock SpuLock { get; } = new();
         internal CancellationTokenSource LocalCts { get; } = new();
         internal bool ShouldExit => LocalCts.IsCancellationRequested || (_ownerGroup != null && _ownerGroup.GroupCts.IsCancellationRequested);
 
@@ -149,8 +150,6 @@ namespace PS3Sharp.Cell.Spu
             Argument = arg;
             _ownerGroup = ownerGroup;
         }
-
-        internal void WriteInMbox(uint value) => _inMBox.Add(value);
 
         internal bool PortIsFree(int port) => _ports[port] == null;
 
@@ -306,7 +305,7 @@ namespace PS3Sharp.Cell.Spu
                     return (uint)_atomicStat;
 
                 case MfcChannel.RdInMbox: // Blocking
-                    return _inMBox.Take();
+                    return ReadInMbox();
 
                 default:
                     uint pc = State->PC - 4;
@@ -330,7 +329,7 @@ namespace PS3Sharp.Cell.Spu
                     return 1;
 
                 case MfcChannel.RdInMbox:
-                    return (uint)_inMBox.Count;
+                    return Volatile.Read(ref _inMboxCount);
 
                 // Stub: Always report that there is an available slot in the mailbox
                 case MfcChannel.WrOutIntrMbox:
@@ -354,7 +353,7 @@ namespace PS3Sharp.Cell.Spu
                     break;
 
                 case MfcChannel.WrEventAck:
-                    _eventStat &= ~value;
+                    AcknowledgeEventStat(value);
                     break;
 
                 case MfcChannel.Lsa:
@@ -435,6 +434,34 @@ namespace PS3Sharp.Cell.Spu
         {
             byte* nativeAddress = LsPtr + lsa;
             return new(nativeAddress, size);
+        }
+
+        internal void WriteInMbox(uint value)
+        {
+            _inMBox.Add(value);
+
+            if (Interlocked.Increment(ref _inMboxCount) == 1)
+            {
+                using (SpuLock.EnterScope())
+                {
+                    _eventStat |= (uint)EventStat.Mb;
+                }
+            }
+        }
+
+        internal uint ReadInMbox()
+        {
+            uint value = _inMBox.Take();
+
+            if (Interlocked.Decrement(ref _inMboxCount) == 0)
+            {
+                using (SpuLock.EnterScope())
+                {
+                    _eventStat &= ~(uint)EventStat.Mb;
+                }
+            }
+
+            return value;
         }
 
         private void Put()
@@ -520,9 +547,12 @@ namespace PS3Sharp.Cell.Spu
             // A read from the SPU Read Event Status Channel when it has a channel count of 0 results in an SPU stall; 
             // thereby providing a “wait on event” function.
 
-            if ((_eventStat & _eventMask) != 0)
+            using (SpuLock.EnterScope())
             {
-                return _eventStat & _eventMask;
+                if ((_eventStat & _eventMask) != 0)
+                {
+                    return _eventStat & _eventMask;
+                }
             }
 
             // Currently we only support waiting on reservation lost event
@@ -544,11 +574,22 @@ namespace PS3Sharp.Cell.Spu
             _lostReservationEvent.Wait();
             _lostReservationEvent.Reset();
 
-            _eventStat |= lr;
-            _lastReservedAddress = 0;
+            using (SpuLock.EnterScope())
+            {
+                _eventStat |= lr;
+                _lastReservedAddress = 0;
 
-            // TODO: Handle channel count stuff
-            return _eventStat & _eventMask;
+                // TODO: Handle channel count stuff
+                return _eventStat & _eventMask;
+            }
+        }
+
+        private void AcknowledgeEventStat(uint value)
+        {
+            using(SpuLock.EnterScope())
+            {
+                _eventStat &= ~value;
+            }
         }
 
         private void WriteOutIntrMbox(uint info)
@@ -583,7 +624,7 @@ namespace PS3Sharp.Cell.Spu
             };
 
             equeue.Send(eventData);
-            _inMBox.Add(CellOk);
+            WriteInMbox(CellOk);
             
            // Console.WriteLine($"[Spu] WriteOutIntrMbox -> equeue: 0x{equeue.Handle:X8}");
         }
