@@ -53,7 +53,7 @@ namespace PS3Sharp.Cell.Spu
             return register;
         }
 
-        // Creates the register from 2 ulong value
+        // Creates the register from 2 ulong values
         internal static SpuRegister Create(ulong upper, ulong lower)
         {
             SpuRegister register = new()
