@@ -39,7 +39,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             {
                 SpuState* state = spu.State;
 
-                if (state->GPR[rt].UInts[PreferredSlot] == 0)
+                if (state->GPR[rt].ScalarValue == 0)
                 {
                     state->PC = GetRelativeBranchTarget(state->PC, instruction);
                 }
@@ -69,7 +69,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             {
                 SpuState* state = spu.State;
 
-                if (state->GPR[rt].UInts[PreferredSlot] != 0)
+                if (state->GPR[rt].ScalarValue != 0)
                 {
                     state->PC = GetRelativeBranchTarget(state->PC, instruction);
                 }
@@ -85,7 +85,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             {
                 SpuState* state = spu.State;
 
-                if ((state->GPR[rt].UInts[PreferredSlot] & 0xFFFF) == 0)
+                if ((state->GPR[rt].ScalarValue & 0xFFFF) == 0)
                 {
                     state->PC = GetRelativeBranchTarget(state->PC, instruction);
                 }
@@ -101,7 +101,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             {
                 SpuState* state = spu.State;
 
-                if ((state->GPR[rt].UInts[PreferredSlot] & 0xFFFF) != 0)
+                if ((state->GPR[rt].ScalarValue & 0xFFFF) != 0)
                 {
                     state->PC = GetRelativeBranchTarget(state->PC, instruction);
                 }
@@ -144,7 +144,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                state->GPR[rt].Value128 = lut[i16];
+                state->GPR[rt] = SpuRegister.Create(lut[i16]);
             }
         }
 
@@ -158,8 +158,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 SpuState* state = spu.State;
 
                 // Link pc
-                state->GPR[rt].Value128 = UInt128.Zero;
-                state->GPR[rt].UInts[PreferredSlot] = state->PC;
+                state->GPR[rt] = SpuRegister.CreateFromScalar(state->PC);
 
                 // Branch
                 state->PC = GetRelativeBranchTarget(state->PC, instruction);
@@ -176,7 +175,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             {
                 SpuState* state = spu.State;
                 BigEndian<UInt128> value = spu.ReadStorage<BigEndian<UInt128>>(target);
-                state->GPR[rt].Value128 = value;
+                state->GPR[rt] = SpuRegister.Create(value);
             }
         }
 
@@ -190,7 +189,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 SpuState* state = spu.State;
                 uint target = GetRelativeMemoryTarget(state->PC, instruction);
                 BigEndian<UInt128> value = spu.ReadStorage<BigEndian<UInt128>>(target);
-                state->GPR[rt].Value128 = value;
+                state->GPR[rt] = SpuRegister.Create(value);
             }
         }
 

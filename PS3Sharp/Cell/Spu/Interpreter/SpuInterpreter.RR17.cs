@@ -24,9 +24,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             {
                 SpuState* state = spu.State;
                 uint value = spu.ReadChannel(ca);
-
-                state->GPR[rt].Value128 = UInt128.Zero;
-                state->GPR[rt].UInts[PreferredSlot] = value;
+                state->GPR[rt] = SpuRegister.CreateFromScalar(value);
             }
         }
 
@@ -40,9 +38,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             {
                 SpuState* state = spu.State;
                 uint value = spu.ReadChannelCount(ca);
-
-                state->GPR[rt].Value128 = UInt128.Zero;
-                state->GPR[rt].UInts[PreferredSlot] = value;
+                state->GPR[rt] = SpuRegister.CreateFromScalar(value);
             }
         }
 
@@ -455,7 +451,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 }
                 else
                 {
-                    state->GPR[rt].Value128 = state->GPR[ra].Value128;
+                    state->GPR[rt] = state->GPR[ra];
                 }
             }
         }
@@ -484,7 +480,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 }
                 else
                 {
-                    state->GPR[rt].Value128 = UInt128.Zero;
+                    state->GPR[rt] = SpuRegister.Zero;
                 }
             }
         }
@@ -534,7 +530,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 }
                 else
                 {
-                    state->GPR[rt].Value128 = UInt128.Zero;
+                    state->GPR[rt] = SpuRegister.Zero;
                 }
             }
         }
@@ -563,7 +559,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 }
                 else
                 {
-                    state->GPR[rt].Value128 = state->GPR[ra].Value128;
+                    state->GPR[rt] = state->GPR[ra];
                 }
             }
         }
@@ -590,7 +586,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 }
                 else
                 {
-                    state->GPR[rt].Value128 = UInt128.Zero;
+                    state->GPR[rt] = SpuRegister.Zero;
                 }
             }
         }
@@ -639,7 +635,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 }
                 else
                 {
-                    state->GPR[rt].Value128 = UInt128.Zero;
+                    state->GPR[rt] = SpuRegister.Zero;
                 }
             }
         }
@@ -821,7 +817,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                uint value = state->GPR[rt].UInts[PreferredSlot];
+                uint value = state->GPR[rt].UScalarValue;
                 spu.WriteChannel(ca, value);
             }
         }
@@ -838,9 +834,9 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             {
                 SpuState* state = spu.State;
 
-                if (state->GPR[rt].UInts[PreferredSlot] == 0)
+                if (state->GPR[rt].ScalarValue == 0)
                 {
-                    uint target = state->GPR[ra].UInts[PreferredSlot] & 0x3FFFC;
+                    uint target = state->GPR[ra].UScalarValue & 0x3FFFC;
                     state->PC = target;
                 }
             }
@@ -860,9 +856,9 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             {
                 SpuState* state = spu.State;
 
-                if (state->GPR[rt].UInts[PreferredSlot] != 0)
+                if (state->GPR[rt].ScalarValue != 0)
                 {
-                    uint target = state->GPR[ra].UInts[PreferredSlot] & 0x3FFFC;
+                    uint target = state->GPR[ra].UScalarValue & 0x3FFFC;
                     state->PC = target;
                 }
             }
@@ -880,7 +876,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                uint target = (state->GPR[ra].UInts[PreferredSlot] + state->GPR[rb].UInts[PreferredSlot]) & 0x3FFF0;
+                uint target = (state->GPR[ra].UScalarValue + state->GPR[rb].UScalarValue) & 0x3FFF0;
                 BigEndian<UInt128> value = state->GPR[rt].Value128;
                 spu.WriteStorage(target, value);
             }
@@ -896,7 +892,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                uint target = state->GPR[ra].UInts[PreferredSlot] & 0x3FFFC;
+                uint target = state->GPR[ra].UScalarValue & 0x3FFFC;
                 state->PC = target;
             }
 
@@ -915,11 +911,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             {
                 SpuState* state = spu.State;
 
-                uint target = state->GPR[ra].UInts[PreferredSlot] & 0x3FFFC;
+                uint target = state->GPR[ra].UScalarValue & 0x3FFFC;
 
                 // Link
-                state->GPR[rt].Value128 = UInt128.Zero;
-                state->GPR[rt].UInts[PreferredSlot] = state->PC;
+                state->GPR[rt] = SpuRegister.CreateFromScalar(state->PC);
 
                 // Branch
                 state->PC = target;
@@ -945,8 +940,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     ((raLanes[2] & 1) << 2) |
                     ((raLanes[3] & 1) << 3);
 
-                state->GPR[rt].Value128 = UInt128.Zero;
-                state->GPR[rt].UInts[PreferredSlot] = value;
+                state->GPR[rt] = SpuRegister.CreateFromScalar(value);
             }
         }
 
@@ -971,8 +965,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                    ((raLanes[6] & 1) << 6) |
                    ((raLanes[7] & 1) << 7));
 
-                state->GPR[rt].Value128 = UInt128.Zero;
-                state->GPR[rt].UInts[PreferredSlot] = value;
+                state->GPR[rt] = SpuRegister.CreateFromScalar(value);
             }
         }
 
@@ -1005,8 +998,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                     ((raLanes[14] & 1) << 14) |
                     ((raLanes[15] & 1) << 15));
 
-                state->GPR[rt].Value128 = UInt128.Zero;
-                state->GPR[rt].UInts[PreferredSlot] = value;
+                state->GPR[rt] = SpuRegister.CreateFromScalar(value);
             }
         }
 
@@ -1022,8 +1014,8 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                int index = state->GPR[ra].Ints[PreferredSlot] & 0xF;
-                state->GPR[rt].Value128 = lut[index];
+                int index = state->GPR[ra].ScalarValue & 0xF;
+                state->GPR[rt] = SpuRegister.Create(lut[index]);
             }
         }
 
@@ -1039,8 +1031,8 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                int index = state->GPR[ra].Ints[PreferredSlot] & 0xFF;
-                state->GPR[rt].Value128 = lut[index];
+                int index = state->GPR[ra].ScalarValue & 0xFF;
+                state->GPR[rt] = SpuRegister.Create(lut[index]);
             }
         }
 
@@ -1056,8 +1048,8 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                int index = state->GPR[ra].Ints[PreferredSlot] & 0xFFFF;
-                state->GPR[rt].Value128 = lut[index];
+                int index = state->GPR[ra].ScalarValue & 0xFFFF;
+                state->GPR[rt] = SpuRegister.Create(lut[index]);
             }
         }
 
@@ -1071,9 +1063,9 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                uint target = (state->GPR[ra].UInts[PreferredSlot] + state->GPR[rb].UInts[PreferredSlot]) & 0x3FFF0;
+                uint target = (state->GPR[ra].UScalarValue + state->GPR[rb].UScalarValue) & 0x3FFF0;
                 BigEndian<UInt128> value = spu.ReadStorage<BigEndian<UInt128>>(target);
-                state->GPR[rt].Value128 = value;
+                state->GPR[rt] = SpuRegister.Create(value);
             }
         }
 
@@ -1091,7 +1083,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Span<byte> rtLanes = state->GPR[rt].Bytes;
 
                 // The manual says [25,28], and later uses [24,28] ?
-                int rotation = (state->GPR[rb].Ints[PreferredSlot] >> 3) & 0xF;
+                int rotation = (state->GPR[rb].ScalarValue >> 3) & 0xF;
                 int position = rotation * Vector128<byte>.Count; // rotation already masked
 
                 Vector128<byte> va = Vector128.Create(raLanes);
@@ -1115,7 +1107,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Span<byte> raLanes = state->GPR[ra].Bytes;
                 Span<byte> rtLanes = state->GPR[rt].Bytes;
 
-                int shiftCount = (state->GPR[rb].Ints[PreferredSlot] >> 3) & 0x1F;
+                int shiftCount = (state->GPR[rb].ScalarValue >> 3) & 0x1F;
                 int position = (shiftCount & 0xF) * Vector128<byte>.Count;
 
                 if (shiftCount < 16)
@@ -1130,7 +1122,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 }
                 else
                 {
-                    state->GPR[rt].Value128 = UInt128.Zero;
+                    state->GPR[rt] = SpuRegister.Zero;
                 }
             }
         }
@@ -1148,7 +1140,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Span<byte> raLanes = state->GPR[ra].Bytes;
                 Span<byte> rtLanes = state->GPR[rt].Bytes;
 
-                int shiftCount = (0 - (state->GPR[rb].Ints[PreferredSlot] >> 3)) & 0x1F;
+                int shiftCount = (0 - (state->GPR[rb].ScalarValue >> 3)) & 0x1F;
                 int position = (shiftCount & 0xF) * Vector128<byte>.Count;
 
                 if (shiftCount < 16)
@@ -1163,7 +1155,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 }
                 else
                 {
-                    state->GPR[rt].Value128 = UInt128.Zero;
+                    state->GPR[rt] = SpuRegister.Zero;
                 }
             }
         }
@@ -1178,10 +1170,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                int t = (state->GPR[ra].Ints[PreferredSlot] + state->GPR[rb].Ints[PreferredSlot]) & 0xF;
+                int t = (state->GPR[ra].ScalarValue + state->GPR[rb].ScalarValue) & 0xF;
                 int bytePosition = 15 - t; // Big endian indexing
 
-                state->GPR[rt].Value128 = new(0x1011121314151617, 0x18191A1B1C1D1E1F);
+                state->GPR[rt] = SpuRegister.Create(0x1011121314151617, 0x18191A1B1C1D1E1F);
                 state->GPR[rt].Bytes[bytePosition] = 0x03;
             }
         }
@@ -1196,10 +1188,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                int t = (state->GPR[ra].Ints[PreferredSlot] + state->GPR[rb].Ints[PreferredSlot]) & 0xE;
+                int t = (state->GPR[ra].ScalarValue + state->GPR[rb].ScalarValue) & 0xE;
                 int hwPosition = 7 - (t >> 1); // Big endian indexing
 
-                state->GPR[rt].Value128 = new(0x1011121314151617, 0x18191A1B1C1D1E1F);
+                state->GPR[rt] = SpuRegister.Create(0x1011121314151617, 0x18191A1B1C1D1E1F);
                 state->GPR[rt].UShorts[hwPosition] = 0x0203;
             }
         }
@@ -1214,10 +1206,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                int t = (state->GPR[ra].Ints[PreferredSlot] + state->GPR[rb].Ints[PreferredSlot]) & 0xC;
+                int t = (state->GPR[ra].ScalarValue + state->GPR[rb].ScalarValue) & 0xC;
                 int wPosition = 3 - (t >> 2); // Big endian indexing
 
-                state->GPR[rt].Value128 = new(0x1011121314151617, 0x18191A1B1C1D1E1F);
+                state->GPR[rt] = SpuRegister.Create(0x1011121314151617, 0x18191A1B1C1D1E1F);
                 state->GPR[rt].UInts[wPosition] = 0x00010203;
             }
         }
@@ -1232,8 +1224,8 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                int rotation = state->GPR[rb].Ints[PreferredSlot] & 0x7;
-                state->GPR[rt].Value128 = UInt128.RotateLeft(state->GPR[ra].Value128, rotation);
+                int rotation = state->GPR[rb].ScalarValue & 0x7;
+                state->GPR[rt] = SpuRegister.Create(UInt128.RotateLeft(state->GPR[ra].Value128, rotation));
             }
         }
         
@@ -1247,8 +1239,8 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                int shiftCount = (0 - state->GPR[rb].Ints[PreferredSlot]) & 0x7;
-                state->GPR[rt].Value128 = state->GPR[ra].Value128 >> shiftCount;
+                int shiftCount = (0 - state->GPR[rb].ScalarValue) & 0x7;
+                state->GPR[rt] = SpuRegister.Create(state->GPR[ra].Value128 >> shiftCount);
             }
         }
 
@@ -1262,8 +1254,8 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                int shiftCount = state->GPR[rb].Ints[PreferredSlot] & 0x7;
-                state->GPR[rt].Value128 = state->GPR[ra].Value128 << shiftCount;
+                int shiftCount = state->GPR[rb].ScalarValue & 0x7;
+                state->GPR[rt] = SpuRegister.Create(state->GPR[ra].Value128 << shiftCount);
             }
         }
 
@@ -1280,7 +1272,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Span<byte> raLanes = state->GPR[ra].Bytes;
                 Span<byte> rtLanes = state->GPR[rt].Bytes;
 
-                int rotation = state->GPR[rb].Ints[PreferredSlot] & 0xF;
+                int rotation = state->GPR[rb].ScalarValue & 0xF;
                 int position = rotation * Vector128<byte>.Count; // rotation already masked
 
                 Vector128<byte> va = Vector128.Create(raLanes);
@@ -1302,7 +1294,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             {
                 SpuState* state = spu.State;
 
-                int shiftCount = (0 - state->GPR[rb].Ints[PreferredSlot]) & 0x1F;
+                int shiftCount = (0 - state->GPR[rb].ScalarValue) & 0x1F;
                 int position = (shiftCount & 0xF) * Vector128<byte>.Count;
 
                 if (shiftCount < 16)
@@ -1318,7 +1310,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 }
                 else
                 {
-                    state->GPR[rt].Value128 = UInt128.Zero;
+                    state->GPR[rt] = SpuRegister.Zero;
                 }
             }
         }
@@ -1333,7 +1325,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                int shiftCount = state->GPR[rb].Ints[PreferredSlot] & 0x1F;
+                int shiftCount = state->GPR[rb].ScalarValue & 0x1F;
                 int position = (shiftCount & 0xF) * Vector128<byte>.Count;
 
                 if (shiftCount < 16)
@@ -1351,7 +1343,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 }
                 else
                 {
-                    state->GPR[rt].Value128 = UInt128.Zero;
+                    state->GPR[rt] = SpuRegister.Zero;
                 }
             }
         }
@@ -1365,12 +1357,11 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                Span<int> raLanes = state->GPR[ra].Ints;
+                Span<uint> raLanes = state->GPR[ra].UInts;
 
-                int value = raLanes[0] | raLanes[1] | raLanes[2] | raLanes[3];
+                uint value = raLanes[0] | raLanes[1] | raLanes[2] | raLanes[3];
 
-                state->GPR[rt].Value128 = UInt128.Zero;
-                state->GPR[rt].Ints[PreferredSlot] = value;
+                state->GPR[rt] = SpuRegister.CreateFromScalar(value);
             }
         }
 
@@ -1384,10 +1375,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                int t = (state->GPR[ra].Ints[PreferredSlot] + seI7) & 0xF;
+                int t = (state->GPR[ra].ScalarValue + seI7) & 0xF;
                 int bytePosition = 15 - t; // Big endian indexing
 
-                state->GPR[rt].Value128 = new(0x1011121314151617, 0x18191A1B1C1D1E1F);
+                state->GPR[rt] = SpuRegister.Create(0x1011121314151617, 0x18191A1B1C1D1E1F);
                 state->GPR[rt].Bytes[bytePosition] = 0x03;
             }
         }
@@ -1402,10 +1393,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                int t = (state->GPR[ra].Ints[PreferredSlot] + seI7) & 0xE;
+                int t = (state->GPR[ra].ScalarValue + seI7) & 0xE;
                 int hwPosition = 7 - (t >> 1); // Big endian indexing
 
-                state->GPR[rt].Value128 = new(0x1011121314151617, 0x18191A1B1C1D1E1F);
+                state->GPR[rt] = SpuRegister.Create(0x1011121314151617, 0x18191A1B1C1D1E1F);
                 state->GPR[rt].UShorts[hwPosition] = 0x0203;
             }
         }
@@ -1420,10 +1411,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                int t = (state->GPR[ra].Ints[PreferredSlot] + seI7) & 0xC;
+                int t = (state->GPR[ra].ScalarValue + seI7) & 0xC;
                 int wPosition = 3 - (t >> 2); // Big endian indexing
 
-                state->GPR[rt].Value128 = new(0x1011121314151617, 0x18191A1B1C1D1E1F);
+                state->GPR[rt] = SpuRegister.Create(0x1011121314151617, 0x18191A1B1C1D1E1F);
                 state->GPR[rt].UInts[wPosition] = 0x00010203;
             }
         }
@@ -1438,10 +1429,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                int t = (state->GPR[ra].Ints[PreferredSlot] + seI7) & 0x8;
+                int t = (state->GPR[ra].ScalarValue + seI7) & 0x8;
                 int dwPosition = 1 - (t >> 3); // Big endian indexing
 
-                state->GPR[rt].Value128 = new(0x1011121314151617, 0x18191A1B1C1D1E1F);
+                state->GPR[rt] = SpuRegister.Create(0x1011121314151617, 0x18191A1B1C1D1E1F);
                 state->GPR[rt].ULongs[dwPosition] = 0x0001020304050607;
             }
         }
@@ -1456,7 +1447,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                state->GPR[rt].Value128 = UInt128.RotateLeft(state->GPR[ra].Value128, rotation);
+                state->GPR[rt] = SpuRegister.Create(UInt128.RotateLeft(state->GPR[ra].Value128, rotation));
             }
         }
 
@@ -1470,7 +1461,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                state->GPR[rt].Value128 = state->GPR[ra].Value128 >> shiftCount;
+                state->GPR[rt] = SpuRegister.Create(state->GPR[ra].Value128 >> shiftCount);
             }
         }
 
@@ -1484,7 +1475,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                state->GPR[rt].Value128 = state->GPR[ra].Value128 << shiftCount;
+                state->GPR[rt] = SpuRegister.Create(state->GPR[ra].Value128 << shiftCount);
             }
         }
 
@@ -1537,7 +1528,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 }
                 else
                 {
-                    state->GPR[rt].Value128 = UInt128.Zero;
+                    state->GPR[rt] = SpuRegister.Zero;
                 }
             }
         }
@@ -1570,7 +1561,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 }
                 else
                 {
-                    state->GPR[rt].Value128 = UInt128.Zero;
+                    state->GPR[rt] = SpuRegister.Zero;
                 }
             }
         }
@@ -2104,7 +2095,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                state->GPR[rt].Value128 = UInt128.Zero;
+                state->GPR[rt] = SpuRegister.Zero;
             }
         }
 

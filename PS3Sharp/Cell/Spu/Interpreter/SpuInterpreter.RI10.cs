@@ -210,7 +210,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                uint baseAddress = state->GPR[ra].UInts[PreferredSlot];
+                uint baseAddress = state->GPR[ra].UScalarValue;
                 uint target = (baseAddress + (uint)seOffset) & 0x3FFF0;
                 BigEndian<UInt128> value = state->GPR[rt].Value128;
                 spu.WriteStorage(target, value);
@@ -231,11 +231,11 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             unsafe
             {
                 SpuState* state = spu.State;
-                uint baseAddress = state->GPR[ra].UInts[PreferredSlot];
+                uint baseAddress = state->GPR[ra].UScalarValue;
                 uint target = (baseAddress + (uint)seOffset) & 0x3FFF0;
 
                 BigEndian<UInt128> value = spu.ReadStorage<BigEndian<UInt128>>(target);
-                state->GPR[rt].Value128 = value;
+                state->GPR[rt] = SpuRegister.Create(value);
             }
         }
 
@@ -419,7 +419,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             {
                 SpuState* state = spu.State;
 
-                if (state->GPR[ra].UInts[PreferredSlot] > (uint)seI10)
+                if (state->GPR[ra].UScalarValue > (uint)seI10)
                 {
                     // TODO
                     throw new Exception($"SPU thread halted on Hlgti");
@@ -543,7 +543,7 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             {
                 SpuState* state = spu.State;
 
-                if (state->GPR[ra].UInts[PreferredSlot] == (uint)seI10)
+                if (state->GPR[ra].ScalarValue == seI10)
                 {
                     // TODO
                     throw new Exception($"SPU thread halted on Heqi");
