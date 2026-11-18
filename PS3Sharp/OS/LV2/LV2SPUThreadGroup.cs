@@ -7,6 +7,8 @@ namespace PS3Sharp.OS.LV2
 {
     internal sealed class LV2SpuThreadGroup
     {
+        internal static int LimitSpuThreadCount = 1;    // For debugging
+
         private readonly ThreadManager _threadManager;
         private readonly MemoryManager _memoryManager;
 
@@ -36,6 +38,11 @@ namespace PS3Sharp.OS.LV2
             Number = number;
             Priority = prio;
             Handle = _memoryManager.GetHandle();
+
+            if (LimitSpuThreadCount > 0)
+            {
+                Console.WriteLine($"[LV2SpuThreadGroup] Warning: Spu thread count is limited to {LimitSpuThreadCount}");
+            }
         }
 
         internal SpuThread CreateSpuThread(SysSpuImage img, SysSpuThreadAttribute attribute, SysSpuThreadArgument arg)
@@ -75,6 +82,11 @@ namespace PS3Sharp.OS.LV2
 
                 for (int i = 0; i < _spuThreads.Count; i++)
                 {
+                    if (LimitSpuThreadCount > 0 && i >= LimitSpuThreadCount)
+                    {
+                        break;
+                    }
+
                     _spuThreads[i].Start();
                 }
 
