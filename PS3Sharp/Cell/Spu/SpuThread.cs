@@ -679,6 +679,14 @@ namespace PS3Sharp.Cell.Spu
             }
         }
 
+        internal void PrintGPRs()
+        {
+            for (int i = 0; i < 128; i++)
+            {
+                Console.WriteLine($"R{i} = 0x{State->GPR[i].UInts[3]:X8} 0x{State->GPR[i].UInts[2]:X8} 0x{State->GPR[i].UInts[1]:X8} 0x{State->GPR[i].UInts[0]:X8}");
+            }
+        }
+
         public void Dispose()
         {
             StateHandle.Dispose();
