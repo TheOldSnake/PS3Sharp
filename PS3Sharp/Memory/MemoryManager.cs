@@ -192,14 +192,11 @@ namespace PS3Sharp.Memory
             lock (_managerLock)
             {
                 // Acquire reservation and only write if successful 
-                bool ok = TryAccess(virtualAddress, sizeof(T), threadId, out ManualResetEventSlim? lostReservationEvent);
+                bool ok = TryAccess(virtualAddress, sizeof(T), threadId);
 
                 if (ok)
                 {
                     Write(virtualAddress, value);
-
-                    // Notify owner thread of LR event
-                    lostReservationEvent?.Set();
                 }
 
                 return ok;
@@ -211,14 +208,11 @@ namespace PS3Sharp.Memory
             lock (_managerLock)
             {
                 // Acquire reservation and only write if successful 
-                bool ok = TryAccess(virtualAddress, src.Length, threadId, out ManualResetEventSlim? lostReservationEvent);
+                bool ok = TryAccess(virtualAddress, src.Length, threadId);
 
                 if (ok)
                 {
                     CopyBufferToVirtualMemory(src, virtualAddress);
-
-                    // Notify owner thread of LR event
-                    lostReservationEvent?.Set();
                 }
 
                 return ok;
@@ -242,7 +236,7 @@ namespace PS3Sharp.Memory
             }
         }
 
-        internal bool TryAccess(uint virtualAddress, int size, uint threadId, out ManualResetEventSlim? lostReservationEvent)
+        internal bool TryAccess(uint virtualAddress, int size, uint threadId)
         {
             ulong accessStart = virtualAddress;
             ulong accessEnd = (ulong)(virtualAddress + size);
@@ -251,18 +245,14 @@ namespace PS3Sharp.Memory
             {
                 if (!_reservations.TryGetValue(threadId, out MemoryReservation? memoryReservation))
                 {
-                    lostReservationEvent = null;
                     return false;
                 }
 
                 ulong reservationStart = memoryReservation.VirtualAddress;
                 ulong reservationEnd = memoryReservation.VirtualAddress + memoryReservation.Size;
                 bool ok = accessStart >= reservationStart && accessEnd <= reservationEnd;
-
-                _reservations.Remove(threadId);
                 InvalidateReservations(virtualAddress, size);
 
-                lostReservationEvent = memoryReservation.LostReservationEvent;
                 return ok;
             }
         }
@@ -285,6 +275,7 @@ namespace PS3Sharp.Memory
                     if (overlap)
                     {
                         _reservations.Remove(reservation_thread_pair.Key);
+                        reservation_thread_pair.Value.LostReservationEvent?.Set();
                     }
                 }
             }
