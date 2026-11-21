@@ -80,6 +80,8 @@
         Wrch = 0x10D,
         Biz = 0x128,
         Binz = 0x129,
+        Bihz = 0x12A,
+        Bihnz = 0x12B,
         Stqx = 0x144,
         Bi = 0x1A8,
         Bisl = 0x1A9,

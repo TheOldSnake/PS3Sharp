@@ -176,6 +176,14 @@
                     Binz(spu, instruction);
                     break;
 
+                case RR17.Bihz:
+                    Bihz(spu, instruction);
+                    break;
+
+                case RR17.Bihnz:
+                    Bihnz(spu, instruction);
+                    break;
+
                 case RR17.Stqx:
                     Stqx(spu, instruction);
                     break;

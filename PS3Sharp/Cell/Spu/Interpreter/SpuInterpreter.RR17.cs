@@ -866,6 +866,50 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             // TODO: Enable/Disable interrupts
         }
 
+        private static void Bihz(SpuThread spu, SpuInstruction instruction)
+        {
+            // Branch Indirect If Zero Halfword
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int e = instruction.E;
+            int d = instruction.D;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+
+                if ((state->GPR[rt].ScalarValue & 0xFFFF) == 0)
+                {
+                    uint target = state->GPR[ra].UScalarValue & 0x3FFFC;
+                    state->PC = target;
+                }
+            }
+
+            // TODO: Enable/Disable interrupts
+        }
+
+        private static void Bihnz(SpuThread spu, SpuInstruction instruction)
+        {
+            // Branch Indirect If Zero Halfword
+            int ra = instruction.Ra;
+            int rt = instruction.RtLo;
+            int e = instruction.E;
+            int d = instruction.D;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+
+                if ((state->GPR[rt].ScalarValue & 0xFFFF) != 0)
+                {
+                    uint target = state->GPR[ra].UScalarValue & 0x3FFFC;
+                    state->PC = target;
+                }
+            }
+
+            // TODO: Enable/Disable interrupts
+        }
+
         private static void Stqx(SpuThread spu, SpuInstruction instruction)
         {
             // Store Quadword (x-form)
