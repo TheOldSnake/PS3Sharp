@@ -34,6 +34,7 @@ namespace PS3Sharp.Cell.Spu
             WrEventAck  = 0x2,      // Write Event Acknowledgment
             RdEventMask  = 0xB,     // Read Event Mask
             RdTagMask = 0xC,        // Read Tag-Group Query Mask
+            RdMachStat = 0xD,       // Read Machine Status
             Lsa = 0x10,             // Local Storage Address
             Eah = 0x11,             // Effective Address High
             Eal = 0x12,             // Effective Address Low or List Address
@@ -298,6 +299,10 @@ namespace PS3Sharp.Cell.Spu
                     return _tagMask;
 
                 // Stub
+                case MfcChannel.RdMachStat:
+                    return 0;
+
+                // Stub
                 case MfcChannel.RdTagStat:
                     return _tagMask;
 
@@ -404,6 +409,7 @@ namespace PS3Sharp.Cell.Spu
 
         private void ExecuteCommand(uint commandNumber)
         {
+            Console.WriteLine($"! SPU: spu id = 0x{ID:x} pc = 0x{(State->PC-4):x} - mfc cmd: 0x{commandNumber:x} size: 0x{_transferSize:x} eah: 0x{_eah:x} eal: 0x{_eal:x} lsa: 0x{_lsa:x}");
             MfcCommand command = (MfcCommand)commandNumber;
             switch (command)
             {
@@ -470,7 +476,7 @@ namespace PS3Sharp.Cell.Spu
                 MemoryManager.CopyBufferToVirtualMemory(src, _eal);
             }
 
-            Console.WriteLine($"[Spu: 0x{ID:X8}] MFC Put: ls = 0x{_lsa:X}, eal = 0x{_eal:X}, size = 0x{_transferSize:X} pc = 0x{State->PC:X}");
+           // Console.WriteLine($"[Spu: 0x{ID:X8}] MFC Put: ls = 0x{_lsa:X}, eal = 0x{_eal:X}, size = 0x{_transferSize:X} pc = 0x{State->PC:X}");
         }
 
         private void Get()
@@ -485,7 +491,7 @@ namespace PS3Sharp.Cell.Spu
                 MemoryManager.ReadBufferFromVirtualMemory(_eal, dst);
             }
 
-            Console.WriteLine($"[Spu: 0x{ID:X8}] MFC Get: ls = 0x{_lsa:X}, eal = 0x{_eal:X}, size = 0x{_transferSize:X} pc = 0x{State->PC:X}");
+           // Console.WriteLine($"[Spu: 0x{ID:X8}] MFC Get: ls = 0x{_lsa:X}, eal = 0x{_eal:X}, size = 0x{_transferSize:X} pc = 0x{State->PC:X}");
         }
 
         private void Putllc()
@@ -505,7 +511,7 @@ namespace PS3Sharp.Cell.Spu
             _lostReservationEvent.Reset();
             _lastReservedAddress = 0;
 
-            Console.WriteLine($"[Spu: 0x{ID:X8}] MFC Putllc: ls = 0x{_lsa:X}, eal = 0x{_eal:X} success: {success} pc = 0x{State->PC:X}");
+           // Console.WriteLine($"[Spu: 0x{ID:X8}] MFC Putllc: ls = 0x{_lsa:X}, eal = 0x{_eal:X} success: {success} pc = 0x{State->PC:X}");
         }
 
         private void Getllar()
@@ -533,7 +539,7 @@ namespace PS3Sharp.Cell.Spu
             _lastReservedAddress = srcAddress;
             _atomicStat = AtomicStat.GetllarCompleted;
 
-            Console.WriteLine($"[Spu: 0x{ID:X8}] MFC Getllar: ls = 0x{_lsa:X}, eal = 0x{_eal:X} pc = 0x{State->PC:X}");
+            // Console.WriteLine($"[Spu: 0x{ID:X8}] MFC Getllar: ls = 0x{_lsa:X}, eal = 0x{_eal:X} pc = 0x{State->PC:X}");
         }
 
         private uint ReadEventStat()
@@ -609,9 +615,9 @@ namespace PS3Sharp.Cell.Spu
             LV2EventQueue? equeue = _ports[port];
             ulong data0 = (info & 0xFFFFFF) | (port << 32);
 
-            if (code >= 64)
+            if (code >= 128)
             {
-                throw new NotImplementedException($"[Spu] todo: WriteOutIntrMbox code {port}");
+                throw new NotImplementedException($"[Spu] todo: WriteOutIntrMbox code {code}");
             }
 
             if (!_outMBox.TryTake(out uint data1))
@@ -633,9 +639,13 @@ namespace PS3Sharp.Cell.Spu
             };
 
             equeue.Send(eventData);
-            WriteInMbox(CellOk);
+
+            if (code < 64)
+            {
+                WriteInMbox(CellOk);
+            }
             
-           // Console.WriteLine($"[Spu] WriteOutIntrMbox -> equeue: 0x{equeue.Handle:X8}");
+            Console.WriteLine($"[Spu] WriteOutIntrMbox -> equeue: 0x{equeue.Handle:X8}");
         }
 
         private void GroupExit(uint status)
