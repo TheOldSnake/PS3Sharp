@@ -10,6 +10,9 @@
         // RR and R17: 11-bit Opcode
         internal readonly RR17 RR17Op => (RR17)((Raw >> 21) & 0x7FF);
 
+        // RI8: 10-bit Opcode
+        internal readonly RI8 RI8Op => (RI8)((Raw >> 22) & 0x3FF);
+
         // RI16: 9-bit Opcode
         internal readonly RI16 RI16Op => (RI16)((Raw >> 23) & 0x1FF);
 
@@ -150,6 +153,15 @@
         Mpyu = 0x3CC,
         Mpyhhu = 0x3CE,
         Ceqb = 0x3D0,
+    }
+
+    // 10-bit Opcodes
+    internal enum RI8 : int
+    {
+        Cflts = 0x1D8,
+        Cfltu = 0x1D9,
+        Csflt = 0x1DA,
+        Cuflt = 0x1DB
     }
 
     // 9-bit Opcodes

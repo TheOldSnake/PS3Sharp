@@ -458,6 +458,32 @@
                     break;
 
                 default:
+                    GroupRI8(spu, instruction);
+                    break;
+            }
+        }
+
+        internal static void GroupRI8(SpuThread spu, SpuInstruction instruction)
+        {
+            switch (instruction.RI8Op)
+            {
+                case RI8.Cflts:
+                    Cflts(spu, instruction);
+                    break;
+
+                case RI8.Cfltu:
+                    Cfltu(spu, instruction);
+                    break;
+
+                case RI8.Csflt:
+                    Csflt(spu, instruction);
+                    break;
+
+                case RI8.Cuflt:
+                    Cuflt(spu, instruction);
+                    break;
+
+                default:
                     GroupRI16(spu, instruction);
                     break;
             }
