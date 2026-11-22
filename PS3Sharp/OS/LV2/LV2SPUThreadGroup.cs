@@ -7,7 +7,7 @@ namespace PS3Sharp.OS.LV2
 {
     internal sealed class LV2SpuThreadGroup
     {
-        internal static int LimitSpuThreadCount = 1;    // For debugging
+        internal static int LimitSpuThreadCount = 0;    // For debugging
 
         private readonly ThreadManager _threadManager;
         private readonly MemoryManager _memoryManager;
