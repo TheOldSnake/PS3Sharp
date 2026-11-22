@@ -134,6 +134,8 @@
         Xsbh = 0x2B6,
         Clgt = 0x2C0,
         Andc = 0x2C1,
+        Fcgt = 0x2C2,
+        Fm = 0x2C6,
         Clgth = 0x2C8,
         Orc = 0x2C9,
         Clgtb = 0x2D0,

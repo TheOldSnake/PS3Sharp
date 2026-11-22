@@ -1907,6 +1907,52 @@ namespace PS3Sharp.Cell.Spu.Interpreter
             }
         }
 
+        private static void Fcgt(SpuThread spu, SpuInstruction instruction)
+        {
+            // Floating Compare Greater Than 
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<float> raLanes = state->GPR[ra].Floats;
+                Span<float> rbLanes = state->GPR[rb].Floats;
+                Span<float> rtLanes = state->GPR[rt].Floats;
+
+                Vector128<float> va = Vector128.Create(raLanes);
+                Vector128<float> vb = Vector128.Create(rbLanes);
+                Vector128<float> result = Vector128.GreaterThan(va, vb);
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
+        private static void Fm(SpuThread spu, SpuInstruction instruction)
+        {
+            // Floating Multiply
+            int ra = instruction.Ra;
+            int rb = instruction.Rb;
+            int rt = instruction.RtLo;
+
+            unsafe
+            {
+                SpuState* state = spu.State;
+                Span<float> raLanes = state->GPR[ra].Floats;
+                Span<float> rbLanes = state->GPR[rb].Floats;
+                Span<float> rtLanes = state->GPR[rt].Floats;
+
+                Vector128<float> va = Vector128.Create(raLanes);
+                Vector128<float> vb = Vector128.Create(rbLanes);
+                Vector128<float> result = va * vb;
+
+                // TODO: Smax/Smin ?
+
+                result.CopyTo(rtLanes);
+            }
+        }
+
         private static void Clgth(SpuThread spu, SpuInstruction instruction)
         {
             // Compare Logical Greater Than Halfword

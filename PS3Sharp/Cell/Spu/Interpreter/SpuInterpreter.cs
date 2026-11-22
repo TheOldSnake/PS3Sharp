@@ -377,6 +377,14 @@
                     Andc(spu, instruction);
                     break;
 
+                case RR17.Fcgt:
+                    Fcgt(spu, instruction);
+                    break;
+
+                case RR17.Fm:
+                    Fm(spu, instruction);
+                    break;
+
                 case RR17.Clgth:
                     Clgth(spu, instruction);
                     break;
