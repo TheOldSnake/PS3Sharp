@@ -86,7 +86,7 @@ namespace PS3Sharp.Cell.RSX
             {
                 // Generate and compile vertex shader
                 string vertexSource = _vertexShaderGenerator.GenerateVertexShader();
-                Console.WriteLine($"vertex shader source: \n{vertexSource}");
+                // Console.WriteLine($"vertex shader source: \n{vertexSource}");
 
                 if (LogShaders && Directory.Exists(LogShadersDirectory))
                 {
@@ -95,14 +95,11 @@ namespace PS3Sharp.Cell.RSX
 
                 vertexHandle = GLRenderer.CompileShader(ShaderType.VertexShader, vertexSource);
                 GLRenderer.CompiledVertexShaders.Add(vertexChecksum, vertexHandle);
-                Console.WriteLine($"Compiled a new vertex shader:{vertexHandle}");
-
+                // Console.WriteLine($"Compiled a new vertex shader:{vertexHandle}");
             }
             else
             {
-                //Already compiled - We need to clear the buffer
-                //VertexShaderGenerator.ClearBuffer();
-                Console.WriteLine($"using old vertex: {vertexHandle}");
+                // Console.WriteLine($"using old vertex: {vertexHandle}");
             }
 
             // Check if we compiled this fragment shader before
@@ -111,7 +108,7 @@ namespace PS3Sharp.Cell.RSX
 
                 // Generate and compile fragment shader
                 string fragmentSource = _fragmentShaderGenerator.GenerateFragmentShader();
-                Console.WriteLine($"fragment shader source: \n{fragmentSource}");
+                // Console.WriteLine($"fragment shader source: \n{fragmentSource}");
 
 
                 if (LogShaders && Directory.Exists(LogShadersDirectory))
@@ -121,12 +118,11 @@ namespace PS3Sharp.Cell.RSX
 
                 fragmentHandle = GLRenderer.CompileShader(ShaderType.FragmentShader, fragmentSource);
                 GLRenderer.CompiledFragmentShaders.Add(fragmentChecksum, fragmentHandle);
-                Console.WriteLine($"Compiled a new fragment shader: {fragmentHandle}");
-
+                // Console.WriteLine($"Compiled a new fragment shader: {fragmentHandle}");
             }
             else
             {
-                Console.WriteLine($"using old fragment: {fragmentHandle}");
+                // Console.WriteLine($"using old fragment: {fragmentHandle}");
             }
 
             // Create a new program using these handles, and cache it
@@ -134,7 +130,7 @@ namespace PS3Sharp.Cell.RSX
             GLRenderer.CompiledPrograms.Add((vertexChecksum, fragmentChecksum), newProgram);
             CurrentState.ShaderProgramHasChanged = true;
 
-            Console.WriteLine($"Created a new program: {newProgram}");
+            // Console.WriteLine($"Created a new program: {newProgram}");
         }
 
         internal void UploadConstants()
