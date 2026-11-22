@@ -46,10 +46,10 @@ namespace PS3Sharp.Cell.Spu.Interpreter
                 Span<uint> rtLanes = state->GPR[rt].UInts;
 
                 // Clamp to [0x00000000, 0xFFFFFFFF]
-                long value0 = long.Clamp((long)(raLanes[0] * scale), uint.MinValue, 0);
-                long value1 = long.Clamp((long)(raLanes[1] * scale), uint.MinValue, 0);
-                long value2 = long.Clamp((long)(raLanes[2] * scale), uint.MinValue, 0);
-                long value3 = long.Clamp((long)(raLanes[3] * scale), uint.MinValue, 0);
+                long value0 = long.Clamp((long)(raLanes[0] * scale), uint.MinValue, uint.MaxValue);
+                long value1 = long.Clamp((long)(raLanes[1] * scale), uint.MinValue, uint.MaxValue);
+                long value2 = long.Clamp((long)(raLanes[2] * scale), uint.MinValue, uint.MaxValue);
+                long value3 = long.Clamp((long)(raLanes[3] * scale), uint.MinValue, uint.MaxValue);
 
                 rtLanes[0] = (uint)value0;
                 rtLanes[1] = (uint)value1;
