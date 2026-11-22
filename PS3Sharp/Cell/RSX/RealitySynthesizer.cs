@@ -162,6 +162,11 @@ namespace PS3Sharp.Cell.RSX
             CtxPtr = (uint)ctxStartAddress;
             LabelsPtr = (uint)labelsStartAddress;
 
+            Console.WriteLine($"RSX Config at 0x{ConfigPtr:X8}");
+            Console.WriteLine($"RSX Ctr at 0x{CtrlPtr:X8}");
+            Console.WriteLine($"RSX Ctx at 0x{CtxPtr:X8}");
+            Console.WriteLine($"RSX Labels at 0x{LabelsPtr:X8}");
+
             MemoryAllocated = true;
         }
 
@@ -169,18 +174,18 @@ namespace PS3Sharp.Cell.RSX
 
         internal uint AddressToOffset(uint address)
         {
-            CellGcmCtxData ctx = _memoryManager.Read<CellGcmCtxData>(CtxPtr);
             CellGcmConfig config = _memoryManager.Read<CellGcmConfig>(ConfigPtr);
 
+            // Relative to VRAM
             if (address >= VRAMPtr.Address && address < VRAMPtr.Address + VramSize)
-            { // Relative to VRAM
+            { 
                 return address - VRAMPtr.Address;
             }
             else
             {
-
+                // Relative to IO space
                 if (_cellGcmSys.IsEaOffsMapped(address))
-                {                              // Relative to IO space
+                { 
                     return _cellGcmSys.EaToIo(address);
                 }
 
@@ -264,7 +269,7 @@ namespace PS3Sharp.Cell.RSX
                 // Note: we control and guarantee the alignment of this struct in AllocateRSXMemory
                 CellGcmCtrlRegister* ctrl = _memoryManager.GetPtr(CtrlPtr);
 
-                // Console.WriteLine($"[RSX] Current GET: [0x{ctrl.Get:X8}] Running until: [0x{ctrl.Put:X8}]");
+                //Console.WriteLine($"[RSX] Current GET: [0x{ctrl->Get:X8}] Running until: [0x{ctrl->Put:X8}]");
 
                 while (ctrl->Get != ctrl->Put)
                 {
@@ -275,7 +280,7 @@ namespace PS3Sharp.Cell.RSX
                         Raw = instruction
                     };
 
-                    // Console.WriteLine($"[0x{currentAddress:X}] cmd: 0x{instruction:X} get: [0x{ctrl.Get:X}]");
+                    //Console.WriteLine($"[0x{currentAddress:X}] cmd: 0x{instruction:X} get: [0x{ctrl->Get:X}]");
 
                     // Jump
                     if (CurrentCommand.Jump)
@@ -305,9 +310,9 @@ namespace PS3Sharp.Cell.RSX
                     ctrl->Get += 4;
                     HandleInstruction(CurrentCommand, ref *ctrl);
                 }
-            }
 
-            // Console.WriteLine($"RSX Done, PUT: [0x{ctrl.Put:X}]");
+                 //Console.WriteLine($"RSX Done, PUT: [0x{ctrl->Put:X}]");
+            }
         }
 
         internal void PrintCommand(RSXCommand command)
