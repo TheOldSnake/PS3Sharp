@@ -1,6 +1,5 @@
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.OS.NID;
-using PS3Sharp.OS.Syscall;
 using System.Collections.Immutable;
 
 namespace PS3Sharp.OS
@@ -334,6 +333,9 @@ namespace PS3Sharp.OS
 
                 // CellNetCtl
                 [NIDManager.GetNID("cellNetCtlGetState")] = CellNetCtlHandler.CellNetCtlGetState,
+
+                // CellSsl
+                [NIDManager.GetNID("cellSslCertificateLoader")] = CellSslHandler.CellSslCertificateLoader,
 
                 // CellIO
                 [NIDManager.GetNID("cellMouseGetInfo")] = CellIOHandler.CellMouseGetInfo,

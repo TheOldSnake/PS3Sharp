@@ -61,6 +61,7 @@ namespace PS3Sharp.OS
         internal CellPad CellPadHandler { get; }
         internal SCENP SceNPHandler { get; }
         internal CellNetCtl CellNetCtlHandler { get; }
+        internal CellSsl CellSslHandler { get; }
         internal CellIO CellIOHandler { get; }
 
         internal LV2SyscallDispatcher(
@@ -117,6 +118,7 @@ namespace PS3Sharp.OS
             SceNPTrophyHandler = new(_memoryManager);
             SceNPHandler = new(_memoryManager);
             CellNetCtlHandler = new(_memoryManager);
+            CellSslHandler = new(_memoryManager);
             CellIOHandler = new(_memoryManager);
 
             // Create dispatch tables
