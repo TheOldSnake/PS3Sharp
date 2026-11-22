@@ -205,7 +205,7 @@ namespace PS3Sharp.OS.Modules
                 _memoryManager.Write(config_ptr, config);
             }
 
-            Console.WriteLine($"[CellAudio] cellAudioGetPortConfig port = {port_number}");
+            // Console.WriteLine($"[CellAudio] cellAudioGetPortConfig port = {port_number}");
             return CellOk;
         }
 
