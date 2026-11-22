@@ -34,6 +34,7 @@
         internal readonly int I10 => (Raw >> 14) & 0x3FF;
         internal readonly int Rb => (Raw >> 14) & 0x7F;
         internal readonly int I7 => (Raw >> 14) & 0x7F;
+        internal readonly int I8 => (Raw >> 14) & 0xFF;
         internal readonly int E => (Raw >> 18) & 0x1;
         internal readonly int D => (Raw >> 19) & 0x1;
         internal readonly int RtHi => (Raw >> 21) & 0x7F;
