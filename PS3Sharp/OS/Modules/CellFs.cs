@@ -1,9 +1,12 @@
 ﻿using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
+using PS3Sharp.FileSystem;
 using PS3Sharp.Memory;
 using PS3Sharp.OS.Syscall;
+using System.Runtime.CompilerServices;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
+using static PS3Sharp.OS.Syscall.SysFs;
 
 namespace PS3Sharp.OS.Modules
 {
@@ -52,6 +55,36 @@ namespace PS3Sharp.OS.Modules
             _memoryManager.Write<BigEndian<uint>>(block_size_ptr, 4096);
             _memoryManager.Write<BigEndian<ulong>>(block_cnt_ptr, 5242880); // 20gb / 4096
 
+            return CellOk;
+        }
+
+        internal ulong CellFsGetDirectoryEntries(PPUThread ppu)
+        {
+            int fd = ppu.ReadArg<int>(Arg0);
+            GuestPtr<CellFsDirent> direentPtr = ppu.ReadArg<GuestPtr<CellFsDirent>>(Arg1);
+            int size = ppu.ReadArg<int>(Arg2);
+            GuestPtr<int> dataCountPtr = ppu.ReadArg<GuestPtr<int>>(Arg3);
+
+            int entriesCount = size / Unsafe.SizeOf<CellFsDirent>();
+            int readCount = 0;
+            uint offset = 0;
+
+            for (int i = 0; i < entriesCount; i++)
+            {
+                ulong bytesRead = _sysFs.FileSystemManager.ReadDirectory(fd, out CellFsDirent dirent);
+
+                // Break if we reached the end
+                if (bytesRead == 0)
+                {
+                    break;
+                }
+
+                _memoryManager.Write(direentPtr + offset, dirent);
+                offset += (uint)bytesRead;
+                readCount++;
+            }
+
+            _memoryManager.Write(dataCountPtr, readCount);
             return CellOk;
         }
     }

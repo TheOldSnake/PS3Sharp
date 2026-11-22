@@ -298,6 +298,7 @@ namespace PS3Sharp.OS
                 [NIDManager.GetNID("cellFsClose")] = CellFsHandler.CellFsClose,
                 [NIDManager.GetNID("cellFsMkdir")] = CellFsHandler.CellFsMakedir,
                 [NIDManager.GetNID("cellFsReaddir")] = CellFsHandler.CellFsReaddir,
+                [NIDManager.GetNID("cellFsGetDirectoryEntries")] = CellFsHandler.CellFsGetDirectoryEntries,
                 [NIDManager.GetNID("cellFsOpendir")] = CellFsHandler.CellFsOpenDir,
                 [NIDManager.GetNID("cellFsClosedir")] = CellFsHandler.CellFsCloseDir,
                 [NIDManager.GetNID("cellFsGetFreeSize")] = CellFsHandler.CellFsGetFreeSize,

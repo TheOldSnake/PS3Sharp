@@ -3,6 +3,7 @@ using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
 using PS3Sharp.FileSystem;
 using PS3Sharp.Memory;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
@@ -102,14 +103,14 @@ namespace PS3Sharp.OS.Syscall
         };
 
         private readonly MemoryManager _memoryManager;
-        private readonly FileSystemManager _fileSystemManager;
+        internal FileSystemManager FileSystemManager { get; }
 
         private static uint Oct(string v) => Convert.ToUInt32(v, 8);   // Helper (avoid using it at runtime)
 
         internal SysFs(MemoryManager memoryManager, FileSystemManager fileSystemManager)
         {
             _memoryManager = memoryManager;
-            _fileSystemManager = fileSystemManager;
+            FileSystemManager = fileSystemManager;
         }
 
         internal ulong SysFsAioInit(PPUThread ppu)
@@ -166,6 +167,7 @@ namespace PS3Sharp.OS.Syscall
 
             _memoryManager.Write(statPtr, stat);
 
+            Console.WriteLine($"[{ppu.ThreadName}] [SysFs] SysFsStat path = {guestPath} size = {stat.Size}");
             return CellOk;
         }
 
@@ -175,8 +177,6 @@ namespace PS3Sharp.OS.Syscall
             GuestPtr<CellFsStat> statPtr = ppu.ReadArg<GuestPtr<CellFsStat>>(Arg1);
 
             bool isConsole = fd == FdStdin || fd == FdStdout || fd == FdStderr;
-
-            // Console.WriteLine($"[{ppu.ThreadName}] [SysFs] SysFsFstat fd = 0x{fd:X}");
 
             if (isConsole)
             {
@@ -188,12 +188,12 @@ namespace PS3Sharp.OS.Syscall
             ulong size;
             int mode;
 
-            if (_fileSystemManager.TryGetFile(fd, out GuestFile? guestFile))
+            if (FileSystemManager.TryGetFile(fd, out GuestFile? guestFile))
             {
                 size = guestFile.Size;
                 mode = (int)FileMode;
             }
-            else if (_fileSystemManager.TryGetDirectory(fd, out GuestDirectory? directory))
+            else if (FileSystemManager.TryGetDirectory(fd, out GuestDirectory? directory))
             {
                 size = directory.Size;
                 mode = (int)DirMode;
@@ -218,6 +218,7 @@ namespace PS3Sharp.OS.Syscall
 
             _memoryManager.Write(statPtr, stat);
 
+            Console.WriteLine($"[{ppu.ThreadName}] [SysFs] SysFsFstat fd = 0x{fd:X} size = {size}");
             return CellOk;
         }
 
@@ -257,7 +258,7 @@ namespace PS3Sharp.OS.Syscall
 
             // Open file
             int handle = (int)_memoryManager.GetHandle();
-            ulong result = _fileSystemManager.OpenFile(hostPath, handle, ppu.ThreadID, flags);
+            ulong result = FileSystemManager.OpenFile(hostPath, handle, ppu.ThreadID, flags);
 
             if (result != CellOk)
             {
@@ -282,12 +283,12 @@ namespace PS3Sharp.OS.Syscall
 
             // Console.WriteLine($"[{ppu.ThreadName}] [SysFsLseek] cellFsLseek fd = 0x{fd:X} seek offset: 0x{offset:X} mode = {whence}");
 
-            if (!_fileSystemManager.IsFileOpen(fd))
+            if (!FileSystemManager.IsFileOpen(fd))
             {
                 return CellEInval;
             }
 
-            ulong position = (ulong)_fileSystemManager.Seek(fd, offset, whence);
+            ulong position = (ulong)FileSystemManager.Seek(fd, offset, whence);
             _memoryManager.Write<BigEndian<ulong>>(posPtr, position);
 
             return CellOk;
@@ -300,8 +301,7 @@ namespace PS3Sharp.OS.Syscall
             ulong nbytes = ppu.ReadArg<ulong>(Arg2);
             GuestPtr<BigEndian<ulong>> nreadPtr = ppu.ReadArg<GuestPtr<BigEndian<ulong>>>(Arg3);
 
-            // MemoryManager.MemoryBlock block = _memoryManager.GetAllocationByVirtualAddress(buf);
-            // Console.WriteLine($"[{ppu.ThreadName}] [SysFsRead] cellFsRead fd = 0x{fd:X} amount: 0x{nbytes:X} dest: 0x{buf:X} base = 0x{b.VirtualAddress:X8}");
+            // Console.WriteLine($"[{ppu.ThreadName}] [SysFsRead] cellFsRead fd = 0x{fd:X} amount: 0x{nbytes:X} dest: 0x{buf:X}");
 
             if (buf.IsNullPtr || nreadPtr.IsNullPtr || nbytes == 0)
             {
@@ -309,7 +309,7 @@ namespace PS3Sharp.OS.Syscall
             }
 
             // Read into the buffer
-            ulong readCount = _fileSystemManager.Read(fd, nbytes, buf);                                  
+            ulong readCount = FileSystemManager.Read(fd, nbytes, buf);                                  
 
             // Write back the number of bytes read
             if (nreadPtr > 0)
@@ -328,7 +328,7 @@ namespace PS3Sharp.OS.Syscall
             ulong nbytes = ppu.ReadArg<ulong>(Arg2);
             GuestPtr<BigEndian<ulong>> nwrite_ptr = ppu.ReadArg<GuestPtr<BigEndian<ulong>>>(Arg3);
 
-            ulong nrwite = _fileSystemManager.Write(fd, (int)nbytes, buf);
+            ulong nrwite = FileSystemManager.Write(fd, (int)nbytes, buf);
             _memoryManager.Write<BigEndian<ulong>>(nwrite_ptr, nrwite); //Write back the number of bytes written
 
             return CellOk;
@@ -338,9 +338,9 @@ namespace PS3Sharp.OS.Syscall
         {
             int fd = ppu.ReadArg<int>(Arg0);
 
-            _fileSystemManager.CloseFile(fd);
-            //Console.WriteLine($"[SysFsClose] cellFsClose fd = 0x{fd:X}");
+            FileSystemManager.CloseFile(fd);
 
+            // Console.WriteLine($"[SysFsClose] cellFsClose fd = 0x{fd:X}");
             return CellOk;
         }
 
@@ -362,7 +362,7 @@ namespace PS3Sharp.OS.Syscall
             // Console.WriteLine($"[SysFsOpenDir] SysFsOpenDir {guestPath}");
 
             int handle = (int)_memoryManager.GetHandle();
-            ulong result = _fileSystemManager.OpenDirectory(hostPath, handle, ppu.ThreadID);
+            ulong result = FileSystemManager.OpenDirectory(hostPath, handle, ppu.ThreadID);
 
             if (result == CellOk)
             {
@@ -382,7 +382,7 @@ namespace PS3Sharp.OS.Syscall
             GuestPtr<CellFsDirent> direentPtr = ppu.ReadArg<GuestPtr<CellFsDirent>>(Arg1);
             GuestPtr<BigEndian<ulong>> bytesReadPtr = ppu.ReadArg<GuestPtr<BigEndian<ulong>>>(Arg2);
 
-            ulong bytesRead = _fileSystemManager.ReadDirectory(fd, out CellFsDirent dirent);
+            ulong bytesRead = FileSystemManager.ReadDirectory(fd, out CellFsDirent dirent);
 
             _memoryManager.Write(direentPtr, dirent);
             _memoryManager.Write<BigEndian<ulong>>(bytesReadPtr, bytesRead);
@@ -393,7 +393,7 @@ namespace PS3Sharp.OS.Syscall
         internal ulong SysFsCloseDir(PPUThread ppu)
         {
             int fd = ppu.ReadArg<int>(Arg0);
-            _fileSystemManager.CloseDirectory(fd);
+            FileSystemManager.CloseDirectory(fd);
             return CellOk;
         }
     }
