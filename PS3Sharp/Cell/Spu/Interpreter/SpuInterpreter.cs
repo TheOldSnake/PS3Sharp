@@ -17,6 +17,7 @@
             }
 
             HandleInstruction(spu, instruction);
+            spu.StepDecrementer();
         }
 
         internal static void HandleInstruction(SpuThread spu, SpuInstruction instruction)

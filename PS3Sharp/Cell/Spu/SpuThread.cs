@@ -32,6 +32,8 @@ namespace PS3Sharp.Cell.Spu
             RdEventStat = 0x0,      // Read Event Stat
             WrEventMask = 0x1,      // Write Event Mask
             WrEventAck  = 0x2,      // Write Event Acknowledgment
+            WrDec = 0x7,            // Write Decrementer
+            RdDec = 0x8,            // Read Decrementer
             RdEventMask  = 0xB,     // Read Event Mask
             RdTagMask = 0xC,        // Read Tag-Group Query Mask
             RdMachStat = 0xD,       // Read Machine Status
@@ -115,6 +117,9 @@ namespace PS3Sharp.Cell.Spu
         private readonly BlockingCollection<uint> _outMBox = new(boundedCapacity: 4);
         private readonly BlockingCollection<uint> _inMBox = new(boundedCapacity: 4);
         private uint _inMboxCount;
+
+        private int _decrementer = 0;
+        private bool _decrementerEnabled = false; // temporary
 
         private readonly LV2SpuThreadGroup? _ownerGroup;
 
@@ -292,6 +297,9 @@ namespace PS3Sharp.Cell.Spu
                 case MfcChannel.RdEventStat:
                     return ReadEventStat();
 
+                case MfcChannel.RdDec:
+                    return (uint)_decrementer;
+
                 case MfcChannel.RdEventMask:
                     return _eventMask;
 
@@ -359,6 +367,11 @@ namespace PS3Sharp.Cell.Spu
 
                 case MfcChannel.WrEventAck:
                     AcknowledgeEventStat(value);
+                    break;
+
+                case MfcChannel.WrDec:
+                    _decrementer = (int)value;
+                    _decrementerEnabled = true;
                     break;
 
                 case MfcChannel.Lsa:
@@ -686,6 +699,14 @@ namespace PS3Sharp.Cell.Spu
                     Console.WriteLine($"[SPU-{ThreadName}] Stop: 0x{code:X} Exit Status: 0x{exitStatus:X}");
                     LocalCts.Cancel();
                     break;
+            }
+        }
+
+        internal void StepDecrementer()
+        {
+            if (_decrementerEnabled)
+            {
+                _decrementer--;
             }
         }
 
