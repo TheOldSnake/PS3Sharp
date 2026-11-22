@@ -68,6 +68,7 @@ namespace PS3Sharp.Cell.RSX
                         break;
 
                     case Nv406eTclSemaphoreRelease:
+                    case Nv4097TextureReadSemaphoreRelease:
                         SemaphoreRelease(param);
                         break;
 

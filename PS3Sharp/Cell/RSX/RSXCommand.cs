@@ -28,6 +28,7 @@ namespace PS3Sharp.Cell.RSX
 
         internal const uint Nv40TclSemaphoreBackendwriteOffset = 0x00001D6C; //it's named NV40TCL_SEMAPHORE_OFFSET	in PSL1GHT for some reason
         internal const uint Nv40TclSemaphoreBackendwriteRelease = 0x00001D70;
+        internal const uint Nv4097TextureReadSemaphoreRelease = 0x00001D74;
 
         internal const uint Nv34TclPrimitive3dFogColor = 0x00000370;
 
