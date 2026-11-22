@@ -241,7 +241,7 @@ namespace PS3Sharp.OS.Syscall
             //TODO
             Console.WriteLine($"[CellSysutil] cellAudioOutGetSoundAvailability");
             const ulong CellAudioOutPrimary = 2;
-            return CellOk;
+            return CellAudioOutPrimary;
         }
 
         internal ulong CellAudioOutConfigure(PPUThread ppu)
