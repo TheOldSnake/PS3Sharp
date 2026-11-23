@@ -23,8 +23,8 @@ It also uses documentation and resources from:
 - [PSL1GHT](https://github.com/ps3dev/PSL1GHT)
 
 # Showcase
-![Arkedo](PS3Sharp/images/arkedo.png)
+![Arkedo](Images/arkedo.png)
 
-![GTA-SA](PS3Sharp/images/gta-sa.png)
+![GTA-SA](Images/gta-sa.png)
 
-![Minecraft](PS3Sharp/images/minecraft.png)
+![Minecraft](Images/minecraft.png)
