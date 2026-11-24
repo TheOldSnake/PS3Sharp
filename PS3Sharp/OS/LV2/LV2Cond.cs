@@ -116,7 +116,7 @@ namespace PS3Sharp.OS.LV2
 
             lock (_waiters)
             {
-                waiter = _waiters.FirstOrDefault(w => w.WaiterTheadID == waiterID);
+                waiter = _waiters.FirstOrDefault(w => w.WaiterThreadID == waiterID);
             }
 
             waiter?.Event.Set();
