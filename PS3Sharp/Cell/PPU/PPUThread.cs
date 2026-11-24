@@ -92,7 +92,7 @@ namespace PS3Sharp.Cell.PPU
             State->PC = entryPointer != 0 ? MemoryManager.Read<BigEndian<uint>>(entryPointer) : 0;
             State->VRSAVE = 0xFFFFFFFF;
 
-            MemoryBlock stackArea = MemoryManager.AllocateStackSpace(stackSize);
+            MemoryBlock stackArea = MemoryManager.Allocator.AllocateStackSpace(stackSize);
             MemoryBlock tls = MemoryManager.AllocateTLS();
 
             // Stack base points at the top, but leave some headroom
@@ -312,7 +312,7 @@ namespace PS3Sharp.Cell.PPU
             byte[] chars = Encoding.UTF8.GetBytes(path);
 
             //Allocate memory for the string + a null character
-            MemoryBlock nameBlock = MemoryManager.AllocateVirtualMemory((uint)chars.Length + 1);
+            MemoryBlock nameBlock = MemoryManager.Allocator.AllocateVirtualMemory((uint)chars.Length + 1);
             MemoryManager.CopyBufferToVirtualMemory(chars, (uint)nameBlock.VirtualAddress);
 
             //null terminate string

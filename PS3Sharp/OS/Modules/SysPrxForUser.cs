@@ -89,7 +89,7 @@ namespace PS3Sharp.OS.Modules
 
             if (size > 0)
             {
-                MemoryBlock block = _memoryManager.AllocatePhysicalMemory((uint)size);
+                MemoryBlock block = _memoryManager.Allocator.AllocatePhysicalMemory((uint)size);
 
                 //Write the handle at the alloc_addr*
                 _memoryManager.Write<BigEndian<uint>>(addressPtr.Address, (uint)block.Handle);
@@ -111,7 +111,7 @@ namespace PS3Sharp.OS.Modules
             //Not sure if handle 0 is NULL?
             if (handle > 0)
             {
-                _memoryManager.FreeByHandle(handle);
+                _memoryManager.Allocator.FreeByHandle(handle);
             }
 
             Console.WriteLine($"[SysPrxForUser] sys_mmapper_free_memory handle = {handle}");

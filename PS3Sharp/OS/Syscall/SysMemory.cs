@@ -39,7 +39,7 @@ namespace PS3Sharp.OS.Syscall
 
             if (size > 0 && !alloc_addr.IsNullPtr)
             {
-                MemoryManager.MemoryBlock block = _memoryManager.AllocateVirtualMemory(size, 0);
+                MemoryManager.MemoryBlock block = _memoryManager.Allocator.AllocateVirtualMemory(size, 0);
                 Console.WriteLine($"[SysMemory] sys_memory_allocate: [0x{block.VirtualAddress:X8} - 0x{block.End:X8}]");
 
                 //Write the handle at the alloc_addr*
@@ -59,7 +59,7 @@ namespace PS3Sharp.OS.Syscall
 
             if (!ptr.IsNullPtr)
             {
-                _memoryManager.FreeByVirtualAddress(ptr);
+                _memoryManager.Allocator.FreeByVirtualAddress(ptr);
             }
 
             Console.WriteLine($"[SysMemory] sys_Memory_Free");
@@ -70,7 +70,7 @@ namespace PS3Sharp.OS.Syscall
         {
             GuestPtr<SysMemoryInfo> memory_info_ptr = ppu.ReadArg<GuestPtr<SysMemoryInfo>>(Arg0);
 
-            uint total_size = MemoryManager.RamSize;
+            uint total_size = MemoryConstants.RamSize;
 
             SysMemoryInfo memory_info = new()
             {

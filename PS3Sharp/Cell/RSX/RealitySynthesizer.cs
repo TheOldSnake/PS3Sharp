@@ -136,11 +136,11 @@ namespace PS3Sharp.Cell.RSX
         internal void AllocateRSXMemory()
         {
             // Allocate vram
-            MemoryManager.MemoryBlock vram = _memoryManager.AllocateVirtualMemory(VramSize);
+            MemoryManager.MemoryBlock vram = _memoryManager.Allocator.AllocateVirtualMemory(VramSize);
             VRAMPtr = vram.VirtualAddress;
 
             // Allocate a page for structs + labels
-            MemoryManager.MemoryBlock page = _memoryManager.AllocatePages(pageCount: 1);
+            MemoryManager.MemoryBlock page = _memoryManager.Allocator.AllocatePages(pageCount: 1);
             ulong pageStart = page.VirtualAddress;
             ulong pageEnd = page.End;
 

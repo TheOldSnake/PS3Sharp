@@ -8,10 +8,8 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.LV2
 {
-
     internal sealed class LV2LwMutex
     {
-
         [StructLayout(LayoutKind.Sequential)]
         internal struct LwMutex : IPS3Struct
         {
@@ -135,7 +133,6 @@ namespace PS3Sharp.OS.LV2
             if (Monitor.IsEntered(_mutex))
             {
                 return ReEnter();
-
             }
             else
             {
@@ -147,7 +144,6 @@ namespace PS3Sharp.OS.LV2
                     // if acquiring succeeds, set the owner to the current thread
                     SetOwnerFirstTime(ppu.ThreadID);
                     return CellOk;
-
                 }
                 else
                 {
@@ -165,13 +161,10 @@ namespace PS3Sharp.OS.LV2
 
             Monitor.Enter(_mutex);
 
-            using (_memoryManager.AcquireTemporaryLock())
-            {
-                LwMutex mutex = _memoryManager.Read<LwMutex>(_instancePtr);
-                uint currentCount = mutex.RecursiveCount;
-                mutex.RecursiveCount = currentCount + 1;
-                _memoryManager.Write(_instancePtr, mutex);
-            }
+            LwMutex mutex = _memoryManager.Read<LwMutex>(_instancePtr);
+            uint currentCount = mutex.RecursiveCount;
+            mutex.RecursiveCount = currentCount + 1;
+            _memoryManager.Write(_instancePtr, mutex);
 
             return CellOk;
         }
@@ -179,14 +172,10 @@ namespace PS3Sharp.OS.LV2
         private void SetOwnerFirstTime(uint threadID)
         {
             // For when we get the lock for the first time, not a re-entrance
-
-            using (_memoryManager.AcquireTemporaryLock())
-            {
-                LwMutex mutex = _memoryManager.Read<LwMutex>(_instancePtr);
-                mutex.Owner = threadID;
-                mutex.RecursiveCount = _isRecursive ? 1u : 0u;
-                _memoryManager.Write(_instancePtr, mutex);
-            }
+            LwMutex mutex = _memoryManager.Read<LwMutex>(_instancePtr);
+            mutex.Owner = threadID;
+            mutex.RecursiveCount = _isRecursive ? 1u : 0u;
+            _memoryManager.Write(_instancePtr, mutex);
         }
 
         internal ulong Unlock()
@@ -199,35 +188,31 @@ namespace PS3Sharp.OS.LV2
 
             // Handle updating the state before unlocking
             bool becameFree;
-            using (_memoryManager.AcquireTemporaryLock())
+            LwMutex mutex = _memoryManager.Read<LwMutex>(_instancePtr);
+
+            if (_isRecursive && mutex.RecursiveCount > 0)
             {
-                LwMutex mutex = _memoryManager.Read<LwMutex>(_instancePtr);
+                mutex.RecursiveCount--;
 
-                if (_isRecursive && mutex.RecursiveCount > 0)
+                if (mutex.RecursiveCount == 0)
                 {
-                    mutex.RecursiveCount--;
-
-                    if (mutex.RecursiveCount == 0)
-                    {
-                        mutex.Owner = 0xFFFFFFFF;
-                        becameFree = true;
-                    }
-                    else
-                    {
-                        becameFree = false;
-                    }
-
+                    mutex.Owner = 0xFFFFFFFF;
+                    becameFree = true;
                 }
                 else
                 {
-                    becameFree = true;
-                    mutex.Owner = 0xFFFFFFFF;
-                    mutex.RecursiveCount = 0;
+                    becameFree = false;
                 }
-
-                _memoryManager.Write(_instancePtr, mutex);
-                Monitor.Exit(_mutex);
             }
+            else
+            {
+                becameFree = true;
+                mutex.Owner = 0xFFFFFFFF;
+                mutex.RecursiveCount = 0;
+            }
+
+            _memoryManager.Write(_instancePtr, mutex);
+            Monitor.Exit(_mutex);
 
             // Sanity check
             if (becameFree && Monitor.IsEntered(_mutex))

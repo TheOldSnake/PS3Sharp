@@ -79,7 +79,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler
             // Console.WriteLine($"Executing block 0x{ppu.State->PC:X8} at: 0x{(nint)block->Code:X16}");
 
             PPUState* state = ppu.State;
-            void* memory = ppu.MemoryManager.GetGuestMemoryBase();
+            void* memory = ppu.MemoryManager.Allocator.GuestMemoryBase;
             block->Code(state, memory);
 
             if (block->IsSyscallExit != 0)

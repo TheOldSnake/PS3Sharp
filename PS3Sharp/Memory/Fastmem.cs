@@ -1,17 +1,12 @@
 using System.Runtime.InteropServices;
+using static PS3Sharp.Memory.MemoryConstants;
 using static PS3Sharp.Memory.MemoryManager;
 
 namespace PS3Sharp.Memory
 {
     internal static unsafe class Fastmem
     {
-        internal const uint PageBits = 16;
-        internal const uint PageShift = (32 - PageBits);
-        internal const uint PageCount = 1 << (int)PageBits;
-        internal const uint PageSize = 1 << (int)PageShift;
-        internal const uint PageMask = PageSize - 1;
-
-        // Everything from here is mostly unused 
+        // Everything from here is mostly unused - this is an old implementation
 
         //Size (in bytes) of a full page table where each entry is a pointer-sized value
         private static readonly uint _pageTableSizeBytes = (uint)(PageSize * nuint.Size);
@@ -43,7 +38,7 @@ namespace PS3Sharp.Memory
             for (uint i = startPage; i < endPage; i++)
             {
                 _pageTable[i] = (byte*)memoryBlock.NativeAddress + (pageIndex * PageSize);
-                memoryManager.SetMemoryBlock(ref memoryBlock, (int)i);
+                memoryManager.Allocator.SetMemoryBlock(ref memoryBlock, (int)i);
                 pageIndex++;
             }
 
@@ -60,7 +55,7 @@ namespace PS3Sharp.Memory
             for (uint i = startPage; i < endPage; i++)
             {
                 _pageTable[i] = null;
-                memoryManager.UnsetMemoryBlock((int)i);
+                memoryManager.Allocator.UnsetMemoryBlock((int)i);
             }
         }
 
@@ -84,7 +79,7 @@ namespace PS3Sharp.Memory
             }
 
             // slow path (should not happen because we align allocations to page size)
-            MemoryBlock block = memoryManager.GetAllocationByVirtualAddress(virtualAddress);
+            MemoryBlock block = memoryManager.Allocator.GetAllocationByVirtualAddress(virtualAddress);
             ulong offset = virtualAddress - block.VirtualAddress;
             return (byte*)block.NativeAddress + offset;
         }

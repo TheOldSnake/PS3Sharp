@@ -391,7 +391,7 @@ namespace PS3Sharp.OS.Syscall
         {
             // Allocate SysSpuSegment array
             int segmentArraySize = Unsafe.SizeOf<SysSpuSegment>() * 32;
-            GuestPtr<SysSpuSegment> segmentArrayPtr = _memoryManager.AllocateVirtualMemory((uint)segmentArraySize).VirtualAddress;
+            GuestPtr<SysSpuSegment> segmentArrayPtr = _memoryManager.Allocator.AllocateVirtualMemory((uint)segmentArraySize).VirtualAddress;
 
             if (segments.Count > 0)
             {

@@ -105,7 +105,7 @@ namespace PS3Sharp.OS.Modules
             }
 
             _initialized = true;
-            _readPositionsAddress = _memoryManager.AllocateVirtualMemory(AudioPortCount * sizeof(ulong)).VirtualAddress;
+            _readPositionsAddress = _memoryManager.Allocator.AllocateVirtualMemory(AudioPortCount * sizeof(ulong)).VirtualAddress;
 
             for (uint i = 0; i < _audioPorts.Length; i++)
             {
@@ -163,7 +163,7 @@ namespace PS3Sharp.OS.Modules
             // Allocate memory for the port
             // Each channel has a number of blocks, each block has 256 samples (floats)
             port.Size = (uint)(port.NumberOfChannels * port.NumberOfBlocks * CellAudioBlockSamples * sizeof(float));
-            port.BaseAddress = _memoryManager.AllocateVirtualMemory(port.Size).VirtualAddress;
+            port.BaseAddress = _memoryManager.Allocator.AllocateVirtualMemory(port.Size).VirtualAddress;
 
             // Create the sample buffer for the port
             port.SampleBuffer = new byte[port.TotalSamplesPerBlock * sizeof(short)];

@@ -67,7 +67,7 @@ namespace PS3Sharp.Elf
         {
             // Relocatable segments, not loaded at a specific virtual addreess
             byte[] segmentData = GetSegmentData(reader, ref programHeader);
-            MemoryManager.MemoryBlock block = memoryManager.AllocateVirtualMemory((uint)(ulong)programHeader.p_memsz);
+            MemoryManager.MemoryBlock block = memoryManager.Allocator.AllocateVirtualMemory((uint)(ulong)programHeader.p_memsz);
             memoryManager.CopyBufferToVirtualMemory(segmentData, block.VirtualAddress);
             return block.VirtualAddress;
         }

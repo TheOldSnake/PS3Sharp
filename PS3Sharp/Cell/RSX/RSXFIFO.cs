@@ -658,11 +658,7 @@ namespace PS3Sharp.Cell.RSX
             // This command makes RSX waits until semaphore value == argument
             // We just compare the values as big endian instead of reversing every time
 
-            // Get a reference to the (big endian) value, so we don't spam locking the memory
-
-            // GuestPtr<BigEndian<uint>> ptr = OffsetToAddress(CurrentState.CurrentSemaphoreOffset, CurrentState.CurrentSemaphoreLocation);
             GuestPtr<BigEndian<uint>> ptr = LabelsPtr + CurrentState.CurrentSemaphoreOffset;
-            ref uint be_val = ref _memoryManager.DangerousBigEndianRef<uint>(ptr);
 
             //while (Volatile.Read(ref be_val) != arg.RawBE) {
             //    Thread.Yield();

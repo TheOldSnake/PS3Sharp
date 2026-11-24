@@ -15,7 +15,7 @@ namespace PS3Sharp.Elf
             byte[] elf = File.ReadAllBytes(elfHostPath);
 
             // Allocate and copy the image
-            MemoryManager.MemoryBlock memoryBlock = memoryManager.AllocateVirtualMemory((uint)elf.Length);
+            MemoryManager.MemoryBlock memoryBlock = memoryManager.Allocator.AllocateVirtualMemory((uint)elf.Length);
             GuestVoidPtr elfPtr = memoryBlock.VirtualAddress;
             memoryManager.CopyBufferToVirtualMemory(elf, elfPtr);
 

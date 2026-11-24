@@ -121,7 +121,7 @@ namespace PS3Sharp.OS.Modules
         internal void InitOffsetTable(ref CellGcmConfig config)
         {
             const uint size = (3072 + 512) * sizeof(ushort);
-            MemoryManager.MemoryBlock block = _memoryManager.AllocateVirtualMemory(size);
+            MemoryManager.MemoryBlock block = _memoryManager.Allocator.AllocateVirtualMemory(size);
             _memoryManager.ClearMemory(block.VirtualAddress, (int)block.Size, 0xFF); // The table is initialized to all FFs
 
             OffsetTable = new()
@@ -190,7 +190,7 @@ namespace PS3Sharp.OS.Modules
             const uint blr = 0x4e800020;                         //return
             const uint totalInstructions = 4;
 
-            MemoryManager.MemoryBlock callback = _memoryManager.AllocateVirtualMemory(totalInstructions * sizeof(uint));
+            MemoryManager.MemoryBlock callback = _memoryManager.Allocator.AllocateVirtualMemory(totalInstructions * sizeof(uint));
             uint address = (uint)callback.VirtualAddress;
 
             _memoryManager.Write<BigEndian<uint>>(address + 0, address + 4); //Write the address in the first word, the ppu code loads this word and jumps to its value
@@ -488,7 +488,7 @@ namespace PS3Sharp.OS.Modules
             uint freePages = 0;
             uint offs;
 
-            for (offs = 0; offs < (MemoryManager.RamSize >> 20); offs++)
+            for (offs = 0; offs < (MemoryConstants.RamSize >> 20); offs++)
             {
                 if (!IsIoOffsMapped(offs << 20))
                 {

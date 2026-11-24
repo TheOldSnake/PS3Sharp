@@ -34,7 +34,7 @@ namespace PS3Sharp.Syscall
 
             if (size > 0 && !alloc_addr.IsNullPtr)
             {
-                MemoryBlock block = _memoryManager.AllocateVirtualMemory(size, alignment);
+                MemoryBlock block = _memoryManager.Allocator.AllocateVirtualMemory(size, alignment);
 
                 //Write the handle at the alloc_addr*
                 _memoryManager.Write<BigEndian<uint>>(alloc_addr.Address, block.VirtualAddress);
@@ -52,7 +52,7 @@ namespace PS3Sharp.Syscall
             GuestVoidPtr addr = ppu.ReadArg<GuestVoidPtr>(Arg0);
             if (!addr.IsNullPtr)
             {
-                _memoryManager.FreeByVirtualAddress(addr.Address);
+                _memoryManager.Allocator.FreeByVirtualAddress(addr.Address);
             }
             return CellOk;
         }
@@ -66,7 +66,7 @@ namespace PS3Sharp.Syscall
 
             // todo: check if we have enough memory
 
-            MemoryBlock block = _memoryManager.AllocatePhysicalMemory((uint)size);
+            MemoryBlock block = _memoryManager.Allocator.AllocatePhysicalMemory((uint)size);
             _memoryManager.Write<BigEndian<uint>>(handle_ptr, block.Handle);
 
             return CellOk;
@@ -81,7 +81,7 @@ namespace PS3Sharp.Syscall
             ulong flags = ppu.ReadArg<ulong>(Arg2);
             GuestVoidPtr alloc_addr = ppu.ReadArg<GuestVoidPtr>(Arg3);
 
-            uint newAddress = _memoryManager.RemapByHandle((uint)mem_id, start_addr.Address);
+            uint newAddress = _memoryManager.Allocator.RemapByHandle((uint)mem_id, start_addr.Address);
             _memoryManager.Write<BigEndian<uint>>(alloc_addr.Address, newAddress);
 
             Console.WriteLine($"Sys_MMapper_Search_And_Map: start_addr = {start_addr:X8}, mem_id = {mem_id:X8}, flags = {flags:X16}, alloc_addr = {alloc_addr:X8}");
