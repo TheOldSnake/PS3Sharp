@@ -225,16 +225,17 @@ namespace PS3Sharp.Memory
         internal void RegisterReservationKey(uint threadId)
         {
             lock (_managerLock)
-            // Register the thread id as a reservation key
-            if (!_reservationKeys.Contains(threadId))
             {
-                _reservationKeys.Add(threadId);
+                // Register the thread id as a reservation key
+                if (!_reservationKeys.Contains(threadId))
+                {
+                    _reservationKeys.Add(threadId);
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Unexpected duplicate thread id key: 0x{threadId:X8}");
+                }
             }
-            else
-            {
-                throw new InvalidOperationException($"Unexpected duplicate thread id key: 0x{threadId:X8}");
-            }
-        }
         }
 
         internal void ReserveAddress(uint virtualAddress, int size, uint threadId, ManualResetEventSlim? lostReservationEvent = null)
@@ -301,20 +302,6 @@ namespace PS3Sharp.Memory
             return (T*)native_address;
         }
 
-        // Returns a managed reference to a struct in the -unmanaged- guest memory
-        internal ref T GetRef<T>(GuestPtr<T> ptr) where T : unmanaged, IPS3Struct
-        {
-            void* native_address = GetNativeAddress(ptr.Address);
-            return ref *(T*)native_address;
-        }
-
-        // Returns a managed reference to a struct in the -unmanaged- guest memory        
-        internal ref T GetRef<T>(GuestVoidPtr ptr) where T : unmanaged, IPS3Struct
-        {    
-            void* native_address = GetNativeAddress(ptr.Address);
-            return ref *(T*)native_address;
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void* GetNativeAddress(uint virtualAddress)
         {
@@ -328,7 +315,7 @@ namespace PS3Sharp.Memory
         }
 
         private void AddAllocationBlock(ref MemoryBlock block)
-        {     // Does not allocate
+        {    
             lock (_managerLock)
             {
                 uint startPage = block.VirtualAddress >> (int)Fastmem.PageShift;
@@ -338,9 +325,6 @@ namespace PS3Sharp.Memory
 
                 _allocations.Add(block);
                 _allocations.Sort((a, b) => a.VirtualAddress.CompareTo(b.VirtualAddress));
-
-                // bool fast = TrySetFastmem(ref block);
-                block.IsFastmem = true;
             }
         }
 
@@ -408,21 +392,13 @@ namespace PS3Sharp.Memory
                     throw new Exception($"attempt to allocate an already allocated address");
                 }
 
-                // void* memory = NativeMemory.AllocZeroed((nuint)size);
                 void* memory = CommitMemory(virtualAddress, size);
-
-                MemoryBlock block = new()
-                {
-                    VirtualAddress = virtualAddress,
-                    Size = size,
-                    Handle = GetHandle(),
-                    NativeAddress = memory,
-                };
+                MemoryBlock block = MemoryBlock.Create(GetHandle(), virtualAddress, size, memory);
 
                 AddAllocationBlock(ref block);
                 TotalAllocatedSize += size;
 
-                Console.WriteLine($"[MemoryManager] Allocated at 0x{virtualAddress:X} size = 0x{size:X} {(block.IsFastmem ? "fast" : "slow")}");
+                // Console.WriteLine($"[MemoryManager] Allocated at 0x{virtualAddress:X} size = 0x{size:X}");
                 return block;
             }
         }
@@ -451,7 +427,7 @@ namespace PS3Sharp.Memory
                 MemoryBlock emptyBlock = AllocateVirtualAddress(_nextAllocationAddress, size);
 
                 //Advance the next allocation address
-                _nextAllocationAddress += (uint)size;
+                _nextAllocationAddress += size;
 
                 return emptyBlock;
             }
@@ -471,24 +447,24 @@ namespace PS3Sharp.Memory
             }
         }
 
-        internal MemoryBlock ResizeBlock(MemoryBlock block, uint newSize)
+        internal MemoryBlock ResizeBlock(MemoryBlock oldBlcok, uint newSize)
         {
             lock (_managerLock)
             {
-                uint virtualAddress = block.VirtualAddress;
+                uint virtualAddress = oldBlcok.VirtualAddress;
                 newSize = PageAlign(newSize);
-                uint oldSize = PageAlign(block.Size);
+                uint oldSize = PageAlign(oldBlcok.Size);
 
-                Console.WriteLine($"Realloc at 0x{block.VirtualAddress:X8} old size: 0x{block.Size:X} new size: {newSize:X}");
+                Console.WriteLine($"Realloc at 0x{oldBlcok.VirtualAddress:X8} old size: 0x{oldBlcok.Size:X} new size: {newSize:X}");
 
                 // No difference
                 if (newSize == oldSize)
                 {
-                    return block;
+                    return oldBlcok;
                 }
 
                 // Do not call free, just remove the old block info
-                RemoveAllocationBlock(ref block);
+                RemoveAllocationBlock(ref oldBlcok);
 
                 void* nativePtr;
 
@@ -498,7 +474,6 @@ namespace PS3Sharp.Memory
                     uint difference = newSize - oldSize;
                     nativePtr = CommitMemory(virtualAddress + oldSize, difference);
                     NativeMemory.Clear(nativePtr, difference);  // Clear extra memory
-
                 }
                 else
                 {
@@ -506,17 +481,12 @@ namespace PS3Sharp.Memory
                     nativePtr = DecommitMemory(virtualAddress + newSize, difference);
                 }
 
-                // Set the pointer for the block (realloc might return a new address)
-                block.NativeAddress = nativePtr;
+                // Create a new block with the new size and native address (realloc might return a new address)
+                MemoryBlock newBlock = MemoryBlock.Create(oldBlcok.Handle, oldBlcok.VirtualAddress, newSize, nativePtr);
+                AddAllocationBlock(ref newBlock);
 
-                // Set the new block size
-                block.Size = newSize;
-
-                // Add it again 
-                AddAllocationBlock(ref block);
-
-                // Return the modified block - in case the caller needs to use it
-                return block;
+                // Return the new block - in case the caller needs to use it
+                return newBlock;
             }
         }
 
@@ -706,16 +676,13 @@ namespace PS3Sharp.Memory
         {
             lock (_managerLock)
             {
-                MemoryBlock block = GetAllocationByHandle(handle);
-                _allocations.Remove(block);
+                MemoryBlock oldBlock = GetAllocationByHandle(handle);
+                _allocations.Remove(oldBlock);
 
-                //if (block.IsFastmem) {
-                //    UnsetFastmem(ref block);
-                //}
+                uint newAddress = FindAllocatableAddress(destinationStart, oldBlock.Size);
+                MemoryBlock newBlock = MemoryBlock.Create(oldBlock.Handle, newAddress, oldBlock.Size, oldBlock.NativeAddress);
+                AddAllocationBlock(ref newBlock);
 
-                uint newAddress = FindAllocatableAddress(destinationStart, (uint)block.Size);
-                block.VirtualAddress = newAddress;
-                AddAllocationBlock(ref block);
                 return newAddress;
             }
         }
@@ -724,12 +691,13 @@ namespace PS3Sharp.Memory
         {
             lock (_managerLock)
             {
-                MemoryBlock block = GetAllocationByVirtualAddress(virtualAddress);
-                RemoveAllocationBlock(ref block);
+                MemoryBlock oldBlock = GetAllocationByVirtualAddress(virtualAddress);
+                RemoveAllocationBlock(ref oldBlock);
 
-                uint newAddress = FindAllocatableAddress(destinationStart, (uint)block.Size);
-                block.VirtualAddress = newAddress;
-                AddAllocationBlock(ref block);
+                uint newAddress = FindAllocatableAddress(destinationStart, oldBlock.Size);
+                MemoryBlock newBlock = MemoryBlock.Create(oldBlock.Handle, newAddress, oldBlock.Size, oldBlock.NativeAddress);
+                AddAllocationBlock(ref newBlock);
+
                 return newAddress;
             }
         }
