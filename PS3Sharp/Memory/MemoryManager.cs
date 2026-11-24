@@ -224,6 +224,7 @@ namespace PS3Sharp.Memory
 
         internal void RegisterReservationKey(uint threadId)
         {
+            lock (_managerLock)
             // Register the thread id as a reservation key
             if (!_reservationKeys.Contains(threadId))
             {
@@ -233,6 +234,7 @@ namespace PS3Sharp.Memory
             {
                 throw new InvalidOperationException($"Unexpected duplicate thread id key: 0x{threadId:X8}");
             }
+        }
         }
 
         internal void ReserveAddress(uint virtualAddress, int size, uint threadId, ManualResetEventSlim? lostReservationEvent = null)
