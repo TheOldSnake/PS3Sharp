@@ -108,6 +108,8 @@ namespace PS3Sharp.Cell.PPU
                 SetupArgs(executablePath);
             }
 
+            MemoryManager.RegisterReservationKey(ThreadID);
+
             CallStack.Add(State->PC);
             Console.WriteLine($"PPU Thread: PC entry = 0x{State->PC:X} stack = {GPR[1]} r2 = {GPR[2]} tls = {GPR[13]}");
         }

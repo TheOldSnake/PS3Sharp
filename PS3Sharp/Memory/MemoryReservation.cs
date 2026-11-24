@@ -2,14 +2,30 @@
 {
     internal partial class MemoryManager
     {
-        internal sealed class MemoryReservation
+        internal readonly struct MemoryReservation
         {
-            internal ulong VirtualAddress { get; set; }
-            internal ulong Size { get; set; }
-            internal uint ThreadID { get; set; }
+            internal readonly uint ThreadID { init; get; }
+            internal readonly ulong AddressStart { init; get; }
+            internal readonly ulong Size { init; get; }
+            internal readonly ulong AddressEnd => AddressStart + Size;
 
             // Registered wake up event for SPU threads
-            internal ManualResetEventSlim? LostReservationEvent { get; set; }
+            internal readonly ManualResetEventSlim? LostReservationEvent { init; get; }
+
+            internal bool Contains(ulong accessStart, ulong size)
+            {
+                ulong accessEnd = accessStart + size;
+                return accessStart >= AddressStart && accessEnd <= AddressEnd;
+            }
+
+            internal bool OverlapsWith(ulong accessStart, ulong size)
+            {
+                ulong accessEnd = accessStart + size;
+                return accessStart < AddressEnd && accessEnd > AddressStart;
+            }
+
+            // Notify the thread by setting the event, if it exists
+            internal void SetEvent() => LostReservationEvent?.Set();
         }
     }
 }

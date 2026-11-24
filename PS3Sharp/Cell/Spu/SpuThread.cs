@@ -155,6 +155,7 @@ namespace PS3Sharp.Cell.Spu
             Image = img;
             Argument = arg;
             _ownerGroup = ownerGroup;
+            MemoryManager.RegisterReservationKey(ID);
         }
 
         internal bool PortIsFree(int port) => _ports[port] == null;

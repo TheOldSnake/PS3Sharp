@@ -41,6 +41,9 @@ namespace PS3Sharp.Memory
         private readonly object _managerLock = new();
 
         private readonly List<MemoryBlock> _allocations = [];
+
+        // Seperate list of reservation keys (thread IDs) to make iterating the dictionary easier
+        private readonly List<uint> _reservationKeys = [];     
         private readonly Dictionary<uint, MemoryReservation> _reservations = [];
 
         private uint _nextAllocationAddress = 0x30000000; // I don't know where to start
@@ -219,63 +222,71 @@ namespace PS3Sharp.Memory
             }
         }
 
+        internal void RegisterReservationKey(uint threadId)
+        {
+            // Register the thread id as a reservation key
+            if (!_reservationKeys.Contains(threadId))
+            {
+                _reservationKeys.Add(threadId);
+            }
+            else
+            {
+                throw new InvalidOperationException($"Unexpected duplicate thread id key: 0x{threadId:X8}");
+            }
+        }
+
         internal void ReserveAddress(uint virtualAddress, int size, uint threadId, ManualResetEventSlim? lostReservationEvent = null)
         {
+            MemoryReservation reservation = new()
+            {
+                AddressStart = virtualAddress,
+                Size = (uint)size,
+                ThreadID = threadId,
+                LostReservationEvent = lostReservationEvent
+            };
+
             lock (_managerLock)
             {
-                // one reservation per thread, apprearently
-                _reservations[threadId] = new MemoryReservation
-                {
-                    VirtualAddress = virtualAddress,
-                    Size = (uint)size,
-                    ThreadID = threadId,
-                    LostReservationEvent = lostReservationEvent
-                };
-
-                //Console.WriteLine($"[{ThreadManager.GetThreadName(threadId)}] Reserved addr = 0x{virtualAddress:X8}");
+                // One reservation per thread, apprearently
+                _reservations[threadId] = reservation;
             }
         }
 
         internal bool TryAccess(uint virtualAddress, int size, uint threadId)
         {
-            ulong accessStart = virtualAddress;
-            ulong accessEnd = (ulong)(virtualAddress + size);
-
             lock (_managerLock)
             {
-                if (!_reservations.TryGetValue(threadId, out MemoryReservation? memoryReservation))
+                // Fail if no reservation exists for this thread
+                if (!_reservations.TryGetValue(threadId, out MemoryReservation reservation))
                 {
                     return false;
                 }
 
-                ulong reservationStart = memoryReservation.VirtualAddress;
-                ulong reservationEnd = memoryReservation.VirtualAddress + memoryReservation.Size;
-                bool ok = accessStart >= reservationStart && accessEnd <= reservationEnd;
-                InvalidateReservations(virtualAddress, size);
+                // Fail if the access is not within the reserved space
+                if (!reservation.Contains(virtualAddress, (ulong)size))
+                {
+                    return false;
+                }
 
-                return ok;
+                // Access is OK, invalidate all reservations that overlaps
+                InvalidateReservations(virtualAddress, size);
+                return true;
             }
         }
 
         internal void InvalidateReservations(uint virtualAddress, int size)
         {
-            ulong accessStart = virtualAddress;
-            ulong accessEnd = (ulong)(virtualAddress + size);
-
             lock(_managerLock)
             {
-                foreach (KeyValuePair<uint, MemoryReservation> reservation_thread_pair in _reservations.ToList())
+                foreach (uint key in _reservationKeys)
                 {
-                    MemoryReservation reservation = reservation_thread_pair.Value;
-
-                    ulong reservationStart = reservation.VirtualAddress;
-                    ulong reservationEnd = reservation.VirtualAddress + reservation.Size;
-                    bool overlap = accessStart < reservationEnd && accessEnd > reservationStart; // on any overlap?
-
-                    if (overlap)
+                    if (_reservations.TryGetValue(key, out MemoryReservation reservation))
                     {
-                        _reservations.Remove(reservation_thread_pair.Key);
-                        reservation_thread_pair.Value.LostReservationEvent?.Set();
+                        if (reservation.OverlapsWith(virtualAddress, (ulong)size))
+                        {
+                            _reservations.Remove(key);
+                            reservation.SetEvent();
+                        }
                     }
                 }
             }
