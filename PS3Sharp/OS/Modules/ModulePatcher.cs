@@ -11,7 +11,7 @@ using static PS3Sharp.Elf.ElfLoader;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal class ModulePatcher
+    internal sealed class ModulePatcher
     {
         [StructLayout(LayoutKind.Sequential)]
         internal struct PRXParam : IPS3Struct

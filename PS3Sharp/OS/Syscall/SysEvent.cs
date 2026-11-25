@@ -12,7 +12,7 @@ using static PS3Sharp.OS.LV2.LV2EventQueue;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal class SysEvent
+    internal sealed class SysEvent
     {
         private readonly MemoryManager _memoryManager;
         private readonly ConcurrentDictionary<uint, LV2EventQueue> _eventQueues = new();

@@ -6,7 +6,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal class SCENP
+    internal sealed class SCENP
     {
         internal const ulong SceNpDrmErrorLicenseNotFound = 0x80029521;
         internal const ulong SceNpBasicErrorNoEvent = 0x8002a66a;

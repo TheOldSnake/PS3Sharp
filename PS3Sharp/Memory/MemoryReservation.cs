@@ -1,6 +1,6 @@
 ﻿namespace PS3Sharp.Memory
 {
-    internal partial class MemoryManager
+    internal sealed partial class MemoryManager
     {
         internal readonly struct MemoryReservation
         {

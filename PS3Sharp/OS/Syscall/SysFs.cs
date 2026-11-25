@@ -13,7 +13,7 @@ namespace PS3Sharp.OS.Syscall
 {
     // File System Syscalls
 
-    internal class SysFs
+    internal sealed class SysFs
     {
         // This struct is explicitly aligned to 4 bytes
         [StructLayout(LayoutKind.Sequential, Pack = 4)]

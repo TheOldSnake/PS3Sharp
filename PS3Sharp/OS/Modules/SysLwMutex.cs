@@ -12,7 +12,7 @@ namespace PS3Sharp.OS.Modules
 {
 
     // This is for sys_lwmutex module, not _sys_lwmutex (the syscalls)
-    internal class SysLwMutex
+    internal sealed class SysLwMutex
     {
         private readonly MemoryManager _memoryManager;
         private readonly ConcurrentDictionary<uint, LV2LwMutex> _lwMutexes = [];

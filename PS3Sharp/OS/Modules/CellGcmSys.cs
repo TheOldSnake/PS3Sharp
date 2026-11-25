@@ -9,7 +9,7 @@ using static PS3Sharp.Cell.RSX.RealitySynthesizer;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal class CellGcmSys
+    internal sealed class CellGcmSys
     {
         internal struct CellGcmOffsetTable : IPS3Struct
         {

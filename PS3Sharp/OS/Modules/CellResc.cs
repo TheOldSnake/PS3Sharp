@@ -4,7 +4,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal class CellResc
+    internal sealed class CellResc
     {
         private readonly MemoryManager _memoryManager;
         private readonly CellGcmSys _cellGcmSys;

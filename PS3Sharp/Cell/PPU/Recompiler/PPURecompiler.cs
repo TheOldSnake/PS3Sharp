@@ -9,7 +9,7 @@ using static PS3Sharp.Cell.PPU.Recompiler.IR.IRGenerator;
 
 namespace PS3Sharp.Cell.PPU.Recompiler
 {
-    internal unsafe sealed class PPURecompiler : IDisposable
+    internal sealed unsafe class PPURecompiler : IDisposable
     {
         internal struct X64Block
         {

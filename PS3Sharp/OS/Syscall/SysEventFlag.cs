@@ -10,7 +10,7 @@ using static PS3Sharp.OS.LV2.LV2EventFlag;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal class SysEventFlag
+    internal sealed class SysEventFlag
     {
         private readonly MemoryManager _memoryManager;
         private readonly ConcurrentDictionary<uint, LV2EventFlag> _eventFlags = new();

@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal partial class CellPngDec
+    internal sealed partial class CellPngDec
     {
         private sealed class PngDecoder : IDisposable
         {

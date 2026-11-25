@@ -12,7 +12,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS
 {
-    internal partial class LV2SyscallDispatcher : IDisposable
+    internal sealed partial class LV2SyscallDispatcher : IDisposable
     {
         private const int SyscallIdReg = 11;      // R11 contains syscall number
 

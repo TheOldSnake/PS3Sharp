@@ -7,7 +7,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal class SCENPTrophy
+    internal sealed class SCENPTrophy
     {
         private readonly MemoryManager _memoryManager;
 

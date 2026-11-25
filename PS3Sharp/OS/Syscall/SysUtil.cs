@@ -10,7 +10,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal class SysUtil
+    internal sealed class SysUtil
     {
         [StructLayout(LayoutKind.Sequential)]
         internal struct CellAudioState : IPS3Struct

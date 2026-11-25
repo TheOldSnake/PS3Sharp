@@ -10,7 +10,7 @@ using static PS3Sharp.OS.LV2.LV2Mutex;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal class SysMutex
+    internal sealed class SysMutex
     {
         private readonly MemoryManager _memoryManager;
         private readonly ConcurrentDictionary<uint, LV2Mutex> _mutexes = new();

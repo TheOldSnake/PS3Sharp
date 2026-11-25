@@ -8,7 +8,7 @@ using static PS3Sharp.Memory.MemoryManager;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal class SysPrxForUser
+    internal sealed class SysPrxForUser
     {
         private readonly ThreadManager _threadManager;
         private readonly MemoryManager _memoryManager;

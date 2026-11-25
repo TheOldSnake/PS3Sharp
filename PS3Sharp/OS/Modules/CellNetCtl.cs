@@ -6,7 +6,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal class CellNetCtl
+    internal sealed class CellNetCtl
     {
         internal const uint CellNetCtlStateDisconnected = 0;
         internal const uint CellNetCtlStateConnecting = 1;

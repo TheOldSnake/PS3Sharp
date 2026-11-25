@@ -2,7 +2,7 @@
 
 namespace PS3Sharp.Cell.RSX
 {
-    internal partial class FragmentShaderGenerator
+    internal sealed partial class FragmentShaderGenerator
     {
         // Based on nvfx_shader.h in PSL1GHT
 

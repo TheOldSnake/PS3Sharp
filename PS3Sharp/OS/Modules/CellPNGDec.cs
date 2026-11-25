@@ -10,7 +10,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal partial class CellPngDec : IDisposable
+    internal sealed partial class CellPngDec : IDisposable
     {
         internal struct CellPngDecThreadOutParam : IPS3Struct
         {

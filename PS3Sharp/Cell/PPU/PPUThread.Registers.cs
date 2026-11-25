@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace PS3Sharp.Cell.PPU
 {
-    internal unsafe sealed partial class PPUThread
+    internal sealed unsafe partial class PPUThread
     {
         // TODO: Refactor and don't use fixed buffers, and maybe don't use LayoutKind.Explicit too
 

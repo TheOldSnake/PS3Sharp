@@ -6,7 +6,7 @@ using static PS3Sharp.Elf.ElfDefinitions;
 
 namespace PS3Sharp.Elf
 {
-    internal class PRXElfLoader : ElfLoader
+    internal sealed class PRXElfLoader : ElfLoader
     {
         // Custom struct - not from ELF spec
         internal struct LoadedPRXSegment

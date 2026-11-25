@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace PS3Sharp
 {
-    internal class GLRenderer : IDisposable
+    internal sealed class GLRenderer : IDisposable
     {
         // Default shaders that sample a given texture and draw it on screen - unused -
         private const string DefaultVertexShader = @"

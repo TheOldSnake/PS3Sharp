@@ -13,7 +13,7 @@ using static PS3Sharp.Elf.PRXElfLoader;
 
 namespace PS3Sharp.PRX
 {
-    internal class PRXManager
+    internal sealed class PRXManager
     {
         [StructLayout(LayoutKind.Sequential)]
         internal readonly struct LibraryInfo : IPS3Struct

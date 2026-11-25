@@ -1,6 +1,6 @@
 ﻿namespace PS3Sharp.Cell.Spu.Interpreter
 {
-    internal partial class SpuInterpreter
+    internal static partial class SpuInterpreter
     {
         internal static bool Log = false;
 

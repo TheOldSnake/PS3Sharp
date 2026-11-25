@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 
 namespace PS3Sharp.OS
 {
-    internal partial class LV2SyscallDispatcher
+    internal sealed partial class LV2SyscallDispatcher
     {
         private ImmutableDictionary<SyscallID, Func<PPUThread, ulong>> CreateSyscallTable()
         {

@@ -6,7 +6,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal class SysVm
+    internal sealed class SysVm
     {
         private readonly MemoryManager _memoryManager;
 

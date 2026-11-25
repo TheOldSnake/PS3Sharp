@@ -10,7 +10,7 @@ using static PS3Sharp.OS.Syscall.SysFs;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal class CellFs
+    internal sealed class CellFs
     {
         private readonly MemoryManager _memoryManager;
         private readonly SysFs _sysFs;

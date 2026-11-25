@@ -6,7 +6,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal class CellSysModule
+    internal sealed class CellSysModule
     {
         internal static ImmutableDictionary<ushort, string> ModuleMap { get; } = new Dictionary<ushort, string>()
         {

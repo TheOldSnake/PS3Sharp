@@ -13,7 +13,7 @@ using static PS3Sharp.Elf.ElfLoader;
 
 namespace PS3Sharp
 {
-    internal class Emulator : IDisposable
+    internal sealed class Emulator : IDisposable
     {
         private readonly MainElfLoader _elfLoader;
         private readonly ModulePatcher _modulePatcher;

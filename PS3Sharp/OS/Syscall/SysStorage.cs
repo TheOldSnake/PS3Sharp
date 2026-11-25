@@ -9,7 +9,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal class SysStorage
+    internal sealed class SysStorage
     {
         internal sealed class StorageDevice
         {

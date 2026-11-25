@@ -7,7 +7,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal class CellRtc
+    internal sealed class CellRtc
     {
         internal struct CellRtcDateTime : IPS3Struct
         {

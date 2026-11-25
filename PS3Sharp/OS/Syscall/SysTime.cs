@@ -6,7 +6,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal class SysTime
+    internal sealed class SysTime
     {
         private readonly MemoryManager _memoryManager;
 

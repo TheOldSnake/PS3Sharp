@@ -3,7 +3,7 @@ using static PS3Sharp.Elf.ElfDefinitions;
 
 namespace PS3Sharp.Elf
 {
-    internal class MainElfLoader : ElfLoader
+    internal sealed class MainElfLoader : ElfLoader
     {
         internal ElfHeader64 LoadMainElf(BinaryReader reader, MemoryManager memoryManager)
         {

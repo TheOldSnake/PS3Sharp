@@ -11,7 +11,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal class CellAudio
+    internal sealed class CellAudio
     {
         internal const uint AudioPortCount = 8;
         internal const uint AudioMaxBlockCount = 32;

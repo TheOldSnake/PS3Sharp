@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace PS3Sharp.Cell.PPU
 {
-    internal unsafe sealed partial class PPUThread
+    internal sealed unsafe partial class PPUThread
     {
         // Unmanaged State
         [StructLayout(LayoutKind.Sequential)]

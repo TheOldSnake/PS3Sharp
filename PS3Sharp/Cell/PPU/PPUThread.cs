@@ -11,7 +11,7 @@ using static PS3Sharp.Memory.MemoryManager;
 
 namespace PS3Sharp.Cell.PPU
 {
-    internal unsafe sealed partial class PPUThread : IDisposable, IEmulatorThread
+    internal sealed unsafe partial class PPUThread : IDisposable, IEmulatorThread
     {
         internal enum PPUThreadStates
         {

@@ -9,7 +9,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal class SysLwCond
+    internal sealed class SysLwCond
     { 
         // HLE implementation for the module 
         // TODO: Implement the syscalls

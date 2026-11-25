@@ -12,7 +12,7 @@ namespace PS3Sharp.OS.Syscall
 {
     // This is for _sys_lwmutex syscalls, not sys_lwmutex (the module)
     // These syscalls gets called when we LLE the module, from liblv2
-    internal class _SysLwMutex
+    internal sealed class _SysLwMutex
     {
         private readonly MemoryManager _memoryManager;
         private readonly ConcurrentDictionary<uint, LV2LwMutex> _lwMutexes = new();

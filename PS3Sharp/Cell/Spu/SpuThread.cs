@@ -10,7 +10,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.Cell.Spu
 {
-    internal unsafe sealed class SpuThread : IDisposable
+    internal sealed unsafe class SpuThread : IDisposable
     {
         // Unmanaged state
         [StructLayout(LayoutKind.Sequential)]

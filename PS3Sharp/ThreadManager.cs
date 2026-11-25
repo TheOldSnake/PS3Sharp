@@ -12,7 +12,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace PS3Sharp
 {
-    internal class ThreadManager : IDisposable
+    internal sealed class ThreadManager : IDisposable
     {
         private readonly ManualResetEventSlim _processTerminationEvent = new(false);     // Shutdown event
         private readonly MemoryManager _memoryManager;

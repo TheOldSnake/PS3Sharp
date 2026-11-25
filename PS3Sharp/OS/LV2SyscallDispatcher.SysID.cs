@@ -2,7 +2,7 @@
 
 namespace PS3Sharp.OS
 {
-    internal partial class LV2SyscallDispatcher
+    internal sealed partial class LV2SyscallDispatcher
     {
         public enum SyscallID : uint
         {

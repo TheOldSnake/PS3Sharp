@@ -8,7 +8,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal class CellVideoOut
+    internal sealed class CellVideoOut
     {
         [StructLayout(LayoutKind.Sequential)]
         internal struct CellVideoOutConfiguration : IPS3Struct

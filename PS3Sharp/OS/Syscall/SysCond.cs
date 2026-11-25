@@ -10,7 +10,7 @@ using static PS3Sharp.OS.LV2.LV2Cond;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal class SysCond
+    internal sealed class SysCond
     {
         private readonly MemoryManager _memoryManager;
         private readonly SysMutex _sysMutex;

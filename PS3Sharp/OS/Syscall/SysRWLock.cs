@@ -10,7 +10,7 @@ using static PS3Sharp.OS.LV2.LV2RWLock;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal class SysRWLock
+    internal sealed class SysRWLock
     {
         private readonly MemoryManager _memoryManager;
         private readonly ConcurrentDictionary<uint, LV2RWLock> _readWtrieLocks = [];

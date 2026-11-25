@@ -10,7 +10,7 @@ using static PS3Sharp.OS.LV2.LV2Semaphore;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal class SysSemaphore
+    internal sealed class SysSemaphore
     {
         private readonly MemoryManager _memoryManager;
         private readonly ConcurrentDictionary<uint, LV2Semaphore> _semaphores = [];

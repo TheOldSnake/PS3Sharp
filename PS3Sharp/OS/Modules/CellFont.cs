@@ -9,7 +9,7 @@ using static PS3Sharp.Cell.PPU.PPUThread;
 namespace PS3Sharp.OS.Modules
 {
     // We LLE CellFont, this sealed class is purely for debugging purposes
-    internal class CellFont
+    internal sealed class CellFont
     {
         internal struct CellFont_ : IPS3Struct
         {

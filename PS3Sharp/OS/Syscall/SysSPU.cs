@@ -13,7 +13,7 @@ using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
 namespace PS3Sharp.OS.Syscall
 {
-    internal class SysSpu
+    internal sealed class SysSpu
     {
         [StructLayout(LayoutKind.Sequential)]
         internal struct SysSpuSegment : IPS3Struct

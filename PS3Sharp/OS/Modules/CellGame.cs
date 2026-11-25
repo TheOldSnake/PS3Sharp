@@ -12,7 +12,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal class CellGame
+    internal sealed class CellGame
     {
         [StructLayout(LayoutKind.Sequential)]
         internal struct CellGameContentSize : IPS3Struct

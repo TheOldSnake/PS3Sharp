@@ -8,7 +8,7 @@ using PS3Sharp.FileSystem;
 
 namespace PS3Sharp
 {
-    internal class EmulatorWindow : IDisposable
+    internal sealed class EmulatorWindow : IDisposable
     {
         private readonly ThreadManager _threadManager;
         private readonly FileSystemManager _fileSystemManager;

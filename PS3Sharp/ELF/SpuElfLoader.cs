@@ -6,7 +6,7 @@ using static PS3Sharp.Elf.ElfDefinitions;
 
 namespace PS3Sharp.Elf
 {
-    internal class SpuElfLoader : ElfLoader
+    internal sealed class SpuElfLoader : ElfLoader
     {
         internal (ElfHeader32 header, List<SysSpu.SysSpuSegment> segments) GetSpuElfInfo(string elfGuestPath, MemoryManager memoryManager)
         {

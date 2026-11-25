@@ -10,7 +10,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal class CellPad
+    internal sealed class CellPad
     {
         [StructLayout(LayoutKind.Sequential)]
         internal struct CellPadInfo2 : IPS3Struct

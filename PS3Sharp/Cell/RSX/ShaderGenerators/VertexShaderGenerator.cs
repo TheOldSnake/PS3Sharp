@@ -2,7 +2,7 @@ using PS3Sharp.Common;
 
 namespace PS3Sharp.Cell.RSX
 {
-    internal partial class VertexShaderGenerator
+    internal sealed partial class VertexShaderGenerator
     {
         private static readonly string _vertexProgramBase = @"
             #version 460        

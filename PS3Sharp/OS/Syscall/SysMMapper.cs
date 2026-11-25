@@ -7,7 +7,7 @@ using static PS3Sharp.Memory.MemoryManager;
 
 namespace PS3Sharp.Syscall
 {
-    internal class SysMMapper
+    internal sealed class SysMMapper
     {
         // sys_mmapper syscalls
         // not to be confused with sys_mmapper functions in sysPrxForUser

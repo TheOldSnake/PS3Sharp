@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace PS3Sharp.Cell.RSX
 {
-    internal partial class FragmentShaderGenerator
+    internal sealed partial class FragmentShaderGenerator
     {
         internal const uint InstructionSize = 4 * sizeof(uint);          //4 32-bit words
         private static readonly string _fragmentProgramBase = @"

@@ -11,7 +11,7 @@ using static PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator.X64RegisterAlloc
 
 namespace PS3Sharp.Cell.PPU.Recompiler.x64
 {
-    internal unsafe sealed partial class X64Generator
+    internal sealed unsafe partial class X64Generator
     {
         private readonly X64RegisterAllocator _registerAllocator = new();
 

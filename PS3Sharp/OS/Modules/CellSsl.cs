@@ -6,7 +6,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Modules
 {
-    internal class CellSsl
+    internal sealed class CellSsl
     {
         internal const string CertificatesPath = @"dev_flash\data\cert";
         private readonly MemoryManager _memoryManager;

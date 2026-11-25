@@ -6,7 +6,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal class SysTTY
+    internal sealed class SysTTY
     {
         internal const uint Stdout = 1;
         internal const uint Stderr = 2;
