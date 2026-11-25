@@ -93,7 +93,7 @@ namespace PS3Sharp.Cell.PPU
             State->VRSAVE = 0xFFFFFFFF;
 
             MemoryBlock stackArea = MemoryManager.Allocator.AllocateStackSpace(stackSize);
-            MemoryBlock tls = MemoryManager.AllocateTLS();
+            MemoryBlock tls = MemoryManager.AllocateTlsBlock();
 
             // Stack base points at the top, but leave some headroom
             // because games do access [SP] before they decrement SP

@@ -9,7 +9,6 @@ using PS3Sharp.OS;
 using PS3Sharp.OS.Modules;
 using PS3Sharp.PRX;
 using static PS3Sharp.Elf.ElfDefinitions;
-using static PS3Sharp.Elf.ElfLoader;
 
 namespace PS3Sharp
 {
@@ -69,7 +68,9 @@ namespace PS3Sharp
         {
             // Load and patch elf
             BinaryReader reader = new(File.OpenRead(path));
-            ElfHeader64 header = _elfLoader.LoadMainElf(reader, _memoryManager);
+            ElfHeader64 header = _elfLoader.LoadMainElf(reader, _memoryManager, out byte[]? tls);
+            _memoryManager.SetTlsImage(tls);
+
             _modulePatcher.HandleMainElfImports(reader, header, _memoryManager, _elfLoader);
             ulong entry = header.e_entry;
             return (uint)entry;

@@ -3,6 +3,7 @@ using PS3Sharp.Common;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Xml.Linq;
 
 namespace PS3Sharp.Memory
 {
@@ -15,9 +16,8 @@ namespace PS3Sharp.Memory
         private readonly List<uint> _reservationKeys = [];
         private readonly Dictionary<uint, MemoryReservation> _currentReservations = [];
 
-        // Tls image (should probably move it somewhere else)
-        private GuestVoidPtr _tlsImagePtr;
-        private uint _tlsImageSize;
+        // Tls image data (should probably move it somewhere else)
+        private byte[]? _tlsData;
 
         // Memory allocator
         internal MemoryAllocator Allocator { get; }
@@ -190,33 +190,25 @@ namespace PS3Sharp.Memory
             }
         }
 
-        internal MemoryBlock AllocateTLS()
+        internal MemoryBlock AllocateTlsBlock()
         {
             using (_memoryLock.EnterScope())
             {
-                if (!_tlsImagePtr.IsNullPtr)
-                {
-                    // Copy tls image to a newly allocated area per thread
-                    MemoryBlock thread_tls = Allocator.AllocateVirtualMemory(_tlsImageSize + 0x30);
-                    void* src = GetNativeAddress(_tlsImagePtr);
-                    NativeMemory.Copy(src, (byte*)thread_tls.NativeAddress + 0x30, _tlsImageSize);
-                    return thread_tls;
-                }
-                else
-                {
-                    // This means the ELF did not have a TLS segment
-                    throw new Exception($"TLSImage was not found during elf loading");
-                }
+                ArgumentNullException.ThrowIfNull(_tlsData, $"Tls data is null");
+
+                // Copy tls image to a newly allocated area per thread
+                MemoryBlock threadTls = Allocator.AllocateVirtualMemory((uint)(_tlsData.Length + 0x30));
+                CopyBufferToVirtualMemory(_tlsData, threadTls.VirtualAddress + 0x30);
+
+                return threadTls;
             }
         }
 
-        internal void SetTLS(uint virtualAddress, uint size)
+        internal void SetTlsImage(byte[]? tls)
         {
             using (_memoryLock.EnterScope())
             {
-                // Save the address of the TLS image (which can be in the middle of a block)
-                _tlsImagePtr = virtualAddress;
-                _tlsImageSize = size;
+                _tlsData = tls;
             }
         }
 
