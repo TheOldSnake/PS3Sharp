@@ -46,30 +46,8 @@ namespace PS3Sharp.Elf
 
             // Load segment
             byte[] segmentData = GetSegmentData(reader, ref programHeader);
-            uint dest;
-
-            if (!memoryManager.Allocator.IsVirtualAddressAllocated(p_vaddr))
-            {
-                MemoryManager.MemoryBlock block = memoryManager.Allocator.AllocateVirtualAddress(p_vaddr, p_memsz);
-                dest = block.VirtualAddress;
-            }
-            else
-            {
-                dest = p_vaddr;
-
-                // Make sure the block has enough size
-                uint programEnd = dest + p_memsz;
-                MemoryManager.MemoryBlock block = memoryManager.Allocator.GetAllocationByVirtualAddress(p_vaddr);
-                int extraBytes = (int)(programEnd - block.End);
-
-                if (extraBytes > 0)
-                {
-                    uint newSize = (uint)(block.Size + extraBytes);
-                    block = memoryManager.Allocator.ResizeBlock(block, newSize);
-                }
-
-                Console.WriteLine($"[Loader] Warning: Segment overwrite at vaddr = 0x{p_vaddr:X8} size = 0x{p_memsz:X8} segment: {pt_name}");
-            }
+            MemoryManager.MemoryBlock block = memoryManager.Allocator.AllocateVirtualAddress(p_vaddr, p_memsz);
+            uint dest = block.VirtualAddress;
 
             memoryManager.CopyBufferToVirtualMemory(segmentData, dest);
 

@@ -6,6 +6,54 @@ namespace PS3Sharp.Elf
 {
     internal abstract class ElfLoader
     {
+        internal static uint GetTotalRequiredSize(ReadOnlySpan<ProgramHeader64> programHeaders)
+        {
+            ulong sum = 0;
+
+            foreach (ProgramHeader64 header in programHeaders)
+            {
+                ulong size = header.p_memsz;
+                sum += size;
+            }
+
+            if (sum > uint.MaxValue)
+            {
+                throw new OverflowException($"Segments total size exceeded uint.MaxValue");
+            }
+
+            return (uint)sum;
+        }
+
+        internal static uint FindMinimumAddress(ReadOnlySpan<ProgramHeader64> programHeaders)
+        {
+            ulong min = programHeaders[0].p_vaddr;
+
+            foreach (ProgramHeader64 header in programHeaders)
+            {
+                if (header.p_vaddr < min)
+                {
+                    min = header.p_vaddr;
+                }
+            }
+
+            return (uint)min;
+        }
+
+        internal static uint FindMaximumAlignment(ReadOnlySpan<ProgramHeader64> programHeaders)
+        {
+            ulong maxAlign = programHeaders[0].p_align;
+
+            foreach (ProgramHeader64 header in programHeaders)
+            {
+                if (header.p_align > maxAlign)
+                {
+                    maxAlign = header.p_align;
+                }
+            }
+
+            return (uint)maxAlign;
+        }
+
         internal static bool TryFindProgram(BinaryReader reader, ref ElfHeader64 header, uint p_type, out ProgramHeader64 programHeader)
         {
             // Get all program headers
