@@ -246,7 +246,7 @@ namespace PS3Sharp.PRX
                         if (!ForceHLE.Contains(function_name))
                         {
                             _exportedFunctions.Add(nid, address);
-                            Console.WriteLine($"[{libraryInitialization.LibName}] export at address: 0x{address:X8} function name = {function_name}");
+                            //Console.WriteLine($"[{libraryInitialization.LibName}] export at address: 0x{address:X8} function name = {function_name}");
                         }
                     }
                 }
@@ -285,7 +285,7 @@ namespace PS3Sharp.PRX
                     string functionName = NIDManager.NIDList.GetValueOrDefault(nid, "unknown_function");
                     modulePatcher.PatchModuleCallHLE(moduleName, functionName, nid, address, memoryManager);
 
-                    Console.WriteLine($"[{libname}] import at address: 0x{address:X8} function: {functionName}");
+                    //Console.WriteLine($"[{libname}] import at address: 0x{address:X8} function: {functionName}");
                 }
 
                 currentAddress += size;
