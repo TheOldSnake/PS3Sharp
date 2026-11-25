@@ -199,12 +199,12 @@ namespace PS3Sharp.Memory
                     // Copy tls image to a newly allocated area per thread
                     MemoryBlock thread_tls = Allocator.AllocateVirtualMemory(_tlsImageSize + 0x30);
                     void* src = GetNativeAddress(_tlsImagePtr);
-                    NativeMemory.Copy(src, (byte*)thread_tls.NativeAddress + 0x30, (nuint)_tlsImageSize);
+                    NativeMemory.Copy(src, (byte*)thread_tls.NativeAddress + 0x30, _tlsImageSize);
                     return thread_tls;
                 }
                 else
                 {
-                    //This means the ELF did not have a TLS segment
+                    // This means the ELF did not have a TLS segment
                     throw new Exception($"TLSImage was not found during elf loading");
                 }
             }

@@ -38,7 +38,7 @@ namespace PS3Sharp.Memory
             for (uint i = startPage; i < endPage; i++)
             {
                 _pageTable[i] = (byte*)memoryBlock.NativeAddress + (pageIndex * PageSize);
-                memoryManager.Allocator.SetMemoryBlock(ref memoryBlock, (int)i);
+                //memoryManager.Allocator.SetMemoryBlock(ref memoryBlock, (int)i);
                 pageIndex++;
             }
 
@@ -55,7 +55,7 @@ namespace PS3Sharp.Memory
             for (uint i = startPage; i < endPage; i++)
             {
                 _pageTable[i] = null;
-                memoryManager.Allocator.UnsetMemoryBlock((int)i);
+                //memoryManager.Allocator.UnsetMemoryBlock((int)i);
             }
         }
 
@@ -79,7 +79,7 @@ namespace PS3Sharp.Memory
             }
 
             // slow path (should not happen because we align allocations to page size)
-            MemoryBlock block = memoryManager.Allocator.GetAllocationByVirtualAddress(virtualAddress);
+            _ = memoryManager.Allocator.TryGetBlockByAddress(virtualAddress, out MemoryBlock block);
             ulong offset = virtualAddress - block.VirtualAddress;
             return (byte*)block.NativeAddress + offset;
         }

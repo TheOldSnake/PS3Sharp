@@ -23,5 +23,9 @@
         internal const uint PageCount = 1 << (int)PageBits;
         internal const uint PageSize = 1 << (int)PageShift;
         internal const uint PageMask = PageSize - 1;
+        internal const uint DefaultAlignment = 16;
+
+        internal const uint UserHeapStart = 0x30000000;
+        internal const uint PrxMemoryStart = 0x10000000;
     }
 }
