@@ -31,6 +31,7 @@ namespace PS3Sharp.Common
         private const uint WinApiPageNoaccess = 0x00000001;
         private const uint WinApiPageReadwrite = 0x00000004;
 
+        // Imports
         [LibraryImport("kernel32.dll", SetLastError = true)]
         private static partial nint VirtualAlloc(nint lpAddress, nuint dwSize, uint flAllocationType, uint flProtect);
 
@@ -72,7 +73,6 @@ namespace PS3Sharp.Common
         {
             // Note: VirtualAlloc will round size to 4 KB pages,
             // and will return the input address rounded down to nearest page boundary
-
             uint type = GetPageAccessType(access);
             void* result = (void*)VirtualAlloc(address, size, WinApiMemCommit, type);
 
