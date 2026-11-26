@@ -309,19 +309,22 @@ namespace PS3Sharp.Memory
         {
             // We need to check if the pages spanned by this range can be  
             // safely decommitted without affecting existing allocations.
-            int pageShift = NativePageShift;
-            uint pageSize = NativePageSize;
-
-            uint startPage = virtualAddress >> pageShift;
-            uint endPage = (virtualAddress + size + pageSize - 1) >> pageShift; // Ceiling
-
-            for (uint page = startPage; page < endPage; page++)
+            using (_memoryLock.EnterScope())
             {
-                uint virtualPageAddress = page * pageSize;
+                int pageShift = NativePageShift;
+                uint pageSize = NativePageSize;
 
-                if (CanFreeNativePage(page))
+                uint startPage = virtualAddress >> pageShift;
+                uint endPage = (virtualAddress + size + pageSize - 1) >> pageShift; // Ceiling
+
+                for (uint page = startPage; page < endPage; page++)
                 {
-                    DecommitMemory(virtualPageAddress, pageSize);
+                    uint virtualPageAddress = page * pageSize;
+
+                    if (CanFreeNativePage(page))
+                    {
+                        DecommitMemory(virtualPageAddress, pageSize);
+                    }
                 }
             }
         }
@@ -397,20 +400,23 @@ namespace PS3Sharp.Memory
         {
             // Check if the native page can be decommitted
             // Ensure that no existing allocation falls into the page
-            int shift = NativePageShift;
-
-            foreach (MemoryBlock allocation in _allocations)
+            using (_memoryLock.EnterScope())
             {
-                uint allocationPageStart = allocation.VirtualAddress >> shift;
-                uint allocationPageEnd = allocation.End >> shift;
+                int shift = NativePageShift;
 
-                if (targetPage >= allocationPageStart && targetPage < allocationPageEnd)
+                foreach (MemoryBlock allocation in _allocations)
                 {
-                    return false;
-                }
-            }
+                    uint allocationPageStart = allocation.VirtualAddress >> shift;
+                    uint allocationPageEnd = allocation.End >> shift;
 
-            return true;
+                    if (targetPage >= allocationPageStart && targetPage < allocationPageEnd)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
         }
 
         public void Dispose()
