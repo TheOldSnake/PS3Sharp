@@ -1,9 +1,8 @@
-﻿using PS3Sharp.HostMemory;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.InteropServices;
 using static PS3Sharp.HostMemory.HostVirtualMemory;
 
-namespace PS3Sharp.Common
+namespace PS3Sharp.HostMemory
 {
     internal partial class WindowsVirtualMemory : IHostVirtualMemoryHandler
     {
