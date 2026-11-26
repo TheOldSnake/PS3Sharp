@@ -347,30 +347,16 @@ namespace PS3Sharp.GuestMemory
 
         private unsafe void* CommitMemory(uint virtualAddress, uint size)
         {
-            unsafe
-            {
-                if (GuestMemoryBase == null)
-                {
-                    throw new Exception($"[MemoryAllocator] Guest memory was not reserved");
-                }
-
-                void* address = (byte*)GuestMemoryBase + (nint)virtualAddress;
-                return HostVirtualMemory.Commit((nint)address, size, HostVirtualMemory.PageAccess.ReadWrite);
-            }
+            ArgumentNullException.ThrowIfNull(GuestMemoryBase, $"[MemoryAllocator] Guest memory was not reserved or was freed!");
+            void* address = (byte*)GuestMemoryBase + (nint)virtualAddress;
+            return HostVirtualMemory.Commit((nint)address, size, HostVirtualMemory.PageAccess.ReadWrite);
         }
 
         private unsafe void* DecommitMemory(uint virtualAddress, uint size)
         {
-            unsafe
-            {
-                if (GuestMemoryBase == null)
-                {
-                    throw new Exception($"[MemoryAllocator] Guest memory was not reserved");
-                }
-
-                void* address = (byte*)GuestMemoryBase + (nint)virtualAddress;
-                return HostVirtualMemory.Decommit((nint)address, size);
-            }
+            ArgumentNullException.ThrowIfNull(GuestMemoryBase, $"[MemoryAllocator] Guest memory was not reserved or was freed!");
+            void* address = (byte*)GuestMemoryBase + (nint)virtualAddress;
+            return HostVirtualMemory.Decommit((nint)address, size);
         }
 
         private bool CanFreeNativePage(uint targetPage)

@@ -436,7 +436,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             //Data Cache Block set to Zero
             uint ea = GetEA(instruction, ppu, MemAccessForm.XForm, true);
             ea &= ~127U;
-            ppu.MemoryManager.ClearMemory(ea, 128);
+            ppu.MemoryManager.ClearVirtualMemory(ea, 128);
         }
 
         // Load String instructions

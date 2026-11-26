@@ -29,10 +29,9 @@ namespace PS3Sharp.GuestMemory
         internal uint GetHandle() => Allocator.CreateHandle();
 
         // Returns a native pointer to the struct in the -unmanaged- guest memory
-        internal T* GetPtr<T>(GuestPtr<T> ptr) where T : unmanaged, IPS3Struct
+        internal T* GetPtr<T>(GuestPtr<T> ptr) where T : unmanaged
         {
-            void* native_address = GetNativeAddress(ptr.Address);
-            return (T*)native_address;
+            return (T*)GetNativeAddress(ptr.Address);
         }
 
         internal uint ReadPPUInstruction(uint virtualAddress)
@@ -80,7 +79,7 @@ namespace PS3Sharp.GuestMemory
             using (_memoryLock.EnterScope())
             {
                 ReserveAddress(virtualAddress, destination.Length, threadId, lostReservationEvent);
-                ReadBufferFromVirtualMemory(virtualAddress, destination);
+                CopBufferFromVirtualMemory(virtualAddress, destination);
             }
         }
 
@@ -213,15 +212,13 @@ namespace PS3Sharp.GuestMemory
 
         internal void CopyBufferToVirtualMemory(ReadOnlySpan<byte> source, uint destinationVirtualAddress)
         {
-            // Direct copy
             byte* nativeDestination = (byte*)GetNativeAddress(destinationVirtualAddress);
-            Span<byte> destSpan = new(nativeDestination, source.Length);
-            source.CopyTo(destSpan);
+            Span<byte> destinationSpan = new(nativeDestination, source.Length);
+            source.CopyTo(destinationSpan);
         }
 
-        internal void ReadBufferFromVirtualMemory(uint sourceVirtualAddress, Span<byte> destination)
+        internal void CopBufferFromVirtualMemory(uint sourceVirtualAddress, Span<byte> destination)
         {
-            // Direct copy
             byte* nativeSource = (byte*)GetNativeAddress(sourceVirtualAddress);
             Span<byte> sourceSpan = new(nativeSource, destination.Length);
             sourceSpan.CopyTo(destination);
@@ -229,61 +226,49 @@ namespace PS3Sharp.GuestMemory
 
         internal void CopyVirtualMemory(uint sourceVirtualAddress, uint destinationVirtualAddress, int byteCount)
         {
-            if (byteCount == 0)
-            {
-                return;
-            }
-
-            // Direct copy
             byte* nativeSource = (byte*)GetNativeAddress(sourceVirtualAddress);
             byte* nativeDestination = (byte*)GetNativeAddress(destinationVirtualAddress);
 
             Span<byte> sourceSpan = new(nativeSource, byteCount);
-            Span<byte> destSpan = new(nativeDestination, byteCount);
+            Span<byte> destinationSpan = new(nativeDestination, byteCount);
 
-            sourceSpan.CopyTo(destSpan);
+            sourceSpan.CopyTo(destinationSpan);
         }
 
-        internal void ClearMemory(uint virtualAddress, int byteCount, byte value = 0)
+        internal void ClearVirtualMemory(uint virtualAddress, int byteCount, byte value = 0)
         {
-            if (byteCount == 0)
-            {
-                return;
-            }
-
-            void* dest = GetNativeAddress(virtualAddress);
-            Span<byte> destSpan = new(dest, byteCount);
-
-            destSpan.Fill(value);
+            void* destination = GetNativeAddress(virtualAddress);
+            Span<byte> destinationSpan = new(destination, byteCount);
+            destinationSpan.Fill(value);
         }
 
         internal string ReadString(uint virtualAddress, int length = -1)
         {
-            byte* native = (byte*)GetNativeAddress(virtualAddress);
-            ReadOnlySpan<byte> text = length > 0 ? new ReadOnlySpan<byte>(native, length) : MemoryMarshal.CreateReadOnlySpanFromNullTerminated(native);
+            byte* nativeAddress = (byte*)GetNativeAddress(virtualAddress);
+            ReadOnlySpan<byte> text = length > 0 ? new ReadOnlySpan<byte>(nativeAddress, length) : MemoryMarshal.CreateReadOnlySpanFromNullTerminated(nativeAddress);
             return Encoding.UTF8.GetString(text);
         }
 
         internal unsafe Span<byte> CreateByteSpan(uint virtualAddress, int length)
         {
-            byte* ptr = (byte*)GetNativeAddress(virtualAddress);
-            return new Span<byte>(ptr, length);
+            byte* nativeAddress = (byte*)GetNativeAddress(virtualAddress);
+            return new Span<byte>(nativeAddress, length);
         }
 
         internal T[] ReadArray<T>(uint virtualAddress, int length) where T : unmanaged
         {
             T[] values = new T[length];
 
-            Span<byte> bytes = MemoryMarshal.Cast<T, byte>(values.AsSpan());
-            ReadBufferFromVirtualMemory(virtualAddress, bytes);
+            Span<byte> asBytes = MemoryMarshal.Cast<T, byte>(values.AsSpan());
+            CopBufferFromVirtualMemory(virtualAddress, asBytes);
 
             return values;
         }
 
         internal void WriteArray<T>(uint virtualAddress, ReadOnlySpan<T> values) where T : unmanaged
         {
-            ReadOnlySpan<byte> bytes = MemoryMarshal.Cast<T, byte>(values);
-            CopyBufferToVirtualMemory(bytes, virtualAddress);
+            ReadOnlySpan<byte> asBytes = MemoryMarshal.Cast<T, byte>(values);
+            CopyBufferToVirtualMemory(asBytes, virtualAddress);
         }
 
 

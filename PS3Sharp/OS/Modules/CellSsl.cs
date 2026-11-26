@@ -43,7 +43,7 @@ namespace PS3Sharp.OS.Modules
             }
 
             // Copy certificates to buffer
-            _memoryManager.ClearMemory(bufPtr, (int)size);
+            _memoryManager.ClearVirtualMemory(bufPtr, (int)size);
             uint offset = 0;
 
             for (int i = 0; i < 64; i++)

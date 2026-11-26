@@ -185,7 +185,7 @@ namespace PS3Sharp.OS.Modules
             GuestPtr<BigEndian<uint>> bufferPtr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg1);
             int bufferSize = ppu.ReadArg<int>(Arg2);
 
-            _memoryManager.ClearMemory(bufferPtr, bufferSize);
+            _memoryManager.ClearVirtualMemory(bufferPtr, bufferSize);
             string key = CellGameParamId[id];
 
             if (_fileSystemManager.TryGetCurrentSFO(out SFO? sfo))

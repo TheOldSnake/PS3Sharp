@@ -334,7 +334,7 @@ namespace PS3Sharp.Cell.RSX
             Span<byte> destination = GetScratchData();
 
             // Read a copy of the texture into the scratch buffer
-            memoryManager.ReadBufferFromVirtualMemory(Address, destination);
+            memoryManager.CopBufferFromVirtualMemory(Address, destination);
         }
 
         internal void UpdateHashKey()

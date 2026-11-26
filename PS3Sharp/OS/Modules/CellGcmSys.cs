@@ -122,7 +122,7 @@ namespace PS3Sharp.OS.Modules
         {
             const uint size = (3072 + 512) * sizeof(ushort);
             MemoryManager.MemoryBlock block = _memoryManager.Allocator.AllocateVirtualMemory(size);
-            _memoryManager.ClearMemory(block.VirtualAddress, (int)block.Size, 0xFF); // The table is initialized to all FFs
+            _memoryManager.ClearVirtualMemory(block.VirtualAddress, (int)block.Size, 0xFF); // The table is initialized to all FFs
 
             OffsetTable = new()
             {

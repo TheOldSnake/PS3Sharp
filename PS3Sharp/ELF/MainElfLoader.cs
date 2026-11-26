@@ -76,7 +76,7 @@ namespace PS3Sharp.Elf
             if (segmentData.Length < p_memsz)
             {
                 int zeroesCount = (int)p_memsz - segmentData.Length;
-                memoryManager.ClearMemory(dest + (uint)segmentData.Length, zeroesCount);
+                memoryManager.ClearVirtualMemory(dest + (uint)segmentData.Length, zeroesCount);
             }
 
             Console.WriteLine(

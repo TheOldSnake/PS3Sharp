@@ -159,7 +159,7 @@ namespace PS3Sharp.OS.Modules
             int ch = ppu.ReadArg<int>(Arg1);
             int size = ppu.ReadArg<int>(Arg2);
 
-            _memoryManager.ClearMemory(dest, size, (byte)ch);
+            _memoryManager.ClearVirtualMemory(dest, size, (byte)ch);
 
             return dest;
         }

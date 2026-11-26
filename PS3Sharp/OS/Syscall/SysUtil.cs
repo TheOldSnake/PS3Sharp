@@ -341,7 +341,7 @@ namespace PS3Sharp.OS.Syscall
 
             byte[] data = Encoding.UTF8.GetBytes("Snake\0");
 
-            _memoryManager.ClearMemory(buf, size);
+            _memoryManager.ClearVirtualMemory(buf, size);
             _memoryManager.CopyBufferToVirtualMemory(data, buf);
 
             return CellOk;
