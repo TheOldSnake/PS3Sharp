@@ -1,5 +1,4 @@
-﻿using OpenTK.Graphics.ES20;
-using PS3Sharp.Common;
+﻿using PS3Sharp.Common;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Memory.MemoryConstants;
