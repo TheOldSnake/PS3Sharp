@@ -32,7 +32,7 @@ namespace PS3Sharp.GuestMemory
         internal const uint UserHeapStart = 0x30000000;
         internal const uint PrxMemoryStart = 0x10000000;
 
-        internal static uint NativePageSize = HostVirtualMemory.NativePageSize;
+        internal static uint NativePageSize = HostVirtualMemory.HostPageSize;
         internal static int NativePageBits = BitOperations.Log2(NativePageSize);
         internal static int NativePageShift = 32 - NativePageBits;
         internal static int NativePageCount = 1 << NativePageBits;

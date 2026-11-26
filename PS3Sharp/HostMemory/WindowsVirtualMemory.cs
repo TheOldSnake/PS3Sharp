@@ -1,12 +1,11 @@
-﻿using Iced.Intel;
+﻿using PS3Sharp.HostMemory;
 using System.ComponentModel;
-using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using static PS3Sharp.HostMemory.HostVirtualMemory;
 
 namespace PS3Sharp.Common
 {
-    internal static partial class WindowsVirtualMemory
+    internal partial class WindowsVirtualMemory : IHostVirtualMemory
     {
         [StructLayout(LayoutKind.Sequential)]
         private struct SystemInfo
@@ -44,7 +43,7 @@ namespace PS3Sharp.Common
         [LibraryImport("kernel32.dll")]
         private static unsafe partial void GetSystemInfo(SystemInfo* lpSystemInfo);
 
-        internal static uint GetNativePageSize()
+        public uint GetHostPageSize()
         {
             unsafe
             {
@@ -54,7 +53,7 @@ namespace PS3Sharp.Common
             }
         }
 
-        internal unsafe static void* Reserve(nuint size, PageAccess access)
+        public unsafe void* Reserve(nuint size, PageAccess access)
         {
             uint type = GetPageAccessType(access);
             nint alloc = VirtualAlloc(0, size, WinApiMemReserve, type);
@@ -69,7 +68,7 @@ namespace PS3Sharp.Common
             return (void*)alloc;
         }
 
-        internal unsafe static void* Commit(nint address, nuint size, PageAccess access)
+        public unsafe void* Commit(nint address, nuint size, PageAccess access)
         {
             // Note: VirtualAlloc will round size to 4 KB pages,
             // and will return the input address rounded down to nearest page boundary
@@ -88,7 +87,7 @@ namespace PS3Sharp.Common
             return (void*)address;
         }
 
-        internal unsafe static void* Decommit(nint address, nuint size)
+        public unsafe void* Decommit(nint address, nuint size)
         {
             // Note: VirtualFree will round size to 4 KB pages
             int ok = VirtualFree(address, size, WinApiMemDecommit);
@@ -103,7 +102,7 @@ namespace PS3Sharp.Common
             return (void*)address;
         }
 
-        internal static bool Unreserve(nint address)
+        public bool Free(nint address)
         {
             // Pass size = 0 for MEM_RELEASE
             bool ok = VirtualFree(address, 0, WinApiMemRelease) != 0;

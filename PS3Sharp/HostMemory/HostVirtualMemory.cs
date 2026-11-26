@@ -12,95 +12,23 @@ namespace PS3Sharp.HostMemory
             ReadWriteExecute
         }
 
-        private unsafe delegate void* NativeReserveDelegate(nuint size, PageAccess access);
-        private unsafe delegate void* NativeCommitDelegate(nint address, nuint size, PageAccess access);
-        private unsafe delegate void* NativeDecommitDelegate(nint address, nuint size);
-        private unsafe delegate bool NativeFreeDelegate(nint address);
+        private static readonly IHostVirtualMemory _hostVirtualMemory = GetVirtualMemoryHandler();
 
-        private static readonly NativeReserveDelegate NativeReserve = ResolveReserve();
-        private static readonly NativeFreeDelegate NativeFree = ResolveFree();
-        private static readonly NativeDecommitDelegate NativeDecommit = ResolveDecommit();
-        private static readonly NativeCommitDelegate NativeCommit = ResolveCommit();
-        internal static uint NativePageSize = GetNativePageSize();
+        internal static readonly uint HostPageSize = _hostVirtualMemory.GetHostPageSize();
+        internal unsafe static void* Reserve(nuint size, PageAccess access) => _hostVirtualMemory.Reserve(size, access);
+        internal unsafe static void* Commit(nint address, nuint size, PageAccess access) => _hostVirtualMemory.Commit(address, size, access);
+        internal unsafe static void* Decommit(nint address, nuint size) => _hostVirtualMemory.Decommit(address, size);
+        internal static bool Free(nint address) => _hostVirtualMemory.Free(address);
 
-        internal unsafe static void* Reserve(nuint size, PageAccess access) => NativeReserve(size, access);
-        internal unsafe static void* Commit(nint address, nuint size, PageAccess access) => NativeCommit(address, size, access);
-        internal unsafe static void* Decommit(nint address, nuint size) => NativeDecommit(address, size);
-        internal unsafe static bool Free(nint address) => NativeFree(address);
-
-        private static uint GetNativePageSize()
+        private static IHostVirtualMemory GetVirtualMemoryHandler()
         {
             if (OperatingSystem.IsWindows())
             {
-                return WindowsVirtualMemory.GetNativePageSize();
-            }
+                return new WindowsVirtualMemory();
+            } 
             else if (OperatingSystem.IsLinux())
             {
-                return LinuxVirtualMemory.GetNativePageSize();
-            }
-            else
-            {
-                throw new PlatformNotSupportedException($"Unsupported OS: {RuntimeInformation.OSDescription}");
-            }
-        }
-
-        private static unsafe NativeReserveDelegate ResolveReserve()
-        {
-            if (OperatingSystem.IsWindows())
-            {
-                return WindowsVirtualMemory.Reserve;
-            }
-            else if (OperatingSystem.IsLinux())
-            {
-                return LinuxVirtualMemory.Reserve;
-            }
-            else
-            {
-                throw new PlatformNotSupportedException($"Unsupported OS: {RuntimeInformation.OSDescription}");
-            }
-        }
-
-        private static unsafe NativeFreeDelegate ResolveFree()
-        {
-            if (OperatingSystem.IsWindows())
-            {
-                return WindowsVirtualMemory.Unreserve;
-            }
-            else if (OperatingSystem.IsLinux())
-            {
-                return LinuxVirtualMemory.Unreserve;
-            }
-            else
-            {
-                throw new PlatformNotSupportedException($"Unsupported OS: {RuntimeInformation.OSDescription}");
-            }
-        }
-
-        private static unsafe NativeCommitDelegate ResolveCommit()
-        {
-            if (OperatingSystem.IsWindows())
-            {
-                return WindowsVirtualMemory.Commit;
-            }
-            else if (OperatingSystem.IsLinux())
-            {
-                return LinuxVirtualMemory.Commit;
-            }
-            else
-            {
-                throw new PlatformNotSupportedException($"Unsupported OS: {RuntimeInformation.OSDescription}");
-            }
-        }
-
-        private static unsafe NativeDecommitDelegate ResolveDecommit()
-        {
-            if (OperatingSystem.IsWindows())
-            {
-                return WindowsVirtualMemory.Decommit;
-            }
-            else if (OperatingSystem.IsLinux())
-            {
-                return LinuxVirtualMemory.Decommit;
+                return new LinuxVirtualMemory();
             }
             else
             {
