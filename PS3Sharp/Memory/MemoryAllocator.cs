@@ -14,7 +14,7 @@ namespace PS3Sharp.Memory
         // List of active allocations
         private readonly List<MemoryBlock> _allocations = [];
 
-        // Memory lock for operations that needs synchronization
+        // Memory lock for operations that require synchronization
         private readonly Lock _memoryLock;
 
         // Next allocation addresses
