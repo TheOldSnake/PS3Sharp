@@ -5,7 +5,7 @@ using static PS3Sharp.HostMemory.HostVirtualMemory;
 
 namespace PS3Sharp.Common
 {
-    internal partial class WindowsVirtualMemory : IHostVirtualMemory
+    internal partial class WindowsVirtualMemory : IHostVirtualMemoryHandler
     {
         [StructLayout(LayoutKind.Sequential)]
         private struct SystemInfo

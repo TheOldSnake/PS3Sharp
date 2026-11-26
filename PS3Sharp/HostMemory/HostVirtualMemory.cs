@@ -12,15 +12,15 @@ namespace PS3Sharp.HostMemory
             ReadWriteExecute
         }
 
-        private static readonly IHostVirtualMemory _hostVirtualMemory = GetVirtualMemoryHandler();
+        private static readonly IHostVirtualMemoryHandler _hostVirtualMemoryHandler = GetVirtualMemoryHandler();
 
-        internal static readonly uint HostPageSize = _hostVirtualMemory.GetHostPageSize();
-        internal unsafe static void* Reserve(nuint size, PageAccess access) => _hostVirtualMemory.Reserve(size, access);
-        internal unsafe static void* Commit(nint address, nuint size, PageAccess access) => _hostVirtualMemory.Commit(address, size, access);
-        internal unsafe static void* Decommit(nint address, nuint size) => _hostVirtualMemory.Decommit(address, size);
-        internal static bool Free(nint address) => _hostVirtualMemory.Free(address);
+        internal static readonly uint HostPageSize = _hostVirtualMemoryHandler.GetHostPageSize();
+        internal unsafe static void* Reserve(nuint size, PageAccess access) => _hostVirtualMemoryHandler.Reserve(size, access);
+        internal unsafe static void* Commit(nint address, nuint size, PageAccess access) => _hostVirtualMemoryHandler.Commit(address, size, access);
+        internal unsafe static void* Decommit(nint address, nuint size) => _hostVirtualMemoryHandler.Decommit(address, size);
+        internal static bool Free(nint address) => _hostVirtualMemoryHandler.Free(address);
 
-        private static IHostVirtualMemory GetVirtualMemoryHandler()
+        private static IHostVirtualMemoryHandler GetVirtualMemoryHandler()
         {
             if (OperatingSystem.IsWindows())
             {
