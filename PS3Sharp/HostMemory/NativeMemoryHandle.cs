@@ -1,7 +1,7 @@
 using Microsoft.Win32.SafeHandles;
 using System.Runtime.InteropServices;
 
-namespace PS3Sharp.GuestMemory
+namespace PS3Sharp.HostMemory
 {
     internal sealed unsafe class NativeMemoryHandle<T> : SafeHandleZeroOrMinusOneIsInvalid where T : unmanaged
     {

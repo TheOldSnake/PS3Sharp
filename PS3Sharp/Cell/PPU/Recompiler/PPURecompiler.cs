@@ -1,7 +1,6 @@
 using PS3Sharp.Cell.PPU.Recompiler.IR;
 using PS3Sharp.Cell.PPU.Recompiler.x64;
 using PS3Sharp.Common;
-using PS3Sharp.GuestMemory;
 using PS3Sharp.HostMemory;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;

@@ -1,7 +1,6 @@
 using Microsoft.Win32.SafeHandles;
-using PS3Sharp.HostMemory;
 
-namespace PS3Sharp.GuestMemory
+namespace PS3Sharp.HostMemory
 {
     internal sealed unsafe class VirtualMemoryHandle : SafeHandleZeroOrMinusOneIsInvalid
     {
