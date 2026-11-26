@@ -82,7 +82,7 @@ namespace PS3Sharp.OS.Modules
                     uint source = src.StreamPtr;
                     uint size = src.StreamSize;
                     byte[] buffer = new byte[size];
-                    _memoryManager.CopBufferFromVirtualMemory(source, buffer.AsSpan());
+                    _memoryManager.CopyBufferFromVirtualMemory(source, buffer.AsSpan());
                     dataStream = new MemoryStream(buffer);
                 }
 

@@ -78,7 +78,7 @@ namespace PS3Sharp.GuestMemory
             using (_memoryLock.EnterScope())
             {
                 ReserveAddress(virtualAddress, destination.Length, threadId, lostReservationEvent);
-                CopBufferFromVirtualMemory(virtualAddress, destination);
+                CopyBufferFromVirtualMemory(virtualAddress, destination);
             }
         }
 
@@ -216,7 +216,7 @@ namespace PS3Sharp.GuestMemory
             source.CopyTo(destinationSpan);
         }
 
-        internal void CopBufferFromVirtualMemory(uint sourceVirtualAddress, Span<byte> destination)
+        internal void CopyBufferFromVirtualMemory(uint sourceVirtualAddress, Span<byte> destination)
         {
             byte* nativeSource = (byte*)GetNativeAddress(sourceVirtualAddress);
             Span<byte> sourceSpan = new(nativeSource, destination.Length);
@@ -259,7 +259,7 @@ namespace PS3Sharp.GuestMemory
             T[] values = new T[length];
 
             Span<byte> asBytes = MemoryMarshal.Cast<T, byte>(values.AsSpan());
-            CopBufferFromVirtualMemory(virtualAddress, asBytes);
+            CopyBufferFromVirtualMemory(virtualAddress, asBytes);
 
             return values;
         }

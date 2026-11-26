@@ -225,7 +225,7 @@ namespace PS3Sharp.Cell.Spu
                 switch (segment.Type)
                 {
                     case SysSpu.SysSpuSegmentTypeCopy:
-                        MemoryManager.CopBufferFromVirtualMemory(src, dest);
+                        MemoryManager.CopyBufferFromVirtualMemory(src, dest);
                         break;
 
                     case SysSpu.SysSpuSegmentTypeFill:
@@ -503,7 +503,7 @@ namespace PS3Sharp.Cell.Spu
             unsafe
             {
                 Span<byte> dst = GetStorageSpan(_lsa, size);
-                MemoryManager.CopBufferFromVirtualMemory(_eal, dst);
+                MemoryManager.CopyBufferFromVirtualMemory(_eal, dst);
             }
 
            // Console.WriteLine($"[Spu: 0x{ID:X8}] MFC Get: ls = 0x{_lsa:X}, eal = 0x{_eal:X}, size = 0x{_transferSize:X} pc = 0x{State->PC:X}");
