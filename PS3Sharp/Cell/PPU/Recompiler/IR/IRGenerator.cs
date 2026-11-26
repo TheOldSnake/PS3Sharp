@@ -1,4 +1,4 @@
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
 
 namespace PS3Sharp.Cell.PPU.Recompiler.IR
 {

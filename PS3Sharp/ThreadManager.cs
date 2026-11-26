@@ -3,7 +3,7 @@ using PS3Sharp.Cell.PPU.Recompiler;
 using PS3Sharp.Cell.RSX;
 using PS3Sharp.Cell.Spu;
 using PS3Sharp.Common;
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
 using PS3Sharp.OS;
 using PS3Sharp.OS.LV2;
 using PS3Sharp.OS.Modules;

@@ -1,6 +1,6 @@
 using OpenTK.Graphics.OpenGL4;
 using PS3Sharp.Common;
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
 using System.IO.Hashing;
 using static PS3Sharp.Cell.RSX.RSXCommand;
 

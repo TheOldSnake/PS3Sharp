@@ -4,7 +4,7 @@ using PS3Sharp.Cell.RSX;
 using PS3Sharp.Cell.Spu;
 using PS3Sharp.Elf;
 using PS3Sharp.FileSystem;
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
 using PS3Sharp.OS;
 using PS3Sharp.OS.Modules;
 using PS3Sharp.PRX;

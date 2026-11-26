@@ -1,6 +1,6 @@
 using PS3Sharp.Cell.Spu.Interpreter;
 using PS3Sharp.Common;
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
 using PS3Sharp.OS.LV2;
 using PS3Sharp.OS.Syscall;
 using System.Collections.Concurrent;

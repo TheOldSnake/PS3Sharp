@@ -1,6 +1,6 @@
 using PS3Sharp.Cell.Spu;
 using PS3Sharp.Common;
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
 using static PS3Sharp.OS.Syscall.SysSpu;
 
 namespace PS3Sharp.OS.LV2

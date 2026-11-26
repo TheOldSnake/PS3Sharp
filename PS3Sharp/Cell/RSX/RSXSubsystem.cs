@@ -1,5 +1,5 @@
 using PS3Sharp.FileSystem;
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
 using PS3Sharp.OS.Modules;
 
 namespace PS3Sharp.Cell.RSX

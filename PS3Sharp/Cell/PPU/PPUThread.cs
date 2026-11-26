@@ -1,13 +1,13 @@
 using PS3Sharp.Cell.PPU.Recompiler;
 using PS3Sharp.Common;
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
 using PS3Sharp.OS;
 using PS3Sharp.OS.Syscall;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using static PS3Sharp.Cell.Arguments;
-using static PS3Sharp.Memory.MemoryManager;
+using static PS3Sharp.GuestMemory.MemoryManager;
 
 namespace PS3Sharp.Cell.PPU
 {

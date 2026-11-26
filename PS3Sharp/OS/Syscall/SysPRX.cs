@@ -1,6 +1,6 @@
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
 using PS3Sharp.OS.NID;
 
 using static PS3Sharp.Cell.Arguments;

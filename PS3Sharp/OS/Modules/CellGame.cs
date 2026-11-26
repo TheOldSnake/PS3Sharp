@@ -2,7 +2,7 @@ using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
 using PS3Sharp.FileSystem;
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
 using PS3Sharp.SFOLoader;
 using System.Collections.Immutable;
 using System.Runtime.InteropServices;

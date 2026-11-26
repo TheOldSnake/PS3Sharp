@@ -1,5 +1,5 @@
 using PS3Sharp.Common;
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
 using PS3Sharp.OS.Syscall;
 using PS3Sharp.SFOLoader;
 using System.Collections.Concurrent;

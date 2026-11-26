@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace PS3Sharp.Memory
+namespace PS3Sharp.GuestMemory
 {
     internal sealed class PageFaultException : Exception
     {

@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace PS3Sharp.Memory
+namespace PS3Sharp.GuestMemory
 {
     internal sealed unsafe partial class MemoryManager : IDisposable
     {

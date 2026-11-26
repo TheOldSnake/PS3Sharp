@@ -1,5 +1,5 @@
 using PS3Sharp.Cell.PPU;
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
 
 using static PS3Sharp.Cell.ErrorCode;
 

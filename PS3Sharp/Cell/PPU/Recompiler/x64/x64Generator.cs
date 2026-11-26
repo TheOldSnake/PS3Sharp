@@ -1,6 +1,6 @@
 using Iced.Intel;
 using PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator;
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;

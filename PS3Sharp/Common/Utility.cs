@@ -1,4 +1,4 @@
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
 using SkiaSharp;
 using System.Diagnostics;
 using System.IO.Hashing;

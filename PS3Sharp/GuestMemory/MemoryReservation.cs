@@ -1,4 +1,4 @@
-﻿namespace PS3Sharp.Memory
+﻿namespace PS3Sharp.GuestMemory
 {
     internal sealed partial class MemoryManager
     {

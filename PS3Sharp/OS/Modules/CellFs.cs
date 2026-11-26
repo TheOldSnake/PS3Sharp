@@ -1,7 +1,7 @@
 ﻿using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
 using PS3Sharp.FileSystem;
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
 using PS3Sharp.OS.Syscall;
 using System.Runtime.CompilerServices;
 using static PS3Sharp.Cell.Arguments;

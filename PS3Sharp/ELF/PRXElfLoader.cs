@@ -1,5 +1,5 @@
 ﻿using PS3Sharp.Common;
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Elf.ElfDefinitions;
 

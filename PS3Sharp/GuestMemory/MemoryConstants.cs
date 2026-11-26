@@ -1,7 +1,8 @@
 ﻿using PS3Sharp.Common;
+using PS3Sharp.HostMemory;
 using System.Numerics;
 
-namespace PS3Sharp.Memory
+namespace PS3Sharp.GuestMemory
 {
     internal static class MemoryConstants
     {
@@ -31,7 +32,7 @@ namespace PS3Sharp.Memory
         internal const uint UserHeapStart = 0x30000000;
         internal const uint PrxMemoryStart = 0x10000000;
 
-        internal static uint NativePageSize = NativeMethods.GetNativePageSize();
+        internal static uint NativePageSize = HostVirtualMemory.NativePageSize;
         internal static int NativePageBits = BitOperations.Log2(NativePageSize);
         internal static int NativePageShift = 32 - NativePageBits;
         internal static int NativePageCount = 1 << NativePageBits;

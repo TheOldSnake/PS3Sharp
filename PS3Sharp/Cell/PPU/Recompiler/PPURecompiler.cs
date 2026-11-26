@@ -1,7 +1,8 @@
 using PS3Sharp.Cell.PPU.Recompiler.IR;
 using PS3Sharp.Cell.PPU.Recompiler.x64;
 using PS3Sharp.Common;
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
+using PS3Sharp.HostMemory;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
 using static PS3Sharp.Cell.PPU.PPUThread;
@@ -129,11 +130,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler
 
             // Create VirtualMemoryHandle
             // Uses MEM_RESERVE by default
-            VirtualMemoryHandle memoryHandle = new((nuint)alignedSize, NativeMethods.WinApiPageExecuteReadwrite);
+            VirtualMemoryHandle memoryHandle = new((nuint)alignedSize, HostVirtualMemory.PageAccess.ReadWriteExecute);
             nint memory = (nint)memoryHandle.NativePointer;
 
             // Commit
-            NativeMethods.VirtualAlloc(memory, (nuint)alignedSize, NativeMethods.WinApiMemCommit, NativeMethods.WinApiPageExecuteReadwrite);
+            HostVirtualMemory.Commit(memory, (nuint)alignedSize, HostVirtualMemory.PageAccess.ReadWriteExecute);
 
             // Clear
             NativeMemory.Clear((void*)memory, (nuint)alignedSize);

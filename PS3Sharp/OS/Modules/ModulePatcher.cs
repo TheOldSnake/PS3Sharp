@@ -2,7 +2,7 @@ using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
 using PS3Sharp.Common;
 using PS3Sharp.Elf;
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
 using PS3Sharp.OS.NID;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;

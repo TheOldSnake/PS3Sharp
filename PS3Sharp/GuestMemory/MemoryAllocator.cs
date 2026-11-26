@@ -1,15 +1,14 @@
 ﻿using PS3Sharp.Common;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
-using static PS3Sharp.Memory.MemoryConstants;
-using static PS3Sharp.Memory.MemoryManager;
+using PS3Sharp.HostMemory;
+using static PS3Sharp.GuestMemory.MemoryConstants;
+using static PS3Sharp.GuestMemory.MemoryManager;
 
-namespace PS3Sharp.Memory
+namespace PS3Sharp.GuestMemory
 {
     internal unsafe class MemoryAllocator : IDisposable
     {
         // Virtual memory safe handle
-        private readonly VirtualMemoryHandle _guestMemoryHandle = new(unchecked((nuint)VirtualMemorySize), NativeMethods.WinApiPageNoaccess);
+        private readonly VirtualMemoryHandle _guestMemoryHandle = new(unchecked((nuint)VirtualMemorySize), HostVirtualMemory.PageAccess.NoAccess);
 
         // List of active allocations
         private readonly List<MemoryBlock> _allocations = [];
@@ -150,7 +149,7 @@ namespace PS3Sharp.Memory
                 {
                     uint difference = newSize - oldSize;
                     nativePtr = CommitMemory(virtualAddress + oldSize, difference);
-                    NativeMemory.Clear(nativePtr, difference);  // Clear extra memory
+                    System.Runtime.InteropServices.NativeMemory.Clear(nativePtr, difference);  // Clear extra memory
                 }
                 else
                 {
@@ -355,20 +354,8 @@ namespace PS3Sharp.Memory
                     throw new Exception($"[MemoryAllocator] Guest memory was not reserved");
                 }
 
-                // Note: VirtualAlloc will round size to 4 KB pages,
-                // and will return the input address rounded down to nearest page boundary
-                byte* address = (byte*)GuestMemoryBase + virtualAddress;
-                void* result = (void*)NativeMethods.VirtualAlloc((nint)address, size, NativeMethods.WinApiMemCommit, NativeMethods.WinApiPageReadwrite);
-
-                if (result == null)
-                {
-                    int error = Marshal.GetLastPInvokeError();
-                    Console.WriteLine($"[MemoryAllocator] Could not commit memory - error: 0x{error:X8}");
-                    throw new Win32Exception(error);
-                }
-
-                NativeMemory.Clear(address, size);
-                return address;
+                void* address = (byte*)GuestMemoryBase + (nint)virtualAddress;
+                return HostVirtualMemory.Commit((nint)address, size, HostVirtualMemory.PageAccess.ReadWrite);
             }
         }
 
@@ -381,18 +368,8 @@ namespace PS3Sharp.Memory
                     throw new Exception($"[MemoryAllocator] Guest memory was not reserved");
                 }
 
-                // Note: VirtualFree will round size to 4 KB pages
-                nint address = (nint)((byte*)GuestMemoryBase + (nint)virtualAddress);
-                int ok = NativeMethods.VirtualFree(address, size, NativeMethods.WinApiMemDecommit);
-
-                if (ok == 0)
-                {
-                    int error = Marshal.GetLastPInvokeError();
-                    Console.WriteLine($"[MemoryAllocator] Could not release decommit memory - error: 0x{error:X8}");
-                    throw new Win32Exception(error);
-                }
-
-                return (void*)address;
+                void* address = (byte*)GuestMemoryBase + (nint)virtualAddress;
+                return HostVirtualMemory.Decommit((nint)address, size);
             }
         }
 

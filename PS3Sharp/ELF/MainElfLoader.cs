@@ -1,4 +1,4 @@
-﻿using PS3Sharp.Memory;
+﻿using PS3Sharp.GuestMemory;
 using static PS3Sharp.Elf.ElfDefinitions;
 
 namespace PS3Sharp.Elf

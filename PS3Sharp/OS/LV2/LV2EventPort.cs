@@ -1,6 +1,6 @@
 using PS3Sharp.Cell;
 using PS3Sharp.Common;
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
 using System.Runtime.InteropServices;
 
 namespace PS3Sharp.OS.LV2

@@ -1,5 +1,5 @@
 using PS3Sharp.Common;
-using PS3Sharp.Memory;
+using PS3Sharp.GuestMemory;
 using PS3Sharp.OS;
 using PS3Sharp.OS.Modules;
 using System.Buffers;
