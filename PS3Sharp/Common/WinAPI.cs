@@ -4,6 +4,21 @@ namespace PS3Sharp.Common
 {
     internal static partial class NativeMethods
     {
+        [StructLayout(LayoutKind.Sequential)]
+        private struct SystemInfo
+        {
+            internal uint dwOemId;
+            internal uint dwPageSize;
+            internal IntPtr lpMinimumApplicationAddress;
+            internal IntPtr lpMaximumApplicationAddress;
+            internal nuint dwActiveProcessorMask;
+            internal uint dwNumberOfProcessors;
+            internal uint dwProcessorType;
+            internal uint dwAllocationGranularity;
+            internal ushort wProcessorLevel;
+            internal ushort wProcessorRevision;
+        }
+
         // Constants
         internal const uint WinApiPageExecuteReadwrite = 0x00000040;
         internal const uint WinApiMemCommit = 0x00001000;
@@ -23,6 +38,18 @@ namespace PS3Sharp.Common
 
         [LibraryImport("kernel32.dll", SetLastError = true)]
         internal static partial int VirtualFree(nint lpAddress, nuint dwSize, uint dwFreeType);
+
+        [LibraryImport("kernel32.dll")]
+        private static unsafe partial void GetSystemInfo(SystemInfo* lpSystemInfo);
+
+        internal static uint GetNativePageSize()
+        {
+            unsafe
+            {
+                SystemInfo info = default;
+                GetSystemInfo(&info);
+                return info.dwPageSize;
+            }
+        }
     }
 }
-

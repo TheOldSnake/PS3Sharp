@@ -1,4 +1,5 @@
-﻿using PS3Sharp.Common;
+﻿using OpenTK.Graphics.ES20;
+using PS3Sharp.Common;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using static PS3Sharp.Memory.MemoryConstants;
@@ -104,7 +105,7 @@ namespace PS3Sharp.Memory
 
         internal MemoryBlock AllocatePages(int pageCount)
         {
-            return AllocateVirtualMemory(PageSize * (uint)pageCount);
+            return AllocateVirtualMemory(VirtualPageSize * (uint)pageCount);
         }
 
         internal MemoryBlock AllocatePhysicalMemory(uint size)
@@ -296,15 +297,25 @@ namespace PS3Sharp.Memory
             return newBlock;
         }
 
-        private unsafe void FreeVirtualMemory(uint virtualAddress, uint size)
+        private void FreeVirtualMemory(uint virtualAddress, uint size)
         {
-            DecommitMemory(virtualAddress, size);
-        }
+            // We need to check if the pages spanned by this range can be  
+            // safely decommitted without affecting existing allocations.
+            int pageShift = NativePageShift;
+            uint pageSize = NativePageSize;
 
-        private static uint PageAlign(uint size)
-        {
-            // Aligns to page size
-            return (uint)Utility.AlignPowerOfTwo(size, PageSize);
+            uint startPage = virtualAddress >> pageShift;
+            uint endPage = (virtualAddress + size + pageSize - 1) >> pageShift; // Ceiling
+
+            for (uint page = startPage; page < endPage; page++)
+            {
+                uint virtualPageAddress = page * pageSize;
+
+                if (CanFreeNativePage(page))
+                {
+                    DecommitMemory(virtualPageAddress, pageSize);
+                }
+            }
         }
 
         private void AddAllocationBlock(ref MemoryBlock block)
@@ -372,6 +383,26 @@ namespace PS3Sharp.Memory
 
                 return (void*)address;
             }
+        }
+
+        private bool CanFreeNativePage(uint targetPage)
+        {
+            // Check if the native page can be decommitted
+            // Ensure that no existing allocation falls into the page
+            int shift = NativePageShift;
+
+            foreach (MemoryBlock allocation in _allocations)
+            {
+                uint allocationPageStart = allocation.VirtualAddress >> shift;
+                uint allocationPageEnd = allocation.End >> shift;
+
+                if (targetPage >= allocationPageStart && targetPage < allocationPageEnd)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public void Dispose()

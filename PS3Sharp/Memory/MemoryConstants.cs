@@ -1,4 +1,7 @@
-﻿namespace PS3Sharp.Memory
+﻿using PS3Sharp.Common;
+using System.Numerics;
+
+namespace PS3Sharp.Memory
 {
     internal static class MemoryConstants
     {
@@ -18,14 +21,19 @@
         internal const uint RawSpuMemStart = 0xE0000000;
         internal const uint RawSpuOffset = 0x100000;
         internal const uint RawSpuProblemOffset = 0x40000;
-        internal const uint PageBits = 16;
-        internal const uint PageShift = (32 - PageBits);
-        internal const uint PageCount = 1 << (int)PageBits;
-        internal const uint PageSize = 1 << (int)PageShift;
-        internal const uint PageMask = PageSize - 1;
+        internal const uint VirtualPageBits = 16;
+        internal const uint VirtualPageShift = (32 - VirtualPageBits);
+        internal const uint VirtualPageCount = 1 << (int)VirtualPageBits;
+        internal const uint VirtualPageSize = 1 << (int)VirtualPageShift;
+        internal const uint VirtualPageMask = VirtualPageSize - 1;
         internal const uint DefaultAlignment = 16;
 
         internal const uint UserHeapStart = 0x30000000;
         internal const uint PrxMemoryStart = 0x10000000;
+
+        internal static uint NativePageSize = NativeMethods.GetNativePageSize();
+        internal static int NativePageBits = BitOperations.Log2(NativePageSize);
+        internal static int NativePageShift = 32 - NativePageBits;
+        internal static int NativePageCount = 1 << NativePageBits;
     }
 }
