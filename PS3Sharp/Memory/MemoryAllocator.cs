@@ -11,13 +11,20 @@ namespace PS3Sharp.Memory
         // Virtual memory safe handle
         private readonly VirtualMemoryHandle _guestMemoryHandle = new(unchecked((nuint)VirtualMemorySize), NativeMethods.WinApiPageNoaccess);
 
+        // List of active allocations
         private readonly List<MemoryBlock> _allocations = [];
+
+        // Memory lock for operations that needs synchronization
         private readonly Lock _memoryLock;
 
+        // Next allocation addresses
         private uint _nextHeapAllocationAddress = UserHeapStart;
         private uint _nextStackAllocationAddress = StackRegionStart;
+
+        // Next ID/Handle 
         private uint _nextHandle = 0x100;
 
+        // Total allocated virtual memory
         internal ulong TotalAllocatedSize { get; private set; }
 
         // Base address of virtual memory
@@ -58,6 +65,8 @@ namespace PS3Sharp.Memory
                     throw new Exception($"attempt to allocate an already allocated address");
                 }
 
+                // Note: Always call CommitMemory because committing an already committed page is safe;
+                // Windows simply leaves it committed.
                 uint handle = CreateHandle();
                 void* memory = CommitMemory(virtualAddress, size);
                 MemoryBlock block = MemoryBlock.Create(handle, virtualAddress, size, memory);
