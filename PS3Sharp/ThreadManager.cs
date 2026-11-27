@@ -19,7 +19,7 @@ namespace PS3Sharp
         private readonly PPURecompiler _ppuRecompiler;
         private readonly List<PPUThread> _ppuThreads = [];
         private readonly List<SpuThread> _spuThreads = [];
-        private readonly object _threadManagerLock = new();
+        private readonly Lock _threadManagerLock = new();
         private bool _hasCreatedMainThread;
         private bool _hasCreatedRSXThread;
         private RealitySynthesizer? RSXThread;
@@ -39,7 +39,7 @@ namespace PS3Sharp
 
         internal uint GetNewID()
         {
-            lock (_threadManagerLock)
+            using (_threadManagerLock.EnterScope())
             {
                 uint ret = _nextID;
                 _nextID++;
@@ -49,7 +49,7 @@ namespace PS3Sharp
 
         internal PPUThread CreateMainPPUThread(uint entryPointer, string executablePath, LV2SyscallDispatcher syscallDispatcher)
         {
-            lock (_threadManagerLock)
+            using (_threadManagerLock.EnterScope())
             {
                 ArgumentException.ThrowIfNullOrEmpty(executablePath);
 
@@ -70,7 +70,7 @@ namespace PS3Sharp
 
         internal PPUThread CreatePPUThread(string threadName, uint entryPointer, uint stackSize, ulong thread_arg, LV2SyscallDispatcher syscallDispatcher, string? executablePath = null)
         {
-            lock (_threadManagerLock)
+            using (_threadManagerLock.EnterScope())
             {
                 if (_isShuttingDown)
                 {
@@ -124,7 +124,7 @@ namespace PS3Sharp
         {
             // Attempts to fully shutdown the emulator
 
-            lock (_threadManagerLock)
+            using (_threadManagerLock.EnterScope())
             {
                 // if another thread has already started the shutdown, don't do anything.
                 if (_isShuttingDown)
@@ -155,7 +155,7 @@ namespace PS3Sharp
             // Aquire the lock and copy the thread list (which cannot be modified at this point)
             PPUThread[] threads;
 
-            lock (_threadManagerLock)
+            using (_threadManagerLock.EnterScope())
             {
                 threads = _ppuThreads.ToArray();
             }
@@ -168,7 +168,7 @@ namespace PS3Sharp
         {
             PPUThread[] threads;
 
-            lock (_threadManagerLock)
+            using (_threadManagerLock.EnterScope())
             {
                 threads = _ppuThreads.ToArray();
             }
@@ -183,7 +183,7 @@ namespace PS3Sharp
 
         internal PPUThread? GetPPUThreadByID(ulong id)
         {
-            lock (_threadManagerLock)
+            using (_threadManagerLock.EnterScope())
             {
                 for (int i = 0; i < _ppuThreads.Count; i++)
                 {
@@ -199,7 +199,7 @@ namespace PS3Sharp
 
         internal bool TryGetSpuThreadByID(ulong id, [NotNullWhen(true)] out SpuThread? spu)
         {
-            lock (_threadManagerLock)
+            using (_threadManagerLock.EnterScope())
             {
                 for (int i = 0; i < _spuThreads.Count; i++)
                 {
