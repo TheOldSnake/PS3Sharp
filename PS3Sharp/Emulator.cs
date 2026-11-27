@@ -20,7 +20,7 @@ namespace PS3Sharp
         private readonly ThreadManager _threadManager;
         private readonly PRXManager _prxManager;
         private readonly FileSystemManager _fileSystemManager;
-        private readonly RSXSubsystem _rsxSubSystem;
+        private readonly RsxSubsystem _rsxSubSystem;
         private readonly CellPad _cellPad;
         private readonly CellGame _cellGame;
         private readonly LV2SyscallDispatcher _lv2SyscallDispatcher;

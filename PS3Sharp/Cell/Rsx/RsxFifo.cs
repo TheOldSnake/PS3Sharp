@@ -1440,9 +1440,9 @@ namespace PS3Sharp.Cell.Rsx
 
             if (CurrentState.Begin)
             {
-                if (mode >= 1 && mode <= RSXInternalState.BeginModeLookup.Length)
+                if (mode >= 1 && mode <= RsxInternalState.BeginModeLookup.Length)
                 {
-                    CurrentState.BeginMode = RSXInternalState.BeginModeLookup[(int)(mode - 1)];
+                    CurrentState.BeginMode = RsxInternalState.BeginModeLookup[(int)(mode - 1)];
                 }
 
             }
@@ -1474,7 +1474,7 @@ namespace PS3Sharp.Cell.Rsx
 
                 for (int location = 0; location < CurrentState.VertexBuffers.Length; location++)
                 {
-                    RSXVertexBuffer vertexAttribute = CurrentState.VertexBuffers[location];
+                    RsxVertexBuffer vertexAttribute = CurrentState.VertexBuffers[location];
                     if (vertexAttribute.HasImmediateData)
                     {
                         vertexAttribute.ImmediateData.Clear();
@@ -1523,7 +1523,7 @@ namespace PS3Sharp.Cell.Rsx
             // Draw Array
 
             int count = param.Count;
-            PrimitiveType type = RSXInternalState.PrimitiveTypeLookup[(int)CurrentState.BeginMode];
+            PrimitiveType type = RsxInternalState.PrimitiveTypeLookup[(int)CurrentState.BeginMode];
 
             //Console.WriteLine($"[RSX] Draw arrays command count = {count}");
 

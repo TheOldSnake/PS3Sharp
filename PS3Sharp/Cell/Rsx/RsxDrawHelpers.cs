@@ -236,7 +236,7 @@ namespace PS3Sharp.Cell.Rsx
             // Fetch vertex buffers from memory in parallel
             Parallel.For(0, CurrentState.VertexBuffers.Length, location =>
             {
-                RSXVertexBuffer vertexBuffer = CurrentState.VertexBuffers[location];
+                RsxVertexBuffer vertexBuffer = CurrentState.VertexBuffers[location];
                 if (vertexBuffer.IsEnabled && vertexBuffer.NumberOfElements > 0)
                 {
                     vertexBuffer.FetchVertexData(vertexCount, startOffset);
@@ -247,7 +247,7 @@ namespace PS3Sharp.Cell.Rsx
 
             for (int location = 0; location < CurrentState.VertexBuffers.Length; location++)
             {
-                RSXVertexBuffer vertexBuffer = CurrentState.VertexBuffers[location];
+                RsxVertexBuffer vertexBuffer = CurrentState.VertexBuffers[location];
 
                 // Check normal vertex binding 
                 if (vertexBuffer.IsEnabled && vertexBuffer.NumberOfElements > 0)
@@ -285,7 +285,7 @@ namespace PS3Sharp.Cell.Rsx
             }
         }
 
-        internal void CreateAndUploadVertexBuffer(int location, RSXVertexBuffer vertexBuffer)
+        internal void CreateAndUploadVertexBuffer(int location, RsxVertexBuffer vertexBuffer)
         {
             // Data is ready in the scratch buffer
             Span<byte> vertexData = vertexBuffer.GetLastScratchData();
@@ -302,7 +302,7 @@ namespace PS3Sharp.Cell.Rsx
         {
             if (CurrentState.BeginMode != BeginMode.QuadStrip && CurrentState.BeginMode != BeginMode.Polygon)
             {
-                PrimitiveType type = RSXInternalState.PrimitiveTypeLookup[(int)CurrentState.BeginMode];
+                PrimitiveType type = RsxInternalState.PrimitiveTypeLookup[(int)CurrentState.BeginMode];
 
                 //Console.WriteLine($"Draw arrays type = {type} vertexCount = {vertexCount}");
 
@@ -326,7 +326,7 @@ namespace PS3Sharp.Cell.Rsx
             }
         }
 
-        internal void SetVertexDataImmediate(int location, RSXVertexBuffer vertexBuffer, uint vertexCount)
+        internal void SetVertexDataImmediate(int location, RsxVertexBuffer vertexBuffer, uint vertexCount)
         {
             // This is very slow and hacky
 
@@ -387,12 +387,12 @@ namespace PS3Sharp.Cell.Rsx
             uint src = value & 0xFFFF;
             uint alpha = (value >> 16) & 0xFFFF;
 
-            if (!RSXInternalState.BlendSrcFactors.TryGetValue(src, out BlendingFactorSrc srcFactor))
+            if (!RsxInternalState.BlendSrcFactors.TryGetValue(src, out BlendingFactorSrc srcFactor))
             {
                 throw new NotSupportedException($"Unknown src blend factor: 0x{value:X8}");
             }
 
-            if (!RSXInternalState.BlendSrcFactors.TryGetValue(alpha, out BlendingFactorSrc alphaFactor))
+            if (!RsxInternalState.BlendSrcFactors.TryGetValue(alpha, out BlendingFactorSrc alphaFactor))
             {
                 throw new NotSupportedException($"Unknown alpha blend factor: 0x{value:X8}");
             }
@@ -405,12 +405,12 @@ namespace PS3Sharp.Cell.Rsx
             uint src = value & 0xFFFF;
             uint alpha = (value >> 16) & 0xFFFF;
 
-            if (!RSXInternalState.BlendDestFactors.TryGetValue(src, out BlendingFactorDest srcFactor))
+            if (!RsxInternalState.BlendDestFactors.TryGetValue(src, out BlendingFactorDest srcFactor))
             {
                 throw new NotSupportedException($"Unknown src blend factor: 0x{value:X8}");
             }
 
-            if (!RSXInternalState.BlendDestFactors.TryGetValue(alpha, out BlendingFactorDest alphaFactor))
+            if (!RsxInternalState.BlendDestFactors.TryGetValue(alpha, out BlendingFactorDest alphaFactor))
             {
                 throw new NotSupportedException($"Unknown alpha blend factor: 0x{value:X8}");
             }
@@ -423,12 +423,12 @@ namespace PS3Sharp.Cell.Rsx
             uint rgb = value & 0xFFFF;
             uint alpha = (value >> 16) & 0xFFFF;
 
-            if (!RSXInternalState.BlendEquationModes.TryGetValue(rgb, out BlendEquationMode rgbMode))
+            if (!RsxInternalState.BlendEquationModes.TryGetValue(rgb, out BlendEquationMode rgbMode))
             {
                 throw new NotSupportedException($"Unknown rgb blend equation: 0x{value:X8}");
             }
 
-            if (!RSXInternalState.BlendEquationModes.TryGetValue(alpha, out BlendEquationMode alphaMode))
+            if (!RsxInternalState.BlendEquationModes.TryGetValue(alpha, out BlendEquationMode alphaMode))
             {
                 throw new NotSupportedException($"Unknown alpha blend equation: 0x{value:X8}");
             }
@@ -444,7 +444,7 @@ namespace PS3Sharp.Cell.Rsx
 
             Parallel.For(0, CurrentState.Textures.Length, location =>
             {
-                RSXTexture texture = CurrentState.Textures[location];
+                RsxTexture texture = CurrentState.Textures[location];
 
                 // Ignore disabled textures as well as render surfaces
                 if (!texture.IsEnabled || texture.IsSurface)
@@ -458,7 +458,7 @@ namespace PS3Sharp.Cell.Rsx
 
             for (int location = 0; location < CurrentState.Textures.Length; location++)
             {
-                RSXTexture texture = CurrentState.Textures[location];
+                RsxTexture texture = CurrentState.Textures[location];
 
                 if (!texture.IsEnabled)
                 {
@@ -489,7 +489,7 @@ namespace PS3Sharp.Cell.Rsx
             }
         }
 
-        internal int CreateAndUploadTexture(int location, RSXTexture texture)
+        internal int CreateAndUploadTexture(int location, RsxTexture texture)
         {
             // Data should be ready in the scratch buffer
             ReadOnlySpan<byte> data = texture.GetLastScratchData();
@@ -540,7 +540,7 @@ namespace PS3Sharp.Cell.Rsx
             return glTexHandle;
         }
 
-        internal int TryBindVertexFromCache(int location, RSXVertexBuffer vertexBuffer)
+        internal int TryBindVertexFromCache(int location, RsxVertexBuffer vertexBuffer)
         {
             if (GLRenderer.VertexCache.TryGetValue(vertexBuffer.CacheKey, out int glvertexHandle))
             {
@@ -552,7 +552,7 @@ namespace PS3Sharp.Cell.Rsx
             return -1;
         }
 
-        internal int TryBindTextureFromCache(int location, RSXTexture texture)
+        internal int TryBindTextureFromCache(int location, RsxTexture texture)
         {
             if (GLRenderer.TextureCache.TryGetValue(texture.CacheKey, out int glTexHandle))
             {
@@ -563,7 +563,7 @@ namespace PS3Sharp.Cell.Rsx
             return -1;
         }
 
-        internal int TryBindSurface(int location, RSXTexture texture)
+        internal int TryBindSurface(int location, RsxTexture texture)
         {
             int handle = GLRenderer.GetSurfaceTexture(texture.Address);
 
@@ -575,14 +575,14 @@ namespace PS3Sharp.Cell.Rsx
             return handle;
         }
 
-        internal void SetSwizzle(int glTexHandle, RSXTexture texture)
+        internal void SetSwizzle(int glTexHandle, RsxTexture texture)
         {
             // This code assumes that the texture is already bound
 
-            RSXTexture.Swizzle currentSwizzle = texture.GetSwizzle();
+            RsxTexture.Swizzle currentSwizzle = texture.GetSwizzle();
 
             // Look up swizzle cache for this texture
-            if (GLRenderer.TextureSwizzleCache.TryGetValue(glTexHandle, out RSXTexture.Swizzle lastSwizzle))
+            if (GLRenderer.TextureSwizzleCache.TryGetValue(glTexHandle, out RsxTexture.Swizzle lastSwizzle))
             {
                 bool swizzleChanged = false;
 

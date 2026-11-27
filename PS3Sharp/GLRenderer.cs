@@ -70,13 +70,13 @@ namespace PS3Sharp
         internal Dictionary<uint, (int fbo, int texture)> Surfaces { get; private set; } = [];
 
         // Texture cache lookup dictionary
-        internal Dictionary<RSXTexture.TextureCacheKey, int> TextureCache { get; private set; } = [];
+        internal Dictionary<RsxTexture.TextureCacheKey, int> TextureCache { get; private set; } = [];
 
         // Texture swizzle cache lookup dictionary (lookup by gl tex handle)
-        internal Dictionary<int, RSXTexture.Swizzle> TextureSwizzleCache { get; private set; } = [];
+        internal Dictionary<int, RsxTexture.Swizzle> TextureSwizzleCache { get; private set; } = [];
 
         // Vertex buffer cache lookup dictionary
-        internal Dictionary<RSXVertexBuffer.VertexCacheKey, int> VertexCache { get; private set; } = [];
+        internal Dictionary<RsxVertexBuffer.VertexCacheKey, int> VertexCache { get; private set; } = [];
 
         // Last framebuffer that was bound
         internal int LastBoundFBO { get; private set; }
@@ -435,7 +435,7 @@ namespace PS3Sharp
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)magFilter);
         }
 
-        internal void SetTextureSwizzle(RSXTexture.Swizzle swizzle)
+        internal void SetTextureSwizzle(RsxTexture.Swizzle swizzle)
         {
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleA, swizzle.A);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureSwizzleR, swizzle.R);

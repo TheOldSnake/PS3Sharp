@@ -6,7 +6,7 @@ using static PS3Sharp.Cell.Rsx.RealitySynthesizer;
 
 namespace PS3Sharp.Cell.Rsx
 {
-    internal sealed class RSXTexture(RealitySynthesizer rsx)
+    internal sealed class RsxTexture(RealitySynthesizer rsx)
     {
         internal struct Swizzle
         {

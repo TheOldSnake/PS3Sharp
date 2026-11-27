@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace PS3Sharp.Cell.Rsx
 {
-    internal sealed class RSXVertexBuffer
+    internal sealed class RsxVertexBuffer
     {
         internal struct VertexCacheKey
         {
@@ -37,7 +37,7 @@ namespace PS3Sharp.Cell.Rsx
         internal ScratchBuffer ScratchBuffer { get; } = new ScratchBuffer();
         internal VertexCacheKey CacheKey = new();
 
-        internal RSXVertexBuffer(MemoryManager memoryManager)
+        internal RsxVertexBuffer(MemoryManager memoryManager)
         {
             _memoryManager = memoryManager;
         }

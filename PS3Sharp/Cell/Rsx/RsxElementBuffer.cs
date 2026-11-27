@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace PS3Sharp.Cell.Rsx
 {
-    internal sealed class RSXElementBuffer
+    internal sealed class RsxElementBuffer
     {
         private readonly MemoryManager _memoryManager;
         internal uint BufferAddress { get; set; }                 // Index list address
@@ -14,7 +14,7 @@ namespace PS3Sharp.Cell.Rsx
         internal int TotalElements { get; private set; }
         internal ScratchBuffer ScratchBuffer = new();
 
-        internal RSXElementBuffer(MemoryManager memoryManager)
+        internal RsxElementBuffer(MemoryManager memoryManager)
         {
             _memoryManager = memoryManager;
         }

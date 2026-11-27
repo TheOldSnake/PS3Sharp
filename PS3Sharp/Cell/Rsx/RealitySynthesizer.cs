@@ -39,7 +39,7 @@ namespace PS3Sharp.Cell.Rsx
             internal BigEndian<uint> Ref;		   /* member for accessing the REF register. Initial value is 0xFFFFFFFF */
         }
 
-        internal sealed class RSXFrameBuffer
+        internal sealed class RsxFrameBuffer
         {
             internal uint Address;
             internal uint Pitch;
@@ -47,7 +47,7 @@ namespace PS3Sharp.Cell.Rsx
             internal uint Height;
         }
 
-        internal enum RSXThreadStates
+        internal enum RsxThreadStates
         {
             Running,
             Paused,
@@ -77,7 +77,7 @@ namespace PS3Sharp.Cell.Rsx
         private bool ShouldExit => _threadManager.GlobalCancellationSource.IsCancellationRequested || LocalCancellationToken.IsCancellationRequested;
 
         internal CancellationTokenSource LocalCancellationToken { get; } = new();
-        internal RSXInternalState CurrentState { get; }
+        internal RsxInternalState CurrentState { get; }
         internal bool MemoryAllocated { get; private set; }
         internal GuestPtr<CellGcmConfig> ConfigPtr { get; private set; }
         internal GuestPtr<CellGcmCtxData> CtxPtr { get; private set; }
@@ -85,8 +85,8 @@ namespace PS3Sharp.Cell.Rsx
         internal GuestVoidPtr VRAMPtr { get; private set; }
         internal GuestPtr<byte> LabelsPtr { get; private set; }
         internal ulong LastFlipTime { get; private set; }
-        internal RSXFrameBuffer[] FrameBuffers { get; } = new RSXFrameBuffer[255];
-        internal RSXThreadStates RsxThreadState = RSXThreadStates.Stopped;
+        internal RsxFrameBuffer[] FrameBuffers { get; } = new RsxFrameBuffer[255];
+        internal RsxThreadStates RsxThreadState = RsxThreadStates.Stopped;
         internal Thread NativeThread { get; }
         internal int ExitCode { get; private set; }
 
@@ -97,27 +97,27 @@ namespace PS3Sharp.Cell.Rsx
             _window = window;
             _cellGcmSys = cellGcmSys;
 
-            CurrentState = new RSXInternalState(_memoryManager);
+            CurrentState = new RsxInternalState(_memoryManager);
             _vertexShaderGenerator = new();
             _fragmentShaderGenerator = new(_memoryManager, this);
 
             for (int i = 0; i < FrameBuffers.Length; i++)
             {
-                FrameBuffers[i] = new RSXFrameBuffer();
+                FrameBuffers[i] = new RsxFrameBuffer();
             }
 
             for (int i = 0; i < CurrentState.VertexBuffers.Length; i++)
             {
-                CurrentState.VertexBuffers[i] = new RSXVertexBuffer(_memoryManager);
+                CurrentState.VertexBuffers[i] = new RsxVertexBuffer(_memoryManager);
             }
 
             for (int i = 0; i < CurrentState.Textures.Length; i++)
             {
-                CurrentState.Textures[i] = new RSXTexture(this);
+                CurrentState.Textures[i] = new RsxTexture(this);
             }
 
             // Create a native thread
-            NativeThread = new Thread(RunRSX)
+            NativeThread = new Thread(RunRsx)
             {
                 Name = "RSX Native Thread"
             };
@@ -233,7 +233,7 @@ namespace PS3Sharp.Cell.Rsx
             _memoryManager.Write(CtrlPtr, ctrl);
         }
 
-        internal void RSXThreadMain()
+        internal void RsxThreadMain()
         {
             CellGcmCtrlRegister ctrl = _memoryManager.Read<CellGcmCtrlRegister>(CtrlPtr);
 
@@ -331,20 +331,20 @@ namespace PS3Sharp.Cell.Rsx
         public void StartThread()
         {
             //Console.WriteLine($"RSX Thread Started");
-            RsxThreadState = RSXThreadStates.Running;
+            RsxThreadState = RsxThreadStates.Running;
             NativeThread.Start();
         }
 
         public void PauseThread()
         {
             //Console.WriteLine($"RSX Thread Paused");
-            RsxThreadState = RSXThreadStates.Paused;
+            RsxThreadState = RsxThreadStates.Paused;
         }
 
         public void StopThread()
         {
             //Console.WriteLine($"RSX Thread Stopped");
-            RsxThreadState = RSXThreadStates.Stopped;
+            RsxThreadState = RsxThreadStates.Stopped;
         }
 
         internal bool AddressIsSurface(uint address)
@@ -352,7 +352,7 @@ namespace PS3Sharp.Cell.Rsx
             return GLRenderer.AddressIsSurface(address);
         }
 
-        private void RunRSX()
+        private void RunRsx()
         {
             // Create a window and GL renderer
             if (!_window.IsWindowCreated)
@@ -364,7 +364,7 @@ namespace PS3Sharp.Cell.Rsx
             {
                 while (!ShouldExit)
                 {
-                    RSXThreadMain();
+                    RsxThreadMain();
                 }
             }
             catch (Exception exception)

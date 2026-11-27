@@ -4,15 +4,15 @@ using PS3Sharp.GuestMemory;
 
 namespace PS3Sharp.Cell.Rsx
 {
-    internal sealed partial class RSXInternalState
+    internal sealed partial class RsxInternalState
     {
         private readonly MemoryManager _memoryManager;
 
         internal uint CurrentSemaphoreOffset { get; set; }
         internal uint CurrentSemaphoreLocation { get; set; }
-        internal RSXVertexBuffer[] VertexBuffers { get; } = new RSXVertexBuffer[16];
-        internal RSXTexture[] Textures { get; } = new RSXTexture[16];
-        internal RSXElementBuffer ElementBuffer { get; }
+        internal RsxVertexBuffer[] VertexBuffers { get; } = new RsxVertexBuffer[16];
+        internal RsxTexture[] Textures { get; } = new RsxTexture[16];
+        internal RsxElementBuffer ElementBuffer { get; }
 
         internal uint PointX { get; set; }
         internal uint PointY { get; set; }
@@ -132,10 +132,10 @@ namespace PS3Sharp.Cell.Rsx
             // Few more
         };
 
-        internal RSXInternalState(MemoryManager memoryManager)
+        internal RsxInternalState(MemoryManager memoryManager)
         {
             _memoryManager = memoryManager;
-            ElementBuffer = new RSXElementBuffer(_memoryManager);
+            ElementBuffer = new RsxElementBuffer(_memoryManager);
         }
     }
 }
