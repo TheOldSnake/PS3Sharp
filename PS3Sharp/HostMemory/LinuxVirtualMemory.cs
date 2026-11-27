@@ -3,7 +3,7 @@ using static PS3Sharp.HostMemory.HostVirtualMemory;
 
 namespace PS3Sharp.HostMemory
 {
-    internal partial class LinuxVirtualMemory : IHostVirtualMemoryHandler
+    internal sealed partial class LinuxVirtualMemory : IHostVirtualMemoryHandler
     {
         // TODO
 
