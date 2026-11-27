@@ -11,8 +11,8 @@ namespace PS3Sharp.FileSystem
             internal const byte CellFsTypeDirectory = 1;
             internal const byte CellFsTypeRegular = 2;
 
-            private static readonly CellFsDirent _currentDirectoryEntry;
-            private static readonly CellFsDirent _previousDirectoryEntry;
+            private static readonly CellFsDirent _currentDirectoryEntry = CreateEntry(name: ".", isDirectory: true);
+            private static readonly CellFsDirent _previousDirectoryEntry = CreateEntry(name: "..", isDirectory: true);
             private static readonly CellFsDirent _nullEntry;
             private static readonly ulong _entrySize = (ulong)Unsafe.SizeOf<CellFsDirent>();
 
@@ -25,27 +25,6 @@ namespace PS3Sharp.FileSystem
             internal int FileDescriptor { get; }
             internal uint OwnerThread { get; }
             internal ulong Size { get; }
-
-            static GuestDirectory()
-            {
-                _currentDirectoryEntry = new()
-                {
-                    Type = CellFsTypeDirectory,
-                    NameLength = 1,
-                };
-
-                _previousDirectoryEntry = new()
-                {
-                    Type = CellFsTypeDirectory,
-                    NameLength = 2,
-                };
-
-                Span<byte> currentDirName = Encoding.UTF8.GetBytes(".");
-                currentDirName.CopyTo(_currentDirectoryEntry.Name);
-
-                Span<byte> previousDirName = Encoding.UTF8.GetBytes("..");
-                previousDirName.CopyTo(_previousDirectoryEntry.Name);
-            }
 
             internal GuestDirectory(string path, int fileDescriptor, uint ownerThread)
             {
@@ -84,26 +63,26 @@ namespace PS3Sharp.FileSystem
 
                 foreach (FileSystemInfo fileSystemInfo in fileSystemInfoList)
                 {
-                    CellFsDirent entry = CreateEntry(fileSystemInfo);
+                    bool isDirectory = (fileSystemInfo.Attributes & FileAttributes.Directory) != 0;
+                    CellFsDirent entry = CreateEntry(fileSystemInfo.Name, isDirectory);
                     entries.Add(entry);
                 }
 
                 return entries;
             }
 
-            private static CellFsDirent CreateEntry(FileSystemInfo fileSystemInfo)
+            private static CellFsDirent CreateEntry(string name, bool isDirectory)
             {
-                Span<byte> name = Encoding.UTF8.GetBytes(fileSystemInfo.Name);
-                bool isDirectory = (fileSystemInfo.Attributes & FileAttributes.Directory) != 0;
+                Span<byte> nameBuffer = Encoding.UTF8.GetBytes(name);
                 byte type = isDirectory ? CellFsTypeDirectory : CellFsTypeRegular;
 
                 CellFsDirent entry = new()
                 {
                     Type = type,
-                    NameLength = (byte)name.Length
+                    NameLength = (byte)nameBuffer.Length,
                 };
 
-                name.CopyTo(entry.Name);
+                nameBuffer.CopyTo(entry.Name);
                 return entry;
             }
         }
