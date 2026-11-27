@@ -1,7 +1,7 @@
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Desktop;
-using PS3Sharp.Cell.RSX;
+using PS3Sharp.Cell.Rsx;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 

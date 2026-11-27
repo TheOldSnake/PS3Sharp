@@ -2,13 +2,12 @@ using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using PS3Sharp.OS;
 using PS3Sharp.OS.Modules;
-using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace PS3Sharp.Cell.RSX
+namespace PS3Sharp.Cell.Rsx
 {
     internal sealed partial class RealitySynthesizer : IEmulatorThread
     {
@@ -275,7 +274,7 @@ namespace PS3Sharp.Cell.RSX
                 {
                     uint currentAddress = _cellGcmSys.IoToEa(ctrl->Get);
                     uint instruction = _memoryManager.ReadRSXInstruction(currentAddress);
-                    RSXCommand CurrentCommand = new()
+                    RsxCommand CurrentCommand = new()
                     {
                         Raw = instruction
                     };
@@ -315,7 +314,7 @@ namespace PS3Sharp.Cell.RSX
             }
         }
 
-        internal void PrintCommand(RSXCommand command)
+        internal void PrintCommand(RsxCommand command)
         {
             Console.WriteLine($"RSX Command = 0x{command.Raw:X8} - " +
                 $"NonIncrement = {command.NonIncrement} - " +

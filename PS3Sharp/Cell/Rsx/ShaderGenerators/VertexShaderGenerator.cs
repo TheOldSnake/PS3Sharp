@@ -1,6 +1,6 @@
 using PS3Sharp.Common;
 
-namespace PS3Sharp.Cell.RSX
+namespace PS3Sharp.Cell.Rsx
 {
     internal sealed partial class VertexShaderGenerator
     {

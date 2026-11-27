@@ -5,7 +5,7 @@ using System.IO.Hashing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace PS3Sharp.Cell.RSX
+namespace PS3Sharp.Cell.Rsx
 {
     internal sealed class RSXVertexBuffer
     {

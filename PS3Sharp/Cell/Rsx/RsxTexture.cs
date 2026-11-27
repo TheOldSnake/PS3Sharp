@@ -2,9 +2,9 @@ using OpenTK.Graphics.OpenGL4;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using System.IO.Hashing;
-using static PS3Sharp.Cell.RSX.RSXCommand;
+using static PS3Sharp.Cell.Rsx.RsxCommand;
 
-namespace PS3Sharp.Cell.RSX
+namespace PS3Sharp.Cell.Rsx
 {
     internal sealed class RSXTexture(RealitySynthesizer rsx)
     {

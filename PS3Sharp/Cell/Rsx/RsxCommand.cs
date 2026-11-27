@@ -1,6 +1,6 @@
-namespace PS3Sharp.Cell.RSX
+namespace PS3Sharp.Cell.Rsx
 {
-    internal struct RSXCommand
+    internal struct RsxCommand
     {
 
         //Constant masks/shifts based on PSL1GHT

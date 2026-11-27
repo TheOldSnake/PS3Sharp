@@ -4,7 +4,7 @@ using PS3Sharp.GuestMemory;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace PS3Sharp.Cell.RSX
+namespace PS3Sharp.Cell.Rsx
 {
     internal sealed class RSXElementBuffer
     {

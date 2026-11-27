@@ -2,7 +2,7 @@ using PS3Sharp.FileSystem;
 using PS3Sharp.GuestMemory;
 using PS3Sharp.OS.Modules;
 
-namespace PS3Sharp.Cell.RSX
+namespace PS3Sharp.Cell.Rsx
 {
     internal sealed class RSXSubsystem
     {

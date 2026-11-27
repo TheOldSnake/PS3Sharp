@@ -3,7 +3,7 @@ using PS3Sharp.Common;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace PS3Sharp.Cell.RSX
+namespace PS3Sharp.Cell.Rsx
 {
     internal sealed partial class RealitySynthesizer
     {

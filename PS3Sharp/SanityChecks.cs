@@ -1,13 +1,13 @@
 ﻿using PS3Sharp.Cell.PPU;
-using PS3Sharp.Cell.RSX;
+using PS3Sharp.Cell.Rsx;
 using PS3Sharp.Cell.Spu;
 using PS3Sharp.Common;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using static PS3Sharp.Cell.PPU.PPUThread;
-using static PS3Sharp.Cell.RSX.FragmentShaderGenerator;
-using static PS3Sharp.Cell.RSX.VertexShaderGenerator;
+using static PS3Sharp.Cell.Rsx.FragmentShaderGenerator;
+using static PS3Sharp.Cell.Rsx.VertexShaderGenerator;
 
 namespace PS3Sharp
 {
@@ -160,9 +160,9 @@ namespace PS3Sharp
                     throw new InvalidOperationException($"Unexpected SpuInstruction Size = {sizeof(SpuInstruction)}");
                 }
 
-                if (sizeof(RSXCommand) != sizeof(uint))
+                if (sizeof(RsxCommand) != sizeof(uint))
                 {
-                    throw new InvalidOperationException($"Unexpected RSXCommand Size = {sizeof(RSXCommand)}");
+                    throw new InvalidOperationException($"Unexpected RSXCommand Size = {sizeof(RsxCommand)}");
                 }
 
                 if (sizeof(VertexShaderGenerator.VertexInstruction) != (sizeof(uint) * 4))

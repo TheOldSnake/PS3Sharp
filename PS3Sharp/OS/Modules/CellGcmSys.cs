@@ -1,11 +1,11 @@
 using PS3Sharp.Cell;
 using PS3Sharp.Cell.PPU;
-using PS3Sharp.Cell.RSX;
+using PS3Sharp.Cell.Rsx;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.Cell.ErrorCode;
-using static PS3Sharp.Cell.RSX.RealitySynthesizer;
+using static PS3Sharp.Cell.Rsx.RealitySynthesizer;
 
 namespace PS3Sharp.OS.Modules
 {
@@ -377,7 +377,7 @@ namespace PS3Sharp.OS.Modules
             }
 
             // Inject a flip command
-            uint flipCommand = RSXCommand.GcmFlipCommand | (1 << RSXCommand.RsxMethodCountShift); // 1 Argument
+            uint flipCommand = RsxCommand.GcmFlipCommand | (1 << RsxCommand.RsxMethodCountShift); // 1 Argument
             _memoryManager.Write<BigEndian<uint>>(ctx.Current, flipCommand);
             _memoryManager.Write<BigEndian<uint>>(ctx.Current + 4, bufferId);
             ctx.Current += 8;

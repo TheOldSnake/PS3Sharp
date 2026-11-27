@@ -2,7 +2,7 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using PS3Sharp.GuestMemory;
 
-namespace PS3Sharp.Cell.RSX
+namespace PS3Sharp.Cell.Rsx
 {
     internal sealed partial class RSXInternalState
     {

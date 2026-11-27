@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace PS3Sharp.Cell.RSX
+namespace PS3Sharp.Cell.Rsx
 {
     internal sealed partial class FragmentShaderGenerator
     {
