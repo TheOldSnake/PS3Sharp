@@ -1,9 +1,8 @@
-﻿using PS3Sharp.Common;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace PS3Sharp.HostMemory
 {
-    internal static class HostVirtualMemory
+    internal static partial class HostVirtualMemory
     {
         internal enum PageAccess
         {
