@@ -1,9 +1,8 @@
 namespace PS3Sharp.Cell.Rsx
 {
-    internal struct RsxCommand
+    internal sealed partial class RealitySynthesizer
     {
-
-        //Constant masks/shifts based on PSL1GHT
+        // Constant masks/shifts based on PSL1GHT
         internal const uint RsxMethodFlagNoIncrement = 0x40000000;
         internal const uint RsxMethodFlagJump = 0x20000000;
         internal const uint RsxMethodFlagCall = 0x00000002;
@@ -26,7 +25,7 @@ namespace PS3Sharp.Cell.Rsx
         internal const uint Nv406eTclSemaphoreAcquire = 0x00000068;
         internal const uint Nv406eTclSemaphoreRelease = 0x0000006c;
 
-        internal const uint Nv40TclSemaphoreBackendwriteOffset = 0x00001D6C; //it's named NV40TCL_SEMAPHORE_OFFSET	in PSL1GHT for some reason
+        internal const uint Nv40TclSemaphoreBackendwriteOffset = 0x00001D6C; // NV40TCL_SEMAPHORE_OFFSET in PSL1GHT
         internal const uint Nv40TclSemaphoreBackendwriteRelease = 0x00001D70;
         internal const uint Nv4097TextureReadSemaphoreRelease = 0x00001D74;
 
@@ -63,7 +62,7 @@ namespace PS3Sharp.Cell.Rsx
         internal const uint Nv34TclPrimitive3dDmaInMemory0 = 0x00000184;
         internal const uint Nv34TclPrimitive3dDmaInMemory1 = 0x00000188;
         // internal const uint NV34_TCL_PRIMITIVE_3D_DMA_IN_MEMORY2 = 0x0000018C;
-        //internal const uint NV34_TCL_PRIMITIVE_3D_DMA_IN_MEMORY3 = 0x00000194;
+        // internal const uint NV34_TCL_PRIMITIVE_3D_DMA_IN_MEMORY3 = 0x00000194;
         internal const uint Nv34TclPrimitive3dDmaInMemory4 = 0x00000198;
         internal const uint Nv34TclPrimitive3dDmaInMemory5 = 0x000001A4;
         internal const uint Nv34TclPrimitive3dDmaInMemory6 = 0x000001A8;
@@ -101,7 +100,7 @@ namespace PS3Sharp.Cell.Rsx
         internal const uint Nv40TclViewportClipHoriz5 = 0x000002E8; // +40
         internal const uint Nv40TclViewportClipHoriz6 = 0x000002F0; // +48
         internal const uint Nv40TclViewportClipHoriz7 = 0x000002F8; // +56
-        //internal const uint NV40TCL_VIEWPORT_CLIP_HORIZ_8 = 0x00000300; // +64
+        // internal const uint NV40TCL_VIEWPORT_CLIP_HORIZ_8 = 0x00000300; // +64
 
         internal const uint Nv40TclVpUploadFromId = 0x00001E9c;
         internal const uint Nv40TclVpStartFromId = 0x00001EA0;
@@ -320,7 +319,6 @@ namespace PS3Sharp.Cell.Rsx
         internal const uint Nv40TclTexSize114 = 0x00001840 + 4 * 14;
         internal const uint Nv40TclTexSize115 = 0x00001840 + 4 * 15;
 
-
         // Immediate vertex data - vec2
         internal const uint Nv40TclVtxAttr2f0 = 0x00001880 + 0 * 8;
         internal const uint Nv40TclVtxAttr2f1 = 0x00001880 + 1 * 8;
@@ -355,7 +353,6 @@ namespace PS3Sharp.Cell.Rsx
         internal const uint Nv40TclVtxAttr4f13 = 0x00001C00 + 13 * 16;
         internal const uint Nv40TclVtxAttr4f14 = 0x00001C00 + 14 * 16;
 
-
         internal const uint Nv40TclTexCacheCtl = 0x00001FD8;
 
         internal const uint Nv40TclTexFormatFormatL8 = 0x00000100;
@@ -385,17 +382,20 @@ namespace PS3Sharp.Cell.Rsx
         internal const uint Nv40TclFpPacker = 0x00001fec;
         internal const uint Nv40TclDividerFrequencyOp = 0x00001fc0;
 
-        internal uint Raw { get; set; }
+        internal readonly struct RsxCommand
+        {
+            internal uint Raw { get; init; }
 
-        internal bool NonIncrement => (Raw & RsxMethodFlagNoIncrement) != 0;
-        internal bool Jump => (Raw & RsxMethodFlagJump) != 0;
-        internal bool Call => (Raw & RsxMethodFlagCall) != 0;
-        internal bool Return => (Raw & RsxMethodFlagReturn) != 0;
+            internal readonly bool NonIncrement => (Raw & RsxMethodFlagNoIncrement) != 0;
+            internal readonly bool Jump => (Raw & RsxMethodFlagJump) != 0;
+            internal readonly bool Call => (Raw & RsxMethodFlagCall) != 0;
+            internal readonly bool Return => (Raw & RsxMethodFlagReturn) != 0;
 
-        internal uint MethodCount => (Raw >> RsxMethodCountShift) & RsxMaxMethodCount;
-        internal uint MethodRegister => Raw & 0xFFFF;
-        internal uint MethodSubChannel => (Raw >> RsxSubchannelShift) & 0x7;
-        internal uint JumpOffset => Raw & 0x1FFFFFFF; // >> (31 - 31)
-        internal uint CallOffset => Raw >> 2;         // >> (31 - 29)    
+            internal readonly uint MethodCount => (Raw >> RsxMethodCountShift) & RsxMaxMethodCount;
+            internal readonly uint MethodRegister => Raw & 0xFFFF;
+            internal readonly uint MethodSubChannel => (Raw >> RsxSubchannelShift) & 0x7;
+            internal readonly uint JumpOffset => Raw & 0x1FFFFFFF; // >> (31 - 31)
+            internal readonly uint CallOffset => Raw >> 2;         // >> (31 - 29)    
+        }
     }
 }

@@ -2,7 +2,7 @@ using OpenTK.Graphics.OpenGL4;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using System.IO.Hashing;
-using static PS3Sharp.Cell.Rsx.RsxCommand;
+using static PS3Sharp.Cell.Rsx.RealitySynthesizer;
 
 namespace PS3Sharp.Cell.Rsx
 {

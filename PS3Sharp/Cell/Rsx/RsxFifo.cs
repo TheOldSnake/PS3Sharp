@@ -3,7 +3,6 @@ using OpenTK.Mathematics;
 using PS3Sharp.Cell.PPU.Interpreter;
 using PS3Sharp.Common;
 using System.Runtime.CompilerServices;
-using static PS3Sharp.Cell.Rsx.RsxCommand;
 
 namespace PS3Sharp.Cell.Rsx
 {

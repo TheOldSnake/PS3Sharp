@@ -160,9 +160,9 @@ namespace PS3Sharp
                     throw new InvalidOperationException($"Unexpected SpuInstruction Size = {sizeof(SpuInstruction)}");
                 }
 
-                if (sizeof(RsxCommand) != sizeof(uint))
+                if (sizeof(RealitySynthesizer.RsxCommand) != sizeof(uint))
                 {
-                    throw new InvalidOperationException($"Unexpected RSXCommand Size = {sizeof(RsxCommand)}");
+                    throw new InvalidOperationException($"Unexpected RSXCommand Size = {sizeof(RealitySynthesizer.RsxCommand)}");
                 }
 
                 if (sizeof(VertexShaderGenerator.VertexInstruction) != (sizeof(uint) * 4))

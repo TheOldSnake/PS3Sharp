@@ -377,7 +377,7 @@ namespace PS3Sharp.OS.Modules
             }
 
             // Inject a flip command
-            uint flipCommand = RsxCommand.GcmFlipCommand | (1 << RsxCommand.RsxMethodCountShift); // 1 Argument
+            uint flipCommand = GcmFlipCommand | (1 << RsxMethodCountShift); // 1 Argument
             _memoryManager.Write<BigEndian<uint>>(ctx.Current, flipCommand);
             _memoryManager.Write<BigEndian<uint>>(ctx.Current + 4, bufferId);
             ctx.Current += 8;
