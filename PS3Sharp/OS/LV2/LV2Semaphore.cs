@@ -1,5 +1,5 @@
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using System.Runtime.InteropServices;
@@ -63,7 +63,7 @@ namespace PS3Sharp.OS.LV2
             return ok ? CellOk : CellEBusy;
         }
 
-        internal ulong Wait(PPUThread ppu, ulong us_timeout)
+        internal ulong Wait(PpuThread ppu, ulong us_timeout)
         {
             bool ok;
 
@@ -79,7 +79,7 @@ namespace PS3Sharp.OS.LV2
             return ok ? CellOk : CellETimedout;
         }
 
-        private bool InterruptableWait(PPUThread ppu)
+        private bool InterruptableWait(PpuThread ppu)
         {
             while (true)
             {

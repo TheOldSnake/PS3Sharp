@@ -1,5 +1,5 @@
 ﻿
-namespace PS3Sharp.Cell.PPU.Recompiler.IR
+namespace PS3Sharp.Cell.Ppu.Recompiler.IR
 {
     internal sealed partial class IRGenerator
     {

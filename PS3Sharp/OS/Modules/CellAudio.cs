@@ -1,6 +1,6 @@
 using NAudio.Wave;
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using PS3Sharp.OS.LV2;
@@ -95,7 +95,7 @@ namespace PS3Sharp.OS.Modules
             _sysEvent = sysEvent;
         }
 
-        internal ulong CellAudioInit(PPUThread ppu)
+        internal ulong CellAudioInit(PpuThread ppu)
         {
             Console.WriteLine("[CellAudio] cellAudioInit");
 
@@ -123,7 +123,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellAudioPortOpen(PPUThread ppu)
+        internal ulong CellAudioPortOpen(PpuThread ppu)
         {
             if (!_initialized)
             {
@@ -174,7 +174,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellAudioGetPortConfig(PPUThread ppu)
+        internal ulong CellAudioGetPortConfig(PpuThread ppu)
         {
             uint port_number = ppu.ReadArg<uint>(Arg0);
             GuestPtr<CellAudioPortConfig> config_ptr = ppu.ReadArg<GuestPtr<CellAudioPortConfig>>(Arg1);
@@ -209,7 +209,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellAudioPortStart(PPUThread ppu)
+        internal ulong CellAudioPortStart(PpuThread ppu)
         {
             uint port_number = ppu.ReadArg<uint>(Arg0);
 
@@ -230,7 +230,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellAudioPortStop(PPUThread ppu)
+        internal ulong CellAudioPortStop(PpuThread ppu)
         {
             uint port_number = ppu.ReadArg<uint>(Arg0);
             Console.WriteLine($"[CellAudio] cellAudioPortStop port = {port_number}");
@@ -259,14 +259,14 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        internal ulong CellAudioQuit(PPUThread ppu)
+        internal ulong CellAudioQuit(PpuThread ppu)
         {
             // TODO
             Console.WriteLine("[CellAudio] cellAudioQuit");
             return CellOk;
         }
 
-        internal ulong CellAudioCreateNotifyEventQueue(PPUThread ppu)
+        internal ulong CellAudioCreateNotifyEventQueue(PpuThread ppu)
         {
             // TODO
             GuestPtr<BigEndian<uint>> equeue_id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
@@ -291,7 +291,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellAudioSetNotifyEventQueue(PPUThread ppu)
+        internal ulong CellAudioSetNotifyEventQueue(PpuThread ppu)
         {
             // TODO
             ulong key = ppu.ReadArg<ulong>(Arg0);

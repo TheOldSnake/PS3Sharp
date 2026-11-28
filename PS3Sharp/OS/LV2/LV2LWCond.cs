@@ -1,5 +1,5 @@
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using PS3Sharp.OS.Modules;
@@ -58,7 +58,7 @@ namespace PS3Sharp.OS.LV2
             return _sysLwMutex.GetLWMutex(id, out lv2lwmutex);
         }
 
-        internal ulong Wait(PPUThread ppu, ulong us_timeout = 0)
+        internal ulong Wait(PpuThread ppu, ulong us_timeout = 0)
         {
             if (!TryGetLWMutex(out LV2LwMutex? lv2lwmutex))
             {
@@ -137,7 +137,7 @@ namespace PS3Sharp.OS.LV2
             return CellOk;
         }
 
-        private static bool InterruptableWait(PPUThread ppu, LV2CondWaiter waiter)
+        private static bool InterruptableWait(PpuThread ppu, LV2CondWaiter waiter)
         {
             // Return true if the event is set, false if the thread was interrupted
             while (true)

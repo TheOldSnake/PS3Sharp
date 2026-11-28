@@ -1,4 +1,4 @@
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using PS3Sharp.OS.LV2;
@@ -22,7 +22,7 @@ namespace PS3Sharp.OS.Syscall
             _memoryManager = memoryManager;
         }
 
-        internal ulong _SysLwmutexCreate(PPUThread ppu)
+        internal ulong _SysLwmutexCreate(PpuThread ppu)
         {
             // TODO
 
@@ -51,7 +51,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong _SysLwmutexDestroy(PPUThread ppu)
+        internal ulong _SysLwmutexDestroy(PpuThread ppu)
         {
             // TODO
             uint id = ppu.ReadArg<uint>(Arg0);
@@ -62,7 +62,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong _SysLwmutexLock(PPUThread ppu)
+        internal ulong _SysLwmutexLock(PpuThread ppu)
         {
             // TODO
             uint id = ppu.ReadArg<uint>(Arg0);
@@ -81,7 +81,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal ulong _SysLwmutexTryLock(PPUThread ppu)
+        internal ulong _SysLwmutexTryLock(PpuThread ppu)
         {
             // TODO
             uint id = ppu.ReadArg<uint>(Arg0);
@@ -99,7 +99,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal ulong _SysLwmutexUnlock(PPUThread ppu)
+        internal ulong _SysLwmutexUnlock(PpuThread ppu)
         {
             // TODO
             uint id = ppu.ReadArg<uint>(Arg0);

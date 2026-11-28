@@ -1,5 +1,5 @@
-using PS3Sharp.Cell.PPU;
-using PS3Sharp.Cell.PPU.Interpreter;
+using PS3Sharp.Cell.Ppu;
+using PS3Sharp.Cell.Ppu.Interpreter;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using static PS3Sharp.Cell.Arguments;
@@ -16,7 +16,7 @@ namespace PS3Sharp.OS.Syscall
             _memoryManager = memoryManager;
         }
 
-        internal ulong SysProcessExit(PPUThread ppu)
+        internal ulong SysProcessExit(PpuThread ppu)
         {
             int exitCode = ppu.ReadArg<int>(Arg0);
             ppu.StopThread();
@@ -26,7 +26,7 @@ namespace PS3Sharp.OS.Syscall
             if (exitCode > 0)
             {
                 Console.WriteLine($"[SysProcess] sys_process_exit call stack:");
-                PPUInterpreter.PrintCallstack(ppu);
+                PpuInterpreter.PrintCallstack(ppu);
             }
 
             ppu.SetExitCode(exitCode);
@@ -35,17 +35,17 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysProcessExit2(PPUThread ppu)
+        internal ulong SysProcessExit2(PpuThread ppu)
         {
             return SysProcessExit(ppu);
         }
 
-        internal ulong SysProcessGetPID(PPUThread ppu)
+        internal ulong SysProcessGetPID(PpuThread ppu)
         {
             return 0x1000500;
         }
 
-        internal ulong SysProcessGetSDKVersion(PPUThread ppu)
+        internal ulong SysProcessGetSDKVersion(PpuThread ppu)
         {
             uint pid = ppu.ReadArg<uint>(Arg0);
             GuestPtr<BigEndian<uint>> ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg1);
@@ -53,7 +53,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysProcessIsSPULockLineReservationAddress(PPUThread ppu)
+        internal ulong SysProcessIsSPULockLineReservationAddress(PpuThread ppu)
         {
             uint address = ppu.ReadArg<uint>(Arg0);
             ulong flags = ppu.ReadArg<ulong>(Arg1);

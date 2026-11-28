@@ -1,5 +1,5 @@
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using static PS3Sharp.Cell.Arguments;
@@ -27,7 +27,7 @@ namespace PS3Sharp.OS.Modules
             _memoryManager = memoryManager;
         }
 
-        internal ulong CellRtcGetCurrentTick(PPUThread ppu)
+        internal ulong CellRtcGetCurrentTick(PpuThread ppu)
         {
             Console.WriteLine($"[CellRtc] cellRtcGetCurrentTick");
             uint ptr = ppu.ReadArg<uint>(Arg0);
@@ -36,7 +36,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellRtcGetCurrentClockLocalTime(PPUThread ppu)
+        internal ulong CellRtcGetCurrentClockLocalTime(PpuThread ppu)
         {
             Console.WriteLine($"[CellRtc] cellRtcGetCurrentClockLocalTime");
             GuestPtr<CellRtcDateTime> clock_ptr = ppu.ReadArg<GuestPtr<CellRtcDateTime>>(Arg0);

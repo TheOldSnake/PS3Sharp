@@ -1,4 +1,4 @@
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using PS3Sharp.OS.LV2;
@@ -22,7 +22,7 @@ namespace PS3Sharp.OS.Syscall
             _sysMutex = sysMutex;
         }
 
-        internal ulong SysCondCreate(PPUThread ppu)
+        internal ulong SysCondCreate(PpuThread ppu)
         {
             GuestPtr<BigEndian<uint>> cond_id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             uint mutex_id = ppu.ReadArg<uint>(Arg1);
@@ -47,7 +47,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysCondDestroy(PPUThread ppu)
+        internal ulong SysCondDestroy(PpuThread ppu)
         {
             uint cond_id = ppu.ReadArg<uint>(Arg0);
 
@@ -55,7 +55,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysCondWait(PPUThread ppu)
+        internal ulong SysCondWait(PpuThread ppu)
         {
             uint cond_id = ppu.ReadArg<uint>(Arg0);
             ulong us_timeout = ppu.ReadArg<ulong>(Arg1);
@@ -70,7 +70,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal ulong SysCondSignal(PPUThread ppu)
+        internal ulong SysCondSignal(PpuThread ppu)
         {
             uint cond_id = ppu.ReadArg<uint>(Arg0);
 
@@ -86,7 +86,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal ulong SysCondSignalAll(PPUThread ppu)
+        internal ulong SysCondSignalAll(PpuThread ppu)
         {
             uint cond_id = ppu.ReadArg<uint>(Arg0);
 
@@ -101,7 +101,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal ulong SysCondSignalTo(PPUThread ppu)
+        internal ulong SysCondSignalTo(PpuThread ppu)
         {
             uint cond_id = ppu.ReadArg<uint>(Arg0);
             uint thread_id = ppu.ReadArg<uint>(Arg1);

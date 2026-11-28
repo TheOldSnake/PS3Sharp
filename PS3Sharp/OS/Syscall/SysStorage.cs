@@ -1,5 +1,5 @@
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using System.Collections.Concurrent;
@@ -69,7 +69,7 @@ namespace PS3Sharp.OS.Syscall
             _memoryManager = memoryManager;
         }
 
-        internal ulong SysStorageGetDeviceInfo(PPUThread ppu)
+        internal ulong SysStorageGetDeviceInfo(PpuThread ppu)
         {
             return CellOk;
             ulong device = ppu.ReadArg<ulong>(Arg0);
@@ -131,7 +131,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysStorageOpen(PPUThread ppu)
+        internal ulong SysStorageOpen(PpuThread ppu)
         {
             return CellOk;
             ulong dev = ppu.ReadArg<ulong>(Arg0);
@@ -178,7 +178,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysStorageRead(PPUThread ppu)
+        internal ulong SysStorageRead(PpuThread ppu)
         {
             return CellOk;
 
@@ -210,7 +210,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysStorageClose(PPUThread ppu)
+        internal ulong SysStorageClose(PpuThread ppu)
         {
             return CellOk;
             uint fd = ppu.ReadArg<uint>(Arg0);

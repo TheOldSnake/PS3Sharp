@@ -1,6 +1,6 @@
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using System.Collections.Immutable;
@@ -91,19 +91,19 @@ namespace PS3Sharp.OS.Modules
             _joyStickReader = joyStickReader;
         }
 
-        internal ulong CellPadInit(PPUThread ppu)
+        internal ulong CellPadInit(PpuThread ppu)
         {
             //Console.WriteLine($"[CellPad] cellPadInit");
             return CellOk;
         }
 
-        internal ulong CellPadSetPortSetting(PPUThread ppu)
+        internal ulong CellPadSetPortSetting(PpuThread ppu)
         {
             //Console.WriteLine($"[CellPad] cellPadSetPortSetting");
             return CellOk;
         }
 
-        internal ulong CellPadGetData(PPUThread ppu)
+        internal ulong CellPadGetData(PpuThread ppu)
         {
             uint port = ppu.ReadArg<uint>(Arg0);
             GuestPtr<CellPadData> data_ptr = ppu.ReadArg<GuestPtr<CellPadData>>(Arg1);
@@ -129,12 +129,12 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellPadGetInfo(PPUThread ppu)
+        internal ulong CellPadGetInfo(PpuThread ppu)
         {
             return CellOk;
         }
 
-        internal ulong CellPadGetInfo2(PPUThread ppu)
+        internal ulong CellPadGetInfo2(PpuThread ppu)
         {
             GuestPtr<CellPadInfo2> info_ptr = ppu.ReadArg<GuestPtr<CellPadInfo2>>(Arg0);
             uint nowConnected = _joyStickReader() == null ? 0U : 1U;

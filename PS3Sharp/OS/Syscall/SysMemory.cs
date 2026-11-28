@@ -1,5 +1,5 @@
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using System.Runtime.InteropServices;
@@ -25,7 +25,7 @@ namespace PS3Sharp.OS.Syscall
             _memoryManager = memoryManager;
         }
 
-        internal ulong SysMemoryAllocate(PPUThread ppu)
+        internal ulong SysMemoryAllocate(PpuThread ppu)
         {
             //int sys_memory_allocate(size_t size, uint64_t flags, sys_addr_t * alloc_addr); 
 
@@ -53,7 +53,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysMemoryFree(PPUThread ppu)
+        internal ulong SysMemoryFree(PpuThread ppu)
         {
             GuestVoidPtr ptr = ppu.ReadArg<GuestVoidPtr>(Arg0);
 
@@ -66,7 +66,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysMemoryGetUserMemorySize(PPUThread ppu)
+        internal ulong SysMemoryGetUserMemorySize(PpuThread ppu)
         {
             GuestPtr<SysMemoryInfo> memory_info_ptr = ppu.ReadArg<GuestPtr<SysMemoryInfo>>(Arg0);
 

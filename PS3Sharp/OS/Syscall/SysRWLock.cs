@@ -1,4 +1,4 @@
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using PS3Sharp.OS.LV2;
@@ -20,7 +20,7 @@ namespace PS3Sharp.OS.Syscall
             _memoryManager = memoryManager;
         }
 
-        internal ulong SysRWLockCreate(PPUThread ppu)
+        internal ulong SysRWLockCreate(PpuThread ppu)
         {
             GuestPtr<BigEndian<uint>> id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             GuestPtr<SysRWLockAttribute> attribut_ptr = ppu.ReadArg<GuestPtr<SysRWLockAttribute>>(Arg1);
@@ -33,7 +33,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysRWLockDestroy(PPUThread ppu)
+        internal ulong SysRWLockDestroy(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
 
@@ -42,7 +42,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysRWLockRLock(PPUThread ppu)
+        internal ulong SysRWLockRLock(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
             ulong us_timeout = ppu.ReadArg<ulong>(Arg1);
@@ -58,7 +58,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal ulong SysRWLockTryRLock(PPUThread ppu)
+        internal ulong SysRWLockTryRLock(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
 
@@ -73,7 +73,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal ulong SysRWLockRUnlock(PPUThread ppu)
+        internal ulong SysRWLockRUnlock(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
             if (TryGetRWLock(id, out LV2RWLock? rwlock))
@@ -87,7 +87,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal ulong SysRWLockWLock(PPUThread ppu)
+        internal ulong SysRWLockWLock(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
             ulong us_timeout = ppu.ReadArg<ulong>(Arg1);
@@ -103,7 +103,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal ulong SysRWLockTryWLock(PPUThread ppu)
+        internal ulong SysRWLockTryWLock(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
 
@@ -118,7 +118,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal ulong SysRWLockWUnlock(PPUThread ppu)
+        internal ulong SysRWLockWUnlock(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
 

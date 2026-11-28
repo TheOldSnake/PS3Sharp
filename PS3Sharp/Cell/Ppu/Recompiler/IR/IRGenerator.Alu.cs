@@ -1,28 +1,28 @@
-using static PS3Sharp.Cell.PPU.PPURotationMasks;
+using static PS3Sharp.Cell.Ppu.PpuRotationMasks;
 
-namespace PS3Sharp.Cell.PPU.Recompiler.IR
+namespace PS3Sharp.Cell.Ppu.Recompiler.IR
 {
     internal sealed partial class IRGenerator
     {
         // Add instructions
 
-        internal void ADDI(PPUInstruction instruction)
+        internal void ADDI(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
             Value a = ra == 0 ? _irContext.Zero : _irContext.GetGPR(ra);
-            Value b = Constant((ulong)instruction.SI_64);
+            Value b = Constant((ulong)instruction.Si64);
 
             Value result = Add(a, b);
             _irContext.SetGPR(rt, result);
         }
 
-        internal void ADDIS(PPUInstruction instruction)
+        internal void ADDIS(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
-            long si = (int)(instruction.SI << 16); // sign extended
+            long si = (int)(instruction.Si << 16); // sign extended
 
             Value a = ra == 0 ? _irContext.Zero : _irContext.GetGPR(ra);
             Value b = Constant((ulong)si);
@@ -30,24 +30,24 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
             _irContext.SetGPR(rt, result);
         }
 
-        internal void ADDIC(PPUInstruction instruction)
+        internal void ADDIC(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
             Value a = _irContext.GetGPR(ra);
-            Value b = Constant((ulong)instruction.SI_64);
+            Value b = Constant((ulong)instruction.Si64);
             Value result = CkdAdd(a, b, out Value carry);
             _irContext.SetGPR(rt, result);
             _irContext.SetCA(carry);
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void ADDE(PPUInstruction instruction)
+        internal void ADDE(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -67,11 +67,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(finalSum, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(finalSum, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void ADD(PPUInstruction instruction)
+        internal void ADD(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -85,11 +85,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void ADDC(PPUInstruction instruction)
+        internal void ADDC(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -104,11 +104,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void ADDZE(PPUInstruction instruction)
+        internal void ADDZE(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
@@ -122,11 +122,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void ADDME(PPUInstruction instruction)
+        internal void ADDME(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
@@ -144,13 +144,13 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(finalSum, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(finalSum, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
         // Subtract instructions
 
-        internal void SUBF(PPUInstruction instruction)
+        internal void SUBF(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -164,11 +164,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void SUBFC(PPUInstruction instruction)
+        internal void SUBFC(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -188,17 +188,17 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(finalSum, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(finalSum, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void SUBFIC(PPUInstruction instruction)
+        internal void SUBFIC(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
             Value a = _irContext.GetGPR(ra);
-            Value b = Constant((ulong)instruction.SI_64);
+            Value b = Constant((ulong)instruction.Si64);
             Value notA = Not(a);
 
             // Add ~a + b + 1, and handle intermediate carrys
@@ -210,7 +210,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
             _irContext.SetCA(finalCarry);
         }
 
-        internal void SUBFE(PPUInstruction instruction)
+        internal void SUBFE(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -230,11 +230,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(finalSum, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(finalSum, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void SUBFZE(PPUInstruction instruction)
+        internal void SUBFZE(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
@@ -249,11 +249,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void SUBFME(PPUInstruction instruction)
+        internal void SUBFME(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
@@ -271,90 +271,90 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(finalSum, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(finalSum, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
         // General logic instructions
-        internal void ANDI(PPUInstruction instruction)
+        internal void ANDI(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
             Value s = _irContext.GetGPR(rs);
-            Value imm = Constant((ulong)instruction.UI);
+            Value imm = Constant((ulong)instruction.Ui);
             Value result = And(s, imm);
 
             _irContext.SetGPR(ra, result);
-            _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);  // Always updates CR0
+            _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);  // Always updates CR0
         }
 
-        internal void ANDIS(PPUInstruction instruction)
+        internal void ANDIS(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
             Value s = _irContext.GetGPR(rs);
-            Value imm = Constant(((ulong)instruction.UI) << 16);
+            Value imm = Constant(((ulong)instruction.Ui) << 16);
             Value result = And(s, imm);
 
             _irContext.SetGPR(ra, result);
-            _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0); // Always updates CR0
+            _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0); // Always updates CR0
         }
 
-        internal void ORI(PPUInstruction instruction)
+        internal void ORI(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
             Value s = _irContext.GetGPR(rs);
-            Value imm = Constant((ulong)instruction.UI);
+            Value imm = Constant((ulong)instruction.Ui);
             Value result = Or(s, imm);
 
             _irContext.SetGPR(ra, result);
             // Does not affect CR0
         }
 
-        internal void ORIS(PPUInstruction instruction)
+        internal void ORIS(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
             Value s = _irContext.GetGPR(rs);
-            Value imm = Constant(((ulong)instruction.UI) << 16);
+            Value imm = Constant(((ulong)instruction.Ui) << 16);
             Value result = Or(s, imm);
 
             _irContext.SetGPR(ra, result);
             // Does not affect CR0
         }
 
-        internal void XORI(PPUInstruction instruction)
+        internal void XORI(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
             Value s = _irContext.GetGPR(rs);
-            Value imm = Constant((ulong)instruction.UI);
+            Value imm = Constant((ulong)instruction.Ui);
             Value result = Xor(s, imm);
 
             _irContext.SetGPR(ra, result);
             // Does not affect CR0
         }
 
-        internal void XORIS(PPUInstruction instruction)
+        internal void XORIS(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
             Value s = _irContext.GetGPR(rs);
-            Value imm = Constant(((ulong)instruction.UI) << 16);
+            Value imm = Constant(((ulong)instruction.Ui) << 16);
             Value result = Xor(s, imm);
 
             _irContext.SetGPR(ra, result);
             // Does not affect CR0
         }
 
-        internal void AND(PPUInstruction instruction)
+        internal void AND(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -368,11 +368,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void OR(PPUInstruction instruction)
+        internal void OR(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -386,11 +386,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void XOR(PPUInstruction instruction)
+        internal void XOR(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -404,11 +404,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void NAND(PPUInstruction instruction)
+        internal void NAND(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -422,11 +422,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void NOR(PPUInstruction instruction)
+        internal void NOR(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -440,11 +440,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void EQV(PPUInstruction instruction)
+        internal void EQV(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -458,11 +458,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void ANDC(PPUInstruction instruction)
+        internal void ANDC(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -476,11 +476,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void ORC(PPUInstruction instruction)
+        internal void ORC(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -494,11 +494,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void NEG(PPUInstruction instruction)
+        internal void NEG(PpuInstruction instruction)
         {
             // RT = ¬(RA) + 1
             uint ra = instruction.Ra;
@@ -512,12 +512,12 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
         // Condition register bit logic opcodes
-        internal (Value ba, Value bb) GetBitsAB(PPUInstruction instruction)
+        internal (Value ba, Value bb) GetBitsAB(PpuInstruction instruction)
         {
             //Helper for condition register bit opcodes
             int bitA = (int)(31 - instruction.Ba);
@@ -529,7 +529,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
             return (a, b);
         }
 
-        internal void CROR(PPUInstruction instruction)
+        internal void CROR(PpuInstruction instruction)
         {
             uint bt = instruction.Bt;
             (Value bitA, Value bitB) = GetBitsAB(instruction);
@@ -537,7 +537,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
             _irContext.WriteCRBit(bt, result);
         }
 
-        internal void CRORC(PPUInstruction instruction)
+        internal void CRORC(PpuInstruction instruction)
         {
             uint bt = instruction.Bt;
             (Value bitA, Value bitB) = GetBitsAB(instruction);
@@ -545,7 +545,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
             _irContext.WriteCRBit(bt, result);
         }
 
-        internal void CRAND(PPUInstruction instruction)
+        internal void CRAND(PpuInstruction instruction)
         {
             uint bt = instruction.Bt;
             (Value bitA, Value bitB) = GetBitsAB(instruction);
@@ -553,7 +553,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
             _irContext.WriteCRBit(bt, result);
         }
 
-        internal void CRANDC(PPUInstruction instruction)
+        internal void CRANDC(PpuInstruction instruction)
         {
             uint bt = instruction.Bt;
             (Value bitA, Value bitB) = GetBitsAB(instruction);
@@ -561,7 +561,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
             _irContext.WriteCRBit(bt, result);
         }
 
-        internal void CRXOR(PPUInstruction instruction)
+        internal void CRXOR(PpuInstruction instruction)
         {
             uint bt = instruction.Bt;
             (Value bitA, Value bitB) = GetBitsAB(instruction);
@@ -569,7 +569,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
             _irContext.WriteCRBit(bt, result);
         }
 
-        internal void CRNAND(PPUInstruction instruction)
+        internal void CRNAND(PpuInstruction instruction)
         {
             uint bt = instruction.Bt;
             (Value bitA, Value bitB) = GetBitsAB(instruction);
@@ -577,7 +577,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
             _irContext.WriteCRBit(bt, result);
         }
 
-        internal void CRNOR(PPUInstruction instruction)
+        internal void CRNOR(PpuInstruction instruction)
         {
             uint bt = instruction.Bt;
             (Value bitA, Value bitB) = GetBitsAB(instruction);
@@ -585,7 +585,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
             _irContext.WriteCRBit(bt, result);
         }
 
-        internal void CREQV(PPUInstruction instruction)
+        internal void CREQV(PpuInstruction instruction)
         {
             uint bt = instruction.Bt;
             (Value bitA, Value bitB) = GetBitsAB(instruction);
@@ -594,20 +594,20 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
         }
 
         // Multiply instructions
-        internal void MULLI(PPUInstruction instruction)
+        internal void MULLI(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rt = instruction.Rt;
 
             Value a = _irContext.GetGPR(ra);
-            Value b = Constant((ulong)instruction.SI_64);
+            Value b = Constant((ulong)instruction.Si64);
             Value result = IMulLD(a, b);
 
             _irContext.SetGPR(rt, result);
             // No special registers affected
         }
 
-        internal void MULLW(PPUInstruction instruction)
+        internal void MULLW(PpuInstruction instruction)
         {
             // Multiply word, write 64-bit result (signed)
             uint ra = instruction.Ra;
@@ -622,11 +622,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void MULHW(PPUInstruction instruction)
+        internal void MULHW(PpuInstruction instruction)
         {
             // Multiply word, write high 32-bit result (signed)
             uint ra = instruction.Ra;
@@ -641,11 +641,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void MULHWU(PPUInstruction instruction)
+        internal void MULHWU(PpuInstruction instruction)
         {
             // Multiply word, write high 32-bit (unsigned)
             uint ra = instruction.Ra;
@@ -660,11 +660,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void MULLD(PPUInstruction instruction)
+        internal void MULLD(PpuInstruction instruction)
         {
             // Multiply double word (signed)
             uint ra = instruction.Ra;
@@ -679,11 +679,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void MULHD(PPUInstruction instruction)
+        internal void MULHD(PpuInstruction instruction)
         {
             // Multiply double word, write high 64-bit (signed)
             uint ra = instruction.Ra;
@@ -698,11 +698,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void MULHDU(PPUInstruction instruction)
+        internal void MULHDU(PpuInstruction instruction)
         {
             // Multiply double word, write high 64-bit (unsigned)
             uint ra = instruction.Ra;
@@ -717,12 +717,12 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
         // Divide instructions
-        internal void DIVD(PPUInstruction instruction)
+        internal void DIVD(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -736,11 +736,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void DIVDU(PPUInstruction instruction)
+        internal void DIVDU(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -754,11 +754,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void DIVW(PPUInstruction instruction)
+        internal void DIVW(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -772,11 +772,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void DIVWU(PPUInstruction instruction)
+        internal void DIVWU(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -790,7 +790,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
@@ -865,7 +865,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
         }
 
         // Shift instructions
-        internal void SLD(PPUInstruction instruction)
+        internal void SLD(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -882,11 +882,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void SRD(PPUInstruction instruction)
+        internal void SRD(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -903,11 +903,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void SLW(PPUInstruction instruction)
+        internal void SLW(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -927,11 +927,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void SRW(PPUInstruction instruction)
+        internal void SRW(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -951,11 +951,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void SRAD(PPUInstruction instruction)
+        internal void SRAD(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -978,26 +978,26 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void SRADI(PPUInstruction instruction)
+        internal void SRADI(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
             // SH is 6 bits
-            Value shiftAmount = Constant((ulong)instruction.SH);
+            Value shiftAmount = Constant((ulong)instruction.Sh);
 
             Value srcReg = _irContext.GetGPR(rs);
             Value result = ShiftRightArithmetic(srcReg, shiftAmount);
 
             Value ca;
 
-            if (instruction.SH > 0)
+            if (instruction.Sh > 0)
             {
-                Value mask = Constant((ulong)((1L << instruction.SH) - 1));
+                Value mask = Constant((ulong)((1L << instruction.Sh) - 1));
 
                 Value shiftedBits = And(srcReg, mask);
                 Value hasOnes = SetNotEqual(shiftedBits, _irContext.Zero);
@@ -1016,11 +1016,11 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void SRAW(PPUInstruction instruction)
+        internal void SRAW(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
@@ -1050,17 +1050,17 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void SRAWI(PPUInstruction instruction)
+        internal void SRAWI(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
 
             // SH is 5 bits
-            int sh = instruction.SH & 0x1F;
+            int sh = instruction.Sh & 0x1F;
             Value shiftAmount = Constant((ulong)sh, Value.ValueType.I32);
 
             Value srcReg = _irContext.GetGPR(rs);
@@ -1071,7 +1071,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             Value ca;
 
-            if (instruction.SH > 0)
+            if (instruction.Sh > 0)
             {
                 Value sign = GetSign(srcReg32); // pass the 32-bit value
                 Value mask = Constant((ulong)((1L << sh) - 1));
@@ -1092,16 +1092,16 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result64, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result64, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void RLDICL(PPUInstruction instruction)
+        internal void RLDICL(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
-            int sh = instruction.SH;
-            ulong mask = GetRotationMask(instruction.MB_6, 63);
+            int sh = instruction.Sh;
+            ulong mask = GetRotationMask(instruction.Mb6, 63);
 
             Value srcReg = _irContext.GetGPR(rs);
             Value rotationAmount = Constant((ulong)sh);
@@ -1112,16 +1112,16 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void RLDICR(PPUInstruction instruction)
+        internal void RLDICR(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
-            int sh = instruction.SH;
-            ulong mask = GetRotationMask(0, instruction.ME_6);
+            int sh = instruction.Sh;
+            ulong mask = GetRotationMask(0, instruction.Me6);
 
             Value srcReg = _irContext.GetGPR(rs);
             Value rotationAmount = Constant((ulong)sh);
@@ -1132,16 +1132,16 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void RLDIC(PPUInstruction instruction)
+        internal void RLDIC(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
-            int sh = instruction.SH;
-            ulong mask = GetRotationMask(instruction.MB_6, 63 - sh);
+            int sh = instruction.Sh;
+            ulong mask = GetRotationMask(instruction.Mb6, 63 - sh);
 
             Value srcReg = _irContext.GetGPR(rs);
             Value rotationAmount = Constant((ulong)sh);
@@ -1152,16 +1152,16 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void RLDIMI(PPUInstruction instruction)
+        internal void RLDIMI(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
-            int sh = instruction.SH;
-            ulong mask = GetRotationMask(instruction.MB_6, 63 - sh);
+            int sh = instruction.Sh;
+            ulong mask = GetRotationMask(instruction.Mb6, 63 - sh);
 
             Value srcReg = _irContext.GetGPR(rs);
             Value raReg = _irContext.GetGPR(ra);
@@ -1179,16 +1179,16 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void RLDCL(PPUInstruction instruction)
+        internal void RLDCL(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
-            ulong mask = GetRotationMask(instruction.MB_6, 63);
+            ulong mask = GetRotationMask(instruction.Mb6, 63);
 
             Value rbReg = _irContext.GetGPR(rb);
             Value srcReg = _irContext.GetGPR(rs);
@@ -1201,16 +1201,16 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void RLDCR(PPUInstruction instruction)
+        internal void RLDCR(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
-            ulong mask = GetRotationMask(0, instruction.ME_6);
+            ulong mask = GetRotationMask(0, instruction.Me6);
 
             Value rbReg = _irContext.GetGPR(rb);
             Value srcReg = _irContext.GetGPR(rs);
@@ -1223,17 +1223,17 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void RLWIMI(PPUInstruction instruction)
+        internal void RLWIMI(PpuInstruction instruction)
         {
-            int n = instruction.SH & 0x1F; //Rotate 32 takes only 5 bits of SH
+            int n = instruction.Sh & 0x1F; //Rotate 32 takes only 5 bits of SH
 
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
-            ulong mask = GetRotationMask(instruction.MB_5 + 32, instruction.ME_5 + 32);
+            ulong mask = GetRotationMask(instruction.Mb5 + 32, instruction.Me5 + 32);
 
             Value srcReg = _irContext.GetGPR(rs);
             Value raReg = _irContext.GetGPR(ra);
@@ -1249,17 +1249,17 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void RLWINM(PPUInstruction instruction)
+        internal void RLWINM(PpuInstruction instruction)
         {
-            int n = instruction.SH & 0x1F; //Rotate 32 takes only 5 bits of SH
+            int n = instruction.Sh & 0x1F; //Rotate 32 takes only 5 bits of SH
 
             uint ra = instruction.Ra;
             uint rs = instruction.Rs;
-            ulong mask = GetRotationMask(instruction.MB_5 + 32, instruction.ME_5 + 32);
+            ulong mask = GetRotationMask(instruction.Mb5 + 32, instruction.Me5 + 32);
 
             Value srcReg = _irContext.GetGPR(rs);
 
@@ -1271,16 +1271,16 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
 
-        internal void RLWNM(PPUInstruction instruction)
+        internal void RLWNM(PpuInstruction instruction)
         {
             uint ra = instruction.Ra;
             uint rb = instruction.Rb;
             uint rs = instruction.Rs;
-            ulong mask = GetRotationMask(instruction.MB_5 + 32, instruction.ME_5 + 32);
+            ulong mask = GetRotationMask(instruction.Mb5 + 32, instruction.Me5 + 32);
 
             Value srcReg = _irContext.GetGPR(rs);
             Value rbReg = _irContext.GetGPR(rb);
@@ -1293,7 +1293,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
 
             if (instruction.Rc == 1)
             {
-                _irContext.UpdateCR(result, _irContext.Zero, PPUThread.CRNumber.CR0);
+                _irContext.UpdateCR(result, _irContext.Zero, PpuThread.CrNumber.CR0);
             }
         }
     }

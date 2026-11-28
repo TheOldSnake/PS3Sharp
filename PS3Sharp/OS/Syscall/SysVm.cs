@@ -1,4 +1,4 @@
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using static PS3Sharp.Cell.Arguments;
@@ -15,7 +15,7 @@ namespace PS3Sharp.OS.Syscall
             _memoryManager = memoryManager;
         }
 
-        internal ulong SysVmMemoryMap(PPUThread ppu)
+        internal ulong SysVmMemoryMap(PpuThread ppu)
         {
             // TODO implement properly 
             // For now we just do a normal allocation

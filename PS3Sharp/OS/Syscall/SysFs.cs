@@ -1,5 +1,5 @@
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.FileSystem;
 using PS3Sharp.GuestMemory;
@@ -113,13 +113,13 @@ namespace PS3Sharp.OS.Syscall
             FileSystemManager = fileSystemManager;
         }
 
-        internal ulong SysFsAioInit(PPUThread ppu)
+        internal ulong SysFsAioInit(PpuThread ppu)
         {
             Console.WriteLine($"[{ppu.ThreadName}] [SysFs] SysFsAioInit");
             return CellOk;
         }
 
-        internal uint SysFsStat(PPUThread ppu)
+        internal uint SysFsStat(PpuThread ppu)
         {
             uint pathPtr = ppu.ReadArg<uint>(Arg0);
             GuestPtr<CellFsStat> statPtr = ppu.ReadArg<GuestPtr<CellFsStat>>(Arg1);
@@ -171,7 +171,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysFsFstat(PPUThread ppu)
+        internal ulong SysFsFstat(PpuThread ppu)
         {
             int fd = ppu.ReadArg<int>(Arg0);
             GuestPtr<CellFsStat> statPtr = ppu.ReadArg<GuestPtr<CellFsStat>>(Arg1);
@@ -222,7 +222,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysFsOpen(PPUThread ppu)
+        internal ulong SysFsOpen(PpuThread ppu)
         {
             uint pathPtr = ppu.ReadArg<uint>(Arg0);
             uint flags = ppu.ReadArg<uint>(Arg1);
@@ -274,7 +274,7 @@ namespace PS3Sharp.OS.Syscall
             return result;
         }
 
-        internal ulong SysFsLseek(PPUThread ppu)
+        internal ulong SysFsLseek(PpuThread ppu)
         {
             int fd = ppu.ReadArg<int>(Arg0);
             long offset = ppu.ReadArg<long>(Arg1);
@@ -294,7 +294,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysFsRead(PPUThread ppu)
+        internal ulong SysFsRead(PpuThread ppu)
         {
             int fd = ppu.ReadArg<int>(Arg0);
             GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(Arg1);
@@ -321,7 +321,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysFsWrite(PPUThread ppu)
+        internal ulong SysFsWrite(PpuThread ppu)
         {
             int fd = ppu.ReadArg<int>(Arg0);
             GuestVoidPtr buf = ppu.ReadArg<GuestVoidPtr>(Arg1);
@@ -334,7 +334,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysFsClose(PPUThread ppu)
+        internal ulong SysFsClose(PpuThread ppu)
         {
             int fd = ppu.ReadArg<int>(Arg0);
 
@@ -344,14 +344,14 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysFsMkDir(PPUThread ppu)
+        internal ulong SysFsMkDir(PpuThread ppu)
         {
             // todo
             Console.WriteLine($"[SysFsMkDir] SysFsMkDir -> CellOk");
             return CellOk;
         }
 
-        internal ulong SysFsOpenDir(PPUThread ppu)
+        internal ulong SysFsOpenDir(PpuThread ppu)
         {
             GuestVoidPtr pathPtr = ppu.ReadArg<GuestVoidPtr>(Arg0);
             GuestPtr<BigEndian<uint>> fdPtr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg1);
@@ -376,7 +376,7 @@ namespace PS3Sharp.OS.Syscall
             return result;
         }
 
-        internal ulong SysFsReadDir(PPUThread ppu)
+        internal ulong SysFsReadDir(PpuThread ppu)
         {
             int fd = ppu.ReadArg<int>(Arg0);
             GuestPtr<CellFsDirent> direentPtr = ppu.ReadArg<GuestPtr<CellFsDirent>>(Arg1);
@@ -390,7 +390,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysFsCloseDir(PPUThread ppu)
+        internal ulong SysFsCloseDir(PpuThread ppu)
         {
             int fd = ppu.ReadArg<int>(Arg0);
             FileSystemManager.CloseDirectory(fd);

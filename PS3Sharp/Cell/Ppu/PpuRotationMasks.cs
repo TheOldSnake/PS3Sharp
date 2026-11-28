@@ -1,13 +1,13 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace PS3Sharp.Cell.PPU
+namespace PS3Sharp.Cell.Ppu
 {
-    internal static class PPURotationMasks
+    internal static class PpuRotationMasks
     {
         private static readonly ulong[] RotationMasksArray = new ulong[64 * 64];
 
-        static PPURotationMasks()
+        static PpuRotationMasks()
         {
             // Uncomment this to fill the array and generate a ROS
             // FillRotationMasks();

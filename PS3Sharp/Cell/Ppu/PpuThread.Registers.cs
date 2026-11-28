@@ -1,13 +1,13 @@
 using System.Runtime.InteropServices;
 
-namespace PS3Sharp.Cell.PPU
+namespace PS3Sharp.Cell.Ppu
 {
-    internal sealed unsafe partial class PPUThread
+    internal sealed unsafe partial class PpuThread
     {
         // TODO: Refactor and don't use fixed buffers, and maybe don't use LayoutKind.Explicit too
 
         [StructLayout(LayoutKind.Explicit)]
-        internal unsafe struct PPUGPR
+        internal unsafe struct PpuGpr
         {
             //Unsigned
             [FieldOffset(0)] internal byte Value8;
@@ -28,7 +28,7 @@ namespace PS3Sharp.Cell.PPU
         }
 
         [StructLayout(LayoutKind.Explicit)]
-        internal struct PPUFPR
+        internal struct PpuFpr
         {
             [FieldOffset(0)] internal ulong Value64;
             [FieldOffset(0)] internal long SValue64;
@@ -41,7 +41,7 @@ namespace PS3Sharp.Cell.PPU
         }
 
         [StructLayout(LayoutKind.Explicit)]
-        internal unsafe struct PPUVR
+        internal unsafe struct PpuVr
         {
             //Unsigned
             [FieldOffset(0)] internal byte Value8;
@@ -72,9 +72,9 @@ namespace PS3Sharp.Cell.PPU
                 return $"{Value128:X16}";
             }
         }
+
         //Fixed-Point Exception Register
-        //internal XERRegister XER;
-        internal struct XERRegister
+        internal struct XerRegister
         {
             internal const int SOBit = 31;
             internal const int OVBit = 30;
@@ -112,7 +112,7 @@ namespace PS3Sharp.Cell.PPU
 
             internal uint Raw;
 
-            internal void WriteCRField(CRNumber cr, uint value)
+            internal void WriteCrField(CrNumber cr, uint value)
             {
                 value &= 0xF;
                 int bit = 28 - ((int)cr * 4);  // CR Fields are reversed
@@ -121,20 +121,20 @@ namespace PS3Sharp.Cell.PPU
                 Raw |= value << bit;
             }
 
-            internal uint GetCRField(CRNumber cr)
+            internal uint GetCrField(CrNumber cr)
             {
                 int bit = 28 - ((int)cr * 4);  // CR Fields are reversed
                 return (Raw >> bit) & 0xF;
             }
 
-            internal void WriteCRBit(uint bit, uint value)
+            internal void WriteCrBit(uint bit, uint value)
             {       //bit number is in big endian
                 int position = (int)(31 - bit);
                 Raw &= ((uint)~(1 << position));
                 Raw |= (value << position);
             }
 
-            internal uint ReadCRBit(uint bit)
+            internal uint ReadCrBit(uint bit)
             {                 //bit number is in big endian
                 int position = (int)(31 - bit);
                 return (Raw >> position) & 1;
@@ -143,7 +143,7 @@ namespace PS3Sharp.Cell.PPU
 
         // The bits in the Condition Register are grouped into
         // eight 4-bit fields, named CR Field 0 (CR0), ..., CR Field 7 (CR7)
-        internal enum CRNumber
+        internal enum CrNumber
         {
             CR0 = 0,
             CR1 = 1,

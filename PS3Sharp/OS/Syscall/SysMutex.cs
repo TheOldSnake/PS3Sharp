@@ -1,4 +1,4 @@
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using PS3Sharp.OS.LV2;
@@ -20,7 +20,7 @@ namespace PS3Sharp.OS.Syscall
             _memoryManager = memoryManager;
         }
 
-        internal ulong SysMutexCreate(PPUThread ppu)
+        internal ulong SysMutexCreate(PpuThread ppu)
         {
             GuestPtr<BigEndian<uint>> id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             GuestPtr<SysMutexAttribute> attrib_ptr = ppu.ReadArg<GuestPtr<SysMutexAttribute>>(Arg1);
@@ -36,14 +36,14 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysMutexDestroy(PPUThread ppu)
+        internal ulong SysMutexDestroy(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
             _mutexes.TryRemove(id, out _);
             return CellOk;
         }
 
-        internal ulong SysMutexLock(PPUThread ppu)
+        internal ulong SysMutexLock(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
             ulong us_timeout = ppu.ReadArg<ulong>(Arg1);
@@ -59,7 +59,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal ulong SysMutexTryLock(PPUThread ppu)
+        internal ulong SysMutexTryLock(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
 
@@ -74,7 +74,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal ulong SysMutexUnlock(PPUThread ppu)
+        internal ulong SysMutexUnlock(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
 

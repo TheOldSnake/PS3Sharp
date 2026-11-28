@@ -1,46 +1,46 @@
 using PS3Sharp.Common;
-using static PS3Sharp.Cell.PPU.PPUThread;
+using static PS3Sharp.Cell.Ppu.PpuThread;
 
-namespace PS3Sharp.Cell.PPU.Interpreter
+namespace PS3Sharp.Cell.Ppu.Interpreter
 {
-    internal static unsafe partial class PPUInterpreter
+    internal static unsafe partial class PpuInterpreter
     {
 
         //Syscall
-        private static void SC(PPUInstruction instruction, PPUThread ppu)
+        private static void Sc(PpuInstruction instruction, PpuThread ppu)
         {
-            ppu.SyscallDispatcher.DispatchSyscall(ppu, instruction.LEV);
+            ppu.SyscallDispatcher.DispatchSyscall(ppu, instruction.Lev);
         }
 
-        private static void MFSPR(PPUInstruction instruction, PPUThread ppu)
+        private static void Mfspr(PpuInstruction instruction, PpuThread ppu)
         {
-            uint spr = ((instruction.SPR & 0x1F) << 5) | ((instruction.SPR >> 5) & 0x1F);
+            uint spr = ((instruction.Spr & 0x1F) << 5) | ((instruction.Spr >> 5) & 0x1F);
 
             switch (spr)
             {
-                case 0b0000000001: ppu.GPR[instruction.Rt].Value64 = ppu.State->XER.Raw; break;        //XER
-                case 0b0000001000: ppu.GPR[instruction.Rt].Value64 = ppu.State->LR; break;             //LR
-                case 0b0000001001: ppu.GPR[instruction.Rt].Value64 = ppu.State->CTR; break;            //CTR
-                case 0b0100000000: ppu.GPR[instruction.Rt].Value64 = ppu.State->VRSAVE; break;         //VRSAVE
+                case 0b0000000001: ppu.Gpr[instruction.Rt].Value64 = ppu.State->Xer.Raw; break;        //XER
+                case 0b0000001000: ppu.Gpr[instruction.Rt].Value64 = ppu.State->LR; break;             //LR
+                case 0b0000001001: ppu.Gpr[instruction.Rt].Value64 = ppu.State->Ctr; break;            //CTR
+                case 0b0100000000: ppu.Gpr[instruction.Rt].Value64 = ppu.State->VrSave; break;         //VRSAVE
                 default: throw new Exception($"Unknown SPR = {spr:B10}");
             }
         }
 
-        private static void MTSPR(PPUInstruction instruction, PPUThread ppu)
+        private static void Mtspr(PpuInstruction instruction, PpuThread ppu)
         {
-            uint spr = ((instruction.SPR & 0x1F) << 5) | ((instruction.SPR >> 5) & 0x1F);
+            uint spr = ((instruction.Spr & 0x1F) << 5) | ((instruction.Spr >> 5) & 0x1F);
 
             switch (spr)
             {
-                case 0b0000000001: ppu.State->XER.Raw = ppu.GPR[instruction.Rs].Value64; break;        //XER
-                case 0b0000001000: ppu.State->LR = ppu.GPR[instruction.Rs].Value32; break;             //LR
-                case 0b0000001001: ppu.State->CTR = ppu.GPR[instruction.Rs].Value64; break;            //CTR
-                case 0b0100000000: ppu.State->VRSAVE = ppu.GPR[instruction.Rs].Value32; break;         //VRSAVE
+                case 0b0000000001: ppu.State->Xer.Raw = ppu.Gpr[instruction.Rs].Value64; break;        //XER
+                case 0b0000001000: ppu.State->LR = ppu.Gpr[instruction.Rs].Value32; break;             //LR
+                case 0b0000001001: ppu.State->Ctr = ppu.Gpr[instruction.Rs].Value64; break;            //CTR
+                case 0b0100000000: ppu.State->VrSave = ppu.Gpr[instruction.Rs].Value32; break;         //VRSAVE
                 default: throw new Exception($"Unknown SPR = {spr:B10}");
             }
         }
 
-        private static void MFCR(PPUInstruction instruction, PPUThread ppu)
+        private static void Mfcr(PpuInstruction instruction, PpuThread ppu)
         {
             /*bool isOneField = ((instruction.Raw >> 20) & 1) == 1;
             if (isOneField) {
@@ -50,15 +50,15 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             }*/
 
             //mfcr
-            ppu.GPR[instruction.Rt].Value64 = ppu.State->CR.Raw;
+            ppu.Gpr[instruction.Rt].Value64 = ppu.State->CR.Raw;
         }
 
 
-        private static void MTCRF(PPUInstruction instruction, PPUThread ppu)
+        private static void Mtcrf(PpuInstruction instruction, PpuThread ppu)
         {
             bool isOneField = ((instruction.Raw >> 20) & 1) == 1;
             uint fxm = instruction.Fxm;
-            uint rs = ppu.GPR[instruction.Rs].Value32;
+            uint rs = ppu.Gpr[instruction.Rs].Value32;
 
             if (isOneField && uint.PopCount(fxm) > 1)
             {
@@ -69,23 +69,23 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             {
                 if (((fxm >> i) & 1) == 1)
                 {
-                    PPUThread.CRNumber cr = (PPUThread.CRNumber)(7 - i);
+                    PpuThread.CrNumber cr = (PpuThread.CrNumber)(7 - i);
                     uint value = (rs >> (i * 4)) & 0xF;
-                    ppu.State->CR.WriteCRField(cr, value);
+                    ppu.State->CR.WriteCrField(cr, value);
                 }
             }
         }
 
-        private static void MCRF(PPUInstruction instruction, PPUThread ppu)
+        private static void Mcrf(PpuInstruction instruction, PpuThread ppu)
         {
             //CR_BF = CR_BFA
-            uint bfa = ppu.State->CR.GetCRField((CRNumber)instruction.BFA);
-            ppu.State->CR.WriteCRField((CRNumber)instruction.BF, bfa);
+            uint bfa = ppu.State->CR.GetCrField((CrNumber)instruction.BFA);
+            ppu.State->CR.WriteCrField((CrNumber)instruction.Bf, bfa);
         }
 
-        private static void MFTB(PPUInstruction instruction, PPUThread ppu)
+        private static void Mftb(PpuInstruction instruction, PpuThread ppu)
         {
-            uint spr = ((instruction.SPR & 0x1F) << 5) | ((instruction.SPR >> 5) & 0x1F);
+            uint spr = ((instruction.Spr & 0x1F) << 5) | ((instruction.Spr >> 5) & 0x1F);
             //ulong value = Utility.GetCurrentTickSince1970() * 80;
             //ulong value = ppu.TB.Value64;
 
@@ -94,11 +94,11 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             switch (spr)
             {
                 case 0x10C:
-                    ppu.GPR[instruction.Rt].Value64 = value;
+                    ppu.Gpr[instruction.Rt].Value64 = value;
                     break;
 
                 case 0x10D:
-                    ppu.GPR[instruction.Rt].Value64 = value >> 32;
+                    ppu.Gpr[instruction.Rt].Value64 = value >> 32;
                     break;
 
                 default:

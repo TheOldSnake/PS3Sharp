@@ -2,18 +2,18 @@ using PS3Sharp.Common;
 using System.Diagnostics;
 using System.Numerics;
 using static PS3Sharp.Cell.Arguments;
-using static PS3Sharp.Cell.PPU.PPUThread;
+using static PS3Sharp.Cell.Ppu.PpuThread;
 
-namespace PS3Sharp.Cell.PPU.Interpreter
+namespace PS3Sharp.Cell.Ppu.Interpreter
 {
-    internal static unsafe partial class PPUInterpreter
+    internal static unsafe partial class PpuInterpreter
     {
         internal const uint Nop = 0x60000000;
         internal static Stopwatch stopwatch = new(); //debug
         internal static bool Log = false; //debug
         static bool lastBranch;         //debug
         static bool crash = false;
-        internal static void CrashAt(PPUThread ppu, uint address, bool printRegisters = false, bool printTrace = false, bool dumpMemory = false)
+        internal static void CrashAt(PpuThread ppu, uint address, bool printRegisters = false, bool printTrace = false, bool dumpMemory = false)
         {
             if (ppu.State->PC == address)
             {
@@ -51,7 +51,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             }
         }
 
-        internal static void Step(PPUThread ppu)
+        internal static void Step(PpuThread ppu)
         {
             //if (ppu.State->PC == 0x0005d918 || ppu.State->PC == 0x00876858) {
             //    ppu.State->PC = ppu.State->LR;
@@ -60,7 +60,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             //CrashAt(ppu, address: 0x0060b5b8, printRegisters: true, printTrace: false, dumpMemory: true);
 
 
-            PPUInstruction instruction;
+            PpuInstruction instruction;
             instruction.Raw = ppu.MemoryManager.ReadPPUInstruction(ppu.State->PC);
 
             ppu.AddTrace(ppu.State->PC, instruction);
@@ -86,20 +86,20 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             }
         }
 
-        internal static void PrintAllGPRs(PPUThread ppu)
+        internal static void PrintAllGPRs(PpuThread ppu)
         {
             for (int i = 0; i < 32; i++)
             {
-                Console.WriteLine($"GPR[{i}] = 0x{ppu.GPR[i].Value64:X16}");
+                Console.WriteLine($"GPR[{i}] = 0x{ppu.Gpr[i].Value64:X16}");
             }
 
             Console.WriteLine($"LR = 0x{ppu.State->LR:X8}");
             Console.WriteLine($"CR = 0x{ppu.State->CR.Raw:X8}");
-            Console.WriteLine($"CTR = 0x{ppu.State->CTR:X16}");
-            Console.WriteLine($"CA = 0x{ppu.State->XER.CA:X8}");
+            Console.WriteLine($"CTR = 0x{ppu.State->Ctr:X16}");
+            Console.WriteLine($"CA = 0x{ppu.State->Xer.CA:X8}");
         }
 
-        internal static void PrintCallstack(PPUThread ppu)
+        internal static void PrintCallstack(PpuThread ppu)
         {
             int length = ppu.CallStack.Count;
             int lastIndex = length - 1;
@@ -110,230 +110,1105 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             }
         }
 
-        private static void Execute(PPUInstruction instruction, PPUThread ppu)
+        private static void Execute(PpuInstruction instruction, PpuThread ppu)
         {
             switch (instruction.Op)
             {
-                case Op.Altivec: Altivec(instruction, ppu); break;
+                case Op.Altivec: 
+                    Altivec(instruction, ppu); 
+                    break;
 
-                case Op.MULLI: MULLI(instruction, ppu); break;
-                case Op.SUBFIC: SUBFIC(instruction, ppu); break;
-                case Op.CMPLI: CMPLI(instruction, ppu); break;
-                case Op.CMPI: CMPI(instruction, ppu); break;
-                case Op.ADDIC: ADDIC(instruction, ppu); break;
-                case Op.ADDIC_Record: ADDIC_Record(instruction, ppu); break;
-                case Op.ADDI: ADDI(instruction, ppu); break;
-                case Op.ADDIS: ADDIS(instruction, ppu); break;
-                case Op.BC: BC(instruction, ppu); break;
-                case Op.SC: SC(instruction, ppu); break;
-                case Op.Branch: Branch(instruction, ppu); break;
-                case Op.G13: Group13(instruction, ppu); break;
-                case Op.RLWIMI: RLWIMI(instruction, ppu); break;
-                case Op.RLWINM: RLWINM(instruction, ppu); break;
+                case Op.Mulli: 
+                    Mulli(instruction, ppu); 
+                    break;
 
-                case Op.RLWNM: RLWNM(instruction, ppu); break;
-                case Op.ORI: ORI(instruction, ppu); break;
-                case Op.ORIS: ORIS(instruction, ppu); break;
-                case Op.XORI: XORI(instruction, ppu); break;
-                case Op.XORIS: XORIS(instruction, ppu); break;
+                case Op.Subfic: 
+                    Subfic(instruction, ppu);
+                    break;
 
-                case Op.ANDI: ANDI(instruction, ppu); break;
-                case Op.ANDIS: ANDIS(instruction, ppu); break;
+                case Op.Cmpli: 
+                    Cmpli(instruction, ppu);
+                    break;
 
-                case Op.RotateLeft: RotateLeft(instruction, ppu); break;
-                case Op.G1F: Group1F(instruction, ppu); break;
-                case Op.G3B: Group3B(instruction, ppu); break;
-                case Op.G3F: Group3F(instruction, ppu); break;
+                case Op.Cmpi: 
+                    Cmpi(instruction, ppu); 
+                    break;
 
-                case Op.LWZ: LWZ(instruction, ppu); break;
-                case Op.LWZU: LWZU(instruction, ppu); break;
-                case Op.LBZ: LBZ(instruction, ppu); break;
-                case Op.LBZU: LBZU(instruction, ppu); break;
-                case Op.STW: STW(instruction, ppu); break;
-                case Op.STWU: STWU(instruction, ppu); break;
-                case Op.STB: STB(instruction, ppu); break;
-                case Op.STBU: STBU(instruction, ppu); break;
-                case Op.LHZ: LHZ(instruction, ppu); break;
-                case Op.LHZU: LHZU(instruction, ppu); break;
-                case Op.LHA: LHA(instruction, ppu); break;
-                case Op.LHAU: LHAU(instruction, ppu); break;
+                case Op.Addic: 
+                    Addic(instruction, ppu); 
+                    break;
 
-                case Op.STH: STH(instruction, ppu); break;
-                case Op.STHU: STHU(instruction, ppu); break;
-                case Op.LMW: LMW(instruction, ppu); break;
-                case Op.STMW: STMW(instruction, ppu); break;
+                case Op.AddicRecord:
+                    AddicRecord(instruction, ppu);
+                    break;
 
-                case Op.LFS: LFS(instruction, ppu); break;
-                case Op.LFSU: LFSU(instruction, ppu); break;
-                case Op.LFD: LFD(instruction, ppu); break;
-                case Op.LFDU: LFDU(instruction, ppu); break;
-                case Op.STFS: STFS(instruction, ppu); break;
-                case Op.STFSU: STFSU(instruction, ppu); break;
-                case Op.STFD: STFD(instruction, ppu); break;
-                case Op.STFDU: STFDU(instruction, ppu); break;
+                case Op.Addi: 
+                    Addi(instruction, ppu);
+                    break;
 
-                case Op.LD: LD(instruction, ppu); break;
-                case Op.STD: STD(instruction, ppu); break;
+                case Op.Addis: 
+                    Addis(instruction, ppu);
+                    break;
+
+                case Op.Bc: 
+                    Bc(instruction, ppu); 
+                    break;
+
+                case Op.Sc: 
+                    Sc(instruction, ppu);
+                    break;
+
+                case Op.Branch: 
+                    Branch(instruction, ppu); 
+                    break;
+
+                case Op.G13: 
+                    Group13(instruction, ppu); 
+                    break;
+
+                case Op.Rlwimi: 
+                    Rlwimi(instruction, ppu); 
+                    break;
+
+                case Op.Rlwinm: 
+                    Rlwinm(instruction, ppu);
+                    break;
+
+                case Op.Rlwnm: 
+                    Rlwnm(instruction, ppu);
+                    break;
+
+                case Op.Ori: 
+                    Ori(instruction, ppu); 
+                    break;
+
+                case Op.Oris: 
+                    Oris(instruction, ppu);
+                    break;
+
+                case Op.Xori: 
+                    Xori(instruction, ppu);
+                    break;
+
+                case Op.Xoris:
+                    Xoris(instruction, ppu);
+                    break;
+
+                case Op.Andi: 
+                    Andi(instruction, ppu); 
+                    break;
+
+                case Op.Andis: 
+                    Andis(instruction, ppu);
+                    break;
+
+                case Op.RotateLeft:
+                    RotateLeft(instruction, ppu);
+                    break;
+
+                case Op.G1F: 
+                    Group1F(instruction, ppu);
+                    break;
+
+                case Op.Lwz:
+                    Lwz(instruction, ppu);
+                    break;
+
+                case Op.Lwzu:
+                    Lwzu(instruction, ppu);
+                    break;
+
+                case Op.Lbz:
+                    Lbz(instruction, ppu);
+                    break;
+
+                case Op.Lbzu:
+                    Lbzu(instruction, ppu);
+                    break;
+
+                case Op.Stw:
+                    Stw(instruction, ppu);
+                    break;
+
+                case Op.Stwu:
+                    Stwu(instruction, ppu);
+                    break;
+
+                case Op.Stb:
+                    Stb(instruction, ppu);
+                    break;
+
+                case Op.Stbu:
+                    Stbu(instruction, ppu);
+                    break;
+
+                case Op.Lhz:
+                    Lhz(instruction, ppu);
+                    break;
+
+                case Op.Lhzu:
+                    Lhzu(instruction, ppu);
+                    break;
+
+                case Op.Lha:
+                    Lha(instruction, ppu);
+                    break;
+
+                case Op.Lhau:
+                    Lhau(instruction, ppu);
+                    break;
+
+                case Op.Sth:
+                    Sth(instruction, ppu);
+                    break;
+
+                case Op.Sthu:
+                    Sthu(instruction, ppu);
+                    break;
+
+                case Op.Lmw:
+                    Lmw(instruction, ppu);
+                    break;
+
+                case Op.Stmw:
+                    Stmw(instruction, ppu);
+                    break;
+
+                case Op.Lfs:
+                    Lfs(instruction, ppu);
+                    break;
+
+                case Op.Lfsu:
+                    Lfsu(instruction, ppu);
+                    break;
+
+                case Op.Lfd:
+                    Lfd(instruction, ppu);
+                    break;
+
+                case Op.Lfdu:
+                    Lfdu(instruction, ppu);
+                    break;
+
+                case Op.Stfs:
+                    Stfs(instruction, ppu);
+                    break;
+
+                case Op.Stfsu:
+                    Stfsu(instruction, ppu);
+                    break;
+
+                case Op.Stfd:
+                    Stfd(instruction, ppu);
+                    break;
+
+                case Op.Stfdu:
+                    Stfdu(instruction, ppu);
+                    break;
+
+                case Op.Ld:
+                    Ld(instruction, ppu);
+                    break;
+
+                case Op.G3B: 
+                    Group3B(instruction, ppu); 
+                    break;
+
+                case Op.G3F: 
+                    Group3F(instruction, ppu); 
+                    break;           
+
+                case Op.Std: 
+                    Std(instruction, ppu); 
+                    break;
 
                 default:
-                    //PrintTraceQueue();
-                    throw new Exception($"Unhandled PPU OP: 0x{instruction.Op:X} = {instruction.Op} -- raw = 0x{instruction.Raw:X8} r3 = {ppu.GPR[3]}");
+                    throw new Exception($"Unhandled PPU OP: 0x{instruction.Op:X} = {instruction.Op} -- raw = 0x{instruction.Raw:X8} r3 = {ppu.Gpr[3]}");
             }
         }
 
+        private static void Altivec(PpuInstruction instruction, PpuThread ppu)
+        {
+            switch ((G04)((uint)instruction.G04 & 0x3F))
+            {
+                // Check for instructions with 6 bits opcode first
+                case G04.Vsel: 
+                    Vsel(instruction, ppu);
+                    break;
 
-        private static void Group13(PPUInstruction instruction, PPUThread ppu)
+                case G04.Vprem: 
+                    Vprem(instruction, ppu); 
+                    break;
+
+                case G04.Vsldoi: 
+                    Vsldoi(instruction, ppu); 
+                    break;
+
+                case G04.Vmaddfp: 
+                    Vmaddfp(instruction, ppu); 
+                    break;
+
+                case G04.Vnmsubfp: 
+                    Vnmsubfp(instruction, ppu); 
+                    break;
+
+                default:
+                    switch (instruction.G04)
+                    {
+                        case G04.Vaddfp: 
+                            Vaddfp(instruction, ppu); 
+                            break;
+
+                        case G04.Vadduhm:
+                            Vadduhm(instruction, ppu);
+                            break;
+
+                        case G04.Vsubfp:
+                            Vsubfp(instruction, ppu);
+                            break;
+
+                        case G04.Vadduwm: 
+                            Vadduwm(instruction, ppu); 
+                            break;
+
+                        case G04.Vcmpequw: 
+                            Vcmpequw(instruction, ppu); 
+                            break;
+
+                        case G04.Vmrghw: 
+                            Vmrghw(instruction, ppu); 
+                            break;
+
+                        case G04.Vcmpeqfw:
+                            Vcmpeqfw(instruction, ppu);
+                            break;
+
+                        case G04.Vrefp: 
+                            Vrefp(instruction, ppu); 
+                            break;
+
+                        case G04.Vmulosh: 
+                            Vmulosh(instruction, ppu);
+                            break;
+
+                        case G04.Vrsqrtefp: 
+                            Vrsqrtefp(instruction, ppu); 
+                            break;
+
+                        case G04.Vslw: 
+                            Vslw(instruction, ppu); 
+                            break;
+
+                        case G04.Vmrglw: 
+                            Vmrglw(instruction, ppu);
+                            break;
+
+                        case G04.Vcmpgefp:
+                            Vcmpgefp(instruction, ppu);
+                            break;
+
+                        case G04.Vpkswss: 
+                            Vpkswss(instruction, ppu);
+                            break;
+
+                        case G04.Vupkhsh:
+                            Vupkhsh(instruction, ppu);
+                            break;
+
+                        case G04.Vspltw: 
+                            Vspltw(instruction, ppu); 
+                            break;
+
+                        case G04.Vcmpgtfp: 
+                            Vcmpgtfp(instruction, ppu);
+                            break;
+
+                        case G04.Vupklsh:
+                            Vupklsh(instruction, ppu);
+                            break;
+
+                        case G04.Vcfux: 
+                            Vcfux(instruction, ppu); 
+                            break;
+
+                        case G04.Vmulesh:
+                            Vmulesh(instruction, ppu);
+                            break;
+
+                        case G04.Vcfsx: 
+                            Vcfsx(instruction, ppu); 
+                            break;
+
+                        case G04.Vspltish: 
+                            Vspltish(instruction, ppu); 
+                            break;
+
+                        case G04.Vsraw: 
+                            Vsraw(instruction, ppu); 
+                            break;
+
+                        case G04.Vctuxs: 
+                            Vctuxs(instruction, ppu); 
+                            break;
+
+                        case G04.Vspltisw: 
+                            Vspltisw(instruction, ppu); 
+                            break;
+
+                        case G04.Vctsxs: 
+                            Vctsxs(instruction, ppu); 
+                            break;
+
+                        case G04.Vand: 
+                            Vand(instruction, ppu);
+                            break;
+
+                        case G04.Vmaxfp: 
+                            Vmaxfp(instruction, ppu);
+                            break;
+
+                        case G04.Vsubuhm: 
+                            Vsubuhm(instruction, ppu); 
+                            break;
+
+                        case G04.Vandc: 
+                            Vandc(instruction, ppu);
+                            break;
+
+                        case G04.Vminfp: 
+                            Vminfp(instruction, ppu); 
+                            break;
+
+                        case G04.Vor: 
+                            Vor(instruction, ppu); 
+                            break;
+
+                        case G04.Vxor: 
+                            Vxor(instruction, ppu);
+                            break;
+
+                        case G04.VcmpeqfwRc:
+                            Vcmpeqfw(instruction, ppu);
+                            break;
+
+                        case G04.Vnor: 
+                            Vnor(instruction, ppu);
+                            break;
+
+                        case G04.VcmpgefpRc:
+                            Vcmpgefp(instruction, ppu);
+                            break;
+
+                        case G04.VcmpgtfpRc:
+                            Vcmpgtfp(instruction, ppu);
+                            break;
+
+                        default: 
+                            throw new Exception($"Unhandled PPU Altivec OP: 0x{(uint)instruction.G04:X} = {instruction.G04} -- raw = 0x{instruction.Raw:X8}");
+                    }
+
+                    break;
+            }
+        }
+
+        private static void Group13(PpuInstruction instruction, PpuThread ppu)
         {
             switch (instruction.G13)
             {
-                case G13.MCRF: MCRF(instruction, ppu); break;
-                case G13.BCLR: BCLR(instruction, ppu); break;
-                case G13.ISYNC: /* ISYNC */ break;
+                case G13.Mcrf: 
+                    Mcrf(instruction, ppu); 
+                    break;
 
-                //Condition Register bit op
-                case G13.CRNOR: CRNOR(instruction, ppu); break;
-                case G13.CRANDC: CRANDC(instruction, ppu); break;
-                case G13.CRXOR: CRXOR(instruction, ppu); break;
-                case G13.CRNAND: CRNAND(instruction, ppu); break;
-                case G13.CRAND: CRAND(instruction, ppu); break;
-                case G13.CREQV: CREQV(instruction, ppu); break;
-                case G13.CRORC: CRORC(instruction, ppu); break;
-                case G13.CROR: CROR(instruction, ppu); break;
+                case G13.Bclr: 
+                    Bclr(instruction, ppu); 
+                    break;
 
-                case G13.BCCTR: BCCTR(instruction, ppu); break;
-                default: throw new Exception($"Unimplemented Opcode 0x13 Field = 0x{instruction.G1F:X} -- raw = 0x{instruction.Raw:X8}");
+                case G13.Crnor: 
+                    Crnor(instruction, ppu); 
+                    break;
+
+                case G13.Crandc: 
+                    Crandc(instruction, ppu); 
+                    break;
+
+                case G13.Isync:
+                    /* ISYNC */
+                    break;
+
+                case G13.Crxor: 
+                    Crxor(instruction, ppu); 
+                    break;
+
+                case G13.Crnand: 
+                    Crnand(instruction, ppu); 
+                    break;
+
+                case G13.Crand: 
+                    Crand(instruction, ppu); 
+                    break;
+
+                case G13.Creqv: 
+                    Creqv(instruction, ppu); 
+                    break;
+
+                case G13.Crorc: 
+                    Crorc(instruction, ppu); 
+                    break;
+
+                case G13.Cror: 
+                    Cror(instruction, ppu);
+                    break;
+
+                case G13.Bcctr: 
+                    Bcctr(instruction, ppu); 
+                    break;
+
+                default: 
+                    throw new Exception($"Unimplemented Opcode 0x13 Field = 0x{instruction.G1f:X} -- raw = 0x{instruction.Raw:X8}");
             }
         }
 
-        private static void Group1F(PPUInstruction instruction, PPUThread ppu)
+        private static void Group1F(PpuInstruction instruction, PpuThread ppu)
         {
-            switch (instruction.G1F)
+            switch (instruction.G1f)
             {
+                case G1f.Cmp:
+                    Cmp(instruction, ppu);
+                    break;
 
-                // String instructions
-                case G1F.LSWI:
-                case G1F.LSWX:
-                case G1F.STSWI:
-                case G1F.STSWX:
+                case G1f.Lvsl:
+                    Lvsl(instruction, ppu);
+                    break;
+
+                case G1f.Lvebx:
+                    Lvebx(instruction, ppu);
+                    break;
+
+                case G1f.Subfc:
+                    Subfc(instruction, ppu);
+                    break;
+
+                case G1f.Mulhdu:
+                    Mulhdu(instruction, ppu);
+                    break;
+
+                case G1f.Addc:
+                    Addc(instruction, ppu);
+                    break;
+
+                case G1f.Mulhwu:
+                    Mulhwu(instruction, ppu);
+                    break;
+
+                case G1f.Mfcr:
+                    Mfcr(instruction, ppu);
+                    break;
+
+                case G1f.Lwarx:
+                    Lwarx(instruction, ppu);
+                    break;
+
+                case G1f.Ldx:
+                    Ldx(instruction, ppu);
+                    break;
+
+                case G1f.Lwzx:
+                    Lwzx(instruction, ppu);
+                    break;
+
+                case G1f.Slw:
+                    Slw(instruction, ppu);
+                    break;
+
+                case G1f.Cntlzw:
+                    Cntlzw(instruction, ppu);
+                    break;
+
+                case G1f.Sld:
+                    Sld(instruction, ppu);
+                    break;
+
+                case G1f.And:
+                    And(instruction, ppu);
+                    break;
+
+                case G1f.Cmpl:
+                    Cmpl(instruction, ppu);
+                    break;
+
+                case G1f.Lvsr:
+                    Lvsr(instruction, ppu);
+                    break;
+
+                case G1f.Subf:
+                    Subf(instruction, ppu);
+                    break;
+
+                case G1f.Ldux:
+                    Ldux(instruction, ppu);
+                    break;
+
+                case G1f.Dcbst:
+                    /* Dcbst */
+                    break;
+
+                case G1f.Lwzux:
+                    Lwzux(instruction, ppu);
+                    break;
+
+                case G1f.Lvehx:
+                    Lvehx(instruction, ppu);
+                    break;
+
+                case G1f.Cntlzd:
+                    Cntlzd(instruction, ppu);
+                    break;
+
+                case G1f.Andc:
+                    Andc(instruction, ppu);
+                    break;
+
+                case G1f.Lvewx:
+                    Lvewx(instruction, ppu);
+                    break;
+
+                case G1f.Mulhd:
+                    Mulhd(instruction, ppu);
+                    break;
+
+                case G1f.Mulhw:
+                    Mulhw(instruction, ppu);
+                    break;
+
+                case G1f.Ldarx:
+                    Ldarx(instruction, ppu);
+                    break;
+
+                case G1f.Lbzx:
+                    Lbzx(instruction, ppu);
+                    break;
+
+                case G1f.Lvx:
+                    Lvx(instruction, ppu);
+                    break;
+
+                case G1f.Neg:
+                    Neg(instruction, ppu);
+                    break;
+
+                case G1f.Lbzux:
+                    Lbzux(instruction, ppu);
+                    break;
+
+                case G1f.Nor:
+                    Nor(instruction, ppu);
+                    break;
+
+                case G1f.Stvebx:
+                    Stvebx(instruction, ppu);
+                    break;
+
+                case G1f.Subfe:
+                    Subfe(instruction, ppu);
+                    break;
+
+                case G1f.Adde:
+                    Adde(instruction, ppu);
+                    break;
+
+                case G1f.Mtcrf:
+                    Mtcrf(instruction, ppu);
+                    break;
+
+                case G1f.Stdx:
+                    Stdx(instruction, ppu);
+                    break;
+
+                case G1f.Stwcx:
+                    Stwcx(instruction, ppu);
+                    break;
+
+                case G1f.Stwx:
+                    Stwx(instruction, ppu);
+                    break;
+
+                case G1f.Stvehx:
+                    Stvehx(instruction, ppu);
+                    break;
+
+                case G1f.Stdux:
+                    Stdux(instruction, ppu);
+                    break;
+
+                case G1f.Stwux:
+                    Stwux(instruction, ppu);
+                    break;
+
+                case G1f.Stvewx:
+                    Stvewx(instruction, ppu);
+                    break;
+
+                case G1f.Subfze:
+                    Subfze(instruction, ppu);
+                    break;
+
+                case G1f.Addze:
+                    Addze(instruction, ppu);
+                    break;
+
+                case G1f.Stdcx:
+                    Stdcx(instruction, ppu);
+                    break;
+
+                case G1f.Stbx:
+                    Stbx(instruction, ppu);
+                    break;
+
+                case G1f.Stvx:
+                    Stvx(instruction, ppu);
+                    break;
+
+                case G1f.Subfme:
+                    Subfme(instruction, ppu);
+                    break;
+
+                case G1f.Mulld:
+                    Mulld(instruction, ppu);
+                    break;
+
+                case G1f.Addme:
+                    Addme(instruction, ppu);
+                    break;
+
+                case G1f.Mullw:
+                    Mullw(instruction, ppu);
+                    break;
+
+                case G1f.Dcbtst:
+                    /* Dcbtst */
+                    break;
+
+                case G1f.Stbux:
+                    Stbux(instruction, ppu);
+                    break;
+
+                case G1f.Add:
+                    Add(instruction, ppu);
+                    break;
+
+                case G1f.Dcbt:
+                    /* Dcbt */
+                    break;
+
+                case G1f.Lhzx:
+                    Lhzx(instruction, ppu);
+                    break;
+
+                case G1f.Eqv:
+                    Eqv(instruction, ppu);
+                    break;
+
+                case G1f.Lhzux:
+                    Lhzux(instruction, ppu);
+                    break;
+
+                case G1f.Xor:
+                    Xor(instruction, ppu);
+                    break;
+
+                case G1f.Mfspr:
+                    Mfspr(instruction, ppu);
+                    break;
+
+                case G1f.Lwax:
+                    Lwax(instruction, ppu);
+                    break;
+
+                case G1f.Lhax:
+                    Lhax(instruction, ppu);
+                    break;
+
+                case G1f.Mftb:
+                    Mftb(instruction, ppu);
+                    break;
+
+                case G1f.Lwaux:
+                    Lwaux(instruction, ppu);
+                    break;
+
+                case G1f.Lhaux:
+                    Lhaux(instruction, ppu);
+                    break;
+
+                case G1f.Sthx:
+                    Sthx(instruction, ppu);
+                    break;
+
+                case G1f.Orc:
+                    Orc(instruction, ppu);
+                    break;
+
+                case G1f.Sthux:
+                    Sthux(instruction, ppu);
+                    break;
+
+                case G1f.Or:
+                    Or(instruction, ppu);
+                    break;
+
+                case G1f.Divdu:
+                    Divdu(instruction, ppu);
+                    break;
+
+                case G1f.Divwu:
+                    Divwu(instruction, ppu);
+                    break;
+
+                case G1f.Mtspr:
+                    Mtspr(instruction, ppu);
+                    break;
+
+                case G1f.Nand:
+                    Nand(instruction, ppu);
+                    break;
+
+                case G1f.Divd:
+                    Divd(instruction, ppu);
+                    break;
+
+                case G1f.Divw:
+                    Divw(instruction, ppu);
+                    break;
+
+                case G1f.Lvlx:
+                    Lvlx(instruction, ppu);
+                    break;
+
+                case G1f.Addco:
+                    Addc(instruction, ppu);
+                    break;
+
+                case G1f.Lswx:
                     Console.WriteLine($"[{ppu.ThreadName}] [PPUInterpreter] Ignored string instruction: 0x{instruction.Raw:X8}");
                     break;
 
-                case G1F.CMP: CMP(instruction, ppu); break;
-                case G1F.LVEBX: LVEBX(instruction, ppu); break;
-                case G1F.LVSL: LVSL(instruction, ppu); break;
-                case G1F.LVSR: LVSR(instruction, ppu); break;
-                case G1F.SUBFC: SUBFC(instruction, ppu); break;
-                case G1F.MULHDU: MULHDU(instruction, ppu); break;
-                case G1F.ADDC: ADDC(instruction, ppu); break;
-                case G1F.ADDCO: ADDC(instruction, ppu); break;
-                case G1F.MULHWU: MULHWU(instruction, ppu); break;
-                case G1F.MFCR: MFCR(instruction, ppu); break;
-                case G1F.LWARX: LWARX(instruction, ppu); break;
-                case G1F.LDX: LDX(instruction, ppu); break;
-                case G1F.LWZX: LWZX(instruction, ppu); break;
-                case G1F.SLW: SLW(instruction, ppu); break;
-                case G1F.CNTLZW: CNTLZW(instruction, ppu); break;
-                case G1F.SLD: SLD(instruction, ppu); break;
-                case G1F.AND: AND(instruction, ppu); break;
-                case G1F.CMPL: CMPL(instruction, ppu); break;
-                case G1F.SUBF: SUBF(instruction, ppu); break;
-                case G1F.SUBFO: SUBF(instruction, ppu); break;
-                case G1F.LDUX: LDUX(instruction, ppu); break;
-                case G1F.DCbst: /* dcbst */ break;
-                case G1F.LWZUX: LWZUX(instruction, ppu); break;
-                case G1F.LVEHX: LVEHX(instruction, ppu); break;
-                case G1F.CNTLZD: CNTLZD(instruction, ppu); break;
-                case G1F.ANDC: ANDC(instruction, ppu); break;
-                case G1F.LVEWX: LVEWX(instruction, ppu); break;
-                case G1F.MULHD: MULHD(instruction, ppu); break;
-                case G1F.MULHW: MULHW(instruction, ppu); break;
-                case G1F.LDARX: LDARX(instruction, ppu); break;
-                case G1F.LBZX: LBZX(instruction, ppu); break;
-                case G1F.LVX: LVX(instruction, ppu); break;
-                case G1F.NEG: NEG(instruction, ppu); break;
-                case G1F.LBZUX: LBZUX(instruction, ppu); break;
-                case G1F.NOR: NOR(instruction, ppu); break;
-                case G1F.STVEBX: STVEBX(instruction, ppu); break;
-                case G1F.SUBFE: SUBFE(instruction, ppu); break;
-                case G1F.ADDE: ADDE(instruction, ppu); break;
-                case G1F.MTCRF: MTCRF(instruction, ppu); break;
-                case G1F.STDX: STDX(instruction, ppu); break;
-                case G1F.STWCX: STWCX(instruction, ppu); break;
-                case G1F.STWX: STWX(instruction, ppu); break;
-                case G1F.STVEHX: STVEHX(instruction, ppu); break;
-                case G1F.STDUX: STDUX(instruction, ppu); break;
-                case G1F.STWUX: STWUX(instruction, ppu); break;
-                case G1F.STVEWX: STVEWX(instruction, ppu); break;
-                case G1F.SUBFZE: SUBFZE(instruction, ppu); break;
-                case G1F.ADDZE: ADDZE(instruction, ppu); break;
-                case G1F.STDCX: STDCX(instruction, ppu); break;
-                case G1F.STBX: STBX(instruction, ppu); break;
-                case G1F.STVX: STVX(instruction, ppu); break;
-                case G1F.SUBFME: SUBFME(instruction, ppu); break;
-                case G1F.MULLD: MULLD(instruction, ppu); break;
-                case G1F.ADDME: ADDME(instruction, ppu); break;
-                case G1F.MULLW: MULLW(instruction, ppu); break;
-                case G1F.Dcbtst: /* dcbtst */ break;
-                case G1F.STBUX: STBUX(instruction, ppu); break;
-                case G1F.ADD: ADD(instruction, ppu); break;
-                case G1F.ADDO: ADD(instruction, ppu); break;
-                case G1F.Dcbt: /* dcbt */ break;
-                case G1F.LHZX: LHZX(instruction, ppu); break;
-                case G1F.EQV: EQV(instruction, ppu); break;
-                case G1F.LHZUX: LHZUX(instruction, ppu); break;
-                case G1F.XOR: XOR(instruction, ppu); break;
-                case G1F.MFSPR: MFSPR(instruction, ppu); break;
-                case G1F.LWAX: LWAX(instruction, ppu); break;
-                case G1F.LHAX: LHAX(instruction, ppu); break;
-                case G1F.MFTB: MFTB(instruction, ppu); break;
-                case G1F.LWAUX: LWAUX(instruction, ppu); break;
-                case G1F.LHAUX: LHAUX(instruction, ppu); break;
-                case G1F.STHX: STHX(instruction, ppu); break;
-                case G1F.ORC: ORC(instruction, ppu); break;
-                case G1F.STHUX: STHUX(instruction, ppu); break;
-                case G1F.OR: OR(instruction, ppu); break;
-                case G1F.DIVDU: DIVDU(instruction, ppu); break;
-                case G1F.DIVWU: DIVWU(instruction, ppu); break;
-                case G1F.MTSPR: MTSPR(instruction, ppu); break;
-                case G1F.NAND: NAND(instruction, ppu); break;
-                case G1F.DIVD: DIVD(instruction, ppu); break;
-                case G1F.DIVW: DIVW(instruction, ppu); break;
-                case G1F.LVLX: LVLX(instruction, ppu); break;
-                case G1F.LWBRX: LWBRX(instruction, ppu); break;
-                case G1F.LFSX: LFSX(instruction, ppu); break;
-                case G1F.SRW: SRW(instruction, ppu); break;
-                case G1F.SRD: SRD(instruction, ppu); break;
-                case G1F.LVRX: LVRX(instruction, ppu); break;
-                case G1F.LFSUX: LFSUX(instruction, ppu); break;
-                case G1F.Sync: /* Sync */ break;
-                case G1F.LFDX: LFDX(instruction, ppu); break;
-                case G1F.LFDUX: LFDUX(instruction, ppu); break;
-                case G1F.STWBRX: STWBRX(instruction, ppu); break;
-                case G1F.STFSX: STFSX(instruction, ppu); break;
-                case G1F.STFSUX: STFSUX(instruction, ppu); break;
-                case G1F.STFDX: STFDX(instruction, ppu); break;
-                case G1F.STFDUX: STFDUX(instruction, ppu); break;
-                case G1F.LHBRX: LHBRX(instruction, ppu); break;
-                case G1F.SRAW: SRAW(instruction, ppu); break;
-                case G1F.SRAD: SRAD(instruction, ppu); break;
-                case G1F.SRAWI: SRAWI(instruction, ppu); break;
-                case G1F.SRADI: SRADI(instruction, ppu); break;
-                case G1F.SRADI_RC: SRADI(instruction, ppu); break;
-                case G1F.EIEIO: /* EIEIO */ break;
-                case G1F.STHBRX: STHBRX(instruction, ppu); break;
-                case G1F.EXTSH: EXTSH(instruction, ppu); break;
-                case G1F.EXTSB: EXTSB(instruction, ppu); break;
-                case G1F.EXTSW: EXTSW(instruction, ppu); break;
-                case G1F.STFIWX: STFIWX(instruction, ppu); break;
-                case G1F.DCBZ: DCBZ(instruction, ppu); break;
+                case G1f.Lwbrx:
+                    Lwbrx(instruction, ppu);
+                    break;
+
+                case G1f.Lfsx:
+                    Lfsx(instruction, ppu);
+                    break;
+
+                case G1f.Srw:
+                    Srw(instruction, ppu);
+                    break;
+
+                case G1f.Srd:
+                    Srd(instruction, ppu);
+                    break;
+
+                case G1f.Lvrx:
+                    Lvrx(instruction, ppu);
+                    break;
+
+                case G1f.Subfo:
+                    Subf(instruction, ppu);
+                    break;
+
+                case G1f.Lfsux:
+                    Lfsux(instruction, ppu);
+                    break;
+
+                case G1f.Lswi:
+                    Console.WriteLine($"[{ppu.ThreadName}] [PPUInterpreter] Ignored string instruction: 0x{instruction.Raw:X8}");
+                    break;
+
+                case G1f.Sync:
+                    /* Sync */
+                    break;
+
+                case G1f.Lfdx:
+                    Lfdx(instruction, ppu);
+                    break;
+
+                case G1f.Lfdux:
+                    Lfdux(instruction, ppu);
+                    break;
+
+                case G1f.Stswx:
+                    Console.WriteLine($"[{ppu.ThreadName}] [PPUInterpreter] Ignored string instruction: 0x{instruction.Raw:X8}");
+                    break;
+
+                case G1f.Stwbrx:
+                    Stwbrx(instruction, ppu);
+                    break;
+
+                case G1f.Stfsx:
+                    Stfsx(instruction, ppu);
+                    break;
+
+                case G1f.Stfsux:
+                    Stfsux(instruction, ppu);
+                    break;
+
+                case G1f.Stswi:
+                    Console.WriteLine($"[{ppu.ThreadName}] [PPUInterpreter] Ignored string instruction: 0x{instruction.Raw:X8}");
+                    break;
+
+                case G1f.Stfdx:
+                    Stfdx(instruction, ppu);
+                    break;
+
+                case G1f.Stfdux:
+                    Stfdux(instruction, ppu);
+                    break;
+
+                case G1f.Addo:
+                    Add(instruction, ppu);
+                    break;
+
+                case G1f.Lhbrx:
+                    Lhbrx(instruction, ppu);
+                    break;
+
+                case G1f.Sraw:
+                    Sraw(instruction, ppu);
+                    break;
+
+                case G1f.Srad:
+                    Srad(instruction, ppu);
+                    break;
+
+                case G1f.Srawi:
+                    Srawi(instruction, ppu);
+                    break;
+
+                case G1f.Sradi:
+                    Sradi(instruction, ppu);
+                    break;
+
+                case G1f.SradiRc:
+                    Sradi(instruction, ppu);
+                    break;
+
+                case G1f.Eieio:
+                    /* Eieio */
+                    break;
+
+                case G1f.Sthbrx:
+                    Sthbrx(instruction, ppu);
+                    break;
+
+                case G1f.Extsh:
+                    Extsh(instruction, ppu);
+                    break;
+
+                case G1f.Extsb:
+                    Extsb(instruction, ppu);
+                    break;
+
+                case G1f.Stfiwx:
+                    Stfiwx(instruction, ppu);
+                    break;
+
+                case G1f.Extsw:
+                    Extsw(instruction, ppu);
+                    break;
+
+                case G1f.Dcbz:
+                    Dcbz(instruction, ppu);
+                    break;
 
                 default:
-                    // PrintTraceQueue();
-                    throw new Exception($"Unimplemented Opcode 0x1F Field = 0x{instruction.G1F:X} = {instruction.G1F} -- raw = 0x{instruction.Raw:X8}");
+                    throw new Exception($"Unimplemented Opcode 0x1F Field = 0x{instruction.G1f:X} = {instruction.G1f} -- raw = 0x{instruction.Raw:X8}");
             }
         }
 
-        private static void UpdateCRRegister(ulong a, ulong b, PPUThread.CRNumber cr, PPUThread ppu)
+        private static void Group3B(PpuInstruction instruction, PpuThread ppu)
+        {
+            // Single float instructions
+
+            switch (instruction.G3b)
+            {
+                case G3b.Fdivs: 
+                    Fdivs(instruction, ppu); 
+                    break;
+
+                case G3b.Fsubs: 
+                    Fsubs(instruction, ppu);
+                    break;
+
+                case G3b.Fadds: 
+                    Fadds(instruction, ppu); 
+                    break;
+
+                case G3b.Fsqrts: 
+                    Fsqrts(instruction, ppu); 
+                    break;
+
+                case G3b.Fres: 
+                    Fres(instruction, ppu); 
+                    break;
+
+                case G3b.Fmuls:
+                    Fmuls(instruction, ppu); 
+                    break;
+
+                case G3b.Frsqrtes: 
+                    Frsqrtes(instruction, ppu); 
+                    break;
+
+                case G3b.Fmsubs: 
+                    Fmsubs(instruction, ppu); 
+                    break;
+
+                case G3b.Fmadds: 
+                    Fmadds(instruction, ppu); 
+                    break;
+
+                case G3b.Fnmsubs: 
+                    Fnmsubs(instruction, ppu); 
+                    break;
+
+                case G3b.Fnmadds: 
+                    Fnmadds(instruction, ppu); 
+                    break;
+
+
+                default: 
+                    throw new Exception($"Unimplemented Opcode 0x3B Field = 0x{instruction.G3b:X} = {instruction.G3b} -- raw = 0x{instruction.Raw:X8}");
+            }
+        }
+
+        private static void Group3F(PpuInstruction instruction, PpuThread ppu)
+        {
+            // Double float instructions
+
+            // First check for instructions with FRC field (where opcode is 5 bits only)
+
+            switch ((G3f)((uint)instruction.G3f & 0x1F))
+            {
+                case G3f.Fsel: 
+                    Fsel(instruction, ppu); 
+                    break;
+
+                case G3f.Fre:
+                    Fre(instruction, ppu);
+                    break;
+
+                case G3f.Fmul:
+                    Fmul(instruction, ppu); 
+                    break;
+
+                case G3f.Frsqrte: 
+                    Frsqrte(instruction, ppu);
+                    break;
+
+                case G3f.Fmsub: 
+                    Fmsub(instruction, ppu); 
+                    break;
+
+                case G3f.Fmadd: 
+                    Fmadd(instruction, ppu);
+                    break;
+
+                case G3f.Fnmsub: 
+                    Fnmsub(instruction, ppu); 
+                    break;
+
+                case G3f.Fnmadd: 
+                    Fnmadd(instruction, ppu); 
+                    break;
+
+                default:
+                    switch (instruction.G3f)
+                    {
+                        case G3f.Fcmpu:
+                            Fcmpu(instruction, ppu);
+                            break;
+
+                        case G3f.Frsp: 
+                            Frsp(instruction, ppu); 
+                            break;
+
+                        case G3f.Fctiw: 
+                            Fctiw(instruction, ppu); 
+                            break;
+
+                        case G3f.Fctiwz: 
+                            Fctiwz(instruction, ppu);
+                            break;
+
+                        case G3f.Fdiv: 
+                            Fdiv(instruction, ppu); 
+                            break;
+
+                        case G3f.Fsub: 
+                            Fsub(instruction, ppu); 
+                            break;
+
+                        case G3f.Fadd:
+                            Fadd(instruction, ppu); 
+                            break;
+
+                        case G3f.Fsqrt: 
+                            Fsqrt(instruction, ppu); 
+                            break;
+
+                        case G3f.Fcmpo: 
+                            Fcmpo(instruction, ppu);
+                            break;
+
+                        case G3f.Fneg: 
+                            Fneg(instruction, ppu); 
+                            break;
+
+                        case G3f.Fmr:
+                            Fmr(instruction, ppu);
+                            break;
+
+                        case G3f.Mtfsfi: 
+                            Mtfsfi(instruction, ppu);
+                            break;
+
+                        case G3f.Fnabs: 
+                            Fnabs(instruction, ppu); 
+                            break;
+
+                        case G3f.Fabs: 
+                            Fabs(instruction, ppu); 
+                            break;
+
+                        case G3f.Mffs: 
+                            Mffs(instruction, ppu);
+                            break;
+
+                        case G3f.Mtfsf: 
+                            Mtfsf(instruction, ppu); 
+                            break;
+
+                        case G3f.Fctid: 
+                            Fctid(instruction, ppu);
+                            break;
+
+                        case G3f.Fctidz: 
+                            Fctidz(instruction, ppu); 
+                            break;
+
+                        case G3f.Fcfid: 
+                            Fcfid(instruction, ppu); 
+                            break;
+
+                        default: 
+                            throw new Exception($"Unimplemented Opcode 0x3F Field = 0x{instruction.G3f:X} = {instruction.G3f} raw = {instruction.Raw:X}");
+                    }
+
+                    break;
+            }
+        }
+
+        private static void UpdateCRRegister(ulong a, ulong b, PpuThread.CrNumber cr, PpuThread ppu)
         {
             //Compare a with b and set CR value based on the result
             uint result;
@@ -351,10 +1226,10 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             }
 
             //result |= (ppu.XER.SO);
-            ppu.State->CR.WriteCRField(cr, result);
+            ppu.State->CR.WriteCrField(cr, result);
         }
 
-        private static void UpdateCRRegister(long a, long b, PPUThread.CRNumber cr, PPUThread ppu)
+        private static void UpdateCRRegister(long a, long b, PpuThread.CrNumber cr, PpuThread ppu)
         {
             //Compare a with b and set CR value based on the result
             uint result;
@@ -372,10 +1247,10 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             }
 
             //result |= (ppu.XER.SO);
-            ppu.State->CR.WriteCRField(cr, result);
+            ppu.State->CR.WriteCrField(cr, result);
         }
 
-        private static void UpdateCRRegister(double a, double b, PPUThread.CRNumber cr, PPUThread ppu)
+        private static void UpdateCRRegister(double a, double b, PpuThread.CrNumber cr, PpuThread ppu)
         {
             //Compare a with b and set CR value based on the result
             uint result;
@@ -397,10 +1272,10 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             }
 
             //result |= (ppu.XER.SO);
-            ppu.State->CR.WriteCRField(cr, result);
+            ppu.State->CR.WriteCrField(cr, result);
         }
 
-        private static void Branch(PPUInstruction instruction, PPUThread ppu)
+        private static void Branch(PpuInstruction instruction, PpuThread ppu)
         {
             // Branch L form 
 
@@ -431,7 +1306,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
         }
 
         // Helper for conditional branches
-        internal static bool TestBranchCondition(uint bo, uint bi, PPUThread ppu)
+        private static bool TestBranchCondition(uint bo, uint bi, PpuThread ppu)
         {
             //Based on PPC manual page 34
 
@@ -447,26 +1322,26 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             bool ctr_condition = true;
             if (bit2 == 0)
             {
-                ppu.State->CTR--;
-                ctr_condition = bit1 == 1 ? (ppu.State->CTR == 0) : (ppu.State->CTR != 0);
+                ppu.State->Ctr--;
+                ctr_condition = bit1 == 1 ? (ppu.State->Ctr == 0) : (ppu.State->Ctr != 0);
             }
 
             //CR Condition
             bool cr_condition = true;
             if (bit4 == 0)
             {
-                uint cr_bi_bit = ppu.State->CR.ReadCRBit(bi);
+                uint cr_bi_bit = ppu.State->CR.ReadCrBit(bi);
                 cr_condition = cr_bi_bit == bit3;
             }
 
             return ctr_condition && cr_condition;
         }
 
-        internal static void BC(PPUInstruction instruction, PPUThread ppu)
+        private static void Bc(PpuInstruction instruction, PpuThread ppu)
         {    //Branch Conditional
             bool lk = (instruction.Raw & 1) == 1;
             bool aa = ((instruction.Raw >> 1) & 1) == 1;
-            int bd = (int)(short)(instruction.BD << 2);
+            int bd = (int)(short)(instruction.Bd << 2);
             long bd_signExtend = (long)(int)((bd << 6) >> 6);       //singed 32-bits
             long currentPC = ppu.State->PC - 4;                     //Address of this opcode
             long target = bd_signExtend;
@@ -494,8 +1369,9 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             }
         }
 
-        internal static void BCLR(PPUInstruction instruction, PPUThread ppu)
-        { //Branch Conditional to link register
+        private static void Bclr(PpuInstruction instruction, PpuThread ppu)
+        {
+            // Branch Conditional to link register
             bool lk = (instruction.Raw & 1) == 1;
             long currentPC = ppu.State->PC - 4;  //Not needed
             ulong target = ppu.State->LR;
@@ -514,11 +1390,12 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             }
         }
 
-        internal static void BCCTR(PPUInstruction instruction, PPUThread ppu)
-        { //Branch Conditional to CTR
+        private static void Bcctr(PpuInstruction instruction, PpuThread ppu)
+        {
+            // Branch Conditional to CTR
             bool lk = (instruction.Raw & 1) == 1;
             long currentPC = ppu.State->PC - 4;  //Not needed
-            ulong target = ppu.State->CTR;
+            ulong target = ppu.State->Ctr;
 
             if (lk)
             {
@@ -534,48 +1411,48 @@ namespace PS3Sharp.Cell.PPU.Interpreter
         }
 
         // Compare instructions
-        internal static void CMPI(PPUInstruction instruction, PPUThread ppu)
+        private static void Cmpi(PpuInstruction instruction, PpuThread ppu)
         {
             bool l = ((instruction.Raw >> 21) & 0x1) == 1;
             uint bf = ((instruction.Raw >> 23) & 0x7);
-            long si64 = instruction.SI_64;
+            long si64 = instruction.Si64;
             long a;
 
             if (l)
             {
-                a = ppu.GPR[instruction.Ra].SValue64;
+                a = ppu.Gpr[instruction.Ra].SValue64;
             }
             else
             {
-                a = ppu.GPR[instruction.Ra].SValue32;
+                a = ppu.Gpr[instruction.Ra].SValue32;
             }
 
             //Console.WriteLine($"bf = {bf} si = {si64} r{instruction.Ra} a = {a:X}");
-            UpdateCRRegister(a, si64, (PPUThread.CRNumber)bf, ppu);
+            UpdateCRRegister(a, si64, (PpuThread.CrNumber)bf, ppu);
         }
 
-        internal static void CMPLI(PPUInstruction instruction, PPUThread ppu)
+        private static void Cmpli(PpuInstruction instruction, PpuThread ppu)
         {
             bool l = ((instruction.Raw >> 21) & 0x1) == 1;
             uint bf = ((instruction.Raw >> 23) & 0x7);
-            ulong ui = instruction.UI;
+            ulong ui = instruction.Ui;
 
             ulong a;
             if (l)
             {
-                a = ppu.GPR[instruction.Ra].Value64;
+                a = ppu.Gpr[instruction.Ra].Value64;
             }
             else
             {
                 //no sign extension
-                a = ppu.GPR[instruction.Ra].Value32;
+                a = ppu.Gpr[instruction.Ra].Value32;
             }
 
             //Console.WriteLine($"bf = {bf} r{instruction.Ra} a = {a:X}");
-            UpdateCRRegister(a, ui, (PPUThread.CRNumber)bf, ppu);
+            UpdateCRRegister(a, ui, (PpuThread.CrNumber)bf, ppu);
         }
 
-        internal static void CMPL(PPUInstruction instruction, PPUThread ppu)
+        private static void Cmpl(PpuInstruction instruction, PpuThread ppu)
         {
             bool l = ((instruction.Raw >> 21) & 0x1) == 1;
             uint bf = ((instruction.Raw >> 23) & 0x7);
@@ -584,21 +1461,21 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             ulong b;
             if (l)
             {
-                a = ppu.GPR[instruction.Ra].Value64;
-                b = ppu.GPR[instruction.Rb].Value64;
+                a = ppu.Gpr[instruction.Ra].Value64;
+                b = ppu.Gpr[instruction.Rb].Value64;
             }
             else
             {
                 //no sign extension
-                a = ppu.GPR[instruction.Ra].Value32;
-                b = ppu.GPR[instruction.Rb].Value32;
+                a = ppu.Gpr[instruction.Ra].Value32;
+                b = ppu.Gpr[instruction.Rb].Value32;
             }
 
             //Console.WriteLine($"bf = {bf} r{instruction.Ra} a = {a:X}");
-            UpdateCRRegister(a, b, (PPUThread.CRNumber)bf, ppu);
+            UpdateCRRegister(a, b, (PpuThread.CrNumber)bf, ppu);
         }
 
-        internal static void CMP(PPUInstruction instruction, PPUThread ppu)
+        private static void Cmp(PpuInstruction instruction, PpuThread ppu)
         {
             bool l = ((instruction.Raw >> 21) & 0x1) == 1;
             uint bf = ((instruction.Raw >> 23) & 0x7);
@@ -607,73 +1484,73 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             long b;
             if (l)
             {
-                a = ppu.GPR[instruction.Ra].SValue64;
-                b = ppu.GPR[instruction.Rb].SValue64;
+                a = ppu.Gpr[instruction.Ra].SValue64;
+                b = ppu.Gpr[instruction.Rb].SValue64;
             }
             else
             {
                 //Sign extended
-                a = ppu.GPR[instruction.Ra].SValue32;
-                b = ppu.GPR[instruction.Rb].SValue32;
+                a = ppu.Gpr[instruction.Ra].SValue32;
+                b = ppu.Gpr[instruction.Rb].SValue32;
             }
 
-            UpdateCRRegister(a, b, (PPUThread.CRNumber)bf, ppu);
+            UpdateCRRegister(a, b, (PpuThread.CrNumber)bf, ppu);
         }
 
         // Sign Extension instructions
-        private static void EXTSB(PPUInstruction instruction, PPUThread ppu)
+        private static void Extsb(PpuInstruction instruction, PpuThread ppu)
         {
-            ppu.GPR[instruction.Ra].SValue64 = ppu.GPR[instruction.Rs].SValue8;
+            ppu.Gpr[instruction.Ra].SValue64 = ppu.Gpr[instruction.Rs].SValue8;
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.Gpr[instruction.Ra].SValue64, 0, PpuThread.CrNumber.CR0, ppu);
             }
         }
 
-        private static void EXTSH(PPUInstruction instruction, PPUThread ppu)
+        private static void Extsh(PpuInstruction instruction, PpuThread ppu)
         {
-            ppu.GPR[instruction.Ra].SValue64 = ppu.GPR[instruction.Rs].SValue16;
+            ppu.Gpr[instruction.Ra].SValue64 = ppu.Gpr[instruction.Rs].SValue16;
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.Gpr[instruction.Ra].SValue64, 0, PpuThread.CrNumber.CR0, ppu);
             }
         }
 
-        private static void EXTSW(PPUInstruction instruction, PPUThread ppu)
+        private static void Extsw(PpuInstruction instruction, PpuThread ppu)
         {
-            ppu.GPR[instruction.Ra].SValue64 = ppu.GPR[instruction.Rs].SValue32;
+            ppu.Gpr[instruction.Ra].SValue64 = ppu.Gpr[instruction.Rs].SValue32;
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].SValue64, 0, PPUThread.CRNumber.CR0, ppu);
+                UpdateCRRegister(ppu.Gpr[instruction.Ra].SValue64, 0, PpuThread.CrNumber.CR0, ppu);
             }
         }
 
-        private static void CNTLZD(PPUInstruction instruction, PPUThread ppu)
+        private static void Cntlzd(PpuInstruction instruction, PpuThread ppu)
         {
-            ulong value = ppu.GPR[instruction.Rs].Value64;
+            ulong value = ppu.Gpr[instruction.Rs].Value64;
             uint zeroesCount = (uint)BitOperations.LeadingZeroCount(value); // Use Intrinsic
-            ppu.GPR[instruction.Ra].Value64 = zeroesCount;
+            ppu.Gpr[instruction.Ra].Value64 = zeroesCount;
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].Value64, 0, PPUThread.CRNumber.CR0, ppu); // Unsigned compare
+                UpdateCRRegister(ppu.Gpr[instruction.Ra].Value64, 0, PpuThread.CrNumber.CR0, ppu); // Unsigned compare
             }
         }
 
-        private static void CNTLZW(PPUInstruction instruction, PPUThread ppu)
+        private static void Cntlzw(PpuInstruction instruction, PpuThread ppu)
         {
-            uint value = ppu.GPR[instruction.Rs].Value32;
+            uint value = ppu.Gpr[instruction.Rs].Value32;
             uint zeroesCount = (uint)BitOperations.LeadingZeroCount(value); // Use Intrinsics
-            ppu.GPR[instruction.Ra].Value64 = zeroesCount;
+            ppu.Gpr[instruction.Ra].Value64 = zeroesCount;
 
             if (instruction.Rc == 1)
             {
-                UpdateCRRegister(ppu.GPR[instruction.Ra].Value64, 0, PPUThread.CRNumber.CR0, ppu);  // Unsigned compare
+                UpdateCRRegister(ppu.Gpr[instruction.Ra].Value64, 0, PpuThread.CrNumber.CR0, ppu);  // Unsigned compare
             }
         }
 
         //Execute a function from a function pointer
-        internal static ulong ExecuteFunction(PPUThread ppu, GuestVoidPtr ptr_to_pc, bool toc, ReadOnlySpan<ulong> args)
+        internal static ulong ExecuteFunction(PpuThread ppu, GuestVoidPtr ptr_to_pc, bool toc, ReadOnlySpan<ulong> args)
         {
             if (ptr_to_pc.IsNullPtr)
             {
@@ -702,7 +1579,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
                 // Set the arguments
                 for (int i = 0; i < args.Length; i++)
                 {
-                    ppu.GPR[Arg0 + i].Value64 = args[i];
+                    ppu.Gpr[Arg0 + i].Value64 = args[i];
                 }
             }
 
@@ -712,7 +1589,7 @@ namespace PS3Sharp.Cell.PPU.Interpreter
             // Set TOC if needed
             if (toc)
             {
-                ppu.GPR[2].Value64 = ppu.MemoryManager.Read<BigEndian<uint>>(ptr_to_pc + 4);
+                ppu.Gpr[2].Value64 = ppu.MemoryManager.Read<BigEndian<uint>>(ptr_to_pc + 4);
             }
 
             // Set LR
@@ -731,14 +1608,14 @@ namespace PS3Sharp.Cell.PPU.Interpreter
                 done = ppu.State->PC == oldPC;
             }
 
-            r3_ret = ppu.GPR[3].Value64;
+            r3_ret = ppu.Gpr[3].Value64;
 
             // Restore state
             ppu.CallStack.Remove(oldPC);
             *ppu.State = ppu.SavedStates.Pop();
 
             // Set R3 to the returned value from the function
-            ppu.State->GPR[3].Value64 = r3_ret;
+            ppu.State->Gpr[3].Value64 = r3_ret;
 
             // the returned r3 is mainly just for logging / debugging
             return r3_ret;

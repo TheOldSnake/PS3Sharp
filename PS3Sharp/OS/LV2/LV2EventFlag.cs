@@ -1,4 +1,4 @@
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.GuestMemory;
 
 using static PS3Sharp.Cell.ErrorCode;
@@ -46,7 +46,7 @@ namespace PS3Sharp.OS.LV2
             }
         }
 
-        internal ulong Wait(PPUThread ppu, SysEventFlagMode mode, ulong pattern, ulong us_timeout, out ulong resultValue)
+        internal ulong Wait(PpuThread ppu, SysEventFlagMode mode, ulong pattern, ulong us_timeout, out ulong resultValue)
         {
 
             lock (_lock)
@@ -101,7 +101,7 @@ namespace PS3Sharp.OS.LV2
             }
         }
 
-        private bool InterruptableWait(PPUThread ppu)
+        private bool InterruptableWait(PpuThread ppu)
         {
             // Return true if the lock is acquired, false if the thread was interrupted
             while (true)

@@ -1,6 +1,6 @@
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
-using PS3Sharp.Cell.PPU.Interpreter;
+using PS3Sharp.Cell.Ppu;
+using PS3Sharp.Cell.Ppu.Interpreter;
 using PS3Sharp.Common;
 using PS3Sharp.Elf;
 using PS3Sharp.GuestMemory;
@@ -292,7 +292,7 @@ namespace PS3Sharp.PRX
             }
         }
 
-        internal void InitializeLibraries(PPUThread ppu)
+        internal void InitializeLibraries(PpuThread ppu)
         {
             for (int i = 0; i < _libraryInitializations.Count; i++)
             {
@@ -307,12 +307,12 @@ namespace PS3Sharp.PRX
 
                 if (libraryInitialization.Prologue != 0)
                 {
-                    PPUInterpreter.ExecuteFunction(ppu, libraryInitialization.Prologue, toc: true, []);
+                    PpuInterpreter.ExecuteFunction(ppu, libraryInitialization.Prologue, toc: true, []);
                 }
 
                 if (libraryInitialization.Start != 0)
                 {
-                    PPUInterpreter.ExecuteFunction(ppu, libraryInitialization.Start, toc: true, []);
+                    PpuInterpreter.ExecuteFunction(ppu, libraryInitialization.Start, toc: true, []);
                 }
             }
         }

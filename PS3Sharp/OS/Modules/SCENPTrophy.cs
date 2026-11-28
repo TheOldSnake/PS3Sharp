@@ -1,5 +1,5 @@
-using PS3Sharp.Cell.PPU;
-using PS3Sharp.Cell.PPU.Interpreter;
+using PS3Sharp.Cell.Ppu;
+using PS3Sharp.Cell.Ppu.Interpreter;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using static PS3Sharp.Cell.Arguments;
@@ -16,13 +16,13 @@ namespace PS3Sharp.OS.Modules
             _memoryManager = memoryManager;
         }
 
-        internal ulong SCENpTrophyInit(PPUThread ppu)
+        internal ulong SCENpTrophyInit(PpuThread ppu)
         {
             Console.WriteLine($"[SCENPTrophy] sceNpTrophyInit");
             return CellOk;
         }
 
-        internal ulong SCENpTrophyCreateContext(PPUThread ppu)
+        internal ulong SCENpTrophyCreateContext(PpuThread ppu)
         {
             GuestVoidPtr context_ptr = ppu.ReadArg<GuestVoidPtr>(Arg0);
             GuestVoidPtr command_id_ptr = ppu.ReadArg<GuestVoidPtr>(Arg1);
@@ -37,7 +37,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong SCENpTrophyRegisterContext(PPUThread ppu)
+        internal ulong SCENpTrophyRegisterContext(PpuThread ppu)
         {
             // I am not sure how this works, but this code is baes on RPCS3 and chonkystation 
 
@@ -70,7 +70,7 @@ namespace PS3Sharp.OS.Modules
                 for (ulong i = 0; i < iterations; i++)
                 {
                     args[2] = i; //R5 = i
-                    PPUInterpreter.ExecuteFunction(ppu, callback, toc: false, args); // toc needed ?
+                    PpuInterpreter.ExecuteFunction(ppu, callback, toc: false, args); // toc needed ?
                 }
             }
 
@@ -78,7 +78,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong SCENpTrophyCreateHandle(PPUThread ppu)
+        internal ulong SCENpTrophyCreateHandle(PpuThread ppu)
         {
             GuestVoidPtr handle_ptr = ppu.ReadArg<GuestVoidPtr>(Arg0);
 
@@ -89,7 +89,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong SCENpTrophyGetRequiredDiskSpace(PPUThread ppu)
+        internal ulong SCENpTrophyGetRequiredDiskSpace(PpuThread ppu)
         {
             GuestVoidPtr require_space_ptr = ppu.ReadArg<GuestVoidPtr>(Arg2);
             _memoryManager.Write<BigEndian<uint>>(require_space_ptr, 0);
@@ -97,13 +97,13 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong SCENpTrophyGetGameInfo(PPUThread ppu)
+        internal ulong SCENpTrophyGetGameInfo(PpuThread ppu)
         {
             Console.WriteLine($"[SCENPTrophy] sceNpTrophyGetGameInfo");
             return CellOk;
         }
 
-        internal ulong SCENpTrophyGetTrophyUnlockState(PPUThread ppu)
+        internal ulong SCENpTrophyGetTrophyUnlockState(PpuThread ppu)
         {
             //This can be stubbed more
 
@@ -119,7 +119,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong SCENpTrophyUnlockTrophy(PPUThread ppu)
+        internal ulong SCENpTrophyUnlockTrophy(PpuThread ppu)
         {
             uint ctx = ppu.ReadArg<uint>(Arg0);
             uint handle = ppu.ReadArg<uint>(Arg1);

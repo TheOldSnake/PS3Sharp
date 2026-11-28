@@ -1,5 +1,5 @@
-using PS3Sharp.Cell.PPU;
-using PS3Sharp.Cell.PPU.Recompiler;
+using PS3Sharp.Cell.Ppu;
+using PS3Sharp.Cell.Ppu.Recompiler;
 using PS3Sharp.Cell.Rsx;
 using PS3Sharp.Cell.Spu;
 using PS3Sharp.Elf;
@@ -24,7 +24,7 @@ namespace PS3Sharp
         private readonly CellPad _cellPad;
         private readonly CellGame _cellGame;
         private readonly LV2SyscallDispatcher _lv2SyscallDispatcher;
-        private readonly PPURecompiler _ppuRecompiler;
+        private readonly PpuRecompiler _ppuRecompiler;
 
         internal Emulator()
         {
@@ -56,7 +56,7 @@ namespace PS3Sharp
             uint entryPointer = LoadExecutable(elfPath);
             _prxManager.LoadPRXLibraries(_modulePatcher);
 
-            PPUThread ppu_main = _threadManager.CreateMainPPUThread(entryPointer, elfPath, _lv2SyscallDispatcher);
+            PpuThread ppu_main = _threadManager.CreateMainPPUThread(entryPointer, elfPath, _lv2SyscallDispatcher);
             _prxManager.InitializeLibraries(ppu_main);
 
             ppu_main.StartThread();

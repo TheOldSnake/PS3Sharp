@@ -1,5 +1,5 @@
-using PS3Sharp.Cell.PPU;
-using PS3Sharp.Cell.PPU.Recompiler;
+using PS3Sharp.Cell.Ppu;
+using PS3Sharp.Cell.Ppu.Recompiler;
 using PS3Sharp.Cell.Rsx;
 using PS3Sharp.Cell.Spu;
 using PS3Sharp.Common;
@@ -16,8 +16,8 @@ namespace PS3Sharp
     {
         private readonly ManualResetEventSlim _processTerminationEvent = new(false);     // Shutdown event
         private readonly MemoryManager _memoryManager;
-        private readonly PPURecompiler _ppuRecompiler;
-        private readonly List<PPUThread> _ppuThreads = [];
+        private readonly PpuRecompiler _ppuRecompiler;
+        private readonly List<PpuThread> _ppuThreads = [];
         private readonly List<SpuThread> _spuThreads = [];
         private readonly Lock _threadManagerLock = new();
         private bool _hasCreatedMainThread;
@@ -31,7 +31,7 @@ namespace PS3Sharp
 
         internal CancellationTokenSource GlobalCancellationSource { get; } = new();      // Global shutdown signal
 
-        internal ThreadManager(MemoryManager memoryManager, PPURecompiler ppuRecompiler)
+        internal ThreadManager(MemoryManager memoryManager, PpuRecompiler ppuRecompiler)
         {
             _memoryManager = memoryManager;
             _ppuRecompiler = ppuRecompiler;
@@ -47,7 +47,7 @@ namespace PS3Sharp
             }
         }
 
-        internal PPUThread CreateMainPPUThread(uint entryPointer, string executablePath, LV2SyscallDispatcher syscallDispatcher)
+        internal PpuThread CreateMainPPUThread(uint entryPointer, string executablePath, LV2SyscallDispatcher syscallDispatcher)
         {
             using (_threadManagerLock.EnterScope())
             {
@@ -61,14 +61,14 @@ namespace PS3Sharp
                 uint stackSize = MemoryConstants.DefaultStackSize;
                 ulong arg = 0;
 
-                PPUThread ppu = CreatePPUThread("main_thread", entryPointer, stackSize, arg, syscallDispatcher, executablePath);
+                PpuThread ppu = CreatePPUThread("main_thread", entryPointer, stackSize, arg, syscallDispatcher, executablePath);
                 _hasCreatedMainThread = true;
 
                 return ppu;
             }
         }
 
-        internal PPUThread CreatePPUThread(string threadName, uint entryPointer, uint stackSize, ulong thread_arg, LV2SyscallDispatcher syscallDispatcher, string? executablePath = null)
+        internal PpuThread CreatePPUThread(string threadName, uint entryPointer, uint stackSize, ulong thread_arg, LV2SyscallDispatcher syscallDispatcher, string? executablePath = null)
         {
             using (_threadManagerLock.EnterScope())
             {
@@ -88,7 +88,7 @@ namespace PS3Sharp
                 }
 
                 uint id = GetNewID();
-                PPUThread ppu = new(threadName, entryPointer, stackSize, executablePath, id, thread_arg, this, _memoryManager, syscallDispatcher, _ppuRecompiler);
+                PpuThread ppu = new(threadName, entryPointer, stackSize, executablePath, id, thread_arg, this, _memoryManager, syscallDispatcher, _ppuRecompiler);
 
                 _ppuThreads.Add(ppu);
                 return ppu;
@@ -115,7 +115,7 @@ namespace PS3Sharp
             return spu;
         }
 
-        internal void JoinPPUThread(PPUThread ppu_thread, bool timeout = false)
+        internal void JoinPPUThread(PpuThread ppu_thread, bool timeout = false)
         {
             JoinNativeThread(ppu_thread.NativeThread, timeout);
         }
@@ -153,7 +153,7 @@ namespace PS3Sharp
             _processTerminationEvent.Wait();
 
             // Aquire the lock and copy the thread list (which cannot be modified at this point)
-            PPUThread[] threads;
+            PpuThread[] threads;
 
             using (_threadManagerLock.EnterScope())
             {
@@ -166,7 +166,7 @@ namespace PS3Sharp
 
         internal void PrintExitCodes()
         {
-            PPUThread[] threads;
+            PpuThread[] threads;
 
             using (_threadManagerLock.EnterScope())
             {
@@ -175,13 +175,13 @@ namespace PS3Sharp
 
             Console.WriteLine($"[ThreadManager] PPU Exit codes:");
 
-            foreach (PPUThread ppu in threads)
+            foreach (PpuThread ppu in threads)
             {
                 Console.WriteLine($"PPU [{ppu.ThreadName}] Exit Code = 0x{ppu.ExitCode:X8}");
             }
         }
 
-        internal PPUThread? GetPPUThreadByID(ulong id)
+        internal PpuThread? GetPPUThreadByID(ulong id)
         {
             using (_threadManagerLock.EnterScope())
             {
@@ -217,7 +217,7 @@ namespace PS3Sharp
 
         internal int JoinThreadByID(ulong id)
         {
-            PPUThread? thread = GetPPUThreadByID(id);
+            PpuThread? thread = GetPPUThreadByID(id);
 
             if (thread != null)
             {
@@ -230,11 +230,11 @@ namespace PS3Sharp
             }
         }
 
-        private void JoinAllPPUThreads(PPUThread[] threads)
+        private void JoinAllPPUThreads(PpuThread[] threads)
         {
             Console.WriteLine($"[ThreadManager] Joining all PPU threads");
 
-            foreach (PPUThread ppuThread in threads)
+            foreach (PpuThread ppuThread in threads)
             {
                 Console.WriteLine($"[ThreadManager] Attempting to join {ppuThread.ThreadName}");
                 JoinPPUThread(ppuThread, timeout: true);

@@ -1,4 +1,4 @@
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.OS.NID;
 using System.Collections.Immutable;
 
@@ -6,10 +6,10 @@ namespace PS3Sharp.OS
 {
     internal sealed partial class LV2SyscallDispatcher
     {
-        private ImmutableDictionary<SyscallID, Func<PPUThread, ulong>> CreateSyscallTable()
+        private ImmutableDictionary<SyscallID, Func<PpuThread, ulong>> CreateSyscallTable()
         {
             // Create a syscall table
-            ImmutableDictionary<SyscallID, Func<PPUThread, ulong>> syscallTable = new Dictionary<SyscallID, Func<PPUThread, ulong>>()
+            ImmutableDictionary<SyscallID, Func<PpuThread, ulong>> syscallTable = new Dictionary<SyscallID, Func<PpuThread, ulong>>()
             {
                 [SyscallID.SysTTYWrite] = SysTTYHandler.SysTTYWrite,
 
@@ -121,10 +121,10 @@ namespace PS3Sharp.OS
             return syscallTable;
         }
 
-        private ImmutableDictionary<uint, Func<PPUThread, ulong>> CreateModuleTable()
+        private ImmutableDictionary<uint, Func<PpuThread, ulong>> CreateModuleTable()
         {
             // Create a module table (TODO: ID table or enum)
-            ImmutableDictionary<uint, Func<PPUThread, ulong>> moduleTable = new Dictionary<uint, Func<PPUThread, ulong>>()
+            ImmutableDictionary<uint, Func<PpuThread, ulong>> moduleTable = new Dictionary<uint, Func<PpuThread, ulong>>()
             {
                 // SysPrxForUser
                 [NIDManager.GetNID("sys_process_exit")] = SysPrxForUserHandler.SysProcessExit,

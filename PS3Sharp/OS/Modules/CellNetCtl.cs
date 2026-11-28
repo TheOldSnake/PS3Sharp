@@ -1,4 +1,4 @@
-﻿using PS3Sharp.Cell.PPU;
+﻿using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using static PS3Sharp.Cell.Arguments;
@@ -20,7 +20,7 @@ namespace PS3Sharp.OS.Modules
             _memoryManager = memoryManager;
         }
 
-        internal ulong CellNetCtlGetState(PPUThread ppu)
+        internal ulong CellNetCtlGetState(PpuThread ppu)
         {
             GuestPtr<BigEndian<uint>> state_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             _memoryManager.Write<BigEndian<uint>>(state_ptr, CellNetCtlStateIpobtained);
