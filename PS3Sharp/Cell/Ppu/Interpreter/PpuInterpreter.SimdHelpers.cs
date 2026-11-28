@@ -2,9 +2,9 @@ using System.Numerics;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
-namespace PS3Sharp.Cell.PPU.Interpreter
+namespace PS3Sharp.Cell.Ppu.Interpreter
 {
-    internal static unsafe partial class PPUInterpreter
+    internal static unsafe partial class PpuInterpreter
     {
         // SIMD helpers
         // Ideally use Vector128, if the API does not have the needed operation

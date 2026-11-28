@@ -1,7 +1,7 @@
 using Iced.Intel;
 using static Iced.Intel.AssemblerRegisters;
 
-namespace PS3Sharp.Cell.PPU.Recompiler.x64
+namespace PS3Sharp.Cell.Ppu.Recompiler.X64
 {
     internal sealed partial class X64Generator
     {

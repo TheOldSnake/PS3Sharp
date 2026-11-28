@@ -1,6 +1,6 @@
 using PS3Sharp.GuestMemory;
 
-namespace PS3Sharp.Cell.PPU.Recompiler.IR
+namespace PS3Sharp.Cell.Ppu.Recompiler.IR
 {
     internal sealed partial class IRGenerator
     {
@@ -15,17 +15,17 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
             _irContext = new IRContext(this);   // todo: remove this dependency
             _irContext.Initialize(address);
 
-            PPUInstruction instruction;
+            PpuInstruction instruction;
             while (true)
             {
-                instruction = new PPUInstruction
+                instruction = new PpuInstruction
                 {
                     Raw = memoryManager.ReadPPUInstruction(_irContext.CurrentPC)
                 };
 
                 _irContext.CurrentPC += 4;
 
-                if (instruction.Raw != Interpreter.PPUInterpreter.Nop)
+                if (instruction.Raw != Interpreter.PpuInterpreter.Nop)
                 {
                     GenerateIR(instruction);
                 }
@@ -47,21 +47,21 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
             return block;
         }
 
-        private void GenerateIR(PPUInstruction instruction)
+        private void GenerateIR(PpuInstruction instruction)
         {
             // PPC -> IR Decoder 
             switch (instruction.Op)
             {
 
-                case Op.CMPI:
+                case Op.Cmpi:
                     CMPI(instruction);
                     break;
 
-                case Op.CMPLI:
+                case Op.Cmpli:
                     CMPLI(instruction);
                     break;
 
-                case Op.BC:
+                case Op.Bc:
                     BC(instruction);
                     break;
 
@@ -69,52 +69,52 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
                     Branch(instruction);
                     break;
 
-                case Op.SC:
+                case Op.Sc:
                     Syscall(instruction);
                     break;
 
-                case Op.ADDI:
+                case Op.Addi:
                     ADDI(instruction);
                     break;
 
-                case Op.ADDIS:
+                case Op.Addis:
                     ADDIS(instruction);
                     break;
 
-                case Op.ADDIC:
-                case Op.ADDIC_Record:
+                case Op.Addic:
+                case Op.AddicRecord:
                     ADDIC(instruction);
                     break;
 
-                case Op.SUBFIC:
+                case Op.Subfic:
                     SUBFIC(instruction);
                     break;
 
-                case Op.ANDI:
+                case Op.Andi:
                     ANDI(instruction);
                     break;
 
-                case Op.ANDIS:
+                case Op.Andis:
                     ANDIS(instruction);
                     break;
 
-                case Op.ORI:
+                case Op.Ori:
                     ORI(instruction);
                     break;
 
-                case Op.ORIS:
+                case Op.Oris:
                     ORIS(instruction);
                     break;
 
-                case Op.XORI:
+                case Op.Xori:
                     XORI(instruction);
                     break;
 
-                case Op.XORIS:
+                case Op.Xoris:
                     XORIS(instruction);
                     break;
 
-                case Op.MULLI:
+                case Op.Mulli:
                     MULLI(instruction);
                     break;
 
@@ -126,15 +126,15 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
                     IR_G13(instruction);
                     break;
 
-                case Op.RLWIMI:
+                case Op.Rlwimi:
                     RLWIMI(instruction);
                     break;
 
-                case Op.RLWINM:
+                case Op.Rlwinm:
                     RLWINM(instruction);
                     break;
 
-                case Op.RLWNM:
+                case Op.Rlwnm:
                     RLWNM(instruction);
                     break;
 
@@ -142,84 +142,84 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
                     IR_G1F(instruction);
                     break;
 
-                case Op.LWZ:
+                case Op.Lwz:
                     LWZ(instruction);
                     break;
 
-                case Op.LWZU:
+                case Op.Lwzu:
                     LWZU(instruction);
                     break;
 
-                case Op.LBZ:
+                case Op.Lbz:
                     LBZ(instruction);
                     break;
 
-                case Op.LBZU:
+                case Op.Lbzu:
                     LBZU(instruction);
                     break;
 
-                case Op.STW:
+                case Op.Stw:
                     STW(instruction);
                     break;
 
-                case Op.STWU:
+                case Op.Stwu:
                     STWU(instruction);
                     break;
 
-                case Op.STB:
+                case Op.Stb:
                     STB(instruction);
                     break;
 
-                case Op.STBU:
+                case Op.Stbu:
                     STBU(instruction);
                     break;
 
-                case Op.LHZ:
+                case Op.Lhz:
                     LHZ(instruction);
                     break;
 
-                case Op.LHZU:
+                case Op.Lhzu:
                     LHZU(instruction);
                     break;
 
-                case Op.LHA:
+                case Op.Lha:
                     LHA(instruction);
                     break;
 
-                case Op.LHAU:
+                case Op.Lhau:
                     LHAU(instruction);
                     break;
 
-                case Op.STH:
+                case Op.Sth:
                     STH(instruction);
                     break;
 
-                case Op.STHU:
+                case Op.Sthu:
                     STHU(instruction);
                     break;
 
-                case Op.LMW:
+                case Op.Lmw:
                     LMW(instruction);
                     break;
 
-                case Op.LD:
+                case Op.Ld:
                     LD(instruction);
                     break;
 
-                case Op.STD:
+                case Op.Std:
                     STD(instruction);
                     break;
 
 
                 // Float load/store
-                case Op.LFS:
-                case Op.LFSU:
-                case Op.LFD:
-                case Op.LFDU:
-                case Op.STFS:
-                case Op.STFSU:
-                case Op.STFD:
-                case Op.STFDU:
+                case Op.Lfs:
+                case Op.Lfsu:
+                case Op.Lfd:
+                case Op.Lfdu:
+                case Op.Stfs:
+                case Op.Stfsu:
+                case Op.Stfd:
+                case Op.Stfdu:
 
                 default:
                     InterpreterFallback(instruction);
@@ -227,320 +227,320 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
             }
         }
 
-        private void IR_G1F(PPUInstruction instruction)
+        private void IR_G1F(PpuInstruction instruction)
         {
-            switch (instruction.G1F)
+            switch (instruction.G1f)
             {
 
-                case G1F.Sync:
+                case G1f.Sync:
                     //Nop
                     break;
 
-                case G1F.CMP:
+                case G1f.Cmp:
                     CMP(instruction);
                     break;
 
-                case G1F.CMPL:
+                case G1f.Cmpl:
                     CMPL(instruction);
                     break;
 
-                case G1F.MFSPR:
+                case G1f.Mfspr:
                     MFSPR(instruction);
                     break;
 
-                case G1F.MTSPR:
+                case G1f.Mtspr:
                     MTSPR(instruction);
                     break;
 
-                case G1F.MFCR:
+                case G1f.Mfcr:
                     MFCR(instruction);
                     break;
 
-                case G1F.MTCRF:
+                case G1f.Mtcrf:
                     MTCRF(instruction);
                     break;
 
-                case G1F.MFTB:
+                case G1f.Mftb:
                     MFTB(instruction);
                     break;
 
-                case G1F.ADDE:
+                case G1f.Adde:
                     ADDE(instruction);
                     break;
 
-                case G1F.ADD:
+                case G1f.Add:
                     ADD(instruction);
                     break;
 
-                case G1F.ADDC:
+                case G1f.Addc:
                     ADDC(instruction);
                     break;
 
-                case G1F.ADDZE:
+                case G1f.Addze:
                     ADDZE(instruction);
                     break;
 
-                case G1F.ADDME:
+                case G1f.Addme:
                     ADDME(instruction);
                     break;
 
-                case G1F.SUBF:
+                case G1f.Subf:
                     SUBF(instruction);
                     break;
 
-                case G1F.SUBFC:
+                case G1f.Subfc:
                     SUBFC(instruction);
                     break;
 
-                case G1F.SUBFE:
+                case G1f.Subfe:
                     SUBFE(instruction);
                     break;
 
-                case G1F.SUBFZE:
+                case G1f.Subfze:
                     SUBFZE(instruction);
                     break;
 
-                case G1F.SUBFME:
+                case G1f.Subfme:
                     SUBFME(instruction);
                     break;
 
-                case G1F.AND:
+                case G1f.And:
                     AND(instruction);
                     break;
 
-                case G1F.ANDC:
+                case G1f.Andc:
                     ANDC(instruction);
                     break;
 
-                case G1F.OR:
+                case G1f.Or:
                     OR(instruction);
                     break;
 
-                case G1F.ORC:
+                case G1f.Orc:
                     ORC(instruction);
                     break;
 
-                case G1F.XOR:
+                case G1f.Xor:
                     XOR(instruction);
                     break;
 
-                case G1F.NAND:
+                case G1f.Nand:
                     NAND(instruction);
                     break;
 
-                case G1F.NOR:
+                case G1f.Nor:
                     NOR(instruction);
                     break;
 
-                case G1F.EQV:
+                case G1f.Eqv:
                     EQV(instruction);
                     break;
 
-                case G1F.NEG:
+                case G1f.Neg:
                     NEG(instruction);
                     break;
 
-                case G1F.MULLW:
+                case G1f.Mullw:
                     MULLW(instruction);
                     break;
 
-                case G1F.MULHW:
+                case G1f.Mulhw:
                     MULHW(instruction);
                     break;
 
-                case G1F.MULHWU:
+                case G1f.Mulhwu:
                     MULHWU(instruction);
                     break;
 
-                case G1F.MULLD:
+                case G1f.Mulld:
                     MULLD(instruction);
                     break;
 
-                case G1F.MULHD:
+                case G1f.Mulhd:
                     MULHD(instruction);
                     break;
 
-                case G1F.MULHDU:
+                case G1f.Mulhdu:
                     MULHDU(instruction);
                     break;
 
-                case G1F.DIVD:
+                case G1f.Divd:
                     DIVD(instruction);
                     break;
 
-                case G1F.DIVDU:
+                case G1f.Divdu:
                     DIVDU(instruction);
                     break;
 
-                case G1F.DIVW:
+                case G1f.Divw:
                     DIVW(instruction);
                     break;
 
-                case G1F.DIVWU:
+                case G1f.Divwu:
                     DIVWU(instruction);
                     break;
 
-                case G1F.SLD:
+                case G1f.Sld:
                     SLD(instruction);
                     break;
 
-                case G1F.SRD:
+                case G1f.Srd:
                     SRD(instruction);
                     break;
 
-                case G1F.SLW:
+                case G1f.Slw:
                     SLW(instruction);
                     break;
 
-                case G1F.SRW:
+                case G1f.Srw:
                     SRW(instruction);
                     break;
 
-                case G1F.SRAD:
+                case G1f.Srad:
                     SRAD(instruction);
                     break;
 
-                case G1F.SRADI:
+                case G1f.Sradi:
                     SRADI(instruction);
                     break;
 
-                case G1F.SRAW:
+                case G1f.Sraw:
                     SRAW(instruction);
                     break;
 
-                case G1F.SRAWI:
+                case G1f.Srawi:
                     SRAWI(instruction);
                     break;
 
-                case G1F.EXTSB:
+                case G1f.Extsb:
                     EXTSB(instruction);
                     break;
 
-                case G1F.EXTSH:
+                case G1f.Extsh:
                     EXTSH(instruction);
                     break;
 
-                case G1F.EXTSW:
+                case G1f.Extsw:
                     EXTSW(instruction);
                     break;
 
-                case G1F.CNTLZD:
+                case G1f.Cntlzd:
                     CNTLZD(instruction);
                     break;
 
-                case G1F.CNTLZW:
+                case G1f.Cntlzw:
                     CNTLZW(instruction);
                     break;
 
-                case G1F.STBX:
+                case G1f.Stbx:
                     STBX(instruction);
                     break;
 
-                case G1F.STBUX:
+                case G1f.Stbux:
                     STBUX(instruction);
                     break;
 
-                case G1F.STHX:
+                case G1f.Sthx:
                     STHX(instruction);
                     break;
 
-                case G1F.STHUX:
+                case G1f.Sthux:
                     STHUX(instruction);
                     break;
 
-                case G1F.STHBRX:
+                case G1f.Sthbrx:
                     STHBRX(instruction);
                     break;
 
-                case G1F.STWX:
+                case G1f.Stwx:
                     STWX(instruction);
                     break;
 
-                case G1F.STWUX:
+                case G1f.Stwux:
                     STWUX(instruction);
                     break;
 
-                case G1F.STWBRX:
+                case G1f.Stwbrx:
                     STWBRX(instruction);
                     break;
 
-                case G1F.STWCX:
+                case G1f.Stwcx:
                     STWCX(instruction);
                     break;
 
-                case G1F.STDX:
+                case G1f.Stdx:
                     STDX(instruction);
                     break;
 
-                case G1F.STDUX:
+                case G1f.Stdux:
                     STDUX(instruction);
                     break;
 
-                case G1F.STDCX:
+                case G1f.Stdcx:
                     STDCX(instruction);
                     break;
 
-                case G1F.LBZX:
+                case G1f.Lbzx:
                     LBZX(instruction);
                     break;
 
-                case G1F.LBZUX:
+                case G1f.Lbzux:
                     LBZUX(instruction);
                     break;
 
-                case G1F.LHZX:
+                case G1f.Lhzx:
                     LHZX(instruction);
                     break;
 
-                case G1F.LHZUX:
+                case G1f.Lhzux:
                     LHZUX(instruction);
                     break;
 
-                case G1F.LHBRX:
+                case G1f.Lhbrx:
                     LHBRX(instruction);
                     break;
 
-                case G1F.LHAX:
+                case G1f.Lhax:
                     LHAX(instruction);
                     break;
 
-                case G1F.LHAUX:
+                case G1f.Lhaux:
                     LHAUX(instruction);
                     break;
 
-                case G1F.LWZX:
+                case G1f.Lwzx:
                     LWZX(instruction);
                     break;
 
-                case G1F.LWZUX:
+                case G1f.Lwzux:
                     LWZUX(instruction);
                     break;
 
-                case G1F.LWBRX:
+                case G1f.Lwbrx:
                     LWBRX(instruction);
                     break;
 
-                case G1F.LWAX:
+                case G1f.Lwax:
                     LWAX(instruction);
                     break;
 
-                case G1F.LWAUX:
+                case G1f.Lwaux:
                     LWAUX(instruction);
                     break;
 
-                case G1F.LWARX:
+                case G1f.Lwarx:
                     LWARX(instruction);
                     break;
 
-                case G1F.LDX:
+                case G1f.Ldx:
                     LDX(instruction);
                     break;
 
-                case G1F.LDUX:
+                case G1f.Ldux:
                     LDUX(instruction);
                     break;
 
-                case G1F.LDARX:
+                case G1f.Ldarx:
                     LDARX(instruction);
                     break;
 
@@ -550,56 +550,56 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
             }
         }
 
-        private void IR_G13(PPUInstruction instruction)
+        private void IR_G13(PpuInstruction instruction)
         {
             switch (instruction.G13)
             {
-                case G13.ISYNC:
+                case G13.Isync:
                     // Nop
                     break;
 
-                case G13.MCRF:
+                case G13.Mcrf:
                     MCRF(instruction);
                     break;
 
-                case G13.BCLR:
+                case G13.Bclr:
                     BCLR(instruction);
                     break;
 
-                case G13.BCCTR:
+                case G13.Bcctr:
                     BCCTR(instruction);
                     break;
 
-                case G13.CROR:
+                case G13.Cror:
                     CROR(instruction);
                     break;
 
-                case G13.CRORC:
+                case G13.Crorc:
                     CRORC(instruction);
                     break;
 
-                case G13.CRAND:
+                case G13.Crand:
                     CRAND(instruction);
                     break;
 
-                case G13.CRANDC:
+                case G13.Crandc:
                     CRANDC(instruction);
                     break;
 
 
-                case G13.CRXOR:
+                case G13.Crxor:
                     CRXOR(instruction);
                     break;
 
-                case G13.CRNAND:
+                case G13.Crnand:
                     CRNAND(instruction);
                     break;
 
-                case G13.CRNOR:
+                case G13.Crnor:
                     CRNOR(instruction);
                     break;
 
-                case G13.CREQV:
+                case G13.Creqv:
                     CREQV(instruction);
                     break;
 
@@ -610,7 +610,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
         }
 
 
-        private void IRRotateLeft(PPUInstruction instruction)
+        private void IRRotateLeft(PpuInstruction instruction)
         {
             // Rotate instructions
 

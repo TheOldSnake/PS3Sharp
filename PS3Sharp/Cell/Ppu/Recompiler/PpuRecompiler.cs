@@ -1,19 +1,19 @@
-using PS3Sharp.Cell.PPU.Recompiler.IR;
-using PS3Sharp.Cell.PPU.Recompiler.x64;
+using PS3Sharp.Cell.Ppu.Recompiler.IR;
+using PS3Sharp.Cell.Ppu.Recompiler.X64;
 using PS3Sharp.Common;
 using PS3Sharp.HostMemory;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
-using static PS3Sharp.Cell.PPU.PPUThread;
-using static PS3Sharp.Cell.PPU.Recompiler.IR.IRGenerator;
+using static PS3Sharp.Cell.Ppu.PpuThread;
+using static PS3Sharp.Cell.Ppu.Recompiler.IR.IRGenerator;
 
-namespace PS3Sharp.Cell.PPU.Recompiler
+namespace PS3Sharp.Cell.Ppu.Recompiler
 {
-    internal sealed unsafe class PPURecompiler : IDisposable
+    internal sealed unsafe class PpuRecompiler : IDisposable
     {
         internal struct X64Block
         {
-            internal delegate* unmanaged<PPUState*, void*, void> Code;
+            internal delegate* unmanaged<PpuState*, void*, void> Code;
             internal int ByteCount;
             internal int IsSyscallExit;
         }
@@ -66,7 +66,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler
             return block;
         }
 
-        internal void RunPPU(PPUThread ppu)
+        internal void RunPPU(PpuThread ppu)
         {
             // As of now this code is NOT thread safe
             X64Block* block = GetOrCreateBlock(ppu.State->PC);
@@ -78,7 +78,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler
 
             // Console.WriteLine($"Executing block 0x{ppu.State->PC:X8} at: 0x{(nint)block->Code:X16}");
 
-            PPUState* state = ppu.State;
+            PpuState* state = ppu.State;
             void* memory = ppu.MemoryManager.Allocator.GuestMemoryBase;
             block->Code(state, memory);
 
@@ -90,7 +90,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler
             //throw new Exception($"Done, exit pc = 0x{ppu.State->PC:X8}");
         }
 
-        private void CompilePPCBlock(PPUThread ppu, X64Block* nativeBlock)
+        private void CompilePPCBlock(PpuThread ppu, X64Block* nativeBlock)
         {
             // Generate IR
             IRBlock block = _irGenerator.GenerateIRBlock(ppu.State->PC, ppu.MemoryManager);
@@ -112,7 +112,7 @@ namespace PS3Sharp.Cell.PPU.Recompiler
             nativeCode.CopyTo(destSpan);
 
             // Set the address and size
-            nativeBlock->Code = (delegate* unmanaged<PPUState*, void*, void>)dest;
+            nativeBlock->Code = (delegate* unmanaged<PpuState*, void*, void>)dest;
             nativeBlock->ByteCount = byteCount;
 
             // Advance next block address and align to 16-byte

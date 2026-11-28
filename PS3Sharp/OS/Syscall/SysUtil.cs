@@ -1,6 +1,6 @@
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
-using PS3Sharp.Cell.PPU.Interpreter;
+using PS3Sharp.Cell.Ppu;
+using PS3Sharp.Cell.Ppu.Interpreter;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using System.Runtime.InteropServices;
@@ -149,7 +149,7 @@ namespace PS3Sharp.OS.Syscall
             _memoryManager = memoryManager;
         }
 
-        internal ulong CellSysutilRegisterCallback(PPUThread ppu)
+        internal ulong CellSysutilRegisterCallback(PpuThread ppu)
         {
             //TODO
             uint index = ppu.ReadArg<uint>(Arg0);
@@ -171,7 +171,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong CellSysutilUnregisterCallback(PPUThread ppu)
+        internal ulong CellSysutilUnregisterCallback(PpuThread ppu)
         {
             uint index = ppu.ReadArg<uint>(Arg0);
 
@@ -187,7 +187,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong CellSysutilCheckCallback(PPUThread ppu)
+        internal ulong CellSysutilCheckCallback(PpuThread ppu)
         {
             // i have no idea how this works
 
@@ -224,7 +224,7 @@ namespace PS3Sharp.OS.Syscall
                     //uint pc = MemoryManager.Read<uint>(callback.AddressPtr);
                     //Console.WriteLine($"[{ppu.ThreadName}] [CellSysutil] Executing callback[{i}] addr = 0x{callback.AddressPtr:X8} pc = 0x{pc:X8} arg = 0x{args[0]:X8}");
 
-                    PPUInterpreter.ExecuteFunction(ppu, callback.AddressPtr, toc: true, args);
+                    PpuInterpreter.ExecuteFunction(ppu, callback.AddressPtr, toc: true, args);
 
                     // ?
                     //ppu.SysUtilCallbacks[i].AddressPtr = 0;
@@ -236,7 +236,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong CellAudioOutGetSoundAvailability(PPUThread ppu)
+        internal ulong CellAudioOutGetSoundAvailability(PpuThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellAudioOutGetSoundAvailability");
@@ -244,7 +244,7 @@ namespace PS3Sharp.OS.Syscall
             return CellAudioOutPrimary;
         }
 
-        internal ulong CellAudioOutConfigure(PPUThread ppu)
+        internal ulong CellAudioOutConfigure(PpuThread ppu)
         {
             //TODO
             const ulong CellAudioOutErrorUnsupportedAudioOut = 0x8002b245;
@@ -252,7 +252,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong CellAudioOutGetState(PPUThread ppu)
+        internal ulong CellAudioOutGetState(PpuThread ppu)
         {
             //TODO
             const byte CellAudioOutOutputStateEnabled = 0;
@@ -269,7 +269,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong CellSysutilGetSystemParamInt(PPUThread ppu)
+        internal ulong CellSysutilGetSystemParamInt(PpuThread ppu)
         {
             uint param = ppu.ReadArg<uint>(Arg0);
             uint value_ptr = ppu.ReadArg<uint>(Arg1);
@@ -324,7 +324,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong CellSysutilGetSystemParamString(PPUThread ppu)
+        internal ulong CellSysutilGetSystemParamString(PpuThread ppu)
         {
             //TODO
 
@@ -347,28 +347,28 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong CellSaveDataUserAutoLoad(PPUThread ppu)
+        internal ulong CellSaveDataUserAutoLoad(PpuThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellSaveDataUserAutoLoad");
             return CellOk;
         }
 
-        internal ulong CellSaveDataAutoLoad2(PPUThread ppu)
+        internal ulong CellSaveDataAutoLoad2(PpuThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellSaveDataAutoLoad2");
             return CellOk;
         }
 
-        internal ulong CellSaveDataAutoSave2(PPUThread ppu)
+        internal ulong CellSaveDataAutoSave2(PpuThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellSaveDataAutoSave2");
             return CellOk;
         }
 
-        internal ulong CellMsgDialogOpen2(PPUThread ppu)
+        internal ulong CellMsgDialogOpen2(PpuThread ppu)
         {
             //TODO: Implement actual dialog
 
@@ -382,32 +382,32 @@ namespace PS3Sharp.OS.Syscall
             Console.WriteLine($"[CellSysutil] cellMsgDialogOpen2: {msg}");
 
             // Callback - toc needed ?
-            PPUInterpreter.ExecuteFunction(ppu, callback_ptr, toc: true, [1, user_data, 0, 0, 0]); // First arg = 1 for "Pressed OK"
+            PpuInterpreter.ExecuteFunction(ppu, callback_ptr, toc: true, [1, user_data, 0, 0, 0]); // First arg = 1 for "Pressed OK"
             return CellOk;
         }
 
-        internal ulong CellMsgDialogProgressBarSetMsg(PPUThread ppu)
+        internal ulong CellMsgDialogProgressBarSetMsg(PpuThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellMsgDialogProgressBarSetMsg");
             return CellOk;
         }
 
-        internal ulong CellMsgDialogProgressBarInc(PPUThread ppu)
+        internal ulong CellMsgDialogProgressBarInc(PpuThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellMsgDialogProgressBarInc");
             return CellOk;
         }
 
-        internal ulong CellMsgDialogClose(PPUThread ppu)
+        internal ulong CellMsgDialogClose(PpuThread ppu)
         {
             //TODO
             Console.WriteLine($"[CellSysutil] cellMsgDialogClose");
             return CellOk;
         }
 
-        internal ulong CellSaveDataEnableOverlay(PPUThread ppu)
+        internal ulong CellSaveDataEnableOverlay(PpuThread ppu)
         {
             Console.WriteLine($"[CellSysutil] cellSaveDataEnableOverlay");
             return CellOk;

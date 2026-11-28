@@ -62,7 +62,7 @@ namespace PS3Sharp.Cell.Rsx
         internal const uint LabelsSize = 0x10 * 256;
         internal const ulong FrameTimeUs = (ulong)(16.666 * 1000);
 
-        private PPU.PPUThread? _RSX_PPU_Thread;            // For executing rsx callbacks that are ppu functions
+        private Ppu.PpuThread? _RSX_PPU_Thread;            // For executing rsx callbacks that are ppu functions
         private readonly ThreadManager _threadManager;
         private readonly MemoryManager _memoryManager;
         private readonly EmulatorWindow _window;

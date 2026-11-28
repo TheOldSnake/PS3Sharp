@@ -1,7 +1,7 @@
 using Iced.Intel;
-using static PS3Sharp.Cell.PPU.Recompiler.IR.IRGenerator;
+using static PS3Sharp.Cell.Ppu.Recompiler.IR.IRGenerator;
 
-namespace PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator
+namespace PS3Sharp.Cell.Ppu.Recompiler.X64.RegisterAllocator
 {
     internal sealed partial class X64RegisterAllocator
     {

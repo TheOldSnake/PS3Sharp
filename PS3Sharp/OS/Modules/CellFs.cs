@@ -1,4 +1,4 @@
-﻿using PS3Sharp.Cell.PPU;
+﻿using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.FileSystem;
 using PS3Sharp.GuestMemory;
@@ -22,31 +22,31 @@ namespace PS3Sharp.OS.Modules
         }
 
         // Dispatch the calls to sysFs handler
-        internal ulong CellFsAioInit(PPUThread ppu) => _sysFs.SysFsAioInit(ppu);
+        internal ulong CellFsAioInit(PpuThread ppu) => _sysFs.SysFsAioInit(ppu);
 
-        internal ulong CellFsStat(PPUThread ppu) => _sysFs.SysFsStat(ppu);
+        internal ulong CellFsStat(PpuThread ppu) => _sysFs.SysFsStat(ppu);
 
-        internal ulong CellFsFstat(PPUThread ppu) => _sysFs.SysFsFstat(ppu);
+        internal ulong CellFsFstat(PpuThread ppu) => _sysFs.SysFsFstat(ppu);
 
-        internal ulong CellFsOpen(PPUThread ppu) => _sysFs.SysFsOpen(ppu);
+        internal ulong CellFsOpen(PpuThread ppu) => _sysFs.SysFsOpen(ppu);
 
-        internal ulong CellFsLseek(PPUThread ppu) => _sysFs.SysFsLseek(ppu);
+        internal ulong CellFsLseek(PpuThread ppu) => _sysFs.SysFsLseek(ppu);
 
-        internal ulong CellFsRead(PPUThread ppu) => _sysFs.SysFsRead(ppu);  // Note: There is a slight difference
+        internal ulong CellFsRead(PpuThread ppu) => _sysFs.SysFsRead(ppu);  // Note: There is a slight difference
 
-        internal ulong CellFsWrite(PPUThread ppu) => _sysFs.SysFsWrite(ppu);
+        internal ulong CellFsWrite(PpuThread ppu) => _sysFs.SysFsWrite(ppu);
 
-        internal ulong CellFsClose(PPUThread ppu) => _sysFs.SysFsClose(ppu);
+        internal ulong CellFsClose(PpuThread ppu) => _sysFs.SysFsClose(ppu);
 
-        internal ulong CellFsMakedir(PPUThread ppu) => _sysFs.SysFsMkDir(ppu);
+        internal ulong CellFsMakedir(PpuThread ppu) => _sysFs.SysFsMkDir(ppu);
 
-        internal ulong CellFsReaddir(PPUThread ppu) => _sysFs.SysFsReadDir(ppu);
+        internal ulong CellFsReaddir(PpuThread ppu) => _sysFs.SysFsReadDir(ppu);
 
-        internal ulong CellFsOpenDir(PPUThread ppu) => _sysFs.SysFsOpenDir(ppu);
+        internal ulong CellFsOpenDir(PpuThread ppu) => _sysFs.SysFsOpenDir(ppu);
 
-        internal ulong CellFsCloseDir(PPUThread ppu) => _sysFs.SysFsCloseDir(ppu);
+        internal ulong CellFsCloseDir(PpuThread ppu) => _sysFs.SysFsCloseDir(ppu);
 
-        internal ulong CellFsGetFreeSize(PPUThread ppu)
+        internal ulong CellFsGetFreeSize(PpuThread ppu)
         {
             GuestVoidPtr path_ptr = ppu.ReadArg<GuestVoidPtr>(Arg0);
             GuestPtr<BigEndian<uint>> block_size_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg1);
@@ -58,7 +58,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellFsGetDirectoryEntries(PPUThread ppu)
+        internal ulong CellFsGetDirectoryEntries(PpuThread ppu)
         {
             int fd = ppu.ReadArg<int>(Arg0);
             GuestPtr<CellFsDirent> direentPtr = ppu.ReadArg<GuestPtr<CellFsDirent>>(Arg1);

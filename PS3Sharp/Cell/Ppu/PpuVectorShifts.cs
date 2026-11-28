@@ -1,6 +1,6 @@
-﻿namespace PS3Sharp.Cell.PPU
+﻿namespace PS3Sharp.Cell.Ppu
 {
-    internal sealed partial class PPUThread
+    internal sealed partial class PpuThread
     {
         internal static ReadOnlySpan<UInt128> LVSLShiftTable => LVSLShiftValues;
         internal static ReadOnlySpan<UInt128> LVSRShiftTable => LVSRShiftValues;

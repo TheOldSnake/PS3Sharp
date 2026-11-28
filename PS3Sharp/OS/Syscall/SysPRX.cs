@@ -1,4 +1,4 @@
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using PS3Sharp.OS.NID;
@@ -16,7 +16,7 @@ namespace PS3Sharp.OS.Syscall
             _memoryManager = memoryManager;
         }
 
-        internal ulong SysPRXLoadModule(PPUThread ppu)
+        internal ulong SysPRXLoadModule(PpuThread ppu)
         {
             GuestVoidPtr path_ptr = ppu.ReadArg<GuestVoidPtr>(Arg0); //const char* path
             string path = _memoryManager.ReadString(path_ptr);
@@ -24,7 +24,7 @@ namespace PS3Sharp.OS.Syscall
             return 0; // should return module id?
         }
 
-        internal ulong SysPRXGetModuleIDByName(PPUThread ppu)
+        internal ulong SysPRXGetModuleIDByName(PpuThread ppu)
         {
             GuestVoidPtr name_ptr = ppu.ReadArg<GuestVoidPtr>(Arg0); //const char* path
             string name = _memoryManager.ReadString(name_ptr);

@@ -1,5 +1,5 @@
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using StbImageSharp;
@@ -93,7 +93,7 @@ namespace PS3Sharp.OS.Modules
             _memoryManager = memoryManager;
         }
 
-        internal ulong CellPngDecCreate(PPUThread ppu)
+        internal ulong CellPngDecCreate(PpuThread ppu)
         {
             GuestPtr<BigEndian<uint>> handle_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             uint thread_in_param_ptr = ppu.ReadArg<uint>(Arg1);
@@ -118,7 +118,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellPngDecOpen(PPUThread ppu)
+        internal ulong CellPngDecOpen(PpuThread ppu)
         {
             uint handle = ppu.ReadArg<uint>(Arg0);
             GuestPtr<BigEndian<uint>> sub_handle_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg1);
@@ -139,7 +139,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellPngDecReadHeader(PPUThread ppu)
+        internal ulong CellPngDecReadHeader(PpuThread ppu)
         {
             uint handle = ppu.ReadArg<uint>(Arg0);
             uint sub_handle = ppu.ReadArg<uint>(Arg1);
@@ -170,7 +170,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellPngDecSetParameter(PPUThread ppu)
+        internal ulong CellPngDecSetParameter(PpuThread ppu)
         {
             uint handle = ppu.ReadArg<uint>(Arg0);
             uint sub_handle = ppu.ReadArg<uint>(Arg1);
@@ -209,7 +209,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellPngDecDecodeData(PPUThread ppu)
+        internal ulong CellPngDecDecodeData(PpuThread ppu)
         {
             uint handle = ppu.ReadArg<uint>(Arg0);
             uint sub_handle = ppu.ReadArg<uint>(Arg1);
@@ -246,7 +246,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellPngDecClose(PPUThread ppu)
+        internal ulong CellPngDecClose(PpuThread ppu)
         {
             uint handle = ppu.ReadArg<uint>(Arg0);
 
@@ -263,7 +263,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellPngDecDestroy(PPUThread ppu)
+        internal ulong CellPngDecDestroy(PpuThread ppu)
         {
             uint handle = ppu.ReadArg<uint>(Arg0);
 

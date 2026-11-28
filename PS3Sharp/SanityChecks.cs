@@ -1,11 +1,11 @@
-﻿using PS3Sharp.Cell.PPU;
+﻿using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Cell.Rsx;
 using PS3Sharp.Cell.Spu;
 using PS3Sharp.Common;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using static PS3Sharp.Cell.PPU.PPUThread;
+using static PS3Sharp.Cell.Ppu.PpuThread;
 using static PS3Sharp.Cell.Rsx.FragmentShaderGenerator;
 using static PS3Sharp.Cell.Rsx.VertexShaderGenerator;
 
@@ -29,19 +29,19 @@ namespace PS3Sharp
 
             unsafe
             {
-                if (sizeof(PPUGPR) != sizeof(ulong))
+                if (sizeof(PpuGpr) != sizeof(ulong))
                 {
-                    throw new InvalidOperationException($"Unexpected PPU GPR Size = {sizeof(PPUGPR)}");
+                    throw new InvalidOperationException($"Unexpected PPU GPR Size = {sizeof(PpuGpr)}");
                 }
 
-                if (sizeof(PPUFPR) != sizeof(ulong))
+                if (sizeof(PpuFpr) != sizeof(ulong))
                 {
-                    throw new InvalidOperationException($"Unexpected PPU FPR Size = {sizeof(PPUFPR)}");
+                    throw new InvalidOperationException($"Unexpected PPU FPR Size = {sizeof(PpuFpr)}");
                 }
 
-                if (sizeof(PPUVR) != sizeof(UInt128))
+                if (sizeof(PpuVr) != sizeof(UInt128))
                 {
-                    throw new InvalidOperationException($"Unexpected PPU VR Size = {sizeof(PPUVR)}");
+                    throw new InvalidOperationException($"Unexpected PPU VR Size = {sizeof(PpuVr)}");
                 }
             }
         }
@@ -150,9 +150,9 @@ namespace PS3Sharp
         {
             unsafe
             {
-                if (sizeof(PPUInstruction) != sizeof(uint))
+                if (sizeof(PpuInstruction) != sizeof(uint))
                 {
-                    throw new InvalidOperationException($"Unexpected PPUInstruction Size = {sizeof(PPUInstruction)}");
+                    throw new InvalidOperationException($"Unexpected PPUInstruction Size = {sizeof(PpuInstruction)}");
                 }
 
                 if (sizeof(SpuInstruction) != sizeof(uint))

@@ -1,6 +1,6 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using PS3Sharp.Cell.PPU.Interpreter;
+using PS3Sharp.Cell.Ppu.Interpreter;
 using PS3Sharp.Common;
 using System.Runtime.CompilerServices;
 
@@ -600,7 +600,7 @@ namespace PS3Sharp.Cell.Rsx
 
             if (!_cellGcmSys.FlipHandler.IsNullPtr)
             {
-                PPUInterpreter.ExecuteFunction(_RSX_PPU_Thread, _cellGcmSys.FlipHandler, toc: true, [1, 0, 0, 0, 0]);
+                PpuInterpreter.ExecuteFunction(_RSX_PPU_Thread, _cellGcmSys.FlipHandler, toc: true, [1, 0, 0, 0, 0]);
             }
 
             _memoryManager.Write<BigEndian<ulong>>(LabelsPtr + 0x10, 0);
@@ -616,7 +616,7 @@ namespace PS3Sharp.Cell.Rsx
         {
             if (!_cellGcmSys.VblankHandler.IsNullPtr)
             {
-                PPUInterpreter.ExecuteFunction(_RSX_PPU_Thread, _cellGcmSys.VblankHandler, toc: true, [1, 0, 0, 0, 0]);
+                PpuInterpreter.ExecuteFunction(_RSX_PPU_Thread, _cellGcmSys.VblankHandler, toc: true, [1, 0, 0, 0, 0]);
             }
         }
 

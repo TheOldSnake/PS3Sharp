@@ -1,5 +1,5 @@
-using PS3Sharp.Cell.PPU;
-using PS3Sharp.Cell.PPU.Interpreter;
+using PS3Sharp.Cell.Ppu;
+using PS3Sharp.Cell.Ppu.Interpreter;
 using PS3Sharp.Common;
 using PS3Sharp.FileSystem;
 using PS3Sharp.GuestMemory;
@@ -20,8 +20,8 @@ namespace PS3Sharp.OS
         private readonly MemoryManager _memoryManager;
         private readonly ModulePatcher _modulePatcher;
         private readonly PRX.PRXManager _prxManager;
-        private readonly ImmutableDictionary<SyscallID, Func<PPUThread, ulong>> _syscallTable;
-        private readonly ImmutableDictionary<uint, Func<PPUThread, ulong>> _moduleTable;
+        private readonly ImmutableDictionary<SyscallID, Func<PpuThread, ulong>> _syscallTable;
+        private readonly ImmutableDictionary<uint, Func<PpuThread, ulong>> _moduleTable;
 
         // Syscall handlers
         internal SysTTY SysTTYHandler { get; }
@@ -126,7 +126,7 @@ namespace PS3Sharp.OS
             _moduleTable = CreateModuleTable();
         }
 
-        internal void DispatchSyscall(PPUThread ppu, uint lev)
+        internal void DispatchSyscall(PpuThread ppu, uint lev)
         {
             SyscallID id = (SyscallID)ppu.ReadArg<uint>(SyscallIdReg);
 
@@ -143,7 +143,7 @@ namespace PS3Sharp.OS
                 return;
             }
 
-            if (_syscallTable.TryGetValue(id, out Func<PPUThread, ulong>? handler))
+            if (_syscallTable.TryGetValue(id, out Func<PpuThread, ulong>? handler))
             {
                 ulong result = handler(ppu);
                 ppu.Return(result);
@@ -155,7 +155,7 @@ namespace PS3Sharp.OS
             }
         }
 
-        private void DispatchModule(PPUThread ppu)
+        private void DispatchModule(PpuThread ppu)
         {
             uint stubAddress = ppu.GetPC() - 8; // The instruction before syscall
             ModuleStubInfo info = _modulePatcher.GetModuleInfo(stubAddress);
@@ -163,13 +163,13 @@ namespace PS3Sharp.OS
             // Check if function is imported
             if (_prxManager.TryGetFunction(info.NID, out uint ptr))
             {
-                ulong returnedValue = PPUInterpreter.ExecuteFunction(ppu, ptr, toc: true, []);
+                ulong returnedValue = PpuInterpreter.ExecuteFunction(ppu, ptr, toc: true, []);
                 return;
             }
 
             ulong result;
 
-            if (_moduleTable.TryGetValue(info.NID, out Func<PPUThread, ulong>? handler))
+            if (_moduleTable.TryGetValue(info.NID, out Func<PpuThread, ulong>? handler))
             {
                 result = handler(ppu);
             }
@@ -181,13 +181,13 @@ namespace PS3Sharp.OS
             ppu.Return(result);
         }
 
-        private ulong ModuleStub(ModuleStubInfo info, PPUThread ppu)
+        private ulong ModuleStub(ModuleStubInfo info, PpuThread ppu)
         {
             Console.WriteLine($"[{ppu.ThreadName}] unimplemented {info.ModuleName} -> {info.FunctionName}");
             return CellOk;
         }
 
-        private void LogLLECall(PPUThread ppu, uint ptr, ModuleStubInfo info, ulong returnValue)
+        private void LogLLECall(PpuThread ppu, uint ptr, ModuleStubInfo info, ulong returnValue)
         {
             uint pc = _memoryManager.Read<BigEndian<uint>>(ptr);
             uint arg0 = ppu.ReadArg<uint>(Arg0);

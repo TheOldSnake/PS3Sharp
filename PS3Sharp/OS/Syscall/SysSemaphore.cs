@@ -1,4 +1,4 @@
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using PS3Sharp.OS.LV2;
@@ -20,7 +20,7 @@ namespace PS3Sharp.OS.Syscall
             _memoryManager = memoryManager;
         }
 
-        internal ulong SysSemaphoreCreate(PPUThread ppu)
+        internal ulong SysSemaphoreCreate(PpuThread ppu)
         {
             GuestPtr<BigEndian<uint>> semaphore_id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             GuestPtr<SysSemaphoreAttribute> semaphore_attribute_ptr = ppu.ReadArg<GuestPtr<SysSemaphoreAttribute>>(Arg1);
@@ -35,7 +35,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysSemaphoreDestroy(PPUThread ppu)
+        internal ulong SysSemaphoreDestroy(PpuThread ppu)
         {
             uint handle = ppu.ReadArg<uint>(Arg0);
 
@@ -44,7 +44,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysSemaphoreWait(PPUThread ppu)
+        internal ulong SysSemaphoreWait(PpuThread ppu)
         {
             uint handle = ppu.ReadArg<uint>(Arg0);
             ulong timeout_us = ppu.ReadArg<ulong>(Arg1);
@@ -65,7 +65,7 @@ namespace PS3Sharp.OS.Syscall
             return result;
         }
 
-        internal ulong SysSemaphoreTryWait(PPUThread ppu)
+        internal ulong SysSemaphoreTryWait(PpuThread ppu)
         {
             uint handle = ppu.ReadArg<uint>(Arg0);
 
@@ -79,7 +79,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal ulong SysSemaphorePost(PPUThread ppu)
+        internal ulong SysSemaphorePost(PpuThread ppu)
         {
             uint handle = ppu.ReadArg<uint>(Arg0);
             uint count = ppu.ReadArg<uint>(Arg1);

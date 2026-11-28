@@ -1,5 +1,5 @@
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using System.Collections.Concurrent;
@@ -37,7 +37,7 @@ namespace PS3Sharp.OS.LV2
             Handle = _memoryManager.GetHandle();
         }
 
-        internal ulong Wait(PPUThread ppu, ulong us_timeout = 0)
+        internal ulong Wait(PpuThread ppu, ulong us_timeout = 0)
         {
             if (!_mutex.IsEntered)
             {
@@ -123,7 +123,7 @@ namespace PS3Sharp.OS.LV2
             return CellOk;
         }
 
-        private bool InterruptableWait(PPUThread ppu, LV2CondWaiter waiter)
+        private bool InterruptableWait(PpuThread ppu, LV2CondWaiter waiter)
         {
             // Return true if the event was signaled, false if the thread was interrupted
             while (true)

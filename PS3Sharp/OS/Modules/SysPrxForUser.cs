@@ -1,5 +1,5 @@
-using PS3Sharp.Cell.PPU;
-using PS3Sharp.Cell.PPU.Interpreter;
+using PS3Sharp.Cell.Ppu;
+using PS3Sharp.Cell.Ppu.Interpreter;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using static PS3Sharp.Cell.Arguments;
@@ -19,7 +19,7 @@ namespace PS3Sharp.OS.Modules
             _memoryManager = memoryManager;
         }
 
-        internal ulong SysInitializeTLS(PPUThread ppu)
+        internal ulong SysInitializeTLS(PpuThread ppu)
         {
             ulong thread_id = ppu.ReadArg<ulong>(Arg0);
             uint tls_seg_addr = ppu.ReadArg<uint>(Arg1);
@@ -39,7 +39,7 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        internal ulong SysProcessExit(PPUThread ppu)
+        internal ulong SysProcessExit(PpuThread ppu)
         {
             int exitCode = ppu.ReadArg<int>(Arg0);
             ppu.StopThread();
@@ -49,7 +49,7 @@ namespace PS3Sharp.OS.Modules
             if (exitCode > 0)
             {
                 Console.WriteLine($"[SysPrxForUser] sys_process_exit call stack:");
-                PPUInterpreter.PrintCallstack(ppu);
+                PpuInterpreter.PrintCallstack(ppu);
             }
 
             ppu.SetExitCode(exitCode);
@@ -58,28 +58,28 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong SysSpinlockInitialize(PPUThread ppu)
+        internal ulong SysSpinlockInitialize(PpuThread ppu)
         {
             //TODO
             Console.WriteLine($"[SysPrxForUser] sys_spinlock_initialize");
             return CellOk;
         }
 
-        internal ulong SysSpinlockUnlock(PPUThread ppu)
+        internal ulong SysSpinlockUnlock(PpuThread ppu)
         {
             //TODO
             Console.WriteLine($"[SysPrxForUser] sys_spinlock_unlock");
             return CellOk;
         }
 
-        internal ulong SysSpinlockLock(PPUThread ppu)
+        internal ulong SysSpinlockLock(PpuThread ppu)
         {
             //TODO
             Console.WriteLine($"[SysPrxForUser] sys_spinlock_lock");
             return CellOk;
         }
 
-        internal ulong SysMmapperAllocateMemory(PPUThread ppu)
+        internal ulong SysMmapperAllocateMemory(PpuThread ppu)
         {
             //Allocates physical memory, and returns a handle
 
@@ -103,7 +103,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong SysMmapperFreeMemory(PPUThread ppu)
+        internal ulong SysMmapperFreeMemory(PpuThread ppu)
         {
             //Fress memory by handle
             uint handle = ppu.ReadArg<uint>(Arg0);
@@ -118,42 +118,42 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong SysMmapperUnmapMemory(PPUThread ppu)
+        internal ulong SysMmapperUnmapMemory(PpuThread ppu)
         {
             //TODO
             Console.WriteLine($"[SysPrxForUser] sys_mmapper_unmap_memory");
             return CellOk;
         }
 
-        internal ulong _Sys_Process_atexitspawn(PPUThread ppu)
+        internal ulong _Sys_Process_atexitspawn(PpuThread ppu)
         {
             //TODO
             Console.WriteLine($"[SysPrxForUser] _sys_process_atexitspawn");
             return CellOk;
         }
 
-        internal ulong _Sys_Process_at_Exitspawn(PPUThread ppu)
+        internal ulong _Sys_Process_at_Exitspawn(PpuThread ppu)
         {
             //TODO
             Console.WriteLine($"[SysPrxForUser] _sys_process_at_Exitspawn");
             return CellOk;
         }
 
-        internal ulong Sys_game_process_exitspawn2(PPUThread ppu)
+        internal ulong Sys_game_process_exitspawn2(PpuThread ppu)
         {
             //TODO
             Console.WriteLine($"[SysPrxForUser] sys_game_process_exitspawn2");
             return CellOk;
         }
 
-        internal ulong Sys_Prx_Exitspawn_With_Level(PPUThread ppu)
+        internal ulong Sys_Prx_Exitspawn_With_Level(PpuThread ppu)
         {
             //TODO
             Console.WriteLine($"[SysPrxForUser] sys_prx_exitspawn_with_level");
             return CellOk;
         }
 
-        internal ulong _Sys_Memset(PPUThread ppu)
+        internal ulong _Sys_Memset(PpuThread ppu)
         {
             GuestVoidPtr dest = ppu.ReadArg<GuestVoidPtr>(Arg0);
             int ch = ppu.ReadArg<int>(Arg1);
@@ -164,7 +164,7 @@ namespace PS3Sharp.OS.Modules
             return dest;
         }
 
-        internal ulong _Sys_Strncpy(PPUThread ppu)
+        internal ulong _Sys_Strncpy(PpuThread ppu)
         {
             uint dest = ppu.ReadArg<uint>(Arg0);
             uint src = ppu.ReadArg<uint>(Arg1);

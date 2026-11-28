@@ -1,6 +1,6 @@
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
-using PS3Sharp.Cell.PPU.Interpreter;
+using PS3Sharp.Cell.Ppu;
+using PS3Sharp.Cell.Ppu.Interpreter;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using static PS3Sharp.Cell.Arguments;
@@ -26,7 +26,7 @@ namespace PS3Sharp.OS.Syscall
             _memoryManager = memoryManager;
         }
 
-        internal ulong SysPPUThreadGetID(PPUThread ppu)
+        internal ulong SysPPUThreadGetID(PpuThread ppu)
         {
             GuestPtr<BigEndian<ulong>> id_ptr = ppu.ReadArg<GuestPtr<BigEndian<ulong>>>(Arg0);
             _memoryManager.Write<BigEndian<ulong>>(id_ptr, ppu.ThreadID);
@@ -35,30 +35,30 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysPPUThreadGetPriority(PPUThread ppu)
+        internal ulong SysPPUThreadGetPriority(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
             GuestPtr<BigEndian<int>> prio_ptr = ppu.ReadArg<GuestPtr<BigEndian<int>>>(Arg1);
 
             //Console.WriteLine($"[sys_ppu_thread] sys_ppu_thread_get_priority ID = 0x{id:X8}");
-            PPUThread? thread = ppu.ThreadManager.GetPPUThreadByID(id);
+            PpuThread? thread = ppu.ThreadManager.GetPPUThreadByID(id);
             _memoryManager.Write<BigEndian<int>>(prio_ptr, thread.ThreadPriority);
             return CellOk;
         }
 
-        internal ulong SysPPUThreadSetPriority(PPUThread ppu)
+        internal ulong SysPPUThreadSetPriority(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
             int priority = ppu.ReadArg<int>(Arg1);
 
             //Console.WriteLine($"[sys_ppu_thread] sys_ppu_thread_set_priority ID = 0x{id:X8}");
-            PPUThread? thread = ppu.ThreadManager.GetPPUThreadByID(id);
+            PpuThread? thread = ppu.ThreadManager.GetPPUThreadByID(id);
             thread?.SetThreadPriority(priority);
 
             return CellOk;
         }
 
-        internal ulong SysPPUThreadCreate(PPUThread ppu)
+        internal ulong SysPPUThreadCreate(PpuThread ppu)
         {
             //int sys_ppu_thread_create(sys_ppu_thread_t *thread_id, & void (*entry)(uint64_t), uint64_t arg, 0, int prio, size_t stacksize, uint64_t flags, const char *threadname); 
 
@@ -80,7 +80,7 @@ namespace PS3Sharp.OS.Syscall
             }
 
             //Create a new PPU thread
-            PPUThread ppu_thread = _threadManager.CreatePPUThread(name, entry, stacksize, arg, ppu.SyscallDispatcher);
+            PpuThread ppu_thread = _threadManager.CreatePPUThread(name, entry, stacksize, arg, ppu.SyscallDispatcher);
             ppu_thread.StartThread();
 
             _memoryManager.Write<BigEndian<ulong>>(id_ptr, ppu_thread.ThreadID);
@@ -89,7 +89,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysPPUThreadExit(PPUThread ppu)
+        internal ulong SysPPUThreadExit(PpuThread ppu)
         {
             int exit_code = ppu.ReadArg<int>(Arg0);
             Console.WriteLine($"[SysPPUThread] sys_ppu_thread_exit: {ppu.ThreadName} thread_id = 0x{ppu.ThreadID:X8} exit_code = {exit_code}");
@@ -105,13 +105,13 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysPPUThreadYield(PPUThread ppu)
+        internal ulong SysPPUThreadYield(PpuThread ppu)
         {
             Thread.Yield();
             return CellOk;
         }
 
-        internal ulong SysPPUThreadJoin(PPUThread ppu)
+        internal ulong SysPPUThreadJoin(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
             GuestPtr<BigEndian<ulong>> exit_code_ptr = ppu.ReadArg<GuestPtr<BigEndian<ulong>>>(Arg1);
@@ -123,7 +123,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysPPUThreadOnce(PPUThread ppu)
+        internal ulong SysPPUThreadOnce(PpuThread ppu)
         {
             // TODO
             // Minecraft needs this !
@@ -139,7 +139,7 @@ namespace PS3Sharp.OS.Syscall
                 //uint pc = MemoryManager.Read<uint>(ptr_to_pc);
                 //ReadOnlySpan<ulong> args = [0,0,0,0,0];
 
-                PPUInterpreter.ExecuteFunction(ppu, ptr_to_pc, toc: true, []);
+                PpuInterpreter.ExecuteFunction(ppu, ptr_to_pc, toc: true, []);
 
                 _memoryManager.Write<BigEndian<uint>>(once_ctrl_ptr, 1);        //SYS_PPU_THREAD_DONE_INIT
             }
@@ -154,7 +154,7 @@ namespace PS3Sharp.OS.Syscall
             internal BigEndian<uint> size;
         }
 
-        internal ulong SysPPUThreadGetStackInfo(PPUThread ppu)
+        internal ulong SysPPUThreadGetStackInfo(PpuThread ppu)
         {
             Console.WriteLine($"[SysPPUThread] SysPPUThreadGetStackInfo");
 

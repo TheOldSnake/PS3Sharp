@@ -1,4 +1,4 @@
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using static PS3Sharp.Cell.Arguments;
@@ -19,7 +19,7 @@ namespace PS3Sharp.OS.Syscall
             _memoryManager = memoryManager;
         }
 
-        internal ulong SysTTYWrite(PPUThread ppu)
+        internal ulong SysTTYWrite(PpuThread ppu)
         {
 
             uint channel = ppu.ReadArg<uint>(Arg0); // TODO

@@ -1,4 +1,4 @@
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using PS3Sharp.OS.LV2;
@@ -22,7 +22,7 @@ namespace PS3Sharp.OS.Modules
             _memoryManager = memoryManager;
         }
 
-        internal ulong SysLWmutexCreate(PPUThread ppu)
+        internal ulong SysLWmutexCreate(PpuThread ppu)
         {
             GuestPtr<LwMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LwMutex>>(Arg0);
             GuestPtr<LwMutexAttrib> attribute_ptr = ppu.ReadArg<GuestPtr<LwMutexAttrib>>(Arg1);
@@ -54,7 +54,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong SysLWmutexLock(PPUThread ppu)
+        internal ulong SysLWmutexLock(PpuThread ppu)
         {
             GuestPtr<LwMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LwMutex>>(Arg0);
             ulong us_timeout = ppu.ReadArg<ulong>(Arg1);
@@ -74,7 +74,7 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        internal ulong SysLWmutexTryLock(PPUThread ppu)
+        internal ulong SysLWmutexTryLock(PpuThread ppu)
         {
             GuestPtr<LwMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LwMutex>>(Arg0);
 
@@ -94,7 +94,7 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        internal ulong SysLWmutexUnlock(PPUThread ppu)
+        internal ulong SysLWmutexUnlock(PpuThread ppu)
         {
             GuestPtr<LwMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LwMutex>>(Arg0);
 
@@ -114,7 +114,7 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        internal ulong SysLWmutexDestroy(PPUThread ppu)
+        internal ulong SysLWmutexDestroy(PpuThread ppu)
         {
             GuestPtr<LwMutex> lwmutex_ptr = ppu.ReadArg<GuestPtr<LwMutex>>(Arg0);
 

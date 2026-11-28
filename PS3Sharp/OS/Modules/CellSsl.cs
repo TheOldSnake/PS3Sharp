@@ -1,4 +1,4 @@
-﻿using PS3Sharp.Cell.PPU;
+﻿using PS3Sharp.Cell.Ppu;
 using PS3Sharp.GuestMemory;
 using PS3Sharp.Common;
 using static PS3Sharp.Cell.Arguments;
@@ -18,7 +18,7 @@ namespace PS3Sharp.OS.Modules
             _certificatesData = LoadCertificatesData();
         }
 
-        internal ulong CellSslCertificateLoader(PPUThread ppu)
+        internal ulong CellSslCertificateLoader(PpuThread ppu)
         {
             ulong flag = ppu.ReadArg<ulong>(Arg0);
             uint bufPtr = ppu.ReadArg<uint>(Arg1);

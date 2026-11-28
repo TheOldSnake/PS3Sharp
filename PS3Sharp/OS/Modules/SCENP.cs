@@ -1,4 +1,4 @@
-﻿using PS3Sharp.Cell.PPU;
+﻿using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using static PS3Sharp.Cell.Arguments;
@@ -20,59 +20,59 @@ namespace PS3Sharp.OS.Modules
             _memoryManager = memoryManager;
         }
 
-        internal ulong SCENpInit(PPUThread ppu)
+        internal ulong SCENpInit(PpuThread ppu)
         {
             return CellOk;
         }
 
-        internal ulong SCENpScoreInit(PPUThread ppu)
+        internal ulong SCENpScoreInit(PpuThread ppu)
         {
             return CellOk;
         }
 
-        internal ulong SCENpTrophyRegisterContext(PPUThread ppu)
+        internal ulong SCENpTrophyRegisterContext(PpuThread ppu)
         {
             return CellOk;
         }
 
-        internal ulong SCENpManagerGetContentRatingFlag(PPUThread ppu)
+        internal ulong SCENpManagerGetContentRatingFlag(PpuThread ppu)
         {
             return CellOk;
         }
 
-        internal ulong SCENpBasicGetEvent(PPUThread ppu)
+        internal ulong SCENpBasicGetEvent(PpuThread ppu)
         {
             return SceNpBasicErrorNoEvent;
         }
 
-        internal ulong SCENpManagerGetNpId(PPUThread ppu)
+        internal ulong SCENpManagerGetNpId(PpuThread ppu)
         {
             return SceNpErrorOffline;
         }
 
-        internal ulong SCENpManagerGetStatus(PPUThread ppu)
+        internal ulong SCENpManagerGetStatus(PpuThread ppu)
         {
             GuestPtr<BigEndian<int>> stat_ptr = ppu.ReadArg<GuestPtr<BigEndian<int>>>(Arg0);
             _memoryManager.Write<BigEndian<int>>(stat_ptr, SceNpManagerStatusOffline);
             return CellOk;
         }
 
-        internal ulong SCENpScoreTerm(PPUThread ppu)
+        internal ulong SCENpScoreTerm(PpuThread ppu)
         {
             return CellOk;
         }
 
-        internal ulong SCENpDrmIsAvailable(PPUThread ppu)
+        internal ulong SCENpDrmIsAvailable(PpuThread ppu)
         {
             return CellOk;
         }
 
-        internal ulong SCENpBasicRegisterContextSensitiveHandler(PPUThread ppu)
+        internal ulong SCENpBasicRegisterContextSensitiveHandler(PpuThread ppu)
         {
             return CellOk;
         }
 
-        internal ulong SCENpManagerRegisterCallback(PPUThread ppu)
+        internal ulong SCENpManagerRegisterCallback(PpuThread ppu)
         {
             return CellOk;
         }

@@ -1,4 +1,4 @@
-﻿using PS3Sharp.Cell.PPU;
+﻿using PS3Sharp.Cell.Ppu;
 using PS3Sharp.GuestMemory;
 using static PS3Sharp.Cell.ErrorCode;
 
@@ -15,62 +15,62 @@ namespace PS3Sharp.OS.Modules
             _cellGcmSys = cellGcmSys;
         }
 
-        internal ulong CellRescInit(PPUThread ppu)
+        internal ulong CellRescInit(PpuThread ppu)
         {
             return CellOk;
         }
 
-        internal ulong CellRescVideoOutResolutionId2RescBufferMode(PPUThread ppu)
+        internal ulong CellRescVideoOutResolutionId2RescBufferMode(PpuThread ppu)
         {
             return CellOk;
         }
 
-        internal ulong CellRescSetDsts(PPUThread ppu)
+        internal ulong CellRescSetDsts(PpuThread ppu)
         {
             return CellOk;
         }
 
-        internal ulong CellRescSetDisplayMode(PPUThread ppu)
+        internal ulong CellRescSetDisplayMode(PpuThread ppu)
         {
             return CellOk;
         }
 
-        internal ulong CellRescGetBufferSize(PPUThread ppu)
+        internal ulong CellRescGetBufferSize(PpuThread ppu)
         {
             return CellOk;
         }
 
-        internal ulong CellRescSetBufferAddress(PPUThread ppu)
+        internal ulong CellRescSetBufferAddress(PpuThread ppu)
         {
             return CellOk;
         }
 
-        internal ulong CellRescGcmSurface2RescSrc(PPUThread ppu)
+        internal ulong CellRescGcmSurface2RescSrc(PpuThread ppu)
         {
             return CellOk;
         }
 
-        internal ulong CellRescSetSrc(PPUThread ppu)
+        internal ulong CellRescSetSrc(PpuThread ppu)
         {
             return CellOk;
         }
 
-        internal ulong CellRescGetFlipStatus(PPUThread ppu)
+        internal ulong CellRescGetFlipStatus(PpuThread ppu)
         {
             return _cellGcmSys.CellGcmGetFlipStatus(ppu);
         }
 
-        internal ulong CellRescResetFlipStatus(PPUThread ppu)
+        internal ulong CellRescResetFlipStatus(PpuThread ppu)
         {
             return _cellGcmSys.CellGcmResetFlipStatus(ppu);
         }
 
-        internal ulong CellRescSetConvertAndFlip(PPUThread ppu)
+        internal ulong CellRescSetConvertAndFlip(PpuThread ppu)
         {
             return _cellGcmSys.CellGcmSetFlip(ppu);
         }
 
-        internal ulong CellRescSetWaitFlip(PPUThread ppu)
+        internal ulong CellRescSetWaitFlip(PpuThread ppu)
         {
             return _cellGcmSys.CellGcmSetWaitFlip(ppu);
         }

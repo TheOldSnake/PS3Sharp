@@ -1,5 +1,5 @@
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.Elf;
 using PS3Sharp.GuestMemory;
@@ -133,10 +133,10 @@ namespace PS3Sharp.OS.Modules
 
             //Find lwz r2
             int count = 0;
-            PPUInstruction instruction = new() { Raw = memoryManager.Read<BigEndian<uint>>(stubAddress) };
+            PpuInstruction instruction = new() { Raw = memoryManager.Read<BigEndian<uint>>(stubAddress) };
             while (true)
             {
-                if (instruction.Op == Op.LWZ && instruction.Rt == 2)
+                if (instruction.Op == Op.Lwz && instruction.Rt == 2)
                 {
                     break;
                 }
@@ -154,7 +154,7 @@ namespace PS3Sharp.OS.Modules
             //Check which type the branch is
             bool isBctr = false;
             instruction.Raw = memoryManager.Read<BigEndian<uint>>(stubAddress + 8);
-            if (instruction.Op == Op.G13 && instruction.G13 == G13.BCCTR)
+            if (instruction.Op == Op.G13 && instruction.G13 == G13.Bcctr)
             {
                 isBctr = (instruction.Raw & 1) == 0;
             }

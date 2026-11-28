@@ -1,4 +1,4 @@
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using PS3Sharp.OS.LV2;
@@ -20,7 +20,7 @@ namespace PS3Sharp.OS.Syscall
             _memoryManager = memoryManager;
         }
 
-        internal ulong SysEventFlagCreate(PPUThread ppu)
+        internal ulong SysEventFlagCreate(PpuThread ppu)
         {
             GuestPtr<BigEndian<uint>> id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             GuestVoidPtr attributes_ptr = ppu.ReadArg<GuestVoidPtr>(Arg1);
@@ -35,7 +35,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysEventFlagDestroy(PPUThread ppu)
+        internal ulong SysEventFlagDestroy(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
             RemoveEventFlag(id);
@@ -44,7 +44,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysEventFlagWait(PPUThread ppu)
+        internal ulong SysEventFlagWait(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
             ulong bitPattern = ppu.ReadArg<ulong>(Arg1);
@@ -74,7 +74,7 @@ namespace PS3Sharp.OS.Syscall
             }
         }
 
-        internal ulong SysEventFlagSet(PPUThread ppu)
+        internal ulong SysEventFlagSet(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
             ulong bitPattern = ppu.ReadArg<ulong>(Arg1);
@@ -94,7 +94,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysEventFlagClear(PPUThread ppu)
+        internal ulong SysEventFlagClear(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
             ulong bitPattern = ppu.ReadArg<ulong>(Arg1);

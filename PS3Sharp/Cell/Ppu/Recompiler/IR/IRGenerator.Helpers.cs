@@ -1,4 +1,4 @@
-namespace PS3Sharp.Cell.PPU.Recompiler.IR
+namespace PS3Sharp.Cell.Ppu.Recompiler.IR
 {
     internal sealed partial class IRGenerator
     {
@@ -681,13 +681,13 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
             return result;
         }
 
-        internal void IRSyscall(PPUInstruction ppcInstruction, uint address)
+        internal void IRSyscall(PpuInstruction ppcInstruction, uint address)
         {
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.Syscall, default, ppcInstruction.Raw, address);
             _irContext.AddInstruction(instruction);
         }
 
-        internal void InterpreterFallback(PPUInstruction ppcInstruction)
+        internal void InterpreterFallback(PpuInstruction ppcInstruction)
         {
             IRInstruction instruction = IRInstruction.Create(IRInstruction.Op.InterpreterFallback, default, ppcInstruction.Raw);
             _irContext.AddInstruction(instruction);
@@ -703,26 +703,26 @@ namespace PS3Sharp.Cell.PPU.Recompiler.IR
         }
 
         // Static helpers
-        internal static bool IsBranch(PPUInstruction instruction)
+        internal static bool IsBranch(PpuInstruction instruction)
         {
             Op op = instruction.Op;
 
             if (op == Op.G13)
             {
                 G13 g13 = instruction.G13;
-                return g13 == G13.BCCTR || g13 == G13.BCLR;
+                return g13 == G13.Bcctr || g13 == G13.Bclr;
 
             }
             else
             {
-                return op == Op.Branch || op == Op.BC;
+                return op == Op.Branch || op == Op.Bc;
             }
         }
 
-        internal static bool IsSyscall(PPUInstruction instruction)
+        internal static bool IsSyscall(PpuInstruction instruction)
         {
             Op op = instruction.Op;
-            return op == Op.SC;
+            return op == Op.Sc;
         }
 
         internal static void EnsureSameType(Value a, Value b)

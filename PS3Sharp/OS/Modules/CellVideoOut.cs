@@ -1,5 +1,5 @@
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using System.Runtime.InteropServices;
@@ -178,7 +178,7 @@ namespace PS3Sharp.OS.Modules
             _memoryManager = memoryManager;
         }
 
-        internal ulong CellVideoOutGetResolutionAvailability(PPUThread ppu)
+        internal ulong CellVideoOutGetResolutionAvailability(PpuThread ppu)
         {
             //TODO
             uint video_out = ppu.ReadArg<uint>(Arg0);
@@ -191,7 +191,7 @@ namespace PS3Sharp.OS.Modules
             return 1; //seems that 1 means resolution is available
         }
 
-        internal ulong CellVideoOutConfigure(PPUThread ppu)
+        internal ulong CellVideoOutConfigure(PpuThread ppu)
         {
             //TODO
             uint video_out = ppu.ReadArg<uint>(Arg0);
@@ -207,7 +207,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellVideoOutGetResolution(PPUThread ppu)
+        internal ulong CellVideoOutGetResolution(PpuThread ppu)
         {
             uint resolutionID = ppu.ReadArg<uint>(Arg0);
             GuestPtr<CellVideoResolution> resPtr = ppu.ReadArg<GuestPtr<CellVideoResolution>>(Arg1);
@@ -233,7 +233,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellVideoOutGetState(PPUThread ppu)
+        internal ulong CellVideoOutGetState(PpuThread ppu)
         {
             //TODO
             uint video_out = ppu.ReadArg<uint>(Arg0);
@@ -264,7 +264,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellVideoOutGetNumberOfDevice(PPUThread ppu)
+        internal ulong CellVideoOutGetNumberOfDevice(PpuThread ppu)
         {
             //TODO
             uint video_out = ppu.ReadArg<uint>(Arg0);
@@ -272,7 +272,7 @@ namespace PS3Sharp.OS.Modules
             return 1;
         }
 
-        internal ulong CellVideoOutGetDeviceInfo(PPUThread ppu)
+        internal ulong CellVideoOutGetDeviceInfo(PpuThread ppu)
         {
             //TODO
             uint video_out = ppu.ReadArg<uint>(Arg0);

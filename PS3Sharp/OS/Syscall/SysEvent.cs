@@ -1,4 +1,4 @@
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using PS3Sharp.OS.LV2;
@@ -32,7 +32,7 @@ namespace PS3Sharp.OS.Syscall
 
         // sys_event_queue syscalls
 
-        internal ulong SysEventQueueCreate(PPUThread ppu)
+        internal ulong SysEventQueueCreate(PpuThread ppu)
         {
             GuestPtr<BigEndian<uint>> queue_id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             GuestPtr<SysEventQueueAttribute> queue_attribute_ptr = ppu.ReadArg<GuestPtr<SysEventQueueAttribute>>(Arg1);
@@ -51,7 +51,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysEventQueueReceive(PPUThread ppu)
+        internal ulong SysEventQueueReceive(PpuThread ppu)
         {
             uint queue_id = ppu.ReadArg<uint>(Arg0);
             GuestVoidPtr event_ptr = ppu.ReadArg<GuestVoidPtr>(Arg1); //?
@@ -90,7 +90,7 @@ namespace PS3Sharp.OS.Syscall
             return errorCode;
         }
 
-        internal ulong SysEventQueueDestroy(PPUThread ppu)
+        internal ulong SysEventQueueDestroy(PpuThread ppu)
         {
             uint queue_id = ppu.ReadArg<uint>(Arg0);
             int mode = ppu.ReadArg<int>(Arg1);      //?
@@ -101,7 +101,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysEventQueueTryReceive(PPUThread ppu)
+        internal ulong SysEventQueueTryReceive(PpuThread ppu)
         {
             uint queue_id = ppu.ReadArg<uint>(Arg0);
             GuestPtr<SysEventData> event_array_ptr = ppu.ReadArg<GuestPtr<SysEventData>>(Arg1);
@@ -123,7 +123,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysEventQueueDrain(PPUThread ppu)
+        internal ulong SysEventQueueDrain(PpuThread ppu)
         {
             uint queue_id = ppu.ReadArg<uint>(Arg0);
 
@@ -141,7 +141,7 @@ namespace PS3Sharp.OS.Syscall
 
         //sys_event_port syscalls
 
-        internal ulong SysEventPortCreate(PPUThread ppu)
+        internal ulong SysEventPortCreate(PpuThread ppu)
         {
             GuestPtr<BigEndian<uint>> eport_id_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             int port_type = ppu.ReadArg<int>(Arg1);
@@ -159,7 +159,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysEventPortDestroy(PPUThread ppu)
+        internal ulong SysEventPortDestroy(PpuThread ppu)
         {
             uint eport_id = ppu.ReadArg<uint>(Arg0);
 
@@ -170,7 +170,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysEventPortConnectLocal(PPUThread ppu)
+        internal ulong SysEventPortConnectLocal(PpuThread ppu)
         {
             uint event_port_id = ppu.ReadArg<uint>(Arg0);
             uint queue_id = ppu.ReadArg<uint>(Arg1);
@@ -192,7 +192,7 @@ namespace PS3Sharp.OS.Syscall
 			return CellOk;
 		}
 
-		internal ulong SysEventPortConnectIPC(PPUThread ppu)
+		internal ulong SysEventPortConnectIPC(PpuThread ppu)
         {
             uint event_port_id = ppu.ReadArg<uint>(Arg0);
             ulong ipc_key = ppu.ReadArg<ulong>(Arg1);
@@ -214,7 +214,7 @@ namespace PS3Sharp.OS.Syscall
 			return CellOk;
         }
 
-        internal ulong SysEventPortDisconnect(PPUThread ppu)
+        internal ulong SysEventPortDisconnect(PpuThread ppu)
         {
             uint event_port_id = ppu.ReadArg<uint>(Arg0);
 
@@ -230,7 +230,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysEventPortSend(PPUThread ppu)
+        internal ulong SysEventPortSend(PpuThread ppu)
         {
             uint event_port_id = ppu.ReadArg<uint>(Arg0);
             ulong data1 = ppu.ReadArg<ulong>(Arg1);

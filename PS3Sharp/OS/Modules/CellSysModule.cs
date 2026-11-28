@@ -1,4 +1,4 @@
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.GuestMemory;
 using System.Collections.Immutable;
 using static PS3Sharp.Cell.Arguments;
@@ -129,7 +129,7 @@ namespace PS3Sharp.OS.Modules
             _memoryManager = memoryManager;
         }
 
-        internal ulong CellSysmoduleLoadModule(PPUThread ppu)
+        internal ulong CellSysmoduleLoadModule(PpuThread ppu)
         {
             //TODO
             ushort id = ppu.ReadArg<ushort>(Arg0);
@@ -147,13 +147,13 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellSysmoduleUnloadModule(PPUThread ppu)
+        internal ulong CellSysmoduleUnloadModule(PpuThread ppu)
         {
             Console.WriteLine($"[CellSysModule] cellSysmoduleUnloadModule");
             return CellOk;
         }
 
-        internal ulong CellSysmoduleIsLoaded(PPUThread ppu)
+        internal ulong CellSysmoduleIsLoaded(PpuThread ppu)
         {
             Console.WriteLine($"[CellSysModule] cellSysmoduleIsLoaded");
             return CellOk;

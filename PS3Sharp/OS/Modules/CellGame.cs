@@ -1,5 +1,5 @@
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.FileSystem;
 using PS3Sharp.GuestMemory;
@@ -102,7 +102,7 @@ namespace PS3Sharp.OS.Modules
             _fileSystemManager = fileSystemManager;
         }
 
-        internal ulong CellGameBootCheck(PPUThread ppu)
+        internal ulong CellGameBootCheck(PpuThread ppu)
         {
             GuestPtr<BigEndian<uint>> typePtr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             GuestPtr<BigEndian<uint>> attribPtr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg1);
@@ -136,7 +136,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellGameContentPermit(PPUThread ppu)
+        internal ulong CellGameContentPermit(PpuThread ppu)
         {
             uint contentDirPtr = ppu.ReadArg<uint>(Arg0);
             uint UsrDirPtr = ppu.ReadArg<uint>(Arg1);
@@ -151,7 +151,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellGameGetParamInt(PPUThread ppu)
+        internal ulong CellGameGetParamInt(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
             GuestPtr<BigEndian<uint>> value_ptr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg1);
@@ -179,7 +179,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellGameGetParamString(PPUThread ppu)
+        internal ulong CellGameGetParamString(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
             GuestPtr<BigEndian<uint>> bufferPtr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg1);
@@ -218,19 +218,19 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong CellGameDataCheck(PPUThread ppu)
+        internal ulong CellGameDataCheck(PpuThread ppu)
         {
             Console.WriteLine($"[CellGame] cellGameDataCheck");
             return CellOk;
         }
 
-        internal ulong CellGameGetDiscContentInfoUpdatePath(PPUThread ppu)
+        internal ulong CellGameGetDiscContentInfoUpdatePath(PpuThread ppu)
         {
             Console.WriteLine($"[CellGame] cellGameGetDiscContentInfoUpdatePath");
             return CellOk;
         }
 
-        internal ulong CellGamePatchCheck(PPUThread ppu)
+        internal ulong CellGamePatchCheck(PpuThread ppu)
         {
             Console.WriteLine($"[CellGame] CellGamePatchCheck");
             return CellGameErrorNotpatch;

@@ -1,5 +1,5 @@
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using System.Collections.Concurrent;
@@ -45,7 +45,7 @@ namespace PS3Sharp.OS.LV2
             _queue.Add(evt);
         }
 
-        internal ulong Receive(PPUThread ppu, ulong us_timeout, out SysEventData sysEvent)
+        internal ulong Receive(PpuThread ppu, ulong us_timeout, out SysEventData sysEvent)
         {
             bool ok;
 
@@ -94,7 +94,7 @@ namespace PS3Sharp.OS.LV2
             }
         }
 
-        private bool InterruptableWait(PPUThread ppu, out SysEventData sysEvent)
+        private bool InterruptableWait(PpuThread ppu, out SysEventData sysEvent)
         {
             // Return true if it could take from the queue, false if the thread was interrupted
             while (true)

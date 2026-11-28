@@ -1,4 +1,4 @@
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using static PS3Sharp.Cell.Arguments;
@@ -19,7 +19,7 @@ namespace PS3Sharp.Syscall
             _memoryManager = memoryManager;
         }
 
-        internal ulong SysMMapperAllocateAddress(PPUThread ppu)
+        internal ulong SysMMapperAllocateAddress(PpuThread ppu)
         {
             //int sys_mmapper_allocate_address(size_t size, uint64_t flags, size_t alignment, sys_addr_t * alloc_addr); 
 
@@ -47,7 +47,7 @@ namespace PS3Sharp.Syscall
             return CellOk;
         }
 
-        internal ulong SysMMapperFreeAddress(PPUThread ppu)
+        internal ulong SysMMapperFreeAddress(PpuThread ppu)
         {
             GuestVoidPtr addr = ppu.ReadArg<GuestVoidPtr>(Arg0);
             if (!addr.IsNullPtr)
@@ -57,7 +57,7 @@ namespace PS3Sharp.Syscall
             return CellOk;
         }
 
-        internal ulong SysMMapperAllocateMemory(PPUThread ppu)
+        internal ulong SysMMapperAllocateMemory(PpuThread ppu)
         {
             ulong ipc_key = ppu.ReadArg<ulong>(Arg0);
             ulong size = ppu.ReadArg<ulong>(Arg1);
@@ -72,7 +72,7 @@ namespace PS3Sharp.Syscall
             return CellOk;
         }
 
-        internal ulong SysMMapperSearchAndMap(PPUThread ppu)
+        internal ulong SysMMapperSearchAndMap(PpuThread ppu)
         {
             //Search for block by Handle (id) and remap it
 
@@ -88,7 +88,7 @@ namespace PS3Sharp.Syscall
             return CellOk;
         }
 
-        internal ulong SysMMapperMapSharedMemory(PPUThread ppu)
+        internal ulong SysMMapperMapSharedMemory(PpuThread ppu)
         {
             uint address = ppu.ReadArg<uint>(Arg0);
             uint handle = ppu.ReadArg<uint>(Arg1);

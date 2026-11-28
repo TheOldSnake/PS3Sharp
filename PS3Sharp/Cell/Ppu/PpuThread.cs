@@ -1,4 +1,4 @@
-using PS3Sharp.Cell.PPU.Recompiler;
+using PS3Sharp.Cell.Ppu.Recompiler;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using PS3Sharp.HostMemory;
@@ -10,11 +10,11 @@ using System.Text;
 using static PS3Sharp.Cell.Arguments;
 using static PS3Sharp.GuestMemory.MemoryManager;
 
-namespace PS3Sharp.Cell.PPU
+namespace PS3Sharp.Cell.Ppu
 {
-    internal sealed unsafe partial class PPUThread : IDisposable, IEmulatorThread
+    internal sealed unsafe partial class PpuThread : IDisposable, IEmulatorThread
     {
-        internal enum PPUThreadStates
+        internal enum PpuThreadStates
         {
             Running,
             Paused,
@@ -28,7 +28,7 @@ namespace PS3Sharp.Cell.PPU
         internal MemoryManager MemoryManager { get; }
         internal ThreadManager ThreadManager { get; }
         internal LV2SyscallDispatcher SyscallDispatcher { get; }
-        internal PPURecompiler PPURecompiler { get; }
+        internal PpuRecompiler PpuRecompiler { get; }
         internal string ThreadName { get; }
         internal uint ThreadID { get; }
         internal int ThreadPriority { get; private set; }
@@ -37,17 +37,17 @@ namespace PS3Sharp.Cell.PPU
         internal int ExitCode { get; private set; }
         internal List<uint> CallStack { get; private set; } = [];
         internal SysUtil.SysUtilCallback[] SysUtilCallbacks { get; private set; } = new SysUtil.SysUtilCallback[4];   // Each thread has its own?
-        internal PPUThreadStates PPUThreadState { get; private set; } = PPUThreadStates.Stopped;
-        internal Stack<PPUState> SavedStates = new();
+        internal PpuThreadStates PPUThreadState { get; private set; } = PpuThreadStates.Stopped;
+        internal Stack<PpuState> SavedStates = new();
 
         internal bool IsMainThread => ThreadName == "main_thread";
         internal bool ShouldExit => ThreadManager.GlobalCancellationSource.IsCancellationRequested || LocalCancellationSource!.IsCancellationRequested;
 
-        internal NativeMemoryHandle<PPUState> StateHandle { get; private set; } = new((nuint)sizeof(PPUState));
-        internal PPUState* State => StateHandle.NativePointer;
-        internal PPUGPR* GPR => &State->GPR[0];
-        internal PPUFPR* FPR => &State->FPR[0];
-        internal PPUVR* VRF => &State->VRF[0];
+        internal NativeMemoryHandle<PpuState> StateHandle { get; private set; } = new((nuint)sizeof(PpuState));
+        internal PpuState* State => StateHandle.NativePointer;
+        internal PpuGpr* Gpr => &State->Gpr[0];
+        internal PpuFpr* Fpr => &State->Fpr[0];
+        internal PpuVr* Vrf => &State->Vrf[0];
 
         internal GCHandle? GCHandle { get; private set; }
 
@@ -58,10 +58,10 @@ namespace PS3Sharp.Cell.PPU
         internal struct Trace
         {
             internal uint PC;
-            internal PPUInstruction Instruction;
+            internal PpuInstruction Instruction;
         }
 
-        internal PPUThread(
+        internal PpuThread(
             string threadName,
             uint entryPointer,
             uint stackSize,
@@ -71,7 +71,7 @@ namespace PS3Sharp.Cell.PPU
             ThreadManager threadManager,
             MemoryManager memoryManager,
             LV2SyscallDispatcher syscallDispatcher,
-            PPURecompiler ppuRecompiler)
+            PpuRecompiler ppuRecompiler)
         {
 
             ThreadManager = threadManager;
@@ -79,9 +79,9 @@ namespace PS3Sharp.Cell.PPU
             SyscallDispatcher = syscallDispatcher;
             ThreadID = thread_id;
             ThreadName = threadName;
-            PPURecompiler = ppuRecompiler;
+            PpuRecompiler = ppuRecompiler;
 
-            ThreadStart threadStart = PPURecompiler.IsRecompilerUsable ? RunPPUThreadJIT : RunPPUThreadInterpreter;
+            ThreadStart threadStart = PpuRecompiler.IsRecompilerUsable ? RunPpuThreadJIT : RunPpuThreadInterpreter;
 
             NativeThread = new Thread(threadStart)
             {
@@ -91,7 +91,7 @@ namespace PS3Sharp.Cell.PPU
             SetGCHandle();
 
             State->PC = entryPointer != 0 ? MemoryManager.Read<BigEndian<uint>>(entryPointer) : 0;
-            State->VRSAVE = 0xFFFFFFFF;
+            State->VrSave = 0xFFFFFFFF;
 
             MemoryBlock stackArea = MemoryManager.Allocator.AllocateStackSpace(stackSize);
             MemoryBlock tls = MemoryManager.AllocateTlsBlock();
@@ -112,26 +112,26 @@ namespace PS3Sharp.Cell.PPU
             MemoryManager.RegisterReservationKey(ThreadID);
 
             CallStack.Add(State->PC);
-            Console.WriteLine($"PPU Thread: PC entry = 0x{State->PC:X} stack = {GPR[1]} r2 = {GPR[2]} tls = {GPR[13]}");
+            Console.WriteLine($"PPU Thread: PC entry = 0x{State->PC:X} stack = {Gpr[1]} r2 = {Gpr[2]} tls = {Gpr[13]}");
         }
 
         public void StartThread()
         {
             Console.WriteLine($"PPU Thread Started");
-            PPUThreadState = PPUThreadStates.Running;
+            PPUThreadState = PpuThreadStates.Running;
             NativeThread.Start();
         }
 
         public void PauseThread()
         {
             Console.WriteLine($"PPU Thread Paused");
-            PPUThreadState = PPUThreadStates.Paused;
+            PPUThreadState = PpuThreadStates.Paused;
         }
 
         public void StopThread()
         {
             Console.WriteLine($"PPU Thread Stopped");
-            PPUThreadState = PPUThreadStates.Stopped;
+            PPUThreadState = PpuThreadStates.Stopped;
             LocalCancellationSource!.Cancel();
         }
 
@@ -139,27 +139,27 @@ namespace PS3Sharp.Cell.PPU
 
         internal uint GetLR() => State->LR;
 
-        internal void Return(ulong result) => GPR[Arg0].Value64 = result;
+        internal void Return(ulong result) => Gpr[Arg0].Value64 = result;
 
         internal T ReadArg<T>(uint index) where T : unmanaged
         {
-            if (sizeof(T) > sizeof(PPUGPR))
+            if (sizeof(T) > sizeof(PpuGpr))
             {
                 throw new ArgumentException($"Can't read type <{nameof(T)}> (too large)");
             }
 
-            byte* base_address = &GPR[index].Value8;
+            byte* base_address = &Gpr[index].Value8;
             return Unsafe.Read<T>(base_address);
         }
 
         internal void WriteReg<T>(uint index, T value) where T : unmanaged
         {
-            if (sizeof(T) > sizeof(PPUGPR))
+            if (sizeof(T) > sizeof(PpuGpr))
             {
                 throw new ArgumentException($"Can't read type <{nameof(T)}> (too large)");
             }
 
-            byte* base_address = &GPR[index].Value8;
+            byte* base_address = &Gpr[index].Value8;
             Unsafe.Write<T>(base_address, value);
         }
 
@@ -173,29 +173,29 @@ namespace PS3Sharp.Cell.PPU
             ExitCode = code;
         }
 
-        internal static PPUThread GetInstance(IntPtr context)
+        internal static PpuThread GetInstance(IntPtr context)
         {
-            return (PPUThread)System.Runtime.InteropServices.GCHandle.FromIntPtr(context).Target!;
+            return (PpuThread)System.Runtime.InteropServices.GCHandle.FromIntPtr(context).Target!;
         }
 
         private void InitializeGPR(uint stackBase, uint entryPointer, ulong thread_arg, MemoryBlock tls)
         {
-            GPR[0].Value64 = State->PC;
-            GPR[1].Value64 = stackBase;
-            GPR[2].Value64 = entryPointer != 0 ? MemoryManager.Read<BigEndian<uint>>(entryPointer + 4) : 0;
-            GPR[3].Value64 = thread_arg;
-            GPR[11].Value64 = entryPointer;
-            GPR[12].Value64 = 0x100000;                      //malloc pagesize or something
-            GPR[13].Value64 = tls.VirtualAddress + 0x7030;   //first 0x30 bytes are reserved, guest code seems to access tls from r13 - ~0x7000 ?
+            Gpr[0].Value64 = State->PC;
+            Gpr[1].Value64 = stackBase;
+            Gpr[2].Value64 = entryPointer != 0 ? MemoryManager.Read<BigEndian<uint>>(entryPointer + 4) : 0;
+            Gpr[3].Value64 = thread_arg;
+            Gpr[11].Value64 = entryPointer;
+            Gpr[12].Value64 = 0x100000;                      //malloc pagesize or something
+            Gpr[13].Value64 = tls.VirtualAddress + 0x7030;   //first 0x30 bytes are reserved, guest code seems to access tls from r13 - ~0x7000 ?
         }
 
-        private void RunPPUThreadInterpreter()
+        private void RunPpuThreadInterpreter()
         {
             try
             {
                 while (!ShouldExit)
                 {
-                    Interpreter.PPUInterpreter.Step(this);
+                    Interpreter.PpuInterpreter.Step(this);
                 }
             }
             catch (Exception exception)
@@ -213,13 +213,13 @@ namespace PS3Sharp.Cell.PPU
             }
         }
 
-        private void RunPPUThreadJIT()
+        private void RunPpuThreadJIT()
         {
             try
             {
                 while (!ShouldExit)
                 {
-                    PPURecompiler.RunPPU(this);
+                    PpuRecompiler.RunPPU(this);
                 }
             }
             catch (Exception exception)
@@ -266,33 +266,33 @@ namespace PS3Sharp.Cell.PPU
             WriteStack(0);
 
             //Save argv pointer (current SP)
-            GPR[4].Value64 = GPR[StackReg].Value64;
+            Gpr[4].Value64 = Gpr[StackReg].Value64;
 
             //Push argc
-            GPR[3].Value64 = 0;
-            WriteStack(GPR[3].Value64);
+            Gpr[3].Value64 = 0;
+            WriteStack(Gpr[3].Value64);
 
             //Push another 0 for alignment
             WriteStack(0);
 
             // Allocate 0x70 bytes for main()
-            GPR[StackReg].Value64 -= 0x70;
+            Gpr[StackReg].Value64 -= 0x70;
 
-            if ((GPR[StackReg].Value64 & 0xF) > 0)
+            if ((Gpr[StackReg].Value64 & 0xF) > 0)
             {
                 throw new Exception("Alignment check fails");
             }
 
             //R28/29 are copies of R3/4 ?
-            GPR[28].Value64 = GPR[3].Value64;
-            GPR[29].Value64 = GPR[4].Value64;
+            Gpr[28].Value64 = Gpr[3].Value64;
+            Gpr[29].Value64 = Gpr[4].Value64;
 
             //R6 contains environment count
-            GPR[6].Value64 = 0;
+            Gpr[6].Value64 = 0;
 
             //R5/31 are copies of R1 ?
-            GPR[5].Value64 = GPR[1].Value64;
-            GPR[31].Value64 = GPR[1].Value64; //Frame pointer?
+            Gpr[5].Value64 = Gpr[1].Value64;
+            Gpr[31].Value64 = Gpr[1].Value64; //Frame pointer?
         }
 
         private void SetGCHandle()
@@ -303,9 +303,9 @@ namespace PS3Sharp.Cell.PPU
 
         private void WriteStack(ulong value)
         {
-            GPR[StackReg].Value32 -= sizeof(ulong); // -= 8
-            MemoryManager.Write<BigEndian<ulong>>(GPR[StackReg].Value32, value);
-            Console.WriteLine($"STACK[{GPR[StackReg].Value32:X8}] = {value:X16}");
+            Gpr[StackReg].Value32 -= sizeof(ulong); // -= 8
+            MemoryManager.Write<BigEndian<ulong>>(Gpr[StackReg].Value32, value);
+            Console.WriteLine($"STACK[{Gpr[StackReg].Value32:X8}] = {value:X16}");
         }
 
         private uint WritePathArg(string path)
@@ -344,7 +344,7 @@ namespace PS3Sharp.Cell.PPU
             }
         }
 
-        internal void AddTrace(uint pc, PPUInstruction instruction)
+        internal void AddTrace(uint pc, PpuInstruction instruction)
         {
             TraceQueue.Enqueue(new Trace { PC = pc, Instruction = instruction });
             if (TraceQueue.Count > TraceMaxCount)

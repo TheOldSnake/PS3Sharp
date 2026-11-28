@@ -1,5 +1,5 @@
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Cell.Spu;
 using PS3Sharp.Common;
 using PS3Sharp.Elf;
@@ -101,7 +101,7 @@ namespace PS3Sharp.OS.Syscall
             _sysEvent = sysEvent;
         }
 
-        internal ulong SysSpuInitialize(PPUThread ppu)
+        internal ulong SysSpuInitialize(PpuThread ppu)
         {
             int maxUsableSpu = ppu.ReadArg<int>(Arg0);
             int maxRawSpu = ppu.ReadArg<int>(Arg1);
@@ -120,7 +120,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysSpuImageOpen(PPUThread ppu)
+        internal ulong SysSpuImageOpen(PpuThread ppu)
         {
             GuestPtr<SysSpuImage> imagePtr = ppu.ReadArg<GuestPtr<SysSpuImage>>(Arg0);
             GuestVoidPtr pathPtr = ppu.ReadArg<GuestVoidPtr>(Arg1);
@@ -134,7 +134,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysSpuImageImport(PPUThread ppu)
+        internal ulong SysSpuImageImport(PpuThread ppu)
         {
             GuestPtr<SysSpuImage> imagePtr = ppu.ReadArg<GuestPtr<SysSpuImage>>(Arg0);
             uint src = ppu.ReadArg<uint>(Arg1); // Ptr to elf32 image
@@ -154,7 +154,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysSpuThreadGroupCreate(PPUThread ppu)
+        internal ulong SysSpuThreadGroupCreate(PpuThread ppu)
         {
             GuestPtr<BigEndian<uint>> idPtr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             uint num = ppu.ReadArg<uint>(Arg1);
@@ -170,7 +170,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysSpuThreadInitialize(PPUThread ppu)
+        internal ulong SysSpuThreadInitialize(PpuThread ppu)
         {
             GuestPtr<BigEndian<uint>> idPtr = ppu.ReadArg<GuestPtr<BigEndian<uint>>>(Arg0);
             uint groupId = ppu.ReadArg<uint>(Arg1);
@@ -197,7 +197,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysSpuThreadGroupStart(PPUThread ppu)
+        internal ulong SysSpuThreadGroupStart(PpuThread ppu)
         {
             uint groupId = ppu.ReadArg<uint>(Arg0);
 
@@ -213,7 +213,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysSpuThreadGroupJoin(PPUThread ppu)
+        internal ulong SysSpuThreadGroupJoin(PpuThread ppu)
         {
             uint groupId = ppu.ReadArg<uint>(Arg0);
             GuestPtr<BigEndian<int>> causePtr = ppu.ReadArg<GuestPtr<BigEndian<int>>>(Arg1);
@@ -231,7 +231,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysSpuThreadGroupConnectEventAllThreads(PPUThread ppu)
+        internal ulong SysSpuThreadGroupConnectEventAllThreads(PpuThread ppu)
         {
             uint groupId = ppu.ReadArg<uint>(Arg0);
             uint equeueId = ppu.ReadArg<uint>(Arg1);
@@ -260,7 +260,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysSpuThreadReadLS(PPUThread ppu)
+        internal ulong SysSpuThreadReadLS(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
             uint srcPtr = ppu.ReadArg<uint>(Arg1);
@@ -305,7 +305,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysSpuThreadGroupConnectEvent(PPUThread ppu)
+        internal ulong SysSpuThreadGroupConnectEvent(PpuThread ppu)
         {
             uint groupId = ppu.ReadArg<uint>(Arg0);
             uint equeueId = ppu.ReadArg<uint>(Arg1);
@@ -330,7 +330,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysSpuThreadWriteSpuMb(PPUThread ppu)
+        internal ulong SysSpuThreadWriteSpuMb(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
             uint value = ppu.ReadArg<uint>(Arg1);
@@ -346,7 +346,7 @@ namespace PS3Sharp.OS.Syscall
             return CellOk;
         }
 
-        internal ulong SysSpuThreadConnectEvent(PPUThread ppu)
+        internal ulong SysSpuThreadConnectEvent(PpuThread ppu)
         {
             uint id = ppu.ReadArg<uint>(Arg0);
             uint equeueId = ppu.ReadArg<uint>(Arg1);

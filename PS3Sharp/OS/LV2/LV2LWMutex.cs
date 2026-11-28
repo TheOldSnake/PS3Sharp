@@ -1,5 +1,5 @@
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using System.Runtime.InteropServices;
@@ -91,7 +91,7 @@ namespace PS3Sharp.OS.LV2
 
 
         // functions for sys_lwmutex module:
-        internal ulong Lock(PPUThread ppu, ulong us_timeout)
+        internal ulong Lock(PpuThread ppu, ulong us_timeout)
         {
             //bool canLock = CanLock(ref mutex, threadID);
 
@@ -127,7 +127,7 @@ namespace PS3Sharp.OS.LV2
             }
         }
 
-        internal ulong TryLock(PPUThread ppu)
+        internal ulong TryLock(PpuThread ppu)
         {
 
             if (Monitor.IsEntered(_mutex))
@@ -223,7 +223,7 @@ namespace PS3Sharp.OS.LV2
             return CellOk;
         }
 
-        private bool InterruptableWait(PPUThread ppu)
+        private bool InterruptableWait(PpuThread ppu)
         {
             // Return true if the lock is acquired, false if the thread was interrupted
             while (true)

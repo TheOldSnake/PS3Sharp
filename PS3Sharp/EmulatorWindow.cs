@@ -3,7 +3,7 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using PS3Sharp.Cell.PPU.Interpreter;
+using PS3Sharp.Cell.Ppu.Interpreter;
 using PS3Sharp.FileSystem;
 
 namespace PS3Sharp
@@ -65,7 +65,7 @@ namespace PS3Sharp
 
                 if (GameWindow.IsKeyDown(Keys.L))
                 {
-                    PPUInterpreter.Log = !PPUInterpreter.Log;
+                    PpuInterpreter.Log = !PpuInterpreter.Log;
                     Thread.Sleep(100);
                     // Console.WriteLine("Enabled log");
                 }

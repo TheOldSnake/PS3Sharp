@@ -1,15 +1,15 @@
 using Iced.Intel;
-using PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator;
+using PS3Sharp.Cell.Ppu.Recompiler.X64.RegisterAllocator;
 using PS3Sharp.GuestMemory;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using static Iced.Intel.AssemblerRegisters;
-using static PS3Sharp.Cell.PPU.PPUThread;
-using static PS3Sharp.Cell.PPU.Recompiler.IR.IRGenerator;
-using static PS3Sharp.Cell.PPU.Recompiler.x64.RegisterAllocator.X64RegisterAllocator;
+using static PS3Sharp.Cell.Ppu.PpuThread;
+using static PS3Sharp.Cell.Ppu.Recompiler.IR.IRGenerator;
+using static PS3Sharp.Cell.Ppu.Recompiler.X64.RegisterAllocator.X64RegisterAllocator;
 
-namespace PS3Sharp.Cell.PPU.Recompiler.x64
+namespace PS3Sharp.Cell.Ppu.Recompiler.X64
 {
     internal sealed unsafe partial class X64Generator
     {
@@ -147,37 +147,37 @@ namespace PS3Sharp.Cell.PPU.Recompiler.x64
 
         private static int GetPCOffset()
         {
-            int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPUThread.PPUState.PC));
+            int offset = (int)Marshal.OffsetOf<PpuState>(nameof(PpuThread.PpuState.PC));
             return offset;
         }
 
         private static int GetLROffset()
         {
-            int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPUThread.PPUState.LR));
+            int offset = (int)Marshal.OffsetOf<PpuState>(nameof(PpuThread.PpuState.LR));
             return offset;
         }
 
         private static int GetCROffset()
         {
-            int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPUThread.PPUState.CR));
+            int offset = (int)Marshal.OffsetOf<PpuState>(nameof(PpuThread.PpuState.CR));
             return offset;
         }
 
         private static int GetCTROffset()
         {
-            int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPUThread.PPUState.CTR));
+            int offset = (int)Marshal.OffsetOf<PpuState>(nameof(PpuThread.PpuState.Ctr));
             return offset;
         }
 
         private static int GetXEROffset()
         {
-            int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPUThread.PPUState.XER));
+            int offset = (int)Marshal.OffsetOf<PpuState>(nameof(PpuThread.PpuState.Xer));
             return offset;
         }
 
         private static int GetGPROffset(int index)
         {
-            int offset = (int)Marshal.OffsetOf<PPUState>(nameof(PPUThread.PPUState.GPR)) + (index * Unsafe.SizeOf<PPUGPR>());
+            int offset = (int)Marshal.OffsetOf<PpuState>(nameof(PpuThread.PpuState.Gpr)) + (index * Unsafe.SizeOf<PpuGpr>());
             return offset;
         }
 

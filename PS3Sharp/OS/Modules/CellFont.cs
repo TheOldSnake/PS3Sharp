@@ -4,7 +4,7 @@ using PS3Sharp.GuestMemory;
 using System.Runtime.CompilerServices;
 
 using static PS3Sharp.Cell.Arguments;
-using static PS3Sharp.Cell.PPU.PPUThread;
+using static PS3Sharp.Cell.Ppu.PpuThread;
 
 namespace PS3Sharp.OS.Modules
 {
@@ -169,7 +169,7 @@ namespace PS3Sharp.OS.Modules
             //}
         }
 
-        internal void Log_CellFontGetCharGlyphMetrics(PPUGPR[] gprs)
+        internal void Log_CellFontGetCharGlyphMetrics(PpuGpr[] gprs)
         {
             GuestPtr<CellFont_> font_ptr = gprs[Arg0].Value32;
             uint code = gprs[Arg1].Value32;
@@ -184,7 +184,7 @@ namespace PS3Sharp.OS.Modules
             throw new Exception("Done");
         }
 
-        internal void Log_CellFontRenderCharGlyphImage(PPUGPR[] gprs, PPUFPR[] fprs)
+        internal void Log_CellFontRenderCharGlyphImage(PpuGpr[] gprs, PpuFpr[] fprs)
         {
             GuestPtr<CellFont_> font_ptr = gprs[Arg0].Value32;
             uint code = gprs[Arg1].Value32;

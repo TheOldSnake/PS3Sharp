@@ -1,5 +1,5 @@
 using PS3Sharp.Cell;
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using System.Runtime.InteropServices;
@@ -41,7 +41,7 @@ namespace PS3Sharp.OS.LV2
             Handle = _memoryManager.GetHandle();
         }
 
-        internal ulong Lock(PPUThread ppu, ulong timeout = 0)
+        internal ulong Lock(PpuThread ppu, ulong timeout = 0)
         {
             if (Monitor.IsEntered(_mutex))
             {
@@ -64,7 +64,7 @@ namespace PS3Sharp.OS.LV2
             }
         }
 
-        private ulong ReEnter(PPUThread ppu)
+        private ulong ReEnter(PpuThread ppu)
         {
             // Check if we're allowed to re-enter
             if (!IsRecursive)
@@ -93,7 +93,7 @@ namespace PS3Sharp.OS.LV2
             return CellOk;
         }
 
-        private bool InterruptableWait(PPUThread ppu)
+        private bool InterruptableWait(PpuThread ppu)
         {
             // Return true if the lock is acquired, false if the thread was interrupted
             while (true)

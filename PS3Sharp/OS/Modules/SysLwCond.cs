@@ -1,4 +1,4 @@
-using PS3Sharp.Cell.PPU;
+using PS3Sharp.Cell.Ppu;
 using PS3Sharp.Common;
 using PS3Sharp.GuestMemory;
 using PS3Sharp.OS.LV2;
@@ -24,7 +24,7 @@ namespace PS3Sharp.OS.Modules
             _sysLwMutex = lwMutexHandler;
         }
 
-        internal ulong SysLwCondCreate(PPUThread ppu)
+        internal ulong SysLwCondCreate(PpuThread ppu)
         {
             GuestPtr<LV2LwCond.LwCond> lwcondPtr = ppu.ReadArg<GuestPtr<LV2LwCond.LwCond>>(Arg0);
             GuestPtr<LV2LwMutex.LwMutex> lwmutexPtr = ppu.ReadArg<GuestPtr<LV2LwMutex.LwMutex>>(Arg1);
@@ -46,7 +46,7 @@ namespace PS3Sharp.OS.Modules
             return CellOk;
         }
 
-        internal ulong SysLwCondWait(PPUThread ppu)
+        internal ulong SysLwCondWait(PpuThread ppu)
         {
             GuestPtr<LV2LwCond.LwCond> lwcondPtr = ppu.ReadArg<GuestPtr<LV2LwCond.LwCond>>(Arg0);
             ulong timeout = ppu.ReadArg<ulong>(Arg1);
@@ -64,7 +64,7 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        internal ulong SysLwCondSignal(PPUThread ppu)
+        internal ulong SysLwCondSignal(PpuThread ppu)
         {
             GuestPtr<LV2LwCond.LwCond> lwcondPtr = ppu.ReadArg<GuestPtr<LV2LwCond.LwCond>>(Arg0);
 
@@ -81,7 +81,7 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        internal ulong SysLwCondSignalAll(PPUThread ppu)
+        internal ulong SysLwCondSignalAll(PpuThread ppu)
         {
             GuestPtr<LV2LwCond.LwCond> lwcondPtr = ppu.ReadArg<GuestPtr<LV2LwCond.LwCond>>(Arg0);
 
@@ -98,7 +98,7 @@ namespace PS3Sharp.OS.Modules
             }
         }
 
-        internal ulong SysLwCondDestroy(PPUThread ppu)
+        internal ulong SysLwCondDestroy(PpuThread ppu)
         {
             GuestPtr<LV2LwCond.LwCond> lwcondPtr = ppu.ReadArg<GuestPtr<LV2LwCond.LwCond>>(Arg0);
 
