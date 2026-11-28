@@ -706,7 +706,7 @@ namespace PS3Sharp.Cell.Spu
 
         internal void StepDecrementer()
         {
-            if (_decrementerEnabled)
+            if (_decrementerEnabled && _decrementer >= 0)
             {
                 _decrementer--;
             }
