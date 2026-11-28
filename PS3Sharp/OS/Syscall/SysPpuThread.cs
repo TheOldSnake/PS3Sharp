@@ -8,7 +8,7 @@ using static PS3Sharp.Cell.ErrorCode;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal sealed class SysPPUThread
+    internal sealed class SysPpuThread
     {
         private readonly string[] IgnoredThreads = [
            // Minecraft -- these PPU threads expect the SPU to be functional, will crash otherwise 
@@ -20,7 +20,7 @@ namespace PS3Sharp.OS.Syscall
         private readonly ThreadManager _threadManager;
         private readonly MemoryManager _memoryManager;
 
-        internal SysPPUThread(ThreadManager threadManager, MemoryManager memoryManager)
+        internal SysPpuThread(ThreadManager threadManager, MemoryManager memoryManager)
         {
             _threadManager = threadManager;
             _memoryManager = memoryManager;

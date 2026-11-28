@@ -32,9 +32,9 @@ namespace PS3Sharp.OS
         internal SysMMapper SysMMapperHandler { get; }
         internal SysMutex SysMutexHandler { get; }
         internal SysCond SysCondHandler { get; }
-        internal SysPPUThread SysPPUThreadHandler { get; }
+        internal SysPpuThread SysPPUThreadHandler { get; }
         internal SysProcess SysProcessHandler { get; }
-        internal SysPRX SysPRXHandler { get; }
+        internal SysPrx SysPRXHandler { get; }
         internal SysRWLock SysRWLockHandler { get; }
         internal SysSemaphore SysSemaphoreHandler { get; }
         internal SysSpu SysSPUHandler { get; }   // TODO

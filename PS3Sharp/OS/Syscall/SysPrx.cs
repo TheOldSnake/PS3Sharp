@@ -7,11 +7,11 @@ using static PS3Sharp.Cell.Arguments;
 
 namespace PS3Sharp.OS.Syscall
 {
-    internal sealed class SysPRX // used by vsh
+    internal sealed class SysPrx // used by vsh
     {
         private readonly MemoryManager _memoryManager;
 
-        internal SysPRX(MemoryManager memoryManager)
+        internal SysPrx(MemoryManager memoryManager)
         {
             _memoryManager = memoryManager;
         }
